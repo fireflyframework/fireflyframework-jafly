@@ -19,7 +19,7 @@
 
     <properties>
         <aws.sdk2.version>2.25.32</aws.sdk2.version>
-        <grpc.version>1.60.1</grpc.version>
+        <grpc.version>1.75.0</grpc.version>
         <protobuf.version>3.25.1</protobuf.version>
     </properties>
 
