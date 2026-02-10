@@ -17,8 +17,8 @@
 
     <properties>
         <fireflyframework-idp.version>26.01.01</fireflyframework-idp.version>
-        <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
-        <keycloak.admin.version>26.0.6</keycloak.admin.version>
+        <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <keycloak.admin.version>26.0.8</keycloak.admin.version>
     </properties>
 
 
