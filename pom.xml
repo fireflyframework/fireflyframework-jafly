@@ -24,7 +24,7 @@
         <!-- Dependency versions for adapter modules -->
         <aws-sdk.version>2.21.29</aws-sdk.version>
         <azure-storage-blob.version>12.23.0</azure-storage-blob.version>
-        <azure-identity.version>1.10.4</azure-identity.version>
+        <azure-identity.version>1.12.2</azure-identity.version>
         <docusign-esign.version>4.3.0</docusign-esign.version>
         <jackson.version>2.15.2</jackson.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
