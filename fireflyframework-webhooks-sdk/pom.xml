@@ -20,7 +20,7 @@
         <openapi-generator.version>7.0.1</openapi-generator.version>
         <swagger-annotations.version>2.2.15</swagger-annotations.version>
         <jackson.version>2.15.2</jackson.version>
-        <jakarta-annotation.version>2.1.1</jakarta-annotation.version>
+        <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
         <generated-sources-dir>${project.build.directory}/generated-sources</generated-sources-dir>
         <jackson.databind.version>0.2.6</jackson.databind.version>
         <jackson.dataformat.version>2.17.0</jackson.dataformat.version>
