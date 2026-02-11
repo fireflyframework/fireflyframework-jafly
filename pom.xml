@@ -55,12 +55,12 @@
 
         <!-- Spring Boot and Cloud -->
         <spring-boot.version>3.5.10</spring-boot.version>
-        <spring-cloud.version>2025.0.1</spring-cloud.version>
+        <spring-cloud.version>2025.1.1</spring-cloud.version>
         <springdoc-openapi.version>2.8.15</springdoc-openapi.version>
 
         <!-- Database -->
-        <postgresql.version>42.7.8</postgresql.version>
-        <r2dbc-postgresql.version>1.0.9.RELEASE</r2dbc-postgresql.version>
+        <postgresql.version>42.7.9</postgresql.version>
+        <r2dbc-postgresql.version>1.1.1.RELEASE</r2dbc-postgresql.version>
 <flyway.version>11.20.3</flyway.version>
 
         <!-- OpenAPI -->
