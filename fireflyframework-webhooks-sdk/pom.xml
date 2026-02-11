@@ -17,13 +17,13 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <openapi-generator.version>7.0.1</openapi-generator.version>
-        <swagger-annotations.version>2.2.15</swagger-annotations.version>
-        <jackson.version>2.15.2</jackson.version>
+        <openapi-generator.version>7.19.0</openapi-generator.version>
+        <swagger-annotations.version>2.2.42</swagger-annotations.version>
+        <jackson.version>2.21.0</jackson.version>
         <jakarta-annotation.version>2.1.1</jakarta-annotation.version>
         <generated-sources-dir>${project.build.directory}/generated-sources</generated-sources-dir>
-        <jackson.databind.version>0.2.6</jackson.databind.version>
-        <jackson.dataformat.version>2.17.0</jackson.dataformat.version>
+        <jackson.databind.version>0.2.9</jackson.databind.version>
+        <jackson.dataformat.version>2.21.0</jackson.dataformat.version>
         <javax.annotation.version>1.3.2</javax.annotation.version>
     </properties>
 
