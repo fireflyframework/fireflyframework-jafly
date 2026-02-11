@@ -262,7 +262,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-discovery</artifactId>
-            <version>4.0.3</version>
+            <version>5.0.1</version>
             <optional>true</optional>
         </dependency>
 
