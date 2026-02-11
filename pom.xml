@@ -22,7 +22,7 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <twilio.version>9.14.0</twilio.version>
+        <twilio.version>11.3.3</twilio.version>
     </properties>
 
     <dependencies>
