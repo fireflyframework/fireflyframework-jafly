@@ -54,7 +54,7 @@
         <openapi.date.library>java8</openapi.date.library>
 
         <!-- Spring Boot and Cloud -->
-        <spring-boot.version>3.5.10</spring-boot.version>
+        <spring-boot.version>4.0.2</spring-boot.version>
         <spring-cloud.version>2025.0.1</spring-cloud.version>
         <springdoc-openapi.version>2.8.15</springdoc-openapi.version>
 
