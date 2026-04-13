@@ -107,7 +107,7 @@
         <jaxb-xjc.version>4.0.6</jaxb-xjc.version>
 
         <!-- Security -->
-        <bouncycastle.version>1.77</bouncycastle.version>
+        <bouncycastle.version>1.78</bouncycastle.version>
 
         <!-- Date/Time -->
         <threeten-extra.version>1.7.2</threeten-extra.version>
