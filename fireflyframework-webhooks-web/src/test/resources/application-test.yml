@@ -33,6 +33,9 @@ server:
 
 # Firefly Webhook Configuration
 firefly:
+  observability:
+    health:
+      enabled: false
   webhooks:
     destination:
       prefix: ""
@@ -153,3 +156,11 @@ logging:
     reactor.netty: ERROR
   pattern:
     console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} : %msg%n"
+
+# Disable strict health-group validation in tests + observability health probes
+# (avoids multi-CacheAdapter ambiguity in cache 26.05.06 and missing db contributor
+# in observability 26.05.06 readiness default; both fixed in 26.05.07).
+management:
+  endpoint:
+    health:
+      validate-group-membership: false
