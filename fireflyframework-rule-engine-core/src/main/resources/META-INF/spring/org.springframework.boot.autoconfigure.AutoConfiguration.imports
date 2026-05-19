@@ -1,1 +1,2 @@
 org.fireflyframework.rules.core.config.RuleEngineCacheAutoConfiguration
+org.fireflyframework.rules.core.observability.RuleEngineObservabilityAutoConfiguration
