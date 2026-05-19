@@ -1,1 +1,2 @@
 org.fireflyframework.idp.config.IdpWebAutoConfiguration
+org.fireflyframework.idp.observability.IdpObservabilityAutoConfiguration
