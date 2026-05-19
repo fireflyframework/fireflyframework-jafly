@@ -29,6 +29,9 @@ spring:
 
 # Firefly Callbacks Configuration
 firefly:
+  observability:
+    health:
+      enabled: false
   callbacks:
     # listener configuration removed - now using dynamic listeners from database
     
@@ -68,3 +71,9 @@ logging:
     org.fireflyframework.common.eda: DEBUG
     org.springframework.data.r2dbc: DEBUG
     org.testcontainers: INFO
+
+# Required so apps without a db autoconfig don't crash on the readiness health-group default.
+management:
+  endpoint:
+    health:
+      validate-group-membership: false
