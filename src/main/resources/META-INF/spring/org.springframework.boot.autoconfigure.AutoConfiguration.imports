@@ -1,3 +1,4 @@
 org.fireflyframework.core.config.SwaggerAutoConfiguration
 org.fireflyframework.core.config.R2dbcAutoConfiguration
 org.fireflyframework.core.config.R2dbcTransactionAutoConfiguration
+org.fireflyframework.core.observability.R2dbcObservabilityAutoConfiguration

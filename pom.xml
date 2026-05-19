@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.04.01</version>
+        <version>26.05.01</version>
         <relativePath/>
     </parent>
 
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.04.01</version>
+    <version>26.05.01</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - R2DBC</name>
@@ -51,6 +51,13 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Observability: unified metrics, tracing, health, structured logging (OTel-backed) -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-observability</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
