@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-callbacks</artifactId>
-        <version>26.04.01</version>
+        <version>26.05.01</version>
     </parent>
 
     <artifactId>fireflyframework-callbacks-interfaces</artifactId>
