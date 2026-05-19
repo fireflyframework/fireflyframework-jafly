@@ -1,1 +1,2 @@
 org.fireflyframework.ecm.config.EcmAutoConfiguration
+org.fireflyframework.ecm.observability.EcmObservabilityAutoConfiguration
