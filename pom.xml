@@ -6,7 +6,7 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-bom</artifactId>
-    <version>26.04.01</version>
+    <version>26.05.01</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - BOM</name>
@@ -340,6 +340,29 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-config-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Agentic Bridge -->
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
