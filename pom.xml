@@ -6,13 +6,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.04.01</version>
+        <version>26.05.01</version>
         <relativePath/>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-config-server</artifactId>
-    <version>26.04.01</version>
+    <version>26.05.01</version>
 
     <name>Firefly Framework - Config Server</name>
     <description>Spring Cloud Config Server for centralized configuration management across Firefly Framework microservices</description>
@@ -21,6 +21,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-config-server</artifactId>
+        </dependency>
+
+        <!-- Observability: unified metrics, tracing, health, structured logging (OTel-backed) -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-observability</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
