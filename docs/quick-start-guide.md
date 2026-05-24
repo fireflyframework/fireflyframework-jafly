@@ -290,8 +290,10 @@ then:
   - set current to startValue
   - set count to 0
 
-  # Always executes at least once
-  - do: multiply current by 2; add 1 to count while current less_than maxValue
+  # Always executes at least once.
+  # Grammar reminder: arithmetic actions are `<keyword> <value> <preposition> <target-variable>`,
+  # so "multiply current by 2" is written `multiply 2 by current`.
+  - do: multiply 2 by current; add 1 to count while current less_than maxValue
 
 output:
   current: number
@@ -385,6 +387,7 @@ if condition then action
 ```
 
 ### Basic Structure Template
+<!-- doc-test:skip (template placeholder; `input1`, `condition1`, etc. are illustrative names, not real DSL) -->
 ```yaml
 name: "Your Rule Name"
 description: "What this rule does"

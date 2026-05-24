@@ -39,17 +39,15 @@ public interface ASTVisitor<T> {
     T visitVariableExpression(VariableExpression node);
     T visitLiteralExpression(LiteralExpression node);
     T visitFunctionCallExpression(FunctionCallExpression node);
-    T visitArithmeticExpression(ArithmeticExpression node);
     T visitJsonPathExpression(JsonPathExpression node);
     T visitRestCallExpression(RestCallExpression node);
-    
+
     // Condition visitors
     T visitComparisonCondition(ComparisonCondition node);
     T visitLogicalCondition(LogicalCondition node);
     T visitExpressionCondition(ExpressionCondition node);
-    
+
     // Action visitors
-    T visitAssignmentAction(AssignmentAction node);
     T visitFunctionCallAction(FunctionCallAction node);
     T visitConditionalAction(ConditionalAction node);
     T visitCalculateAction(CalculateAction node);

@@ -207,34 +207,38 @@ org.fireflyframework.rules.core.dsl.ast/
 │   └── BaseParser.java      # Common parsing utilities
 ├── expression/              # Expression AST nodes
 │   ├── Expression.java      # Base expression class
-│   ├── BinaryExpression.java # Binary operations (+, -, *, /, etc.)
+│   ├── BinaryExpression.java # Binary operations (+, -, *, /, %, **, comparisons)
 │   ├── UnaryExpression.java # Unary operations (-, !, validation ops)
-│   ├── LiteralExpression.java # Literal values (numbers, strings, booleans)
-│   ├── VariableExpression.java # Variable references
+│   ├── LiteralExpression.java # Literal values (numbers, strings, booleans, arrays)
+│   ├── VariableExpression.java # Variable references with property/index access
 │   ├── FunctionCallExpression.java # Function calls with parameters
-│   ├── ArithmeticExpression.java # Complex arithmetic expressions
-│   ├── JsonPathExpression.java # JSON path queries
-│   ├── RestCallExpression.java # REST API calls
+│   ├── JsonPathExpression.java # JSON path queries (visitor support; emitted by builders, not the parser)
+│   ├── RestCallExpression.java # REST API calls (visitor support; emitted by builders, not the parser)
 │   ├── BinaryOperator.java  # Binary operator enumeration
 │   ├── UnaryOperator.java   # Unary operator enumeration
 │   └── ExpressionType.java  # Expression type enumeration
 ├── condition/               # Condition AST nodes
 │   ├── Condition.java       # Base condition class
-│   ├── ComparisonCondition.java # Comparison operations (>, <, ==, etc.)
+│   ├── ComparisonCondition.java # Comparison operations (>, <, ==, between, in_list, etc.)
 │   ├── LogicalCondition.java # Logical operations (AND, OR, NOT)
 │   ├── ExpressionCondition.java # Expression-based conditions
 │   └── ComparisonOperator.java # Comparison operator enumeration
 ├── action/                  # Action AST nodes
 │   ├── Action.java          # Base action class
-│   ├── SetAction.java       # Variable assignment (set var to value)
-│   ├── CalculateAction.java # Arithmetic calculations
-│   ├── AssignmentAction.java # Assignment operations (=, +=, etc.)
-│   ├── FunctionCallAction.java # Function execution
-│   ├── ConditionalAction.java # If-then-else actions
-│   ├── ArithmeticAction.java # Arithmetic actions
-│   ├── ListAction.java      # List operations (append, prepend, etc.)
-│   ├── CircuitBreakerAction.java # Execution control
-│   └── AssignmentOperator.java # Assignment operator enumeration
+│   ├── SetAction.java       # Variable assignment (`set var to value`)
+│   ├── CalculateAction.java # Pure-math arithmetic (`calculate var as expr`)
+│   ├── RunAction.java       # Function-call assignment (`run var as fn(...)`)
+│   ├── FunctionCallAction.java # Standalone function execution (`call fn with [...]`)
+│   ├── ConditionalAction.java # Inline if-then-else as an action
+│   ├── ArithmeticAction.java # `add`/`subtract`/`multiply`/`divide` X to/from/by var
+│   ├── ListAction.java      # List operations (append, prepend, remove)
+│   ├── CircuitBreakerAction.java # Early termination with a structured message
+│   ├── ForEachAction.java   # `forEach item in items: ...`
+│   ├── WhileAction.java     # `while condition: ...`
+│   └── DoWhileAction.java   # `do: ... while condition`
+├── function/                # Extension point for user-defined functions
+│   ├── RuleFunction.java    # Functional interface: `Object apply(Object[] args)`
+│   └── CustomFunctionRegistry.java # @Component holding registered functions
 ├── visitor/                 # Visitor pattern implementations
 │   ├── EvaluationContext.java # Execution context and state
 │   ├── ExpressionEvaluator.java # Expression evaluation visitor
@@ -663,63 +667,32 @@ public abstract class ASTNode {
 ```
 ASTNode (abstract base)
 ├── Expression (abstract)
-│   ├── LiteralExpression
-│   │   ├── NumberLiteral (integers, decimals)
-│   │   ├── StringLiteral (quoted strings)
-│   │   ├── BooleanLiteral (true/false)
-│   │   └── NullLiteral (null values)
-│   ├── VariableExpression (variable references)
-│   ├── BinaryExpression
-│   │   ├── ArithmeticExpression (+, -, *, /, %, **)
-│   │   ├── ComparisonExpression (>, <, ==, !=, >=, <=)
-│   │   ├── LogicalExpression (AND, OR)
-│   │   ├── StringExpression (contains, starts_with, ends_with)
-│   │   └── ListExpression (in, not_in)
-│   ├── UnaryExpression
-│   │   ├── ArithmeticUnary (-, +)
-│   │   ├── LogicalUnary (NOT, !)
-│   │   └── ValidationUnary (is_positive, is_email, is_phone, etc.)
-│   ├── FunctionCallExpression
-│   │   ├── MathFunctions (abs, round, ceil, floor, etc.)
-│   │   ├── StringFunctions (length, substring, upper, lower, etc.)
-│   │   ├── DateFunctions (now, date_add, date_diff, etc.)
-│   │   └── CustomFunctions (user-defined functions)
-│   ├── ArithmeticExpression (complex multi-operand arithmetic)
-│   ├── JsonPathExpression (JSON path queries)
-│   └── RestCallExpression (REST API calls)
+│   ├── LiteralExpression           # numbers, strings, booleans, null, array literals
+│   ├── VariableExpression          # variable refs with optional property path / index access
+│   ├── BinaryExpression            # +, -, *, /, %, **, comparisons, and/or, contains, starts_with, etc.
+│   ├── UnaryExpression             # -, +, NOT, EXISTS, IS_NULL, IS_EMAIL, IS_POSITIVE, etc.
+│   ├── FunctionCallExpression      # math, string, date, list, financial, validation, REST, JSON funcs
+│   ├── JsonPathExpression          # visitor-supported; emitted by builders, not the lexer/parser
+│   └── RestCallExpression          # visitor-supported; emitted by builders, not the lexer/parser
 ├── Condition (abstract)
-│   ├── ComparisonCondition
-│   │   ├── SimpleComparison (var > value)
-│   │   ├── BetweenCondition (var between min and max)
-│   │   ├── InCondition (var in [list])
-│   │   └── ValidationCondition (var is_positive)
-│   ├── LogicalCondition
-│   │   ├── AndCondition (condition1 AND condition2)
-│   │   ├── OrCondition (condition1 OR condition2)
-│   │   └── NotCondition (NOT condition)
-│   └── ExpressionCondition (expression-based conditions)
+│   ├── ComparisonCondition         # `>=`, `at_least`, `between ... and ...`, `in_list [...]`, `is_email`, etc.
+│   ├── LogicalCondition            # AND / OR / NOT composition
+│   └── ExpressionCondition         # wraps any boolean-valued Expression
 └── Action (abstract)
-    ├── SetAction (set variable to value)
-    ├── CalculateAction (calculate variable as expression)
-    ├── AssignmentAction
-    │   ├── SimpleAssignment (var = value)
-    │   ├── AddAssignment (var += value)
-    │   ├── SubtractAssignment (var -= value)
-    │   ├── MultiplyAssignment (var *= value)
-    │   └── DivideAssignment (var /= value)
-    ├── FunctionCallAction (call function with parameters)
-    ├── ConditionalAction
-    │   ├── IfAction (if condition then actions)
-    │   ├── IfElseAction (if condition then actions else actions)
-    │   └── SwitchAction (switch-case logic)
-    ├── ArithmeticAction (arithmetic operations as actions)
-    ├── ListAction
-    │   ├── AppendAction (append to list)
-    │   ├── PrependAction (prepend to list)
-    │   ├── RemoveAction (remove from list)
-    │   └── ClearAction (clear list)
-    └── CircuitBreakerAction (execution control and error handling)
+    ├── SetAction                   # `set var to value`
+    ├── CalculateAction             # `calculate var as <pure-math-expr>`
+    ├── RunAction                   # `run var as <function-or-rest-expr>`
+    ├── FunctionCallAction          # `call fn with [args]`
+    ├── ConditionalAction           # `if cond then actions [else actions]`
+    ├── ArithmeticAction            # `add X to var`, `subtract X from var`, `multiply var by X`, `divide var by X`
+    ├── ListAction                  # `append X to list`, `prepend X to list`, `remove X from list`
+    ├── ForEachAction               # `forEach item[, index] in items: actions`
+    ├── WhileAction                 # `while cond: actions`
+    ├── DoWhileAction               # `do: actions while cond`
+    └── CircuitBreakerAction        # `circuit_breaker "MESSAGE"` -- early termination
 ```
+
+> **Note:** The DSL was simplified in 2026-05 to remove orphan AST classes that were never produced by the parser. The compound-assignment family (`+=`, `-=`, etc.) and the multi-operand `ArithmeticExpression` n-ary form are no longer present. Use `add`/`subtract`/`multiply`/`divide` arithmetic actions or `calculate`/`run` with `+`/`-`/`*`/`/` for the same outcomes.
 
 ### 🔢 **Expression Nodes: Representing Computable Values**
 
@@ -1316,11 +1289,9 @@ public class ActionParser extends BaseParser {
             return parseConditionalAction();
         }
 
-        // Handle arithmetic actions (var += value)
-        if (check(TokenType.IDENTIFIER) && checkNext(TokenType.ASSIGN, TokenType.PLUS_ASSIGN,
-                                                     TokenType.MINUS_ASSIGN, TokenType.MULTIPLY_ASSIGN)) {
-            return parseAssignmentAction();
-        }
+        // Arithmetic actions are emitted by `add`/`subtract`/`multiply`/`divide` keywords
+        // (parseArithmeticAction), not by `=` / `+=` operators -- the latter are not part
+        // of the action DSL.
 
         throw error("Expected action statement");
     }
@@ -1400,29 +1371,31 @@ The `ASTVisitor` interface is the heart of the visitor pattern implementation:
 public interface ASTVisitor<T> {
 
     // Expression visitors - handle value computation
-    T visitBinaryExpression(BinaryExpression node);      // a + b, a > b, etc.
-    T visitUnaryExpression(UnaryExpression node);        // -a, !a, is_positive(a)
-    T visitVariableExpression(VariableExpression node);  // creditScore, income
-    T visitLiteralExpression(LiteralExpression node);    // 42, "hello", true
-    T visitFunctionCallExpression(FunctionCallExpression node); // max(a, b)
-    T visitArithmeticExpression(ArithmeticExpression node);     // Complex arithmetic
-    T visitJsonPathExpression(JsonPathExpression node);         // $.user.name
-    T visitRestCallExpression(RestCallExpression node);         // REST API calls
+    T visitBinaryExpression(BinaryExpression node);             // a + b, a > b, a and b, etc.
+    T visitUnaryExpression(UnaryExpression node);               // -a, !a, is_positive(a)
+    T visitVariableExpression(VariableExpression node);         // creditScore, user.profile.name
+    T visitLiteralExpression(LiteralExpression node);           // 42, "hello", true, [1,2,3]
+    T visitFunctionCallExpression(FunctionCallExpression node); // max(a, b), if_else(...), coalesce(...)
+    T visitJsonPathExpression(JsonPathExpression node);         // structural node; emitted by builders
+    T visitRestCallExpression(RestCallExpression node);         // structural node; emitted by builders
 
     // Condition visitors - handle boolean logic
-    T visitComparisonCondition(ComparisonCondition node);       // a > b
-    T visitLogicalCondition(LogicalCondition node);             // a AND b
-    T visitExpressionCondition(ExpressionCondition node);       // Expression as condition
+    T visitComparisonCondition(ComparisonCondition node);       // a > b, a between x and y, etc.
+    T visitLogicalCondition(LogicalCondition node);             // a AND b, a OR b, NOT a
+    T visitExpressionCondition(ExpressionCondition node);       // any Expression as a condition
 
     // Action visitors - handle state changes
     T visitSetAction(SetAction node);                           // set var to value
-    T visitCalculateAction(CalculateAction node);               // calculate var as expr
-    T visitAssignmentAction(AssignmentAction node);             // var = value, var += value
-    T visitFunctionCallAction(FunctionCallAction node);         // call function()
-    T visitConditionalAction(ConditionalAction node);           // if-then-else
-    T visitArithmeticAction(ArithmeticAction node);             // Arithmetic as action
-    T visitListAction(ListAction node);                         // List operations
-    T visitCircuitBreakerAction(CircuitBreakerAction node);     // Error handling
+    T visitCalculateAction(CalculateAction node);               // calculate var as expr (pure-math only)
+    T visitRunAction(RunAction node);                           // run var as fn(...) / json_get(...) / rest_*(...)
+    T visitFunctionCallAction(FunctionCallAction node);         // call fn with [args]
+    T visitConditionalAction(ConditionalAction node);           // if cond then ... else ...
+    T visitArithmeticAction(ArithmeticAction node);             // add/subtract/multiply/divide ... to/from/by var
+    T visitListAction(ListAction node);                         // append/prepend/remove ... to/from list
+    T visitCircuitBreakerAction(CircuitBreakerAction node);     // circuit_breaker "MESSAGE"
+    T visitForEachAction(ForEachAction node);                   // forEach item[, index] in items: actions
+    T visitWhileAction(WhileAction node);                       // while cond: actions
+    T visitDoWhileAction(DoWhileAction node);                   // do: actions while cond
 }
 ```
 
@@ -1578,44 +1551,33 @@ public class ActionExecutor implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visitAssignmentAction(AssignmentAction node) {
-        // Step 1: Evaluate the new value
+    public Void visitArithmeticAction(ArithmeticAction node) {
+        // Equivalent of an "in-place" compound assignment, expressed via dedicated keywords
+        // in the DSL (`add X to var`, `subtract X from var`, etc.). Both operands must be
+        // numeric; non-numeric operands raise IllegalArgumentException so authoring bugs
+        // surface immediately rather than silently no-op'ing.
         Object value = node.getValue().accept(expressionEvaluator);
+        Object current = context.getVariable(node.getVariableName());
 
-        // Step 2: Apply the assignment operator
-        switch (node.getOperator()) {
-            case ASSIGN -> {
-                // Simple assignment: var = value
-                context.setComputedVariable(node.getVariableName(), value);
-            }
-            case ADD_ASSIGN -> {
-                // Addition assignment: var += value
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    // Numeric addition
-                    BigDecimal current = toBigDecimal(currentValue);
-                    BigDecimal addValue = toBigDecimal(value);
-                    context.setComputedVariable(node.getVariableName(), current.add(addValue));
-                } else {
-                    // String concatenation
-                    context.setComputedVariable(node.getVariableName(),
-                        currentValue.toString() + value.toString());
-                }
-            }
-            case SUBTRACT_ASSIGN -> {
-                // Subtraction assignment: var -= value
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    BigDecimal current = toBigDecimal(currentValue);
-                    BigDecimal subValue = toBigDecimal(value);
-                    context.setComputedVariable(node.getVariableName(), current.subtract(subValue));
-                } else {
-                    throw new ASTException("Cannot subtract non-numeric values");
-                }
-            }
-            // ... other assignment operators
+        if (!(current instanceof Number) || !(value instanceof Number)) {
+            throw new IllegalArgumentException(
+                "Arithmetic action requires numeric operands");
         }
 
+        BigDecimal currentNum = toBigDecimal(current);
+        BigDecimal valueNum = toBigDecimal(value);
+        BigDecimal result = switch (node.getOperation()) {
+            case ADD      -> currentNum.add(valueNum);
+            case SUBTRACT -> currentNum.subtract(valueNum);
+            case MULTIPLY -> currentNum.multiply(valueNum);
+            case DIVIDE   -> {
+                if (valueNum.signum() == 0) {
+                    throw new ArithmeticException("Division by zero in arithmetic action");
+                }
+                yield currentNum.divide(valueNum, 10, RoundingMode.HALF_UP);
+            }
+        };
+        context.setComputedVariable(node.getVariableName(), result);
         return null;
     }
 

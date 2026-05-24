@@ -22,6 +22,8 @@ import org.fireflyframework.rules.core.dsl.condition.ComparisonCondition;
 import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
 import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
 import org.fireflyframework.rules.core.dsl.expression.*;
+import org.fireflyframework.rules.core.dsl.function.CustomFunctionRegistry;
+import org.fireflyframework.rules.core.dsl.function.RuleFunction;
 import org.fireflyframework.rules.core.services.JsonPathService;
 import org.fireflyframework.rules.core.services.RestCallService;
 import org.fireflyframework.rules.core.utils.JsonLogger;
@@ -44,6 +46,7 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     private final EvaluationContext context;
     private final RestCallService restCallService;
     private final JsonPathService jsonPathService;
+    private final CustomFunctionRegistry customFunctions;
 
     private static final int REGEX_CACHE_SIZE = 64;
     @SuppressWarnings("serial")
@@ -55,15 +58,21 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     };
 
     public ExpressionEvaluator(EvaluationContext context) {
-        this.context = context;
-        this.restCallService = null; // Will be injected when needed
-        this.jsonPathService = null; // Will be injected when needed
+        this(context, null, null, null);
     }
 
     public ExpressionEvaluator(EvaluationContext context, RestCallService restCallService, JsonPathService jsonPathService) {
+        this(context, restCallService, jsonPathService, null);
+    }
+
+    public ExpressionEvaluator(EvaluationContext context,
+                               RestCallService restCallService,
+                               JsonPathService jsonPathService,
+                               CustomFunctionRegistry customFunctions) {
         this.context = context;
         this.restCallService = restCallService;
         this.jsonPathService = jsonPathService;
+        this.customFunctions = customFunctions;
     }
     
     // Expression visitors
@@ -197,7 +206,16 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             node.getArguments().stream().map(arg -> arg.accept(this)).toArray() :
             new Object[0];
 
-        // Built-in mathematical functions
+        // User-registered functions are checked first so they may extend or override built-ins.
+        if (customFunctions != null) {
+            RuleFunction custom = customFunctions.lookup(functionName).orElse(null);
+            if (custom != null) {
+                return custom.apply(args);
+            }
+        }
+
+        // Built-in catalog. Unknown names throw rather than silently returning null --
+        // the user almost certainly typo'd a function name and silent null masks that.
         return switch (functionName.toLowerCase()) {
             case "max" -> evaluateMax(args);
             case "min" -> evaluateMin(args);
@@ -224,6 +242,12 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             case "today" -> evaluateToday(args);
             case "dateadd" -> evaluateDateAdd(args);
             case "datediff" -> evaluateDateDiff(args);
+            case "calculate_age" -> evaluateCalculateAge(args);
+            case "format_date" -> evaluateFormatDate(args);
+
+            // Validation functions (function-call form complements the `is_email`/`is_phone` operators)
+            case "validate_email" -> isEmail(args.length > 0 ? args[0] : null);
+            case "validate_phone" -> isPhone(args.length > 0 ? args[0] : null);
 
             // List functions
             case "size", "count" -> evaluateSize(args);
@@ -236,6 +260,11 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             case "tonumber", "number" -> evaluateToNumber(args);
             case "tostring", "string" -> evaluateToString(args);
             case "toboolean", "boolean" -> evaluateToBoolean(args);
+
+            // Null-handling / conditional helpers
+            case "coalesce" -> evaluateCoalesce(args);
+            case "if_else", "ifelse" -> evaluateIfElse(args);
+            case "is_in_range" -> inRange(args);
 
             // Financial calculation functions
             case "calculate_loan_payment" -> calculateLoanPayment(args);
@@ -296,81 +325,12 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             case "json_size" -> jsonSize(args);
             case "json_type" -> jsonType(args);
 
-            default -> {
-                log.warn("Unknown function: {}", functionName);
-                yield null;
-            }
+            default -> throw new IllegalArgumentException(
+                    "Unknown function '" + functionName + "'. Register it via CustomFunctionRegistry or "
+                            + "check spelling against the built-in catalog.");
         };
     }
-    
-    @Override
-    public Object visitArithmeticExpression(ArithmeticExpression node) {
-        List<Object> operandValues = node.getOperands().stream()
-                .map(operand -> operand.accept(this))
-                .toList();
-        
-        return switch (node.getOperation()) {
-            case ADD -> operandValues.stream()
-                    .map(this::toNumber)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            case MULTIPLY -> operandValues.stream()
-                    .map(this::toNumber)
-                    .reduce(BigDecimal.ONE, BigDecimal::multiply);
-            case MIN -> operandValues.stream()
-                    .map(this::toNumber)
-                    .min(BigDecimal::compareTo)
-                    .orElse(BigDecimal.ZERO);
-            case MAX -> operandValues.stream()
-                    .map(this::toNumber)
-                    .max(BigDecimal::compareTo)
-                    .orElse(BigDecimal.ZERO);
-            case SUM -> operandValues.stream()
-                    .map(this::toNumber)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            case AVERAGE -> {
-                BigDecimal sum = operandValues.stream()
-                        .map(this::toNumber)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                yield sum.divide(BigDecimal.valueOf(operandValues.size()), 10, RoundingMode.HALF_UP);
-            }
-            default -> {
-                if (operandValues.size() >= 2) {
-                    BigDecimal first = toNumber(operandValues.get(0));
-                    BigDecimal second = toNumber(operandValues.get(1));
-                    yield switch (node.getOperation()) {
-                        case SUBTRACT -> first.subtract(second);
-                        case DIVIDE -> {
-                            if (second.compareTo(BigDecimal.ZERO) == 0) {
-                                throw new ArithmeticException("Division by zero");
-                            }
-                            yield first.divide(second, 10, RoundingMode.HALF_UP);
-                        }
-                        case MODULO -> {
-                            if (second.compareTo(BigDecimal.ZERO) == 0) {
-                                throw new ArithmeticException("Modulo by zero");
-                            }
-                            yield first.remainder(second);
-                        }
-                        case POWER -> BigDecimal.valueOf(Math.pow(first.doubleValue(), second.doubleValue()));
-                        default -> first;
-                    };
-                } else if (operandValues.size() == 1) {
-                    BigDecimal value = toNumber(operandValues.get(0));
-                    yield switch (node.getOperation()) {
-                        case ABS -> value.abs();
-                        case ROUND -> BigDecimal.valueOf(Math.round(value.doubleValue()));
-                        case FLOOR -> BigDecimal.valueOf(Math.floor(value.doubleValue()));
-                        case CEIL -> BigDecimal.valueOf(Math.ceil(value.doubleValue()));
-                        case SQRT -> BigDecimal.valueOf(Math.sqrt(value.doubleValue()));
-                        default -> value;
-                    };
-                } else {
-                    yield BigDecimal.ZERO;
-                }
-            }
-        };
-    }
-    
+
     // Condition visitors (return Boolean)
     
     @Override
@@ -460,12 +420,7 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
     
     // Action visitors (not used in expression evaluation)
-    
-    @Override
-    public Object visitAssignmentAction(AssignmentAction node) {
-        throw new UnsupportedOperationException("Actions cannot be evaluated as expressions");
-    }
-    
+
     @Override
     public Object visitFunctionCallAction(FunctionCallAction node) {
         throw new UnsupportedOperationException("Actions cannot be evaluated as expressions");
@@ -614,15 +569,16 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
     
     private boolean matches(Object left, Object right) {
+        String leftStr = toString(left);
+        String rightStr = toString(right);
         try {
-            String leftStr = toString(left);
-            String rightStr = toString(right);
-
             Pattern pattern = REGEX_CACHE.computeIfAbsent(rightStr, Pattern::compile);
             return pattern.matcher(leftStr).find();
-        } catch (Exception e) {
-            log.warn("Invalid regex pattern: {}", right);
-            return false;
+        } catch (java.util.regex.PatternSyntaxException e) {
+            // Treat a broken pattern as an authoring bug rather than "no match" -- the
+            // latter silently flips rules to the wrong branch.
+            throw new IllegalArgumentException(
+                    "Invalid regex pattern '" + rightStr + "': " + e.getDescription(), e);
         }
     }
     
@@ -655,7 +611,27 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
 
     /**
-     * Safe number conversion that treats null as zero (for arithmetic operations)
+     * Wrap an exception thrown from a built-in function in an {@link IllegalArgumentException}
+     * tagged with the function name -- unless the exception already carries good diagnostic
+     * context, in which case it is rethrown unchanged. Used by the financial / formatting /
+     * date built-ins to give consistent error messages and avoid the previous catch-and-null
+     * silent-failure pattern.
+     */
+    private static IllegalArgumentException wrapFunctionError(String functionName, RuntimeException cause) {
+        if (cause instanceof IllegalArgumentException && cause.getMessage() != null
+                && cause.getMessage().startsWith(functionName)) {
+            return (IllegalArgumentException) cause;
+        }
+        return new IllegalArgumentException(
+                functionName + ": " + (cause.getMessage() != null ? cause.getMessage()
+                        : cause.getClass().getSimpleName()),
+                cause);
+    }
+
+    /**
+     * Number conversion that treats null as zero (matching null-as-no-value semantics
+     * common in financial and SQL contexts), but raises IllegalArgumentException for
+     * non-numeric strings so type bugs surface instead of silently producing zero.
      */
     private BigDecimal toNumberSafe(Object value) {
         if (value == null) return BigDecimal.ZERO;
@@ -664,7 +640,9 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
         try {
             return new BigDecimal(value.toString());
         } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
+            throw new IllegalArgumentException(
+                    "Cannot convert '" + value + "' (type " + value.getClass().getSimpleName()
+                            + ") to a number for arithmetic; check that the operand is numeric");
         }
     }
     
@@ -682,15 +660,17 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
         return value != null ? value.toString() : "";
     }
 
+    /**
+     * Numeric coercion shared by all built-in functions (sum, max, financial calcs, etc).
+     * <p>
+     * Delegates to {@link #toNumberSafe(Object)} so the entire engine has one consistent
+     * coercion contract: null treated as zero (matches SQL/financial semantics for missing
+     * values in aggregations), but any non-numeric string raises
+     * {@link IllegalArgumentException} so type bugs in rule authoring surface immediately
+     * rather than being silently zeroed.
+     */
     private BigDecimal toBigDecimal(Object value) {
-        if (value == null) return BigDecimal.ZERO;
-        if (value instanceof BigDecimal) return (BigDecimal) value;
-        if (value instanceof Number) return BigDecimal.valueOf(((Number) value).doubleValue());
-        try {
-            return new BigDecimal(value.toString());
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
+        return toNumberSafe(value);
     }
 
     // Built-in function implementations
@@ -838,79 +818,92 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
     private Object evaluateDateAdd(Object[] args) {
         if (args.length != 3) {
-            log.warn("DateAdd function requires 3 arguments: date, amount, unit");
-            return null;
+            throw new IllegalArgumentException(
+                    "dateadd(date, amount, unit) requires exactly 3 arguments; got " + args.length);
         }
-
-        try {
-            // Parse the date
-            java.time.LocalDate date = parseDate(args[0]);
-            if (date == null) {
-                log.warn("Invalid date format in dateadd: {}", args[0]);
-                return null;
-            }
-
-            // Parse the amount
-            int amount = toNumber(args[1]).intValue();
-
-            // Parse the unit
-            String unit = toString(args[2]).toLowerCase();
-
-            java.time.LocalDate result = switch (unit) {
-                case "days", "day", "d" -> date.plusDays(amount);
-                case "weeks", "week", "w" -> date.plusWeeks(amount);
-                case "months", "month", "m" -> date.plusMonths(amount);
-                case "years", "year", "y" -> date.plusYears(amount);
-                default -> {
-                    log.warn("Unsupported date unit in dateadd: {}. Supported units: days, weeks, months, years", unit);
-                    yield null;
-                }
-            };
-
-            return result != null ? result.toString() : null;
-
-        } catch (Exception e) {
-            log.warn("Error in dateadd function: {}", e.getMessage());
-            return null;
+        java.time.LocalDate date = parseDate(args[0]);
+        if (date == null) {
+            throw new IllegalArgumentException("dateadd: unparseable date '" + args[0] + "'");
         }
+        int amount = toNumber(args[1]).intValue();
+        String unit = toString(args[2]).toLowerCase();
+        java.time.LocalDate result = switch (unit) {
+            case "days", "day", "d" -> date.plusDays(amount);
+            case "weeks", "week", "w" -> date.plusWeeks(amount);
+            case "months", "month", "m" -> date.plusMonths(amount);
+            case "years", "year", "y" -> date.plusYears(amount);
+            default -> throw new IllegalArgumentException(
+                    "dateadd: unsupported unit '" + unit + "'. Supported: days, weeks, months, years (and short forms d/w/m/y).");
+        };
+        return result.toString();
     }
 
     private Object evaluateDateDiff(Object[] args) {
         if (args.length < 2 || args.length > 3) {
-            log.warn("DateDiff function requires 2 or 3 arguments: date1, date2, [unit]");
-            return null;
+            throw new IllegalArgumentException(
+                    "datediff(date1, date2[, unit]) requires 2 or 3 arguments; got " + args.length);
         }
+        java.time.LocalDate date1 = parseDate(args[0]);
+        if (date1 == null) {
+            throw new IllegalArgumentException("datediff: unparseable date1 '" + args[0] + "'");
+        }
+        java.time.LocalDate date2 = parseDate(args[1]);
+        if (date2 == null) {
+            throw new IllegalArgumentException("datediff: unparseable date2 '" + args[1] + "'");
+        }
+        String unit = args.length > 2 ? toString(args[2]).toLowerCase() : "days";
+        java.time.Period period = java.time.Period.between(date1, date2);
+        long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(date1, date2);
+        return switch (unit) {
+            case "days", "day", "d" -> BigDecimal.valueOf(daysDiff);
+            case "weeks", "week", "w" -> BigDecimal.valueOf(daysDiff / 7);
+            case "months", "month", "m" -> BigDecimal.valueOf(period.toTotalMonths());
+            case "years", "year", "y" -> BigDecimal.valueOf(period.getYears());
+            default -> throw new IllegalArgumentException(
+                    "datediff: unsupported unit '" + unit + "'. Supported: days, weeks, months, years (and short forms d/w/m/y).");
+        };
+    }
 
+    /**
+     * Compute age in years from a birth date. Accepts ISO {@code yyyy-MM-dd} or any string the
+     * shared {@link #parseDate(Object)} helper recognises. With one argument, the reference date
+     * is "today"; with two, the caller supplies the reference date (useful for "age at policy
+     * inception").
+     */
+    private Object evaluateCalculateAge(Object[] args) {
+        if (args.length < 1 || args.length > 2) {
+            throw new IllegalArgumentException(
+                    "calculate_age(birthDate[, asOfDate]) takes 1 or 2 arguments, got " + args.length);
+        }
+        java.time.LocalDate birth = parseDate(args[0]);
+        if (birth == null) {
+            throw new IllegalArgumentException("calculate_age: unparseable birth date '" + args[0] + "'");
+        }
+        java.time.LocalDate asOf = args.length == 2 ? parseDate(args[1]) : java.time.LocalDate.now();
+        if (asOf == null) {
+            throw new IllegalArgumentException("calculate_age: unparseable reference date '" + args[1] + "'");
+        }
+        return BigDecimal.valueOf(java.time.Period.between(birth, asOf).getYears());
+    }
+
+    /**
+     * Format a date using a {@link java.time.format.DateTimeFormatter} pattern.
+     * Default pattern is ISO {@code yyyy-MM-dd}.
+     */
+    private Object evaluateFormatDate(Object[] args) {
+        if (args.length < 1 || args.length > 2) {
+            throw new IllegalArgumentException(
+                    "format_date(date[, pattern]) takes 1 or 2 arguments, got " + args.length);
+        }
+        java.time.LocalDate date = parseDate(args[0]);
+        if (date == null) {
+            throw new IllegalArgumentException("format_date: unparseable date '" + args[0] + "'");
+        }
+        String pattern = args.length == 2 ? toString(args[1]) : "yyyy-MM-dd";
         try {
-            // Parse the dates
-            java.time.LocalDate date1 = parseDate(args[0]);
-            java.time.LocalDate date2 = parseDate(args[1]);
-
-            if (date1 == null || date2 == null) {
-                log.warn("Invalid date format in datediff: {} or {}", args[0], args[1]);
-                return null;
-            }
-
-            // Parse the unit (default to days)
-            String unit = args.length > 2 ? toString(args[2]).toLowerCase() : "days";
-
-            java.time.Period period = java.time.Period.between(date1, date2);
-            long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(date1, date2);
-
-            return switch (unit) {
-                case "days", "day", "d" -> BigDecimal.valueOf(daysDiff);
-                case "weeks", "week", "w" -> BigDecimal.valueOf(daysDiff / 7);
-                case "months", "month", "m" -> BigDecimal.valueOf(period.toTotalMonths());
-                case "years", "year", "y" -> BigDecimal.valueOf(period.getYears());
-                default -> {
-                    log.warn("Unsupported date unit in datediff: {}. Supported units: days, weeks, months, years", unit);
-                    yield null;
-                }
-            };
-
-        } catch (Exception e) {
-            log.warn("Error in datediff function: {}", e.getMessage());
-            return null;
+            return date.format(java.time.format.DateTimeFormatter.ofPattern(pattern));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("format_date: invalid pattern '" + pattern + "': " + e.getMessage(), e);
         }
     }
 
@@ -1003,6 +996,44 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
         return toBoolean(args[0]);
     }
 
+    /**
+     * Return the first non-null argument. Common pattern for default values:
+     * {@code coalesce(user.preferred_name, user.legal_name, "Unknown")}.
+     * <p>
+     * Note: arguments are evaluated eagerly (the parser already resolved them before
+     * the function was called); this differs from short-circuit semantics in some other
+     * DSLs but matches the rest of this engine's function-call evaluation model.
+     */
+    private Object evaluateCoalesce(Object[] args) {
+        if (args.length == 0) {
+            throw new IllegalArgumentException("coalesce(...) requires at least one argument");
+        }
+        for (Object arg : args) {
+            if (arg != null) {
+                return arg;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Inline conditional expression: {@code if_else(condition, thenValue, elseValue)}.
+     * <p>
+     * Equivalent to a ternary operator inside an expression context (such as a
+     * {@code calculate} or {@code run} action), avoiding a full {@code if/then/else}
+     * action block when you only need to pick between two values.
+     * <p>
+     * Note: both branches are evaluated up-front, matching the eager-argument contract
+     * of the rest of the function-call layer.
+     */
+    private Object evaluateIfElse(Object[] args) {
+        if (args.length != 3) {
+            throw new IllegalArgumentException(
+                    "if_else(condition, then, else) requires exactly 3 arguments; got " + args.length);
+        }
+        return toBoolean(args[0]) ? args[1] : args[2];
+    }
+
     // Property access implementation
 
     private Object evaluatePropertyAccess(Object object, String propertyPath) {
@@ -1034,21 +1065,41 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
 
     private Object getPropertyValue(Object object, String propertyName) {
+        // Map-valued objects: property access is a key lookup. Missing key -> null
+        // (legitimate "missing value" semantics, mirrored by json_get).
+        if (object instanceof java.util.Map) {
+            return ((java.util.Map<?, ?>) object).get(propertyName);
+        }
+        // Bean access via reflection: try get<Prop> then is<Prop>; throw if neither exists.
+        // A missing getter is almost always a typo in the rule, not a legitimate runtime
+        // nullable, so surface it rather than masking it as a null value.
+        String suffix = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        Class<?> cls = object.getClass();
+        java.lang.reflect.Method accessor = findAccessor(cls, "get" + suffix);
+        if (accessor == null) {
+            accessor = findAccessor(cls, "is" + suffix);
+        }
+        if (accessor == null) {
+            throw new IllegalArgumentException(
+                    "No accessor 'get" + suffix + "' or 'is" + suffix + "' on " + cls.getName()
+                            + "; check that property '" + propertyName + "' exists on the bean");
+        }
         try {
-            // Try getter method first
-            String getterName = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-            java.lang.reflect.Method getter = object.getClass().getMethod(getterName);
-            return getter.invoke(object);
-        } catch (Exception e) {
-            try {
-                // Try boolean getter
-                String booleanGetterName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-                java.lang.reflect.Method booleanGetter = object.getClass().getMethod(booleanGetterName);
-                return booleanGetter.invoke(object);
-            } catch (Exception e2) {
-                log.warn("Could not access property '{}' on object of type {}", propertyName, object.getClass().getSimpleName());
-                return null;
-            }
+            return accessor.invoke(object);
+        } catch (ReflectiveOperationException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            throw new IllegalArgumentException(
+                    "Failed to read property '" + propertyName + "' on " + cls.getName()
+                            + ": " + cause.getMessage(), cause);
+        }
+    }
+
+    private static java.lang.reflect.Method findAccessor(Class<?> cls, String name) {
+        try {
+            java.lang.reflect.Method m = cls.getMethod(name);
+            return m.getParameterCount() == 0 ? m : null;
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 
@@ -1377,9 +1428,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             }
 
             return result;
-        } catch (Exception e) {
-            log.warn("Error calculating loan payment: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_loan_payment", e);
         }
     }
 
@@ -1398,9 +1448,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             BigDecimal compoundFactor = onePlusRate.pow(totalPeriods);
 
             return principal.multiply(compoundFactor);
-        } catch (Exception e) {
-            log.warn("Error calculating compound interest: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_compound_interest", e);
         }
     }
 
@@ -1424,9 +1473,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             result.put("principal", principal);
 
             return result;
-        } catch (Exception e) {
-            log.warn("Error calculating amortization: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_amortization", e);
         }
     }
 
@@ -1440,9 +1488,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             // Return as decimal ratio (0.333), not percentage (33.33)
             return monthlyDebt.divide(monthlyIncome, 4, RoundingMode.HALF_UP);
-        } catch (Exception e) {
-            log.warn("Error calculating debt-to-income ratio: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("debt_to_income_ratio", e);
         }
     }
 
@@ -1456,9 +1503,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             return currentBalance.divide(creditLimit, 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-        } catch (Exception e) {
-            log.warn("Error calculating credit utilization: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("credit_utilization", e);
         }
     }
 
@@ -1472,9 +1518,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             return loanAmount.divide(propertyValue, 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-        } catch (Exception e) {
-            log.warn("Error calculating loan-to-value ratio: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("loan_to_value", e);
         }
     }
 
@@ -1496,9 +1541,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             return annualInterest.divide(avgBalance, 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-        } catch (Exception e) {
-            log.warn("Error calculating APR: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_apr", e);
         }
     }
 
@@ -1528,9 +1572,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             if (scaledScore.compareTo(BigDecimal.valueOf(850)) > 0) return 850;
 
             return scaledScore.intValue();
-        } catch (Exception e) {
-            log.warn("Error calculating credit score: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_credit_score", e);
         }
     }
 
@@ -1570,9 +1613,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             }
 
             return riskScore;
-        } catch (Exception e) {
-            log.warn("Error calculating risk score: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_risk_score", e);
         }
     }
 
@@ -1601,9 +1643,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             if (score.compareTo(BigDecimal.valueOf(100)) > 0) return 100;
 
             return score;
-        } catch (Exception e) {
-            log.warn("Error calculating payment history score: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("payment_history_score", e);
         }
     }
 
@@ -1653,9 +1694,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             }
 
             return formatter.format(amount);
-        } catch (Exception e) {
-            log.warn("Error formatting currency: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("format_currency", e);
         }
     }
 
@@ -1670,9 +1710,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             formatter.setMinimumFractionDigits(decimals);
 
             return formatter.format(value.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP));
-        } catch (Exception e) {
-            log.warn("Error formatting percentage: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("format_percentage", e);
         }
     }
 
@@ -1715,9 +1754,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             double distance = R * c;
 
             return BigDecimal.valueOf(distance);
-        } catch (Exception e) {
-            log.warn("Error calculating distance: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("distance_between", e);
         }
     }
 
@@ -1739,50 +1777,50 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             }
 
             return null;
-        } catch (Exception e) {
-            log.warn("Error extracting hour from timestamp: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("time_hour", e);
         }
     }
 
     private Object isValid(Object[] args) {
-        if (args.length < 2) return false;
-        try {
-            Object value = args[0];
-            String validationType = toString(args[1]);
-
-            return switch (validationType.toLowerCase()) {
-                case "email", "email_format" -> isEmail(value);
-                case "phone", "phone_format" -> isPhone(value);
-                case "ssn", "ssn_format" -> isSSN(value);
-                case "credit_score" -> isCreditScore(value);
-                case "account_number" -> isAccountNumber(value);
-                case "routing_number" -> isRoutingNumber(value);
-                case "numeric" -> isNumeric(value);
-                case "date" -> isDate(value);
-                case "positive" -> isPositive(value);
-                case "negative" -> isNegative(value);
-                case "currency" -> isCurrency(value);
-                case "percentage" -> isPercentage(value);
-                default -> false;
-            };
-        } catch (Exception e) {
-            log.warn("Error in validation: {}", e.getMessage());
-            return false;
+        if (args.length < 2) {
+            throw new IllegalArgumentException(
+                    "is_valid(value, type) requires 2 arguments (value, type); got " + args.length);
         }
+        Object value = args[0];
+        String validationType = toString(args[1]);
+        return switch (validationType.toLowerCase()) {
+            case "email", "email_format" -> isEmail(value);
+            case "phone", "phone_format" -> isPhone(value);
+            case "ssn", "ssn_format" -> isSSN(value);
+            case "credit_score" -> isCreditScore(value);
+            case "account_number" -> isAccountNumber(value);
+            case "routing_number" -> isRoutingNumber(value);
+            case "numeric" -> isNumeric(value);
+            case "date" -> isDate(value);
+            case "positive" -> isPositive(value);
+            case "negative" -> isNegative(value);
+            case "currency" -> isCurrency(value);
+            case "percentage" -> isPercentage(value);
+            default -> throw new IllegalArgumentException(
+                    "is_valid: unknown validation type '" + validationType + "'. "
+                            + "Known types: email, phone, ssn, credit_score, account_number, "
+                            + "routing_number, numeric, date, positive, negative, currency, percentage.");
+        };
     }
 
     private Object inRange(Object[] args) {
-        if (args.length < 3) return false;
+        if (args.length < 3) {
+            throw new IllegalArgumentException(
+                    "is_in_range(value, low, high) / in_range(...) requires 3 arguments; got " + args.length);
+        }
         try {
             BigDecimal value = toNumber(args[0]);
             BigDecimal min = toNumber(args[1]);
             BigDecimal max = toNumber(args[2]);
-
             return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
-        } catch (Exception e) {
-            log.warn("Error checking range: {}", e.getMessage());
-            return false;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("in_range", e);
         }
     }
 
@@ -1896,9 +1934,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             BigDecimal ratio = totalDebt.divide(totalIncome, 4, RoundingMode.HALF_UP);
             return ratio.multiply(BigDecimal.valueOf(100)); // Return as percentage
-        } catch (Exception e) {
-            log.warn("Error calculating debt ratio: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_debt_ratio", e);
         }
     }
 
@@ -1915,9 +1952,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
             BigDecimal ltv = loanAmount.divide(propertyValue, 4, RoundingMode.HALF_UP);
             return ltv.multiply(BigDecimal.valueOf(100)); // Return as percentage
-        } catch (Exception e) {
-            log.warn("Error calculating LTV: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_ltv", e);
         }
     }
 
@@ -1956,9 +1992,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
             }
 
             return schedule;
-        } catch (Exception e) {
-            log.warn("Error calculating payment schedule: {}", e.getMessage());
-            return null;
+        } catch (RuntimeException e) {
+            throw wrapFunctionError("calculate_payment_schedule", e);
         }
     }
 
@@ -2291,7 +2326,8 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
         try {
             return Long.parseLong(value.toString());
         } catch (NumberFormatException e) {
-            return null;
+            throw new IllegalArgumentException(
+                    "Cannot convert '" + value + "' to a long; expected integer-like input", e);
         }
     }
 }

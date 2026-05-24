@@ -13,7 +13,7 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine</artifactId>
-    <version>26.05.07</version>
+    <version>26.05.08</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Rule Engine Library</name>

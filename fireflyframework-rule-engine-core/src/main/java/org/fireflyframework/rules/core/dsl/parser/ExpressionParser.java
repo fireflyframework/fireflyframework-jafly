@@ -291,8 +291,15 @@ public class ExpressionParser extends BaseParser {
                 indexExpression = parseExpression();
                 consume(TokenType.RBRACKET, "Expected ']' after array index");
             }
-            
-            return new VariableExpression(identifier.getLocation(), identifier.getLexeme(), propertyPath.isEmpty() ? null : propertyPath);
+
+            VariableExpression variable = new VariableExpression(
+                    identifier.getLocation(),
+                    identifier.getLexeme(),
+                    propertyPath.isEmpty() ? null : propertyPath);
+            if (indexExpression != null) {
+                variable.setIndexExpression(indexExpression);
+            }
+            return variable;
         }
         
         if (match(TokenType.LPAREN)) {

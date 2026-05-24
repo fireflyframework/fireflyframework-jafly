@@ -55,6 +55,10 @@ public class ASTException extends FireflyException {
     public ASTException(String message) {
         this(message, null, "AST_GENERIC", List.of(), null);
     }
+
+    public ASTException(String message, Throwable cause) {
+        this(message, null, "AST_GENERIC", List.of(), cause);
+    }
     
     /**
      * Get a detailed error message with location and suggestions

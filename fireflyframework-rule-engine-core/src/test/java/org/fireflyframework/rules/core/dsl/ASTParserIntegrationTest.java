@@ -238,13 +238,26 @@ class ASTParserIntegrationTest {
         }
         
         @Test
-        @DisplayName("Should parse and execute CALL actions")
-        void testCallAction() {
+        @DisplayName("Should parse and execute CALL actions for known built-in functions")
+        void testCallActionWithBuiltin() {
+            // `log` is a built-in action function; `validateCredit` (the previous test's name)
+            // does not exist, and after the silent-null-on-unknown-function fix the executor
+            // now throws -- intentional behaviour to surface typos.
             assertThatCode(() -> {
-                Action action = dslParser.parseAction("call validateCredit with [score, income]");
+                Action action = dslParser.parseAction("call log with [\"score check\", \"INFO\"]");
                 ActionExecutor executor = new ActionExecutor(context);
                 action.accept(executor);
             }).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("CALL action with unknown function name surfaces a typed error")
+        void testCallActionUnknownFunctionThrows() {
+            Action action = dslParser.parseAction("call validateCredit with [score, income]");
+            ActionExecutor executor = new ActionExecutor(context);
+            assertThatThrownBy(() -> action.accept(executor))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("validateCredit");
         }
     }
     

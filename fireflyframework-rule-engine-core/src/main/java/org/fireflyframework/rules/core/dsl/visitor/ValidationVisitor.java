@@ -188,50 +188,6 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
         return errors;
     }
     
-    @Override
-    public List<ValidationError> visitArithmeticExpression(ArithmeticExpression node) {
-        List<ValidationError> errors = new ArrayList<>();
-        
-        // Validate operands
-        for (Expression operand : node.getOperands()) {
-            errors.addAll(operand.accept(this));
-
-            // Only flag as error if we have definite non-numeric types
-            if (isDefinitelyNonNumeric(operand.getExpressionType())) {
-                errors.add(new ValidationError(
-                    "Arithmetic operations require numeric operands",
-                    node.getLocation(),
-                    "VAL_009"
-                ));
-            }
-        }
-        
-        // Validate operand count
-        int operandCount = node.getOperandCount();
-        int minOperands = node.getOperation().getMinOperands();
-        int maxOperands = node.getOperation().getMaxOperands();
-        
-        if (operandCount < minOperands) {
-            errors.add(new ValidationError(
-                String.format("Operation %s requires at least %d operands, got %d",
-                    node.getOperation().getSymbol(), minOperands, operandCount),
-                node.getLocation(),
-                "VAL_010"
-            ));
-        }
-        
-        if (operandCount > maxOperands) {
-            errors.add(new ValidationError(
-                String.format("Operation %s allows at most %d operands, got %d",
-                    node.getOperation().getSymbol(), maxOperands, operandCount),
-                node.getLocation(),
-                "VAL_011"
-            ));
-        }
-        
-        return errors;
-    }
-    
     // Condition visitors
     
     @Override
@@ -302,25 +258,6 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
     }
     
     // Action visitors
-    
-    @Override
-    public List<ValidationError> visitAssignmentAction(AssignmentAction node) {
-        List<ValidationError> errors = new ArrayList<>();
-        
-        // Validate value expression
-        errors.addAll(node.getValue().accept(this));
-        
-        // Variable name validation (basic check)
-        if (node.getVariableName() == null || node.getVariableName().trim().isEmpty()) {
-            errors.add(new ValidationError(
-                "Assignment action requires a variable name",
-                node.getLocation(),
-                "VAL_015"
-            ));
-        }
-        
-        return errors;
-    }
     
     @Override
     public List<ValidationError> visitFunctionCallAction(FunctionCallAction node) {
@@ -417,17 +354,6 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
         }
         if (expression instanceof UnaryExpression unaryExpr) {
             return containsNonMathematicalOperation(unaryExpr.getOperand());
-        }
-        if (expression instanceof ArithmeticExpression arithmeticExpr) {
-            // Check all operands in the arithmetic expression
-            if (arithmeticExpr.getOperands() != null) {
-                for (Expression operand : arithmeticExpr.getOperands()) {
-                    if (containsNonMathematicalOperation(operand)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
         // LiteralExpression and VariableExpression are allowed
         return false;

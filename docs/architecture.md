@@ -1158,16 +1158,37 @@ The `RestCallServiceImpl` includes comprehensive URL validation before executing
 - **Timing-safe comparison**: Hash verification uses `hmac.compare_digest()` to prevent timing attacks
 
 ### 4. Safe Code Evaluation
-- **No unsafe reflection**: `ExpressionEvaluator.getPropertyValue()` uses public getter methods only; `field.setAccessible(true)` is not used
-- **Division/modulo by zero**: `ExpressionEvaluator` and `ActionExecutor` throw `ArithmeticException` instead of returning null or silently failing
-- **Short-circuit evaluation**: AND/OR operators use lazy evaluation to prevent unnecessary side effects
-- **Thread-safe code generation**: `PythonCodeGenerator` uses `ThreadLocal` for mutable state to ensure safe concurrent compilation
+- **No unsafe reflection**: `ExpressionEvaluator.getPropertyValue()` uses public getter methods only (`getX` / `isX`); `field.setAccessible(true)` is never called. A missing getter throws `IllegalArgumentException` with the class + property name rather than silently returning null.
+- **Division/modulo by zero**: `ExpressionEvaluator` and `ActionExecutor` throw `ArithmeticException` rather than returning null or silently failing.
+- **Short-circuit evaluation**: AND/OR operators use lazy evaluation to prevent unnecessary side effects.
+- **Thread-safe code generation**: `PythonCodeGenerator` uses `ThreadLocal` for mutable state to ensure safe concurrent compilation.
 
-### 5. Error Handling
-- Graceful degradation for missing constants
-- Circuit breaker pattern for external dependencies
-- Comprehensive logging for audit trails
-- Null-safe audit context extraction (defaults to "system" when no web exchange is available)
+### 5. Error Handling (Fail-Loud Contract)
+
+The engine is intentionally non-silent. Errors propagate to the rule's `success=false`
+result with a precise diagnostic message rather than being swallowed and producing a
+plausible-but-wrong output.
+
+| Source of failure                          | Behaviour                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| Unknown function name                      | `IllegalArgumentException` -> `success=false`                            |
+| Non-numeric string in arithmetic           | `IllegalArgumentException` naming the operand                            |
+| Bad regex pattern in `matches`             | `IllegalArgumentException` naming the pattern                            |
+| Missing bean property                      | `IllegalArgumentException` naming class + property                       |
+| Unknown `is_valid` validation type         | `IllegalArgumentException` listing supported types                       |
+| Unknown `dateadd`/`datediff` unit          | `IllegalArgumentException` listing supported units                       |
+| Action throws mid-execution                | Rule reports `success=false` with action index + debug string + cause    |
+| Condition throws mid-evaluation            | Rule reports `success=false` (does not silently flip to the else branch) |
+| `circuit_breaker` action triggered         | Rule reports `success=true` with `circuitBreakerTriggered=true`          |
+| Required constant missing in database      | `success=false` listing the missing codes                                |
+| REST function HTTP failure                 | Structured error map `{success:false, error:true, message:...}` (intentional chain-friendly contract; rules can branch on `response.success`) |
+| Cache read failure                         | Treated as cache miss; logged via `doOnError`                            |
+
+Surrounding mechanisms:
+- Graceful degradation for missing **optional** constants (with explicit `defaultValue`).
+- Circuit breaker pattern for external dependencies.
+- Comprehensive audit trail (every evaluation logged with correlation ID).
+- Null-safe audit context extraction (defaults to "system" when no web exchange is available).
 
 ### 6. Cache Integrity
 - Cache invalidation on all CRUD operations (create, update, delete) for rule definitions

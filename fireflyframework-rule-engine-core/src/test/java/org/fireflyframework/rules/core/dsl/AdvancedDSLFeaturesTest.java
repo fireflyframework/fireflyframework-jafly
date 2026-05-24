@@ -30,6 +30,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -499,47 +500,73 @@ public class AdvancedDSLFeaturesTest {
         }
 
         @Test
-        @DisplayName("Test date functions error handling")
-        void testDateFunctionsErrorHandling() {
+        @DisplayName("dateadd succeeds for valid dates")
+        void testDateAddValid() {
             String yamlRule = """
-                name: "Date Error Handling Test"
-                description: "Test date functions with invalid inputs"
-
+                name: "Date Add Happy Path"
                 inputs:
                   - validDate
-                  - invalidDate
-
-                when:
-                  - validDate is_not_null
 
                 then:
                   - run validResult as dateadd(validDate, 1, "days")
-                  - run invalidResult as dateadd(invalidDate, 1, "days")
-                  - run invalidUnit as dateadd(validDate, 1, "invalid_unit")
-                  - run diffResult as datediff(validDate, invalidDate, "days")
                   - set result to "COMPLETED"
 
                 output:
                   validResult: text
-                  invalidResult: text
-                  invalidUnit: text
-                  diffResult: number
                   result: text
                 """;
 
-            Map<String, Object> inputData = Map.of(
-                "validDate", "2024-01-01",
-                "invalidDate", "not-a-date"
-            );
-
-            ASTRulesEvaluationResult result = evaluationEngine.evaluateRules(yamlRule, inputData);
+            ASTRulesEvaluationResult result = evaluationEngine.evaluateRules(
+                    yamlRule, Map.of("validDate", "2024-01-01"));
 
             assertTrue(result.isSuccess());
             assertEquals("2024-01-02", result.getOutputData().get("validResult"));
-            assertNull(result.getOutputData().get("invalidResult"));
-            assertNull(result.getOutputData().get("invalidUnit"));
-            assertNull(result.getOutputData().get("diffResult"));
             assertEquals("COMPLETED", result.getOutputData().get("result"));
+        }
+
+        @Test
+        @DisplayName("dateadd surfaces unparseable dates as a clean rule failure")
+        void testDateAddInvalidDateFailsLoud() {
+            String yamlRule = """
+                name: "Date Add Invalid"
+                inputs:
+                  - badDate
+
+                then:
+                  - run result as dateadd(badDate, 1, "days")
+
+                output:
+                  result: text
+                """;
+
+            ASTRulesEvaluationResult result = evaluationEngine.evaluateRules(
+                    yamlRule, Map.of("badDate", "not-a-date"));
+
+            assertFalse(result.isSuccess());
+            assertThat(result.getError()).contains("dateadd");
+        }
+
+        @Test
+        @DisplayName("dateadd surfaces unknown units as a clean rule failure")
+        void testDateAddInvalidUnitFailsLoud() {
+            String yamlRule = """
+                name: "Date Add Invalid Unit"
+                inputs:
+                  - validDate
+
+                then:
+                  - run result as dateadd(validDate, 1, "invalid_unit")
+
+                output:
+                  result: text
+                """;
+
+            ASTRulesEvaluationResult result = evaluationEngine.evaluateRules(
+                    yamlRule, Map.of("validDate", "2024-01-01"));
+
+            assertFalse(result.isSuccess());
+            assertThat(result.getError()).contains("dateadd");
+            assertThat(result.getError()).contains("invalid_unit");
         }
 
         @Test

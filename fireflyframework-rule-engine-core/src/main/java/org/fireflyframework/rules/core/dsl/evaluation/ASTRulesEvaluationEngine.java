@@ -23,6 +23,7 @@ import org.fireflyframework.rules.core.dsl.condition.Condition;
 import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
 import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
 import org.fireflyframework.rules.core.dsl.expression.*;
+import org.fireflyframework.rules.core.dsl.function.CustomFunctionRegistry;
 import org.fireflyframework.rules.core.dsl.model.ASTRulesDSL;
 import org.fireflyframework.rules.core.dsl.parser.ASTRulesDSLParser;
 import org.fireflyframework.rules.core.dsl.visitor.ActionExecutor;
@@ -39,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,40 +57,64 @@ public class ASTRulesEvaluationEngine {
     private final ConstantService constantService;
     private final RestCallService restCallService;
     private final JsonPathService jsonPathService;
+    private final CustomFunctionRegistry customFunctions;
 
     /**
-     * Primary constructor for Spring dependency injection
-     * RestCallService and JsonPathService are optional and will use defaults if not provided
+     * Primary constructor for Spring dependency injection.
+     * <p>
+     * {@code restCallService}, {@code jsonPathService}, and {@code customFunctions} are
+     * optional. When absent, REST/JSON built-ins fall back to internal default implementations
+     * and no user-registered functions are available.
      */
     @Autowired
     public ASTRulesEvaluationEngine(ASTRulesDSLParser parser,
                                    ConstantService constantService,
                                    @Autowired(required = false) RestCallService restCallService,
-                                   @Autowired(required = false) JsonPathService jsonPathService) {
+                                   @Autowired(required = false) JsonPathService jsonPathService,
+                                   @Autowired(required = false) CustomFunctionRegistry customFunctions) {
         this.parser = Objects.requireNonNull(parser, "ASTRulesDSLParser cannot be null");
         this.constantService = Objects.requireNonNull(constantService, "ConstantService cannot be null");
         this.restCallService = restCallService != null ? restCallService : new RestCallServiceImpl();
         this.jsonPathService = jsonPathService != null ? jsonPathService : new JsonPathServiceImpl();
+        this.customFunctions = customFunctions;
     }
 
     /**
-     * Constructor with default REST and JSON services (for testing)
+     * Test-friendly constructor with default REST/JSON services and no custom function registry.
      */
     public ASTRulesEvaluationEngine(ASTRulesDSLParser parser, ConstantService constantService) {
         this.parser = Objects.requireNonNull(parser, "ASTRulesDSLParser cannot be null");
         this.constantService = Objects.requireNonNull(constantService, "ConstantService cannot be null");
         this.restCallService = new RestCallServiceImpl();
         this.jsonPathService = new JsonPathServiceImpl();
+        this.customFunctions = null;
+    }
+
+    /**
+     * Test-friendly 4-arg constructor (parser, constantService, restCallService, jsonPathService)
+     * preserved for backward compatibility with existing tests. Delegates to the 5-arg form with
+     * a {@code null} custom function registry.
+     */
+    public ASTRulesEvaluationEngine(ASTRulesDSLParser parser,
+                                    ConstantService constantService,
+                                    RestCallService restCallService,
+                                    JsonPathService jsonPathService) {
+        this(parser, constantService, restCallService, jsonPathService, null);
     }
     
     /**
-     * Evaluate rules against the provided input data
+     * Evaluate rules against the provided input data.
+     * <p>
+     * The visitor-based evaluator is synchronous and may transitively block (e.g., built-in
+     * REST/JSON functions). To avoid stalling the Netty event loop, the evaluation step is
+     * scheduled on {@code Schedulers.boundedElastic()} which is designed for blocking work.
      */
     public Mono<ASTRulesEvaluationResult> evaluateRulesReactive(String rulesDefinition, Map<String, Object> inputData) {
         long startTime = System.currentTimeMillis();
         return parser.parseRulesReactive(rulesDefinition)
                 .flatMap(rulesDSL -> createEvaluationContextReactive(rulesDSL, inputData)
-                        .map(context -> evaluateRules(rulesDSL, context)))
+                        .flatMap(context -> Mono.fromCallable(() -> evaluateRules(rulesDSL, context))
+                                .subscribeOn(Schedulers.boundedElastic())))
                 .onErrorResume(error -> {
                     long executionTime = System.currentTimeMillis() - startTime;
                     JsonLogger.error(log, "Rules evaluation failed", error);
@@ -113,12 +139,14 @@ public class ASTRulesEvaluationEngine {
     }
     
     /**
-     * Evaluate a parsed ASTRulesDSL against the provided input data
+     * Evaluate a parsed ASTRulesDSL against the provided input data.
+     * Same scheduling guarantees as {@link #evaluateRulesReactive(String, Map)}.
      */
     public Mono<ASTRulesEvaluationResult> evaluateRulesReactive(ASTRulesDSL rulesDSL, Map<String, Object> inputData) {
         long startTime = System.currentTimeMillis();
         return createEvaluationContextReactive(rulesDSL, inputData)
-                .map(context -> evaluateRules(rulesDSL, context))
+                .flatMap(context -> Mono.fromCallable(() -> evaluateRules(rulesDSL, context))
+                        .subscribeOn(Schedulers.boundedElastic()))
                 .onErrorResume(error -> {
                     long executionTime = System.currentTimeMillis() - startTime;
                     JsonLogger.error(log, "Rules evaluation failed", error);
@@ -239,21 +267,25 @@ public class ASTRulesEvaluationEngine {
 
         for (int i = 0; i < conditions.size(); i++) {
             Condition condition = conditions.get(i);
+            ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions);
+            Object result;
             try {
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService);
-                Object result = condition.accept(evaluator);
-                boolean boolResult = toBoolean(result);
+                result = condition.accept(evaluator);
+            } catch (RuntimeException e) {
+                // Propagate so the outer evaluateRules() handler reports success=false
+                // with the real cause; swallowing here would silently flip rules to the
+                // else branch and mask authoring or data bugs.
+                throw new RuleEvaluationException(
+                        "Failed to evaluate condition " + (i + 1) + " (" + condition.toDebugString() + "): "
+                                + e.getMessage(), e);
+            }
 
-                JsonLogger.info(log, context.getOperationId(),
-                    String.format("Condition %d evaluation: %s = %s", i + 1, condition.toDebugString(), boolResult));
+            boolean boolResult = toBoolean(result);
+            JsonLogger.info(log, context.getOperationId(),
+                String.format("Condition %d evaluation: %s = %s", i + 1, condition.toDebugString(), boolResult));
 
-                if (!boolResult) {
-                    JsonLogger.info(log, context.getOperationId(), "Condition failed - short-circuiting evaluation");
-                    return false;
-                }
-            } catch (Exception e) {
-                String operationId = context.getOperationId();
-                JsonLogger.error(log, operationId, "Error evaluating condition: " + condition.toDebugString(), e);
+            if (!boolResult) {
+                JsonLogger.info(log, context.getOperationId(), "Condition failed - short-circuiting evaluation");
                 return false;
             }
         }
@@ -278,20 +310,23 @@ public class ASTRulesEvaluationEngine {
                 JsonLogger.info(log, context.getOperationId(),
                     String.format("Executing action %d: %s", i + 1, action.toDebugString()));
 
-                ActionExecutor executor = new ActionExecutor(context, restCallService, jsonPathService);
+                ActionExecutor executor = new ActionExecutor(context, restCallService, jsonPathService, customFunctions);
                 action.accept(executor);
 
                 JsonLogger.info(log, context.getOperationId(),
                     String.format("Action %d completed successfully", i + 1));
             } catch (org.fireflyframework.rules.core.dsl.exception.CircuitBreakerException e) {
-                // Circuit breaker is a controlled stop, not an error
                 JsonLogger.info(log, context.getOperationId(),
                     "Circuit breaker triggered: " + e.getCircuitBreakerMessage() + " - stopping execution");
-                // Re-throw to stop execution immediately
                 throw e;
-            } catch (Exception e) {
-                String operationId = context.getOperationId();
-                JsonLogger.error(log, operationId, "Error executing action: " + action.toDebugString(), e);
+            } catch (RuntimeException e) {
+                // Fail-fast: the previous swallow-and-continue policy let later actions
+                // read variables that the failing action never set, masking the real cause.
+                // The outer evaluateRules() catch converts this into success=false with the
+                // original message preserved.
+                throw new RuleEvaluationException(
+                        "Failed to execute action " + (i + 1) + " (" + action.toDebugString() + "): "
+                                + e.getMessage(), e);
             }
         }
         JsonLogger.info(log, context.getOperationId(), "All actions completed");
@@ -354,29 +389,28 @@ public class ASTRulesEvaluationEngine {
         if (conditionalBlock == null || conditionalBlock.getIfCondition() == null) {
             return false;
         }
-        
+
+        ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions);
+        Object result;
         try {
-            // Evaluate the condition using AST
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService);
-            Object result = conditionalBlock.getIfCondition().accept(evaluator);
-            boolean conditionResult = toBoolean(result);
-            
-            // Execute appropriate action block
-            ASTRulesDSL.ASTActionBlock actionBlock = conditionResult ? 
-                    conditionalBlock.getThenBlock() : 
-                    conditionalBlock.getElseBlock();
-            
-            if (actionBlock != null) {
-                executeActionBlock(actionBlock, context);
-            }
-            
-            return conditionResult;
-            
-        } catch (Exception e) {
-            String operationId = context.getOperationId();
-            JsonLogger.error(log, operationId, "Error evaluating conditional block", e);
-            return false;
+            result = conditionalBlock.getIfCondition().accept(evaluator);
+        } catch (RuntimeException e) {
+            // Propagate so the rule reports the real cause instead of silently falling
+            // through to the else branch.
+            throw new RuleEvaluationException(
+                    "Failed to evaluate conditional block 'if' clause: " + e.getMessage(), e);
         }
+        boolean conditionResult = toBoolean(result);
+
+        ASTRulesDSL.ASTActionBlock actionBlock = conditionResult ?
+                conditionalBlock.getThenBlock() :
+                conditionalBlock.getElseBlock();
+
+        if (actionBlock != null) {
+            executeActionBlock(actionBlock, context);
+        }
+
+        return conditionResult;
     }
     
     /**
@@ -395,7 +429,6 @@ public class ASTRulesEvaluationEngine {
             executeActions(actionBlock.getActions(), context);
         }
         
-        // Handle nested conditional blocks - this was the TODO that's now implemented!
         if (actionBlock.getNestedConditions() != null) {
             evaluateConditionalBlock(actionBlock.getNestedConditions(), context);
         }
@@ -667,12 +700,6 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitAssignmentAction(AssignmentAction node) {
-            node.getValue().accept(this);
-            return null;
-        }
-
-        @Override
         public Void visitCalculateAction(CalculateAction node) {
             node.getExpression().accept(this);
             return null;
@@ -736,16 +763,6 @@ public class ASTRulesEvaluationEngine {
             }
             return null;
         }
-
-        @Override
-        public Void visitArithmeticExpression(ArithmeticExpression node) {
-            if (node.getOperands() != null) {
-                node.getOperands().forEach(operand -> operand.accept(this));
-            }
-            return null;
-        }
-
-
 
         @Override
         public Void visitArithmeticAction(ArithmeticAction node) {

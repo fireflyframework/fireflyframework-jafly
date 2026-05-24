@@ -659,14 +659,6 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitArithmeticExpression(ArithmeticExpression node) {
-            if (node.getOperands() != null) {
-                node.getOperands().forEach(operand -> operand.accept(this));
-            }
-            return null;
-        }
-
-        @Override
         public Void visitComparisonCondition(ComparisonCondition node) {
             if (node.getLeft() != null) node.getLeft().accept(this);
             if (node.getRight() != null) node.getRight().accept(this);
@@ -684,12 +676,6 @@ public class YamlDslValidator {
         @Override
         public Void visitExpressionCondition(ExpressionCondition node) {
             if (node.getExpression() != null) node.getExpression().accept(this);
-            return null;
-        }
-
-        @Override
-        public Void visitAssignmentAction(AssignmentAction node) {
-            if (node.getValue() != null) node.getValue().accept(this);
             return null;
         }
 

@@ -493,23 +493,6 @@ public class PythonCodeGenerator implements ASTVisitor<String> {
     }
 
     @Override
-    public String visitArithmeticExpression(ArithmeticExpression node) {
-        // ArithmeticExpression is a complex expression with multiple operands
-        String operation = node.getOperation().getName();
-        List<String> operands = node.getOperands().stream()
-            .map(operand -> operand.accept(this))
-            .collect(Collectors.toList());
-
-        return switch (operation.toLowerCase()) {
-            case "sum" -> String.format("sum([%s])", String.join(", ", operands));
-            case "average", "avg" -> String.format("statistics.mean([%s])", String.join(", ", operands));
-            case "max" -> String.format("max(%s)", String.join(", ", operands));
-            case "min" -> String.format("min(%s)", String.join(", ", operands));
-            default -> String.format("firefly_%s(%s)", operation, String.join(", ", operands));
-        };
-    }
-
-    @Override
     public String visitJsonPathExpression(JsonPathExpression node) {
         String sourceExpression = node.getSourceExpression().accept(this);
         String jsonPath = "\"" + node.getJsonPath() + "\"";
@@ -614,24 +597,6 @@ public class PythonCodeGenerator implements ASTVisitor<String> {
     }
 
     // Action visitors
-    @Override
-    public String visitAssignmentAction(AssignmentAction node) {
-        String value = node.getValue().accept(this);
-        String varName = sanitizeVariableName(node.getVariableName());
-
-        return switch (node.getOperator()) {
-            case ASSIGN -> String.format("%s['%s'] = %s", CONTEXT_VAR, varName, value);
-            case ADD_ASSIGN -> String.format("%s['%s'] = %s.get('%s', 0) + %s",
-                CONTEXT_VAR, varName, CONTEXT_VAR, varName, value);
-            case SUBTRACT_ASSIGN -> String.format("%s['%s'] = %s.get('%s', 0) - %s",
-                CONTEXT_VAR, varName, CONTEXT_VAR, varName, value);
-            case MULTIPLY_ASSIGN -> String.format("%s['%s'] = %s.get('%s', 1) * %s",
-                CONTEXT_VAR, varName, CONTEXT_VAR, varName, value);
-            case DIVIDE_ASSIGN -> String.format("%s['%s'] = %s.get('%s', 1) / %s",
-                CONTEXT_VAR, varName, CONTEXT_VAR, varName, value);
-        };
-    }
-
     @Override
     public String visitFunctionCallAction(FunctionCallAction node) {
         String functionName = mapFunctionToPython(node.getFunctionName());
@@ -942,9 +907,6 @@ public class PythonCodeGenerator implements ASTVisitor<String> {
             } else if (action instanceof CalculateAction) {
                 CalculateAction calcAction = (CalculateAction) action;
                 setVariables.add(calcAction.getResultVariable());
-            } else if (action instanceof AssignmentAction) {
-                AssignmentAction assignAction = (AssignmentAction) action;
-                setVariables.add(assignAction.getVariableName());
             }
         }
 
@@ -1108,31 +1070,6 @@ public class PythonCodeGenerator implements ASTVisitor<String> {
             case LENGTH_LESS_THAN -> "firefly_length_less_than";
 
             default -> throw new UnsupportedOperationException("Unsupported comparison operator: " + operator);
-        };
-    }
-
-    private String mapArithmeticOperationToPython(ArithmeticOperation operation) {
-        return switch (operation) {
-            // Basic arithmetic
-            case ADD -> "+";
-            case SUBTRACT -> "-";
-            case MULTIPLY -> "*";
-            case DIVIDE -> "/";
-            case MODULO -> "%";
-            case POWER -> "**";
-
-            // Mathematical functions
-            case ABS -> "abs";
-            case MIN -> "min";
-            case MAX -> "max";
-            case ROUND -> "round";
-            case FLOOR -> "math.floor";
-            case CEIL -> "math.ceil";
-            case SQRT -> "math.sqrt";
-            case SUM -> "sum";
-            case AVERAGE -> "firefly_average";
-
-            default -> throw new UnsupportedOperationException("Unsupported arithmetic operation: " + operation);
         };
     }
 

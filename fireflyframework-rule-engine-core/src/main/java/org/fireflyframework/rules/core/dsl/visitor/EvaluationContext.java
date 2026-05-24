@@ -16,61 +16,57 @@
 
 package org.fireflyframework.rules.core.dsl.visitor;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Consolidated context object that holds the state during AST-based rule evaluation.
- * Contains variables, constants, and execution state with full feature support.
- * This replaces both the legacy and AST-specific EvaluationContext classes.
+ * <p>
+ * The three variable maps ({@code inputVariables}, {@code systemConstants},
+ * {@code computedVariables}) are intentionally exposed only through the typed setter
+ * methods on this class -- which validate names -- and getters that return defensive
+ * copies. There are no bulk setters; that prevents callers from substituting an
+ * unvalidated map and silently bypassing the naming-convention guard rails.
+ * <p>
+ * The maps use {@link Collections#synchronizedMap synchronized {@link LinkedHashMap}s}
+ * rather than {@link java.util.concurrent.ConcurrentHashMap} because rule outputs
+ * legitimately include nulls (e.g., {@code json_get} on a missing path); ConcurrentHashMap
+ * rejects null values with an NPE and would mask the assignment as an unrelated runtime
+ * error. Each evaluation owns its own context so the sync overhead is negligible.
  */
-@Data
+@Getter
 @NoArgsConstructor
 public class EvaluationContext {
 
-    /**
-     * Name of the rule being evaluated
-     */
-    private String ruleName;
+    /** Name of the rule being evaluated. */
+    @Setter private String ruleName;
 
-    /**
-     * Operation ID for tracing and logging
-     */
-    private String operationId;
+    /** Operation ID for tracing and logging. */
+    @Setter private String operationId;
 
-    /**
-     * Start time of evaluation (for performance tracking)
-     */
-    private long startTime;
+    /** Start time of evaluation (for performance tracking). */
+    @Setter private long startTime;
 
-    /**
-     * Input variables provided by the controller (runtime values like annualIncome, creditScore)
-     */
-    private Map<String, Object> inputVariables = new ConcurrentHashMap<>();
+    /** Input variables provided by the controller (e.g., {@code annualIncome}, {@code creditScore}). */
+    private final Map<String, Object> inputVariables = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    /**
-     * System constants loaded from database (system-wide values like MINIMUM_CREDIT_SCORE, MAX_LOAN_AMOUNT)
-     */
-    private Map<String, Object> systemConstants = new ConcurrentHashMap<>();
+    /** System constants loaded from database (e.g., {@code MIN_CREDIT_SCORE}, {@code MAX_LOAN_AMOUNT}). */
+    private final Map<String, Object> systemConstants = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    /**
-     * Computed variables created during rule evaluation (like loan_to_income_ratio, final_score)
-     */
-    private Map<String, Object> computedVariables = new ConcurrentHashMap<>();
+    /** Computed variables created during rule evaluation (e.g., {@code debt_to_income}, {@code final_score}). */
+    private final Map<String, Object> computedVariables = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    /**
-     * Whether the circuit breaker has been triggered
-     */
-    private boolean circuitBreakerTriggered = false;
+    /** Whether the circuit breaker has been triggered. */
+    @Setter private boolean circuitBreakerTriggered = false;
 
-    /**
-     * Message associated with circuit breaker trigger
-     */
-    private String circuitBreakerMessage;
+    /** Message associated with circuit breaker trigger. */
+    @Setter private String circuitBreakerMessage;
 
     /**
      * Constructor with operation ID
@@ -205,7 +201,7 @@ public class EvaluationContext {
      * @return map of input variables
      */
     public Map<String, Object> getInputVariables() {
-        return new ConcurrentHashMap<>(inputVariables);
+        synchronized (inputVariables) { return new LinkedHashMap<>(inputVariables); }
     }
 
     /**
@@ -214,7 +210,7 @@ public class EvaluationContext {
      * @return map of computed variables
      */
     public Map<String, Object> getComputedVariables() {
-        return new ConcurrentHashMap<>(computedVariables);
+        synchronized (computedVariables) { return new LinkedHashMap<>(computedVariables); }
     }
 
     /**
@@ -223,7 +219,7 @@ public class EvaluationContext {
      * @return map of system constants
      */
     public Map<String, Object> getSystemConstants() {
-        return new ConcurrentHashMap<>(systemConstants);
+        synchronized (systemConstants) { return new LinkedHashMap<>(systemConstants); }
     }
 
     /**
@@ -239,7 +235,7 @@ public class EvaluationContext {
      * Get all variables (including computed ones) for AST compatibility
      */
     public Map<String, Object> getAllVariables() {
-        Map<String, Object> all = new ConcurrentHashMap<>();
+        Map<String, Object> all = new LinkedHashMap<>();
         all.putAll(systemConstants);
         all.putAll(inputVariables);
         all.putAll(computedVariables);

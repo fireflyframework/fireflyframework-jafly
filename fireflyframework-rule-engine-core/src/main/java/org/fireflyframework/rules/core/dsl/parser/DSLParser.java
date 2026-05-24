@@ -187,22 +187,4 @@ public class DSLParser {
         return lexer.tokenize();
     }
     
-    /**
-     * Validate that a parsed AST node is well-formed
-     */
-    public void validateAST(Object astNode) {
-        if (astNode == null) {
-            throw new ParseException(
-                "AST node cannot be null",
-                null,
-                "PARSE_VALIDATION_001"
-            );
-        }
-        
-        // Additional validation logic can be added here
-        // For example, checking that all required fields are present,
-        // that variable references are valid, etc.
-        
-        log.debug("AST validation passed for node type: {}", astNode.getClass().getSimpleName());
-    }
 }

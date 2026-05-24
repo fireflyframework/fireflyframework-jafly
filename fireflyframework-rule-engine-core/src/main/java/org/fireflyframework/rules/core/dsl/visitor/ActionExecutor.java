@@ -22,6 +22,7 @@ import org.fireflyframework.rules.core.dsl.condition.ComparisonCondition;
 import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
 import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
 import org.fireflyframework.rules.core.dsl.expression.*;
+import org.fireflyframework.rules.core.dsl.function.CustomFunctionRegistry;
 import org.fireflyframework.rules.core.services.JsonPathService;
 import org.fireflyframework.rules.core.services.RestCallService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,69 +38,22 @@ public class ActionExecutor implements ASTVisitor<Void> {
     private final ExpressionEvaluator expressionEvaluator;
 
     public ActionExecutor(EvaluationContext context) {
-        this.context = context;
-        this.expressionEvaluator = new ExpressionEvaluator(context);
+        this(context, null, null, null);
     }
 
     public ActionExecutor(EvaluationContext context, RestCallService restCallService, JsonPathService jsonPathService) {
+        this(context, restCallService, jsonPathService, null);
+    }
+
+    public ActionExecutor(EvaluationContext context,
+                          RestCallService restCallService,
+                          JsonPathService jsonPathService,
+                          CustomFunctionRegistry customFunctions) {
         this.context = context;
-        this.expressionEvaluator = new ExpressionEvaluator(context, restCallService, jsonPathService);
+        this.expressionEvaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions);
     }
     
     // Action visitors
-    
-    @Override
-    public Void visitAssignmentAction(AssignmentAction node) {
-        Object value = node.getValue().accept(expressionEvaluator);
-        
-        switch (node.getOperator()) {
-            case ASSIGN -> context.setComputedVariable(node.getVariableName(), value);
-            case ADD_ASSIGN -> {
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    java.math.BigDecimal current = toBigDecimal(currentValue);
-                    java.math.BigDecimal addValue = toBigDecimal(value);
-                    context.setComputedVariable(node.getVariableName(), current.add(addValue));
-                } else {
-                    String currentStr = currentValue != null ? currentValue.toString() : "";
-                    String valueStr = value != null ? value.toString() : "";
-                    context.setComputedVariable(node.getVariableName(), currentStr + valueStr);
-                }
-            }
-            case SUBTRACT_ASSIGN -> {
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    java.math.BigDecimal current = toBigDecimal(currentValue);
-                    java.math.BigDecimal subtractValue = toBigDecimal(value);
-                    context.setComputedVariable(node.getVariableName(), current.subtract(subtractValue));
-                }
-            }
-            case MULTIPLY_ASSIGN -> {
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    java.math.BigDecimal current = toBigDecimal(currentValue);
-                    java.math.BigDecimal multiplyValue = toBigDecimal(value);
-                    context.setComputedVariable(node.getVariableName(), current.multiply(multiplyValue));
-                }
-            }
-            case DIVIDE_ASSIGN -> {
-                Object currentValue = context.getVariable(node.getVariableName());
-                if (currentValue instanceof Number && value instanceof Number) {
-                    java.math.BigDecimal current = toBigDecimal(currentValue);
-                    java.math.BigDecimal divisor = toBigDecimal(value);
-                    if (divisor.compareTo(java.math.BigDecimal.ZERO) == 0) {
-                        throw new ArithmeticException("Division by zero in /= assignment");
-                    }
-                    context.setComputedVariable(node.getVariableName(),
-                        current.divide(divisor, 10, java.math.RoundingMode.HALF_UP));
-                }
-            }
-        }
-        
-        log.debug("Executed assignment: {} {} {}", 
-            node.getVariableName(), node.getOperator().getSymbol(), value);
-        return null;
-    }
     
     @Override
     public Void visitFunctionCallAction(FunctionCallAction node) {
@@ -186,17 +140,6 @@ public class ActionExecutor implements ASTVisitor<Void> {
         if (expression instanceof UnaryExpression unaryExpr) {
             return containsNonMathematicalOperation(unaryExpr.getOperand());
         }
-        if (expression instanceof ArithmeticExpression arithmeticExpr) {
-            // Check all operands in the arithmetic expression
-            if (arithmeticExpr.getOperands() != null) {
-                for (Expression operand : arithmeticExpr.getOperands()) {
-                    if (containsNonMathematicalOperation(operand)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
         // LiteralExpression and VariableExpression are allowed
         return false;
     }
@@ -243,11 +186,6 @@ public class ActionExecutor implements ASTVisitor<Void> {
     
     @Override
     public Void visitFunctionCallExpression(FunctionCallExpression node) {
-        throw new UnsupportedOperationException("Expressions cannot be executed as actions");
-    }
-    
-    @Override
-    public Void visitArithmeticExpression(ArithmeticExpression node) {
         throw new UnsupportedOperationException("Expressions cannot be executed as actions");
     }
     
@@ -350,10 +288,16 @@ public class ActionExecutor implements ASTVisitor<Void> {
                     )
                 );
             }
-            default -> {
-                log.warn("Unknown function: {}", functionName);
-                yield null;
-            }
+            // Any other name -- custom-registered or any expression-tier built-in -- delegates
+            // to the expression evaluator, which checks the custom registry first and throws
+            // IllegalArgumentException with the registry-aware diagnostic if still unknown.
+            default -> expressionEvaluator.visitFunctionCallExpression(
+                    new FunctionCallExpression(
+                            null, functionName,
+                            java.util.Arrays.stream(args)
+                                    .map(arg -> new LiteralExpression(null, arg))
+                                    .collect(java.util.stream.Collectors.toList())
+                    ));
         };
     }
 
@@ -366,35 +310,34 @@ public class ActionExecutor implements ASTVisitor<Void> {
         Object value = node.getValue().accept(expressionEvaluator);
         Object current = context.getVariable(node.getVariableName());
 
-        if (current instanceof Number && value instanceof Number) {
-            java.math.BigDecimal currentNum = toBigDecimal(current);
-            java.math.BigDecimal valueNum = toBigDecimal(value);
-            java.math.BigDecimal result;
-
-            switch (node.getOperation()) {
-                case ADD -> result = currentNum.add(valueNum);
-                case SUBTRACT -> result = currentNum.subtract(valueNum);
-                case MULTIPLY -> result = currentNum.multiply(valueNum);
-                case DIVIDE -> {
-                    if (valueNum.compareTo(java.math.BigDecimal.ZERO) == 0) {
-                        throw new ArithmeticException("Division by zero in arithmetic action");
-                    }
-                    result = currentNum.divide(valueNum, 10, java.math.RoundingMode.HALF_UP);
-                }
-                default -> {
-                    log.warn("Unknown arithmetic operation: {}", node.getOperation());
-                    result = current instanceof java.math.BigDecimal ? (java.math.BigDecimal) current : toBigDecimal(current);
-                }
-            }
-
-            context.setComputedVariable(node.getVariableName(), result);
-        } else {
-            log.warn("Arithmetic action requires numeric operands: {} ({}), {} ({})",
-                    current, current != null ? current.getClass().getSimpleName() : "null",
-                    value, value != null ? value.getClass().getSimpleName() : "null");
+        if (!(current instanceof Number) || !(value instanceof Number)) {
+            throw new IllegalArgumentException(
+                    "Arithmetic action '" + node.getOperation().getKeyword() + "' on '"
+                            + node.getVariableName() + "' requires numeric operands. Got current="
+                            + describeType(current) + ", value=" + describeType(value));
         }
 
+        java.math.BigDecimal currentNum = toBigDecimal(current);
+        java.math.BigDecimal valueNum = toBigDecimal(value);
+        java.math.BigDecimal result = switch (node.getOperation()) {
+            case ADD -> currentNum.add(valueNum);
+            case SUBTRACT -> currentNum.subtract(valueNum);
+            case MULTIPLY -> currentNum.multiply(valueNum);
+            case DIVIDE -> {
+                if (valueNum.compareTo(java.math.BigDecimal.ZERO) == 0) {
+                    throw new ArithmeticException("Division by zero in arithmetic action on '"
+                            + node.getVariableName() + "'");
+                }
+                yield currentNum.divide(valueNum, 10, java.math.RoundingMode.HALF_UP);
+            }
+        };
+        context.setComputedVariable(node.getVariableName(), result);
         return null;
+    }
+
+    private static String describeType(Object o) {
+        if (o == null) return "null";
+        return o + " (" + o.getClass().getSimpleName() + ")";
     }
 
     @Override

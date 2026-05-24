@@ -136,29 +136,6 @@ public class DatabaseConfig {
         return connectionPool;
     }
 
-    // Health indicator removed - requires actuator dependency
-    // TODO: Add back when actuator is available
-    /*
-    @Bean
-    public HealthIndicator connectionPoolHealthIndicator() {
-        return () -> {
-            try {
-                return Health.up()
-                        .withDetail("pool.initialSize", initialSize)
-                        .withDetail("pool.maxSize", maxSize)
-                        .withDetail("pool.minIdle", minIdle)
-                        .withDetail("pool.maxIdleTime", maxIdleTime.toString())
-                        .withDetail("pool.maxAcquireTime", maxAcquireTime.toString())
-                        .build();
-            } catch (Exception e) {
-                return Health.down()
-                        .withDetail("error", e.getMessage())
-                        .build();
-            }
-        };
-    }
-    */
-
     /**
      * Scheduled task to log connection pool statistics.
      * Helps monitor pool performance and identify potential issues.
