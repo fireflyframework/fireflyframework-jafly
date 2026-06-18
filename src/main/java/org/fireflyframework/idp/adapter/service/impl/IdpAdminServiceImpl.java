@@ -210,12 +210,6 @@ public class IdpAdminServiceImpl implements IdpAdminService {
                 request.getAttributes().forEach((k, v) ->
                         userAttributes.put(k, List.of(String.valueOf(v))));
             }
-            if (request.getPartyId() != null) {
-                userAttributes.put("partyId", List.of(request.getPartyId().toString()));
-            }
-            if (request.getUserRole() != null) {
-                userAttributes.put("userRole", List.of(request.getUserRole().toString()));
-            }
             user.setAttributes(userAttributes);
 
             Response response = keycloak.realm(keycloakFactory.getRealm())
