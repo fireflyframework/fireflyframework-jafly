@@ -18,7 +18,9 @@ package org.fireflyframework.security.core.authz;
 
 import org.fireflyframework.security.api.annotation.Secure;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 /**
  * Framework-neutral view of a {@link Secure} requirement, decoupling the authorization evaluator
@@ -42,14 +44,28 @@ public record SecureRequirement(
     }
 
     public static SecureRequirement from(Secure secure) {
+        return from(secure, UnaryOperator.identity());
+    }
+
+    /**
+     * Builds a requirement from the annotation, resolving each declared role/scope/permission through
+     * {@code resolver} (e.g. Spring property placeholders), so a service can externalise per-product
+     * authority names — {@code @Secure(roles = "${idp.security.admin-role}")}. Literal values without a
+     * placeholder pass through unchanged; the SpEL {@code expression} is left verbatim.
+     */
+    public static SecureRequirement from(Secure secure, UnaryOperator<String> resolver) {
         return new SecureRequirement(
-                List.of(secure.roles()),
-                List.of(secure.scopes()),
-                List.of(secure.permissions()),
+                resolveEach(secure.roles(), resolver),
+                resolveEach(secure.scopes(), resolver),
+                resolveEach(secure.permissions(), resolver),
                 secure.requireAllRoles(),
                 secure.requireAllScopes(),
                 secure.requireAllPermissions(),
                 secure.expression());
+    }
+
+    private static List<String> resolveEach(String[] values, UnaryOperator<String> resolver) {
+        return Arrays.stream(values).map(resolver).toList();
     }
 
     public boolean isEmpty() {
