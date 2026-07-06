@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
@@ -24,6 +25,9 @@ class S3Beans {
         if (properties.getEndpoint() != null && !properties.getEndpoint().isEmpty()) {
             builder.endpointOverride(URI.create(properties.getEndpoint()));
         }
+        builder.serviceConfiguration(S3Configuration.builder()
+                .pathStyleAccessEnabled(properties.getPathStyleAccess() != null && properties.getPathStyleAccess())
+                .build());
         return builder.build();
     }
 

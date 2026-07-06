@@ -35,6 +35,7 @@ import software.amazon.awssdk.services.s3.presigner.model.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.UUID;
 
 /**
@@ -370,33 +371,52 @@ public class S3DocumentContentAdapter implements DocumentContentPort {
                 .doOnError(error -> log.error("Failed to verify checksum for document {}", documentId, error));
     }
 
-    /**
-     * Generates a pre-signed URL for secure document upload.
-     *
-     * @param documentId the document ID
-     * @param expirationMinutes expiration time in minutes
-     * @return Mono containing the pre-signed upload URL
-     */
-    public Mono<String> generateUploadUrl(UUID documentId, int expirationMinutes) {
-        return Mono.fromCallable(() -> {
-            String objectKey = buildObjectKey(documentId);
+    @Override
+    public Mono<String> generateUploadUrl(UUID documentId, Duration expiration) {
+        return generateUploadUrlByPath(buildObjectKey(documentId), expiration);
+    }
 
+    @Override
+    public Mono<String> generateDownloadUrl(UUID documentId, Duration expiration) {
+        return generateDownloadUrlByPath(buildObjectKey(documentId), expiration);
+    }
+
+    @Override
+    public Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration) {
+        return Mono.fromCallable(() -> {
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(properties.getBucketName())
                     .key(objectKey)
                     .build();
 
             PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                    .signatureDuration(java.time.Duration.ofMinutes(expirationMinutes))
+                    .signatureDuration(expiration)
                     .putObjectRequest(putRequest)
                     .build();
 
-            PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-            return presignedRequest.url().toString();
+            return s3Presigner.presignPutObject(presignRequest).url().toString();
         })
-        .doOnSuccess(url -> log.debug("Generated upload URL for document {} (expires in {} minutes)",
-                documentId, expirationMinutes))
-        .doOnError(error -> log.error("Failed to generate upload URL for document {}", documentId, error));
+        .doOnSuccess(url -> log.debug("Generated PUT presigned URL for key {} (ttl {})", objectKey, expiration))
+        .doOnError(error -> log.error("Failed to generate PUT presigned URL for key {}", objectKey, error));
+    }
+
+    @Override
+    public Mono<String> generateDownloadUrlByPath(String objectKey, Duration expiration) {
+        return Mono.fromCallable(() -> {
+            GetObjectRequest getRequest = GetObjectRequest.builder()
+                    .bucket(properties.getBucketName())
+                    .key(objectKey)
+                    .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(expiration)
+                    .getObjectRequest(getRequest)
+                    .build();
+
+            return s3Presigner.presignGetObject(presignRequest).url().toString();
+        })
+        .doOnSuccess(url -> log.debug("Generated GET presigned URL for key {} (ttl {})", objectKey, expiration))
+        .doOnError(error -> log.error("Failed to generate GET presigned URL for key {}", objectKey, error));
     }
 
     private String buildObjectKey(UUID documentId) {

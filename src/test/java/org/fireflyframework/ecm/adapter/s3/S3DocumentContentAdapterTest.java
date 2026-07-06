@@ -173,7 +173,7 @@ ResponseInputStream<GetObjectResponse> ris = new ResponseInputStream<>(
 
     @Test
     void generateUploadUrl_returnsSignedUrl() {
-        String url = ((S3DocumentContentAdapter) contentPort).generateUploadUrl(documentId, 10)
+        String url = contentPort.generateUploadUrl(documentId, Duration.ofMinutes(10))
                 .block(Duration.ofSeconds(2));
         assertThat(url).isNotBlank();
         assertThat(url).contains("https://");
