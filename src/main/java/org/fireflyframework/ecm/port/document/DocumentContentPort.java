@@ -19,6 +19,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.UUID;
 
 /**
@@ -283,4 +284,53 @@ public interface DocumentContentPort {
      * @throws UnsupportedAlgorithmException if the algorithm is not supported
      */
     Mono<Boolean> verifyChecksum(UUID documentId, String expectedChecksum, String algorithm);
+
+    /**
+     * Generates a presigned URL that lets a client PUT content directly to storage.
+     *
+     * <p>The object key is derived from the {@code documentId} (adapter path-prefix + id).
+     * Presigning is an offline operation; the returned URL is time-boxed by {@code expiration}.</p>
+     *
+     * @param documentId the document identifier
+     * @param expiration how long the URL stays valid
+     * @return a Mono with the presigned upload URL; errors if the adapter has no presign support
+     */
+    default Mono<String> generateUploadUrl(UUID documentId, Duration expiration) {
+        return Mono.error(new UnsupportedOperationException("presigned upload not supported by this adapter"));
+    }
+
+    /**
+     * Generates a presigned URL that lets a client GET (download) content directly from storage.
+     *
+     * <p>The object key is derived from the {@code documentId} (adapter path-prefix + id).</p>
+     *
+     * @param documentId the document identifier
+     * @param expiration how long the URL stays valid
+     * @return a Mono with the presigned download URL; errors if the adapter has no presign support
+     */
+    default Mono<String> generateDownloadUrl(UUID documentId, Duration expiration) {
+        return Mono.error(new UnsupportedOperationException("presigned download not supported by this adapter"));
+    }
+
+    /**
+     * Presigned PUT for an explicit, caller-controlled object key (e.g. tenant-scoped keys).
+     *
+     * @param objectKey the full storage key the client will PUT to
+     * @param expiration how long the URL stays valid
+     * @return a Mono with the presigned upload URL; errors if the adapter has no presign support
+     */
+    default Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration) {
+        return Mono.error(new UnsupportedOperationException("presigned upload not supported by this adapter"));
+    }
+
+    /**
+     * Presigned GET for an explicit, caller-controlled object key (e.g. tenant-scoped keys).
+     *
+     * @param objectKey the full storage key the client will GET from
+     * @param expiration how long the URL stays valid
+     * @return a Mono with the presigned download URL; errors if the adapter has no presign support
+     */
+    default Mono<String> generateDownloadUrlByPath(String objectKey, Duration expiration) {
+        return Mono.error(new UnsupportedOperationException("presigned download not supported by this adapter"));
+    }
 }
