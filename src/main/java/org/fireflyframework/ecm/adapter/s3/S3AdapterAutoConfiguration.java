@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -42,6 +43,10 @@ import java.net.URI;
 @ConditionalOnClass(S3Client.class)
 @ConditionalOnProperty(name = "firefly.ecm.adapter-type", havingValue = "s3")
 @EnableConfigurationProperties(S3AdapterProperties.class)
+// Register the presigner beans and the DocumentContentPort adapter. Both are @ConditionalOnProperty-gated
+// on the same discriminator, but they live in this package and would otherwise never be component-scanned
+// by a consuming application, so import them explicitly from the auto-configuration.
+@Import({S3Beans.class, S3DocumentContentAdapter.class})
 public class S3AdapterAutoConfiguration {
 
     @Bean
