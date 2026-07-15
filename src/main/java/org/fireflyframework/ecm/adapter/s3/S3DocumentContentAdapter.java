@@ -383,20 +383,30 @@ public class S3DocumentContentAdapter implements DocumentContentPort {
 
     @Override
     public Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration) {
+        return generateUploadUrlByPath(objectKey, expiration, null);
+    }
+
+    @Override
+    public Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration, Long contentLength) {
         return Mono.fromCallable(() -> {
-            PutObjectRequest putRequest = PutObjectRequest.builder()
+            PutObjectRequest.Builder putRequest = PutObjectRequest.builder()
                     .bucket(properties.getBucketName())
-                    .key(objectKey)
-                    .build();
+                    .key(objectKey);
+            // Signing Content-Length pins the exact upload size: S3 rejects a PUT whose body
+            // length differs from the signed value, enforcing the size cap the caller validated.
+            if (contentLength != null) {
+                putRequest.contentLength(contentLength);
+            }
 
             PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
                     .signatureDuration(expiration)
-                    .putObjectRequest(putRequest)
+                    .putObjectRequest(putRequest.build())
                     .build();
 
             return s3Presigner.presignPutObject(presignRequest).url().toString();
         })
-        .doOnSuccess(url -> log.debug("Generated PUT presigned URL for key {} (ttl {})", objectKey, expiration))
+        .doOnSuccess(url -> log.debug("Generated PUT presigned URL for key {} (ttl {}, contentLength {})",
+                objectKey, expiration, contentLength))
         .doOnError(error -> log.error("Failed to generate PUT presigned URL for key {}", objectKey, error));
     }
 
