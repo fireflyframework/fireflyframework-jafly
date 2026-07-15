@@ -320,6 +320,23 @@ public interface DocumentContentPort {
      * @return a Mono with the presigned upload URL; errors if the adapter has no presign support
      */
     default Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration) {
+        return generateUploadUrlByPath(objectKey, expiration, null);
+    }
+
+    /**
+     * Presigned PUT for an explicit object key, pinning the upload size.
+     *
+     * <p>When {@code contentLength} is non-null the adapter signs it into the URL, so storage
+     * rejects a PUT whose body length differs — an exact-size guard the backend can enforce
+     * even though it never sees the bytes. A null length behaves like
+     * {@link #generateUploadUrlByPath(String, Duration)} (no size constraint).</p>
+     *
+     * @param objectKey the full storage key the client will PUT to
+     * @param expiration how long the URL stays valid
+     * @param contentLength the exact byte length the client must PUT, or {@code null} for no constraint
+     * @return a Mono with the presigned upload URL; errors if the adapter has no presign support
+     */
+    default Mono<String> generateUploadUrlByPath(String objectKey, Duration expiration, Long contentLength) {
         return Mono.error(new UnsupportedOperationException("presigned upload not supported by this adapter"));
     }
 
