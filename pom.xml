@@ -23,7 +23,10 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-kernel</artifactId>
-            <version>${project.version}</version>
+            <!-- Partial-release pin: siblings stay on the last full train (26.07.04);
+                 only this repo advances to 26.07.05. Restore ${project.version} on the
+                 next full CalVer train. -->
+            <version>26.07.04</version>
         </dependency>
 
         <!-- Spring Boot -->
@@ -111,7 +114,8 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-observability</artifactId>
-            <version>${project.version}</version>
+            <!-- Partial-release pin: sibling stays on 26.07.04 (see kernel note above). -->
+            <version>26.07.04</version>
         </dependency>
 
         <!-- Test Dependencies -->
