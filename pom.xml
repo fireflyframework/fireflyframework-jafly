@@ -11,10 +11,6 @@
     </parent>
 
     <artifactId>fireflyframework-cache</artifactId>
-    <!-- Partial hotfix release: explicit version overrides the inherited 26.07.04 to
-         ship the postgres ssl-mode field ahead of the next full framework train.
-         Remove this line when the next full CalVer train re-aligns all repos. -->
-    <version>26.07.05</version>
     <name>Firefly Framework - Common Cache Library</name>
     <description>Unified caching library providing standardized cache abstractions with Caffeine and Redis implementations</description>
 
