@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.03</version>
+        <version>26.07.04</version>
         <relativePath/>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications</artifactId>
-    <version>26.07.03</version>
+    <version>26.07.04</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Notifications Library</name>
