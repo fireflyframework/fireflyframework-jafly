@@ -296,6 +296,17 @@ public class CacheProperties {
         private String schema = "public";
 
         /**
+         * TLS/SSL mode for the R2DBC connection. Maps to the r2dbc-postgresql
+         * {@code SSLMode} enum: {@code disable}, {@code allow}, {@code prefer},
+         * {@code require}, {@code verify-ca}, {@code verify-full}, {@code tunnel}.
+         * Default {@code disable} for backward compatibility; set to
+         * {@code require} against TLS-enforcing servers such as AWS Aurora with
+         * {@code rds.force_ssl} enabled (otherwise the connection is rejected with
+         * "no pg_hba.conf entry ... no encryption").
+         */
+        private String sslMode = "disable";
+
+        /**
          * Table name used to store cache entries.
          */
         private String cacheTable = "firefly_cache_entries";
