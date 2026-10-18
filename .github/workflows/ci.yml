@@ -2,13 +2,7 @@ name: CI
 on:
   push:
     branches: [main, develop]
-    paths-ignore:
-      - '**/*.md'
-      - docs/site/**
   pull_request:
-    paths-ignore:
-      - '**/*.md'
-      - docs/site/**
   workflow_dispatch:
     inputs:
       triggered-by:
@@ -19,7 +13,7 @@ permissions:
   contents: read
 concurrency:
   group: jafly-ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   verify:
     name: Verify full Jafly reactor
@@ -29,7 +23,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+      - name: Determine Java verification requirements
+        id: changes
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CHANGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/ci_changes.py --event "$CI_EVENT" --base "$CHANGE_BASE"
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        if: steps.changes.outputs.java == 'true'
         with:
           distribution: temurin
           java-version: '25'
@@ -42,12 +43,15 @@ jobs:
       - name: Validate the complete reactor
         run: python3 scripts/release_tools.py check --output target/reactor-inventory.json
       - name: Check build tools and Docker
+        if: steps.changes.outputs.java == 'true'
         run: |
           ./mvnw -version
           docker info
       - name: Compile, test, and install framework libraries
+        if: steps.changes.outputs.java == 'true'
         run: ./mvnw -B -ntp clean install
       - name: Test the standalone onboarding application
+        if: steps.changes.outputs.java == 'true'
         run: ./mvnw -B -ntp -f docs/examples/getting-started/pom.xml clean verify
       - name: Retain test reports
         if: always()
