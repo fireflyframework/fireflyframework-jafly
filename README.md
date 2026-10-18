@@ -164,6 +164,6 @@ Use the workflows at the repository root for Java builds and releases. Workflows
 
 The [source provenance manifest](docs/migration/source-manifest.json) maps all 63 repositories to destination paths, original source commits, imported branches, and tags. Original main commit IDs remain ancestors of the monorepo. Historical refs use `legacy/<source-repository>/<original-ref>` so identical original release tags do not collide.
 
-Original pull requests and release records retain their source URLs. [Issue transfer records](docs/migration/issue-transfers.json) identify issues moved to Jafly. See [migration and compatibility](docs/migration/README.md) for import boundaries, cutover, and rollback.
+The [legacy records archive](https://github.com/fireflyframework/fireflyframework-jafly/releases/tag/legacy%2Fcollaboration-archive%2F20261018T064326Z) preserves pull request conversations, reviews, release metadata, and restorable Git bundles. Additional archive tags preserve reviewed commits and the final source trees without merging them into the framework. Source repository URLs are historical identifiers after retirement. [Issue transfer records](docs/migration/issue-transfers.json) identify issues moved to Jafly. See [migration and compatibility](docs/migration/README.md) for import boundaries and recovery.
 
 Framework code is [Apache License 2.0](LICENSE). Official Jafly/Firefly artwork and the self-hosted Manrope font retain their separate [brand provenance and notices](docs/site/brand.md).

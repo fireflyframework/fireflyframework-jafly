@@ -262,7 +262,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
 ```
 
 > Note: CORS configuration is provided by `fireflyframework-web` via `firefly.web.cors.*` properties.
-> See the [fireflyframework-web](https://github.com/fireflyframework/fireflyframework-web) module.
+> See the [fireflyframework-web](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/web) module.
 
 ### WebClient Configuration
 Enhanced HTTP client with customization:
