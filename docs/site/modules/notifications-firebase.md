@@ -30,6 +30,8 @@ A mobile applicant portal can receive push notifications through Firebase. The a
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 If you use a core channel service instead of the provider SPI directly, [register the matching service implementation explicitly](notifications-core.md#quick-start). Provider auto-configuration does not expand the application's component scan.
@@ -64,6 +66,7 @@ firefly:
 3. Inject and use the `PushProvider`. Your code depends on the core SPI, not on Firebase directly:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.notifications.interfaces.dtos.push.v1.PushNotificationRequest;
 import org.fireflyframework.notifications.interfaces.dtos.push.v1.PushNotificationResponse;
 import org.fireflyframework.notifications.interfaces.providers.push.v1.PushProvider;
@@ -73,13 +76,12 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class AlertService {
 
     private final PushProvider pushProvider; // FcmPushProvider injected by auto-config
 
-    public AlertService(PushProvider pushProvider) {
-        this.pushProvider = pushProvider;
-    }
+
 
     public Mono<PushNotificationResponse> notifyDevice(String deviceToken) {
         PushNotificationRequest request = PushNotificationRequest.builder()

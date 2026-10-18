@@ -44,41 +44,37 @@ A reviewer portal may read the same application status repeatedly. Cache those r
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (Caffeine by default). Inject it and use the reactive API:
+With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (Caffeine by default). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
 
 ```java
+import lombok.RequiredArgsConstructor;
+import java.time.Duration;
+import java.util.Optional;
 import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
-import java.util.Optional;
-
 @Service
-public class ProductService {
-
+@RequiredArgsConstructor
+public class ApplicationStatusCache {
     private final FireflyCacheManager cache;
-    private final ProductRepository repository;
 
-    public ProductService(FireflyCacheManager cache, ProductRepository repository) {
-        this.cache = cache;
-        this.repository = repository;
+
+
+    public Mono<Void> put(String applicationId, String status) {
+        return cache.put(applicationId, status, Duration.ofMinutes(5));
     }
 
-    public Mono<Product> findById(String id) {
-        return cache.<String, Product>get(id, Product.class)
-                .flatMap(cached -> cached
-                        .map(Mono::just)
-                        .orElseGet(() -> repository.findById(id)
-                                .flatMap(product -> cache
-                                        .put(id, product, Duration.ofMinutes(10))
-                                        .thenReturn(product))));
+    public Mono<Optional<String>> get(String applicationId) {
+        return cache.get(applicationId, String.class);
     }
 
-    public Mono<Boolean> evict(String id) {
-        return cache.evict(id);
+    public Mono<Boolean> evict(String applicationId) {
+        return cache.evict(applicationId);
     }
 }
 ```

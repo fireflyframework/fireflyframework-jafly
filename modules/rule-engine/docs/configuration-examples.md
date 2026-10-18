@@ -286,30 +286,30 @@ volumes:
 
 | Environment | AST Cache | Constants Cache | Rule Definitions Cache | Validation Cache |
 |-------------|-----------|-----------------|------------------------|------------------|
-| **Development** | 500 | 200 | 100 | 50 |
-| **Testing** | 100 | 50 | 50 | 25 |
-| **Staging** | 1000 | 500 | 200 | 100 |
-| **Production** | 2000+ | 1000+ | 500+ | 300+ |
+| Development | 500 | 200 | 100 | 50 |
+| Testing | 100 | 50 | 50 | 25 |
+| Staging | 1000 | 500 | 200 | 100 |
+| Production | 2000+ | 1000+ | 500+ | 300+ |
 
 ### Connection Pool Sizing
 
 | Environment | Initial Size | Max Size | Min Idle | Recommendations |
 |-------------|--------------|----------|----------|-----------------|
-| **Development** | 5 | 15 | 2 | Minimal resource usage |
-| **Testing** | 2 | 5 | 1 | Fast test execution |
-| **Staging** | 10 | 30 | 5 | Production-like load |
-| **Production** | 20 | 100+ | 10 | High-load capacity |
+| Development | 5 | 15 | 2 | Minimal resource usage |
+| Testing | 2 | 5 | 1 | Fast test execution |
+| Staging | 10 | 30 | 5 | Production-like load |
+| Production | 20 | 100+ | 10 | High-load capacity |
 
 ### Cache Provider Selection
 
 | Scenario | Recommended Provider | Reason |
 |----------|---------------------|---------|
-| **Single Instance** | Caffeine | 664x faster, no network overhead |
-| **Multi-Instance** | Redis | Shared cache across instances |
-| **Development** | Caffeine | Simpler setup, faster development |
-| **Production (Single)** | Caffeine | Maximum performance |
-| **Production (Cluster)** | Redis | Distributed caching |
-| **High Availability** | Redis | Persistence and clustering |
+| Single Instance | Caffeine | 664x faster, no network overhead |
+| Multi-Instance | Redis | Shared cache across instances |
+| Development | Caffeine | Simpler setup, faster development |
+| Production (Single) | Caffeine | Maximum performance |
+| Production (Cluster) | Redis | Distributed caching |
+| High Availability | Redis | Persistence and clustering |
 
 ## Monitoring Configuration
 
@@ -340,7 +340,7 @@ management:
 ### Key Metrics to Monitor
 
 - `cache.gets` - Cache access patterns
-- `cache.puts` - Cache write patterns  
+- `cache.puts` - Cache write patterns
 - `cache.evictions` - Cache eviction rates
 - `r2dbc.pool.acquired` - Active connections
 - `r2dbc.pool.allocated` - Total allocated connections

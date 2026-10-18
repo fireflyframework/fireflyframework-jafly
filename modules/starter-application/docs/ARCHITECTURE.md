@@ -1,6 +1,6 @@
 # 🏛️ Application Layer Architecture
 
-> **Complete architectural guide for building Application Layer microservices with lib-common-application**
+> Complete architectural guide for building Application Layer microservices with lib-common-application
 
 ---
 
@@ -132,26 +132,26 @@ Firefly implements a clean, layered architecture with three distinct types of mi
 
 #### 1. Application Layer (THIS LIBRARY)
 
-**Purpose**: Business process orchestration and API exposure to channels
+Purpose: Business process orchestration and API exposure to channels
 
-**Library**: `lib-common-application`
+Library: `lib-common-application`
 
-**Microservice Examples**:
+Microservice Examples:
 - `customer-application-onboarding` - Complete customer onboarding process
 - `lending-application-loan-origination` - End-to-end loan origination workflow
 - `payment-application-transfer` - Fund transfer orchestration
 - `account-application-opening` - Account opening process
 
-**What This Layer Does**:
-1. **Exposes APIs** to channels (web, mobile, third-party applications)
-2. **Orchestrates business processes** across multiple domains
-3. **Manages application context** (partyId, contractId, productId, tenantId)
-4. **Handles security & authorization** via @Secure annotations
-5. **Coordinates domain services** to complete multi-step workflows
-6. **Manages tenant configuration** and feature flags
-7. **Implements use cases** that span multiple domains
+What This Layer Does:
+1. Exposes APIs to channels (web, mobile, third-party applications)
+2. Orchestrates business processes across multiple domains
+3. Manages application context (partyId, contractId, productId, tenantId)
+4. Handles security & authorization via @Secure annotations
+5. Coordinates domain services to complete multi-step workflows
+6. Manages tenant configuration and feature flags
+7. Implements use cases that span multiple domains
 
-**Key Components from lib-common-application**:
+Key Components from lib-common-application:
 - `ApplicationExecutionContext` - Complete context for the request
 - `AppMetadata` - Request metadata (requestId, correlationId, tracing)
 - `AppContext` - Business context (partyId, contractId, productId, roles)
@@ -162,25 +162,25 @@ Firefly implements a clean, layered architecture with three distinct types of mi
 
 #### 2. Domain Layer
 
-**Purpose**: Implement business logic and domain rules
+Purpose: Implement business logic and domain rules
 
-**Library**: `lib-common-domain`
+Library: `lib-common-domain`
 
-**Microservice Examples**:
+Microservice Examples:
 - `customer-domain-people` - Customer/person domain logic
 - `lending-domain-loan` - Loan domain logic
 - `payment-domain-account` - Account domain logic
 - `contract-domain-agreement` - Contract domain logic
 
-**What This Layer Does**:
-1. **Implements business logic** specific to a domain
-2. **Maintains domain invariants** and business rules
-3. **Manages aggregates, entities, value objects** (DDD patterns)
-4. **Publishes domain events** for async communication
-5. **Provides domain services** for single-domain operations
-6. **Enforces business rules** within the domain boundary
+What This Layer Does:
+1. Implements business logic specific to a domain
+2. Maintains domain invariants and business rules
+3. Manages aggregates, entities, value objects (DDD patterns)
+4. Publishes domain events for async communication
+5. Provides domain services for single-domain operations
+6. Enforces business rules within the domain boundary
 
-**Does NOT**:
+Does NOT:
 - Expose REST APIs to external channels
 - Orchestrate multiple domains
 - Make HTTP calls to other domains
@@ -188,74 +188,74 @@ Firefly implements a clean, layered architecture with three distinct types of mi
 
 #### 3. Infrastructure/Platform Layer
 
-**Purpose**: Data persistence, master data, platform services
+Purpose: Data persistence, master data, platform services
 
-**Library**: `lib-common-core` (or no specific library)
+Library: `lib-common-core` (or no specific library)
 
-**Microservice Examples**:
+Microservice Examples:
 - `common-platform-customer-mgmt` - Customer master data management
 - `common-platform-contract-mgmt` - Contract master data management
 - `common-platform-product-mgmt` - Product catalog management
 - `common-platform-config-mgmt` - Tenant configuration management
 - `common-platform-reference-master-data` - Reference data
 
-**What This Layer Does**:
-1. **Data persistence** via repositories (databases)
-2. **Master data management** (customer, product, contract data)
-3. **External system integration** (third-party APIs)
-4. **Cross-cutting platform services** (config, reference data)
-5. **Provides SDKs** for application and domain layers
+What This Layer Does:
+1. Data persistence via repositories (databases)
+2. Master data management (customer, product, contract data)
+3. External system integration (third-party APIs)
+4. Cross-cutting platform services (config, reference data)
+5. Provides SDKs for application and domain layers
 
 ### When to Use Application Layer
 
 #### ✅ Use Application Layer Microservices When:
 
-1. **Exposing APIs to channels** (web, mobile, third-party)
-2. **Orchestrating multiple domains** (customer + contract + account)
-3. **Implementing complex workflows** (loan origination, onboarding)
-4. **Managing application-level security** (API authentication, authorization)
-5. **Handling multi-tenant requirements** (tenant config, feature flags)
-6. **Coordinating transactions** across multiple domains
-7. **Implementing use cases** that span business domains
+1. Exposing APIs to channels (web, mobile, third-party)
+2. Orchestrating multiple domains (customer + contract + account)
+3. Implementing complex workflows (loan origination, onboarding)
+4. Managing application-level security (API authentication, authorization)
+5. Handling multi-tenant requirements (tenant config, feature flags)
+6. Coordinating transactions across multiple domains
+7. Implementing use cases that span business domains
 
 #### ❌ Don't Use Application Layer When:
 
-1. **Single-domain operations** → Use domain layer
-2. **Internal domain logic** → Use domain layer
-3. **Data persistence only** → Use infrastructure/platform layer
-4. **Background jobs** without API exposure → Use domain layer
-5. **Simple CRUD operations** → Can be domain or platform layer
+1. Single-domain operations → Use domain layer
+2. Internal domain logic → Use domain layer
+3. Data persistence only → Use infrastructure/platform layer
+4. Background jobs without API exposure → Use domain layer
+5. Simple CRUD operations → Can be domain or platform layer
 
 ### Key Principles
 
-1. **Application layer = API + Orchestration**
+1. Application layer = API + Orchestration
    - Exposes REST/GraphQL to external consumers
    - Orchestrates multiple domain services
    - Manages complete application context
 
-2. **Domain layer = Business Logic**
+2. Domain layer = Business Logic
    - Focused on single domain
    - Receives simplified context (AppContext)
    - Publishes domain events
 
-3. **Platform layer = Infrastructure**
+3. Platform layer = Infrastructure
    - Data persistence
    - Master data management
    - Provides SDKs to upper layers
 
-4. **Context flows down, Events flow up**
+4. Context flows down, Events flow up
    - Application → Domain: Pass AppContext
    - Domain → Application: Publish domain events
    - Never: Domain → Domain direct HTTP calls
 
-5. **Security at Application Layer**
+5. Security at Application Layer
    - @Secure annotations on controllers
    - ApplicationExecutionContext includes security
    - Domain layer trusts the context
 
 ## Overview
 
-The **Application Layer** is a critical architectural layer in the Firefly platform that sits between the **Presentation Layer** (REST controllers, GraphQL resolvers) and the **Domain Layer** (business logic). It serves as the orchestration and coordination layer for business processes.
+The Application Layer is a critical architectural layer in the Firefly platform that sits between the Presentation Layer (REST controllers, GraphQL resolvers) and the Domain Layer (business logic). It serves as the orchestration and coordination layer for business processes.
 
 ### Architectural Position
 
@@ -306,9 +306,9 @@ The **Application Layer** is a critical architectural layer in the Firefly platf
 
 ### 1. Application Service Pattern
 
-**Purpose**: Encapsulate business process orchestration and cross-domain coordination.
+Purpose: Encapsulate business process orchestration and cross-domain coordination.
 
-**Implementation**: `AbstractApplicationService`
+Implementation: `AbstractApplicationService`
 
 The Application Service pattern ensures that:
 - Complex business processes are coordinated at the application layer
@@ -316,7 +316,7 @@ The Application Service pattern ensures that:
 - Transaction boundaries are clearly defined
 - Context is properly managed throughout the request lifecycle
 
-**Example**:
+Example:
 ```java
 public Mono<Transfer> transferFunds(ServerWebExchange exchange, TransferRequest request) {
     return resolveExecutionContext(exchange)              // 1. Context Resolution
@@ -333,18 +333,18 @@ public Mono<Transfer> transferFunds(ServerWebExchange exchange, TransferRequest 
 
 ### 2. Context Object Pattern
 
-**Purpose**: Carry all necessary contextual information throughout the request lifecycle.
+Purpose: Carry all necessary contextual information throughout the request lifecycle.
 
-**Implementation**: `ApplicationExecutionContext`, `AppContext`, `AppMetadata`, `AppConfig`
+Implementation: `ApplicationExecutionContext`, `AppContext`, `AppMetadata`, `AppConfig`
 
 The Context Object pattern provides:
-- **Immutability**: All context objects are immutable (@Value with Lombok)
-- **Type Safety**: Strong typing for all context attributes
-- **Completeness**: All necessary information in one place
-- **Traceability**: Request tracking through correlation IDs
-- **Audit Trail**: Complete context for logging and auditing
+- Immutability: All context objects are immutable (@Value with Lombok)
+- Type Safety: Strong typing for all context attributes
+- Completeness: All necessary information in one place
+- Traceability: Request tracking through correlation IDs
+- Audit Trail: Complete context for logging and auditing
 
-**Context Composition**:
+Context Composition:
 ```
 ApplicationExecutionContext
 ├── AppMetadata (Technical Context)
@@ -374,9 +374,9 @@ ApplicationExecutionContext
 
 ### 3. Strategy Pattern for Context Resolution
 
-**Purpose**: Support multiple strategies for resolving context information based on authentication mechanism or request source.
+Purpose: Support multiple strategies for resolving context information based on authentication mechanism or request source.
 
-**Implementation**: `ContextResolver` interface with `AbstractContextResolver` base
+Implementation: `ContextResolver` interface with `AbstractContextResolver` base
 
 Different applications may have different ways to extract context:
 - JWT tokens
@@ -417,15 +417,15 @@ public class HeaderContextResolver extends AbstractContextResolver {
 
 ### 4. Decorator Pattern for Security
 
-**Purpose**: Add security concerns transparently without modifying business logic.
+Purpose: Add security concerns transparently without modifying business logic.
 
-**Implementation**: `@Secure` annotation with `SecurityAspect` AOP interceptor
+Implementation: `@Secure` annotation with `SecurityAspect` AOP interceptor
 
 The Decorator pattern (via AOP) allows:
-- **Separation of Concerns**: Security logic is separated from business logic
-- **Declarative Security**: Clear, self-documenting security requirements
-- **Cross-cutting Concerns**: Security is applied consistently across all endpoints
-- **Non-invasive**: Business logic remains clean and focused
+- Separation of Concerns: Security logic is separated from business logic
+- Declarative Security: Clear, self-documenting security requirements
+- Cross-cutting Concerns: Security is applied consistently across all endpoints
+- Non-invasive: Business logic remains clean and focused
 
 ```java
 @Aspect
@@ -441,15 +441,15 @@ public class SecurityAspect {
 
 ### 5. Registry Pattern for Endpoint Security
 
-**Purpose**: Provide a centralized, programmatic way to register and query security requirements.
+Purpose: Provide a centralized, programmatic way to register and query security requirements.
 
-**Implementation**: `EndpointSecurityRegistry`
+Implementation: `EndpointSecurityRegistry`
 
 Complements the annotation-based approach with:
-- **Dynamic Registration**: Register security rules at runtime
-- **Centralized Configuration**: All security rules in one place
-- **Queryable**: Security rules can be inspected programmatically
-- **Integration with External Systems**: Can be populated from SecurityCenter
+- Dynamic Registration: Register security rules at runtime
+- Centralized Configuration: All security rules in one place
+- Queryable: Security rules can be inspected programmatically
+- Integration with External Systems: Can be populated from SecurityCenter
 
 ```java
 registry.registerEndpoint(
@@ -464,15 +464,15 @@ registry.registerEndpoint(
 
 ### 6. Template Method Pattern for Resolvers
 
-**Purpose**: Define the skeleton of context/config resolution while allowing subclasses to customize specific steps.
+Purpose: Define the skeleton of context/config resolution while allowing subclasses to customize specific steps.
 
-**Implementation**: `AbstractContextResolver`, `AbstractConfigResolver`
+Implementation: `AbstractContextResolver`, `AbstractConfigResolver`
 
 The Template Method pattern provides:
-- **Consistent Structure**: All resolvers follow the same flow
-- **Reusable Logic**: Common logic (caching, logging) in base class
-- **Customization Points**: Subclasses override only what they need
-- **Error Handling**: Centralized error handling and retry logic
+- Consistent Structure: All resolvers follow the same flow
+- Reusable Logic: Common logic (caching, logging) in base class
+- Customization Points: Subclasses override only what they need
+- Error Handling: Centralized error handling and retry logic
 
 ```java
 public abstract class AbstractContextResolver {
@@ -495,45 +495,45 @@ public abstract class AbstractContextResolver {
 
 ### 7. Facade Pattern for Application Services
 
-**Purpose**: Provide a simplified interface to complex domain operations.
+Purpose: Provide a simplified interface to complex domain operations.
 
-**Implementation**: `AbstractApplicationService`
+Implementation: `AbstractApplicationService`
 
 The Facade pattern simplifies:
-- **Complex Subsystems**: Hides complexity of multiple domain services
-- **Workflow Orchestration**: Coordinates multiple domain operations
-- **Transaction Management**: Manages transaction boundaries
-- **Error Translation**: Converts domain exceptions to application-level exceptions
+- Complex Subsystems: Hides complexity of multiple domain services
+- Workflow Orchestration: Coordinates multiple domain operations
+- Transaction Management: Manages transaction boundaries
+- Error Translation: Converts domain exceptions to application-level exceptions
 
 ## Layer Responsibilities
 
 ### What the Application Layer DOES:
 
-1. **Context Management**
+1. Context Management
    - Resolve party, contract, product, and tenant information
    - Enrich context with roles and permissions
    - Maintain context throughout request lifecycle
    - Cache context for performance
 
-2. **Security & Authorization**
+2. Security & Authorization
    - Enforce endpoint-level security
    - Check roles and permissions
    - Integrate with SecurityCenter for complex authorization
    - Audit access attempts
 
-3. **Business Process Orchestration**
+3. Business Process Orchestration
    - Coordinate multiple domain services
    - Manage multi-step workflows
    - Handle compensating transactions
    - Coordinate saga patterns
 
-4. **Configuration Management**
+4. Configuration Management
    - Resolve tenant-specific configuration
    - Manage provider configurations
    - Handle feature flags
    - Cache configuration data
 
-5. **Cross-cutting Concerns**
+5. Cross-cutting Concerns
    - Logging and tracing
    - Metrics and monitoring
    - Error handling and translation
@@ -541,10 +541,10 @@ The Facade pattern simplifies:
 
 ### What the Application Layer DOES NOT DO:
 
-1. **Business Logic**: Domain logic belongs in the Domain Layer
-2. **Data Persistence**: Repositories belong in the Infrastructure Layer
-3. **HTTP Handling**: Request parsing belongs in the Presentation Layer
-4. **UI Logic**: View concerns belong in the Presentation Layer
+1. Business Logic: Domain logic belongs in the Domain Layer
+2. Data Persistence: Repositories belong in the Infrastructure Layer
+3. HTTP Handling: Request parsing belongs in the Presentation Layer
+4. UI Logic: View concerns belong in the Presentation Layer
 
 ## Component Design
 
@@ -552,51 +552,51 @@ The Facade pattern simplifies:
 
 #### 1. ApplicationExecutionContext
 
-**Purpose**: The main context object that carries all necessary information throughout the request lifecycle.
+Purpose: The main context object that carries all necessary information throughout the request lifecycle.
 
-**Design Decisions**:
-- **Immutable**: Uses Lombok @Value for immutability
-- **Builder Pattern**: Easy construction with fluent API
-- **Composition**: Aggregates specialized context objects
-- **With Methods**: Lombok @With for creating modified copies
+Design Decisions:
+- Immutable: Uses Lombok @Value for immutability
+- Builder Pattern: Easy construction with fluent API
+- Composition: Aggregates specialized context objects
+- With Methods: Lombok @With for creating modified copies
 
-**Rationale**: Immutability ensures thread safety in reactive environments and prevents accidental modifications that could lead to bugs.
+Rationale: Immutability ensures thread safety in reactive environments and prevents accidental modifications that could lead to bugs.
 
 #### 2. ContextResolver
 
-**Purpose**: Abstract the strategy for resolving context information.
+Purpose: Abstract the strategy for resolving context information.
 
-**Design Decisions**:
-- **Interface-based**: Allows multiple implementations
-- **Strategy Pattern**: Different resolvers for different auth mechanisms
-- **Priority Support**: Higher priority resolvers are tried first
-- **Supports Method**: Resolvers can declare which requests they handle
+Design Decisions:
+- Interface-based: Allows multiple implementations
+- Strategy Pattern: Different resolvers for different auth mechanisms
+- Priority Support: Higher priority resolvers are tried first
+- Supports Method: Resolvers can declare which requests they handle
 
-**Rationale**: Different microservices may have different authentication mechanisms. The resolver abstraction allows each service to implement its own logic.
+Rationale: Different microservices may have different authentication mechanisms. The resolver abstraction allows each service to implement its own logic.
 
 #### 3. SecurityAuthorizationService
 
-**Purpose**: Centralize authorization logic and SecurityCenter integration.
+Purpose: Centralize authorization logic and SecurityCenter integration.
 
-**Design Decisions**:
-- **Abstract Base Class**: Provides default behavior
-- **Template Method**: Subclasses can override specific steps
-- **SecurityCenter Integration**: Designed for external authorization service
-- **Evaluation Results**: Detailed audit trail of authorization decisions
+Design Decisions:
+- Abstract Base Class: Provides default behavior
+- Template Method: Subclasses can override specific steps
+- SecurityCenter Integration: Designed for external authorization service
+- Evaluation Results: Detailed audit trail of authorization decisions
 
-**Rationale**: Authorization logic is complex and may require integration with external services. The abstract base provides a consistent framework while allowing customization.
+Rationale: Authorization logic is complex and may require integration with external services. The abstract base provides a consistent framework while allowing customization.
 
 #### 4. SecurityAspect (AOP)
 
-**Purpose**: Intercept and process @Secure annotations.
+Purpose: Intercept and process @Secure annotations.
 
-**Design Decisions**:
-- **Aspect-Oriented Programming**: Non-invasive security
-- **Method and Class Level**: Security can be applied at both levels
-- **Context Extraction**: Automatically extracts ApplicationExecutionContext from method arguments
-- **Reactive Support**: Works with Mono/Flux return types
+Design Decisions:
+- Aspect-Oriented Programming: Non-invasive security
+- Method and Class Level: Security can be applied at both levels
+- Context Extraction: Automatically extracts ApplicationExecutionContext from method arguments
+- Reactive Support: Works with Mono/Flux return types
 
-**Rationale**: AOP allows security concerns to be separated from business logic, making code cleaner and more maintainable.
+Rationale: AOP allows security concerns to be separated from business logic, making code cleaner and more maintainable.
 
 ## Data Flow
 
@@ -692,51 +692,51 @@ ServerWebExchange
 
 ### 1. Customer Management Platform
 
-**SDK**: `common-platform-customer-mgmt-sdk`
+SDK: `common-platform-customer-mgmt-sdk`
 
-**Purpose**: Resolve party (customer) information and roles
+Purpose: Resolve party (customer) information and roles
 
-**Integration Points**:
+Integration Points:
 - `AbstractContextResolver.resolveRoles()`
 - Get party details
 - Get party roles in contract
 - Validate party status
 
-**Data Retrieved**:
+Data Retrieved:
 - Party roles: `Set<String>`
 - Party status: `ACTIVE | SUSPENDED | CLOSED`
 - Party type: `INDIVIDUAL | CORPORATE`
 
 ### 2. Contract Management Platform
 
-**SDK**: `common-platform-contract-mgmt-sdk`
+SDK: `common-platform-contract-mgmt-sdk`
 
-**Purpose**: Resolve contract information and permissions
+Purpose: Resolve contract information and permissions
 
-**Integration Points**:
+Integration Points:
 - `AbstractContextResolver.resolvePermissions()`
 - Get contract details
 - Get party permissions in contract
 - Validate contract status
 
-**Data Retrieved**:
+Data Retrieved:
 - Contract permissions: `Set<String>`
 - Contract status: `ACTIVE | TERMINATED | SUSPENDED`
 - Contract parties and their roles
 
 ### 3. Configuration Management Platform
 
-**SDK**: `common-platform-config-mgmt-sdk`
+SDK: `common-platform-config-mgmt-sdk`
 
-**Purpose**: Resolve tenant configuration and provider settings
+Purpose: Resolve tenant configuration and provider settings
 
-**Integration Points**:
+Integration Points:
 - `AbstractConfigResolver.fetchConfigFromPlatform()`
 - Get tenant configuration
 - Get provider configurations
 - Get feature flags
 
-**Data Retrieved**:
+Data Retrieved:
 - Tenant configuration
 - Provider configurations (Payment gateways, KYC providers, etc.)
 - Feature flags
@@ -744,17 +744,17 @@ ServerWebExchange
 
 ### 4. Security Center
 
-**SDK**: To be defined (Firefly SecurityCenter Client)
+SDK: To be defined (Firefly SecurityCenter Client)
 
-**Purpose**: Complex authorization decisions and policy evaluation
+Purpose: Complex authorization decisions and policy evaluation
 
-**Integration Points**:
+Integration Points:
 - `AbstractSecurityAuthorizationService.authorizeWithSecurityCenter()`
 - Evaluate authorization policies
 - Complex permission checks
 - Attribute-Based Access Control (ABAC)
 
-**Data Sent**:
+Data Sent:
 - Party ID
 - Contract ID
 - Product ID
@@ -762,7 +762,7 @@ ServerWebExchange
 - HTTP method
 - Current roles and permissions
 
-**Data Received**:
+Data Received:
 - Authorization decision: `GRANTED | DENIED`
 - Reason for decision
 - Policy that was evaluated
@@ -772,13 +772,13 @@ ServerWebExchange
 
 ### ADR-001: Immutable Context Objects
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Context objects are passed through multiple layers and potentially across thread boundaries in reactive applications.
+Context: Context objects are passed through multiple layers and potentially across thread boundaries in reactive applications.
 
-**Decision**: All context objects are immutable using Lombok @Value.
+Decision: All context objects are immutable using Lombok @Value.
 
-**Consequences**:
+Consequences:
 - ✅ Thread-safe by design
 - ✅ No defensive copying needed
 - ✅ Clear data flow (no hidden mutations)
@@ -787,13 +787,13 @@ ServerWebExchange
 
 ### ADR-002: Reactive First Design
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Firefly is built on Spring WebFlux for non-blocking, reactive operations.
+Context: Firefly is built on Spring WebFlux for non-blocking, reactive operations.
 
-**Decision**: All resolvers and services return Mono/Flux instead of blocking calls.
+Decision: All resolvers and services return Mono/Flux instead of blocking calls.
 
-**Consequences**:
+Consequences:
 - ✅ Non-blocking I/O
 - ✅ Better resource utilization
 - ✅ Backpressure support
@@ -803,13 +803,13 @@ ServerWebExchange
 
 ### ADR-003: Two-Way Security Configuration
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Different teams may prefer different approaches to security configuration.
+Context: Different teams may prefer different approaches to security configuration.
 
-**Decision**: Support both annotation-based (@Secure) and programmatic (EndpointSecurityRegistry) security configuration.
+Decision: Support both annotation-based (@Secure) and programmatic (EndpointSecurityRegistry) security configuration.
 
-**Consequences**:
+Consequences:
 - ✅ Flexibility for different use cases
 - ✅ Annotations for most cases (declarative)
 - ✅ Registry for dynamic security (programmatic)
@@ -818,13 +818,13 @@ ServerWebExchange
 
 ### ADR-004: Context Resolution as Strategy
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Different microservices use different authentication mechanisms (JWT, API keys, sessions).
+Context: Different microservices use different authentication mechanisms (JWT, API keys, sessions).
 
-**Decision**: Use Strategy pattern with multiple ContextResolver implementations.
+Decision: Use Strategy pattern with multiple ContextResolver implementations.
 
-**Consequences**:
+Consequences:
 - ✅ Flexibility per microservice
 - ✅ Easy to add new strategies
 - ✅ Clean separation of concerns
@@ -833,13 +833,13 @@ ServerWebExchange
 
 ### ADR-005: Caching at Resolver Level
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: External SDK calls (customer-mgmt, config-mgmt) can be expensive.
+Context: External SDK calls (customer-mgmt, config-mgmt) can be expensive.
 
-**Decision**: Implement caching in abstract resolvers with configurable TTL.
+Decision: Implement caching in abstract resolvers with configurable TTL.
 
-**Consequences**:
+Consequences:
 - ✅ Reduced latency
 - ✅ Lower load on platform services
 - ✅ Better performance
@@ -849,13 +849,13 @@ ServerWebExchange
 
 ### ADR-006: AOP for Security
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Security checks should not clutter business logic.
+Context: Security checks should not clutter business logic.
 
-**Decision**: Use AspectJ AOP to intercept @Secure annotations.
+Decision: Use AspectJ AOP to intercept @Secure annotations.
 
-**Consequences**:
+Consequences:
 - ✅ Clean separation of concerns
 - ✅ Non-invasive to business logic
 - ✅ Consistent security enforcement
@@ -865,13 +865,13 @@ ServerWebExchange
 
 ### ADR-007: SecurityCenter Integration Points
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Some authorization decisions require complex policy evaluation beyond simple role/permission checks.
+Context: Some authorization decisions require complex policy evaluation beyond simple role/permission checks.
 
-**Decision**: Provide integration points with Firefly SecurityCenter as TODO placeholders.
+Decision: Provide integration points with Firefly SecurityCenter as TODO placeholders.
 
-**Consequences**:
+Consequences:
 - ✅ Future-proof for complex authorization
 - ✅ Supports Attribute-Based Access Control (ABAC)
 - ✅ Centralized policy management
@@ -882,13 +882,13 @@ ServerWebExchange
 
 ### ADR-008: No Implementation Logic in Library
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: This library is a framework that will be used by multiple microservices with different requirements.
+Context: This library is a framework that will be used by multiple microservices with different requirements.
 
-**Decision**: Provide abstract classes with TODO placeholders instead of concrete implementations.
+Decision: Provide abstract classes with TODO placeholders instead of concrete implementations.
 
-**Consequences**:
+Consequences:
 - ✅ Maximum flexibility for implementers
 - ✅ No assumptions about specific SDKs
 - ✅ Clear integration points
@@ -898,13 +898,13 @@ ServerWebExchange
 
 ### ADR-009: ApplicationExecutionContext as Parameter
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Context needs to flow through all layers (application → domain → infrastructure).
+Context: Context needs to flow through all layers (application → domain → infrastructure).
 
-**Decision**: Pass ApplicationExecutionContext as explicit parameter to all service methods.
+Decision: Pass ApplicationExecutionContext as explicit parameter to all service methods.
 
-**Consequences**:
+Consequences:
 - ✅ Explicit context passing (no ThreadLocal magic)
 - ✅ Works in reactive environments
 - ✅ Clear dependencies
@@ -914,13 +914,13 @@ ServerWebExchange
 
 ### ADR-010: Builder Pattern for Context Objects
 
-**Status**: Accepted
+Status: Accepted
 
-**Context**: Context objects have many optional fields.
+Context: Context objects have many optional fields.
 
-**Decision**: Use Lombok @Builder for all context objects.
+Decision: Use Lombok @Builder for all context objects.
 
-**Consequences**:
+Consequences:
 - ✅ Fluent, readable API
 - ✅ Optional fields handled naturally
 - ✅ Type-safe construction

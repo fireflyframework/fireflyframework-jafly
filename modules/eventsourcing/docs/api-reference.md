@@ -30,7 +30,7 @@ public interface Event {
 
 Abstract base class implementing `Event` with Lombok `@SuperBuilder`, `@Getter`, `@NoArgsConstructor`, `@AllArgsConstructor`.
 
-**Fields:**
+Fields:
 
 | Field | Type | Default |
 |-------|------|---------|
@@ -39,14 +39,14 @@ Abstract base class implementing `Event` with Lombok `@SuperBuilder`, `@Getter`,
 | `metadata` | `Map<String, Object>` | Lazy-initialized to `new HashMap<>()` |
 | `eventVersion` | `int` | `0` (returns `1` via getter if `<= 0`) |
 
-**Instance methods:**
+Instance methods:
 
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `addMetadata(String key, Object value)` | `AbstractDomainEvent` | Adds a metadata entry, returns `this` |
 | `addMetadata(Map<String, Object>)` | `AbstractDomainEvent` | Adds multiple entries, returns `this` |
 
-**Builder helpers** (available on all subclass builders):
+Builder helpers (available on all subclass builders):
 
 | Builder Method | Metadata Key |
 |---------------|-------------|
@@ -62,7 +62,7 @@ Abstract base class implementing `Event` with Lombok `@SuperBuilder`, `@Getter`,
 
 Abstract base class for event-sourced aggregates. Annotated with `@Getter` and `@Slf4j`.
 
-**Constructor:**
+Constructor:
 
 ```java
 protected AggregateRoot(UUID id, String aggregateType)
@@ -72,7 +72,7 @@ protected AggregateRoot(UUID id, String aggregateType)
 - `aggregateType` must not be null or blank
 - Sets `version = -1L`
 
-**Fields:**
+Fields:
 
 | Field | Type | Access | Initial |
 |-------|------|--------|---------|
@@ -82,7 +82,7 @@ protected AggregateRoot(UUID id, String aggregateType)
 | `uncommittedEvents` | `List<Event>` | public (unmodifiable getter) | Empty list |
 | `deleted` | `boolean` | public (getter) | `false` |
 
-**Methods:**
+Methods:
 
 | Method | Visibility | Signature | Description |
 |--------|-----------|-----------|-------------|
@@ -96,13 +96,13 @@ protected AggregateRoot(UUID id, String aggregateType)
 | `setCurrentVersion` | `protected` | `void setCurrentVersion(long version)` | For snapshot restoration only |
 | `markAsDeleted` | `protected` | `void markAsDeleted()` | Sets `deleted = true` |
 
-**Version semantics:**
+Version semantics:
 
 - New aggregate (no events): version = `-1`
 - After first `applyChange`: version = `0`
 - After Nth `applyChange`: version = `N-1`
 
-When calling `appendEvents` for a **new** aggregate, pass `expectedVersion = -1L`.
+When calling `appendEvents` for a new aggregate, pass `expectedVersion = -1L`.
 
 ## EventStore Interface
 
@@ -235,7 +235,7 @@ Wraps a domain event with storage metadata. Uses Lombok `@Data`, `@Builder`, `@J
 | `createdAt` | `Instant` | Persistence timestamp |
 | `metadata` | `Map<String, Object>` | Additional metadata (default: `Map.of()`) |
 
-**Factory methods:**
+Factory methods:
 
 ```java
 static StoredEventEnvelope of(Event event, String aggregateType,
@@ -245,7 +245,7 @@ static StoredEventEnvelope of(Event event, String aggregateType,
                                long aggregateVersion, long globalSequence);
 ```
 
-**Convenience methods:**
+Convenience methods:
 
 ```java
 Object getMetadataValue(String key);
@@ -269,7 +269,7 @@ Uses Lombok `@Data`, `@Builder`.
 | `fromVersion` | `long` | `0L` |
 | `events` | `List<StoredEventEnvelope>` | |
 
-**Methods:**
+Methods:
 
 ```java
 boolean isEmpty();
@@ -320,9 +320,9 @@ Target: `METHOD`, `TYPE`. Retention: `RUNTIME`.
 | `noRollbackForClassName` | `String[]` | `{}` |
 | `transactionManager` | `String` | `""` |
 
-**Propagation enum values:** `REQUIRED`, `REQUIRES_NEW`, `MANDATORY`, `NEVER`, `SUPPORTS`, `NOT_SUPPORTED`
+Propagation enum values: `REQUIRED`, `REQUIRES_NEW`, `MANDATORY`, `NEVER`, `SUPPORTS`, `NOT_SUPPORTED`
 
-**Isolation enum values:** `DEFAULT`, `READ_UNCOMMITTED`, `READ_COMMITTED`, `REPEATABLE_READ`, `SERIALIZABLE`
+Isolation enum values: `DEFAULT`, `READ_UNCOMMITTED`, `READ_COMMITTED`, `REPEATABLE_READ`, `SERIALIZABLE`
 
 ## EventTypeRegistry
 
@@ -416,11 +416,11 @@ static String getDefaultTenant();                   // returns "default"
 
 Utility class (`@UtilityClass`) for MDC context management. All methods are static.
 
-**MDC Keys (16 total):**
+MDC Keys (16 total):
 
 `correlationId`, `causationId`, `aggregateId`, `aggregateType`, `eventType`, `tenantId`, `userId`, `operation`, `duration`, `version`, `globalSequence`, `outboxId`, `status`, `retryCount`, `priority`, `destination`
 
-**Key methods:**
+Key methods:
 
 | Method | Description |
 |--------|-------------|

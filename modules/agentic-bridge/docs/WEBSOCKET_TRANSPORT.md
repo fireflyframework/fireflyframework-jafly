@@ -4,7 +4,7 @@ Copyright 2026 Firefly Software Foundation. Licensed under the Apache License 2.
 
 The WebSocket transport targets the `/ws/agents/{name}` endpoint exposed
 by the agentic REST application. It provides bidirectional, multi-turn
-conversations with isolated per-connection memory scopes — ideal for
+conversations with isolated per-connection memory scopes. Ideal for
 chat-style UIs.
 
 ---
@@ -67,7 +67,7 @@ events.subscribe(event -> {
 - One `Flux` invocation == one WebSocket session.
 - The session terminates when the server emits a `result` (or `error`)
   frame and closes the socket.
-- `AgenticClient.conversation(...)` is safe to call concurrently — each
+- `AgenticClient.conversation(...)` is safe to call concurrently. each
   invocation opens its own short-lived session.
 - The bridge sets `X-Request-ID` and the configured `AuthStrategy`
   headers on the initial WebSocket handshake.

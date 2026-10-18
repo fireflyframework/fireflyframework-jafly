@@ -54,7 +54,7 @@ firefly:
       enabled: false       # Enable orchestration engine (default: true)
 ```
 
-**Notes:**
+Notes:
 - All features are enabled by default
 - Disabling a feature will prevent its auto-configuration
 - Dependencies must be on classpath for features to work
@@ -126,7 +126,7 @@ firefly:
 | `airflow.verify-ssl` | boolean | `true` | Verify SSL certificates |
 | `airflow.max-concurrent-dag-runs` | int | `10` | Maximum concurrent DAG runs |
 
-**Example DAG ID Construction:**
+Example DAG ID Construction:
 
 Given `dag-id-prefix: data_job` and job definition `customer-data-extraction`:
 ```
@@ -165,7 +165,7 @@ firefly:
 | `aws-step-functions.max-concurrent-executions` | int | `100` | Maximum concurrent executions |
 | `aws-step-functions.enable-x-ray-tracing` | boolean | `false` | Enable AWS X-Ray tracing |
 
-**Example State Machine ARN:**
+Example State Machine ARN:
 ```
 arn:aws:states:us-east-1:123456789012:stateMachine:DataJobStateMachine
 ```
@@ -222,7 +222,7 @@ firefly:
       job-events-topic: my-service-job-events
 ```
 
-**Published Events:**
+Published Events:
 - Job started
 - Job completed
 - Job failed
@@ -245,11 +245,11 @@ firefly:
 
 The library automatically separates:
 
-**Commands (Write Operations):**
+Commands (Write Operations):
 - `startJob()` - Initiates job execution
 - `stopJob()` - Terminates job execution
 
-**Queries (Read Operations):**
+Queries (Read Operations):
 - `checkJob()` - Reads job status
 - `collectJobResults()` - Reads raw results
 - `getJobResult()` - Reads transformed results
@@ -270,7 +270,7 @@ firefly:
     enabled: true
 ```
 
-**Note:** See the `fireflyframework-orchestration` module documentation for complete options including Saga, TCC, and Workflow configuration.
+Note: See the `fireflyframework-orchestration` module documentation for complete options including Saga, TCC, and Workflow configuration.
 
 ---
 
@@ -622,15 +622,15 @@ export FIREFLY_STEPEVENTS_TOPIC=my-step-events
 
 The library validates configuration at startup:
 
-**Required Properties:**
+Required Properties:
 - None - all have defaults
 
-**Conditional Requirements:**
+Conditional Requirements:
 - If `orchestrator-type: APACHE_AIRFLOW`, then `airflow.base-url` must be set
 - If `orchestrator-type: AWS_STEP_FUNCTIONS`, then `aws-step-functions.state-machine-arn` must be set
 - If `publish-job-events: true`, then EDA must be enabled
 
-**Validation Errors:**
+Validation Errors:
 ```
 Configuration property 'firefly.data.orchestration.airflow.base-url' is required when orchestrator-type is APACHE_AIRFLOW
 Configuration property 'firefly.data.orchestration.aws-step-functions.state-machine-arn' is required when orchestrator-type is AWS_STEP_FUNCTIONS
@@ -692,22 +692,22 @@ firefly:
 
 ### Common Issues
 
-**Issue:** Auto-configuration not working
+Issue: Auto-configuration not working
 ```
 Solution: Ensure dependency is on classpath and feature is enabled
 ```
 
-**Issue:** Airflow connection fails
+Issue: Airflow connection fails
 ```
 Solution: Check Airflow base URL, credentials, and network connectivity
 ```
 
-**Issue:** AWS Step Functions connection fails
+Issue: AWS Step Functions connection fails
 ```
 Solution: Check AWS credentials, region, and state machine ARN configuration
 ```
 
-**Issue:** Events not publishing
+Issue: Events not publishing
 ```
 Solution: Verify EDA is enabled and publisher is configured
 ```
@@ -734,4 +734,3 @@ curl http://localhost:8080/actuator/configprops | jq '.contexts.application.bean
 - [Getting Started](getting-started.md) - Setup guide
 - [Architecture](architecture.md) - Design overview
 - [Examples](examples.md) - Configuration examples
-

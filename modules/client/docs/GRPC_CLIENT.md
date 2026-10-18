@@ -452,9 +452,9 @@ public GrpcClient<UserServiceStub> userServiceClient(
 
 ### Connection Refused
 
-**Problem**: `UNAVAILABLE: io exception` or connection refused
+Problem: `UNAVAILABLE: io exception` or connection refused
 
-**Solution**:
+Solution:
 - Verify the address is correct (host:port)
 - Ensure the gRPC service is running
 - Check network connectivity
@@ -462,9 +462,9 @@ public GrpcClient<UserServiceStub> userServiceClient(
 
 ### Deadline Exceeded
 
-**Problem**: `DEADLINE_EXCEEDED` errors
+Problem: `DEADLINE_EXCEEDED` errors
 
-**Solution**:
+Solution:
 ```java
 // Increase timeout
 GrpcClient<UserServiceStub> client = ServiceClient.grpc("user-service", UserServiceStub.class)
@@ -476,9 +476,9 @@ GrpcClient<UserServiceStub> client = ServiceClient.grpc("user-service", UserServ
 
 ### SSL/TLS Errors
 
-**Problem**: SSL handshake failures
+Problem: SSL handshake failures
 
-**Solution**:
+Solution:
 ```java
 // For development with self-signed certs
 GrpcClient<UserServiceStub> client = ServiceClient.grpc("user-service", UserServiceStub.class)
@@ -490,9 +490,9 @@ GrpcClient<UserServiceStub> client = ServiceClient.grpc("user-service", UserServ
 
 ### Stub Not Found
 
-**Problem**: Cannot find `UserServiceGrpc` class
+Problem: Cannot find `UserServiceGrpc` class
 
-**Solution**:
+Solution:
 - Ensure you've run `mvn compile` to generate stubs
 - Check that `.proto` files are in `src/main/proto/`
 - Verify protobuf-maven-plugin is configured correctly
@@ -500,9 +500,9 @@ GrpcClient<UserServiceStub> client = ServiceClient.grpc("user-service", UserServ
 
 ### Message Too Large
 
-**Problem**: `RESOURCE_EXHAUSTED: grpc: received message larger than max`
+Problem: `RESOURCE_EXHAUSTED: grpc: received message larger than max`
 
-**Solution**:
+Solution:
 ```yaml
 # In application.yml
 firefly:
@@ -515,38 +515,37 @@ firefly:
 
 ## What's Included
 
-✅ **Unary Calls**: Single request → single response  
-✅ **Server Streaming**: Single request → stream of responses  
-✅ **Client Streaming**: Stream of requests → single response  
-✅ **Bidirectional Streaming**: Stream ↔ stream  
-✅ **Circuit Breaker**: Automatic failure detection  
-✅ **Health Checks**: Service availability monitoring  
-✅ **Timeouts**: Configurable call timeouts  
-✅ **TLS Support**: Transport security  
-✅ **Reactive**: Non-blocking Mono/Flux responses  
-✅ **Direct Stub Access**: For advanced use cases  
+✅ Unary Calls: Single request → single response
+✅ Server Streaming: Single request → stream of responses
+✅ Client Streaming: Stream of requests → single response
+✅ Bidirectional Streaming: Stream ↔ stream
+✅ Circuit Breaker: Automatic failure detection
+✅ Health Checks: Service availability monitoring
+✅ Timeouts: Configurable call timeouts
+✅ TLS Support: Transport security
+✅ Reactive: Non-blocking Mono/Flux responses
+✅ Direct Stub Access: For advanced use cases
 
 ## What's NOT Included
 
-❌ **Stub Generation**: Use protobuf-maven-plugin  
-❌ **Server Implementation**: This is client-only  
-❌ **Load Balancing**: Use gRPC's built-in load balancing  
-❌ **Service Discovery**: Integrate with Consul/Eureka separately  
+❌ Stub Generation: Use protobuf-maven-plugin
+❌ Server Implementation: This is client-only
+❌ Load Balancing: Use gRPC's built-in load balancing
+❌ Service Discovery: Integrate with Consul/Eureka separately
 
 ---
 
-**Next Steps**:
+Next Steps:
 
-**Core Clients**:
+Core Clients:
 - [REST Client Guide](REST_CLIENT.md)
 - [SOAP Client Guide](SOAP_CLIENT.md)
 
-**Helper Utilities**:
+Helper Utilities:
 - [GraphQL Client Guide](GRAPHQL_CLIENT.md)
 - [WebSocket Helper Guide](WEBSOCKET_HELPER.md)
 - [OAuth2 Helper Guide](OAUTH2_HELPER.md)
 - [File Upload Helper Guide](MULTIPART_HELPER.md)
 
-**Configuration**:
+Configuration:
 - [Configuration Reference](CONFIGURATION.md)
-

@@ -41,7 +41,7 @@ These are referenced throughout the guide and in tests under `src/test/java/org/
 
 - Sync (provided via controllers you create extending AbstractSyncDataJobController):
   - POST `{base-path}/execute`
-    - base-path is defined by your controller’s `@RequestMapping`, e.g., `/api/v1/customer-validation` → POST `/api/v1/customer-validation/execute`
+    - base-path is defined by your controller's `@RequestMapping`, e.g., `/api/v1/customer-validation` → POST `/api/v1/customer-validation/execute`
 
 Note: Unlike Data Enrichers, Data Job controllers are NOT auto-registered. You must create concrete `@RestController` classes in your service that extend the abstract controllers.
 
@@ -66,7 +66,7 @@ This guide replaces older fragmented docs. The following legacy files have been 
 - saga-integration.md
 - README.md (old index)
 
-If you encounter references to those files, update links to point to this folder’s [guide.md](guide.md) instead.
+If you encounter references to those files, update links to point to this folder's [guide.md](guide.md) instead.
 
 ## Quick Links
 - Complete Guide: [guide.md](guide.md)

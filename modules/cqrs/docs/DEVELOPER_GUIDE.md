@@ -1,6 +1,6 @@
 # Developer Guide
 
-**Comprehensive development reference for building applications with fireflyframework-cqrs**
+Comprehensive development reference for building applications with fireflyframework-cqrs
 
 ## 📚 Table of Contents
 
@@ -22,9 +22,9 @@
 
 The framework implements true CQRS separation:
 
-- **Commands** → State changes, validation, authorization, side effects
-- **Queries** → Data retrieval, caching, read-only operations
-- **ExecutionContext** → Cross-cutting concerns (user, tenant, features)
+- Commands → State changes, validation, authorization, side effects
+- Queries → Data retrieval, caching, read-only operations
+- ExecutionContext → Cross-cutting concerns (user, tenant, features)
 
 ### Type Safety
 
@@ -51,7 +51,7 @@ public class CreateAccountHandler extends CommandHandler<CreateAccountCommand, A
 
 ### Command Structure
 
-Commands should be **immutable** and contain all data needed for the operation:
+Commands should be immutable and contain all data needed for the operation:
 
 ```java
 package com.example.banking.commands;
@@ -938,7 +938,7 @@ public class SecureTransferCommand implements Command<TransferResult> {
 
 ### Built-in Metrics Collection with CommandMetricsService
 
-The CQRS framework provides comprehensive metrics collection through the dedicated `CommandMetricsService`:
+The CQRS framework provides metrics collection through the dedicated `CommandMetricsService`:
 
 ```yaml
 # Enable metrics collection in application.yml
@@ -1103,18 +1103,18 @@ public class TransferMoneyHandler extends CommandHandler<TransferMoneyCommand, T
 
 The framework automatically registers these metrics with Micrometer:
 
-**Global Command Metrics:**
+Global Command Metrics:
 - `firefly.cqrs.command.processed` - Total commands processed successfully
 - `firefly.cqrs.command.failed` - Total commands that failed processing
 - `firefly.cqrs.command.validation.failed` - Total commands that failed validation
 - `firefly.cqrs.command.processing.time` - Command processing duration timer
 
-**Per-Command-Type Metrics:**
+Per-Command-Type Metrics:
 - `firefly.cqrs.command.type.processed` - Success count per command type (tagged with `command.type`)
 - `firefly.cqrs.command.type.failed` - Failure count per command type (tagged with `command.type`)
 - `firefly.cqrs.command.type.processing.time` - Processing time per command type (tagged with `command.type`)
 
-**Query Metrics:**
+Query Metrics:
 - `firefly.cqrs.query.processed` - Total queries processed
 - `firefly.cqrs.query.processing.time` - Query processing duration
 - `cache.gets` - Cache metrics with hit/miss result tags
@@ -1302,7 +1302,7 @@ groups:
           description: "Cache hit rate is {{ $value | humanizePercentage }} over the last 5 minutes"
 ```
 
-This comprehensive observability setup provides full visibility into your CQRS application's performance, errors, and business metrics.
+This observability setup provides full visibility into your CQRS application's performance, errors, and business metrics.
 
 This comprehensive Developer Guide provides practical patterns and real-world examples that developers can immediately apply when building applications with fireflyframework-cqrs. The guide focuses on actual implementation details rather than theoretical concepts.
 

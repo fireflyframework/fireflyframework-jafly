@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.query.QueryBus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,10 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/applications")
+@RequiredArgsConstructor
 public class ApplicationsController {
     private final CommandBus commandBus;
     private final QueryBus queryBus;
-
-    public ApplicationsController(CommandBus commandBus, QueryBus queryBus) {
-        this.commandBus = commandBus;
-        this.queryBus = queryBus;
-    }
 
     @PostMapping
     public Mono<ResponseEntity<OnboardingApplication>> submit(@Valid @RequestBody ApplicationRequest request) {

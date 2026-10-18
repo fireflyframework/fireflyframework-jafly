@@ -26,6 +26,8 @@ Manage applicant identities through IdpAdapter and a selected provider. Keep ide
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Select a provider in `application.yaml`:
@@ -42,6 +44,7 @@ With the chosen adapter on the classpath, its `IdpAdapter` bean is auto-configur
 2. Or consume the `IdpAdapter` directly from your own services:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
 import org.fireflyframework.security.idp.dtos.*;
 import org.springframework.http.ResponseEntity;
@@ -49,13 +52,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final IdpAdapter idp;
 
-    public AuthService(IdpAdapter idp) {
-        this.idp = idp;
-    }
+
 
     public Mono<ResponseEntity<TokenResponse>> login(String username, String password) {
         LoginRequest request = LoginRequest.builder()
@@ -93,7 +95,9 @@ The `firefly.security.idp` namespace is bound by [IdpProperties.java](https://gi
 
 ## Continue the application
 
-Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration. ## Build and validation
+Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

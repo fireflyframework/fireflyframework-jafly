@@ -17,7 +17,7 @@ This guide covers testing strategies and best practices for the Firefly ECM Libr
 
 ## 1. Testing Philosophy
 
-The Firefly ECM Library follows a comprehensive testing strategy based on the **Test Pyramid**:
+The Firefly ECM Library follows a comprehensive testing strategy based on the Test Pyramid:
 
 ```
     /\
@@ -34,11 +34,11 @@ The Firefly ECM Library follows a comprehensive testing strategy based on the **
 
 ### Testing Principles
 
-- **Fast Feedback**: Unit tests provide immediate feedback
-- **Isolation**: Tests should not depend on external systems
-- **Repeatability**: Tests should produce consistent results
-- **Clarity**: Tests should be easy to understand and maintain
-- **Coverage**: Critical paths should be thoroughly tested
+- Fast Feedback: Unit tests provide immediate feedback
+- Isolation: Tests should not depend on external systems
+- Repeatability: Tests should produce consistent results
+- Clarity: Tests should be easy to understand and maintain
+- Coverage: Critical paths should be thoroughly tested
 
 ## 2. Test Structure
 
@@ -316,82 +316,28 @@ class DocumentRepositoryTest {
 
 ### 5.1 Mock Adapter Testing
 
-Test adapter implementations with mocked external services. The ECM library includes comprehensive test suites for all adapters with **100% test success rate** (31/31 tests passing).
+Test each adapter against its current port contract. Mocked service tests check request construction and response handling; they do not establish live-provider acceptance.
 
-#### S3 Adapter Testing
+#### S3 adapter testing
+
+The shipped adapter is `S3DocumentContentAdapter`, implementing `DocumentContentPort`. Its [test fixture](../../ecm-storage-aws/src/test/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapterTest.java) supplies the Spring configuration, mock client, presigner, properties, and imports. This method is an excerpt from that fixture, not a standalone test:
 
 ```java
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-class S3DocumentAdapterTest {
-
-    @Mock
-    private S3Client s3Client;
-
-    @Mock
-    private S3AdapterProperties properties;
-
-    // Use real resilience instances for testing
-    private CircuitBreaker circuitBreaker;
-    private Retry retry;
-
-    private S3DocumentAdapter adapter;
-
-    @BeforeEach
-    void setUp() {
-        when(properties.getBucketName()).thenReturn("test-bucket");
-        when(properties.getPathPrefix()).thenReturn("test-prefix");
-
-        // Create real resilience instances for testing
-        circuitBreaker = CircuitBreaker.of("test-cb",
-            CircuitBreakerConfig.custom()
-                .failureRateThreshold(100)
-                .slidingWindowSize(10)
-                .minimumNumberOfCalls(10)
-                .build());
-
-        retry = Retry.of("test-retry",
-            RetryConfig.custom()
-                .maxAttempts(1)
-                .build());
-
-        adapter = new S3DocumentAdapter(s3Client, properties, circuitBreaker, retry);
-    }
-    
-    @Test
-    void shouldCreateDocumentInS3() {
-        // Given
-        Document document = Document.builder()
-            .id(UUID.randomUUID()) // Provide ID to avoid NullPointerException
-            .name("test.pdf")
-            .mimeType("application/pdf")
-            .size(1024L)
-            .build();
-
-        byte[] content = "test content".getBytes();
-
-        PutObjectResponse response = PutObjectResponse.builder()
-            .eTag("\"test-etag\"") // Include quotes for proper ETag format
-            .build();
-
+@Test
+    void storeContent_smallBytes_putsObjectAndReturnsKey() {
+        byte[] data = "hello".getBytes();
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-            .thenReturn(response);
+                .thenReturn(PutObjectResponse.builder().eTag("etag").build());
 
-        // When
-        Mono<Document> result = adapter.createDocument(document, content);
+        String key = contentPort.storeContent(documentId, data, "text/plain").block();
 
-        // Then
-        StepVerifier.create(result)
-            .assertNext(createdDoc -> {
-                assertThat(createdDoc.getName()).isEqualTo("test.pdf");
-                assertThat(createdDoc.getStoragePath()).isNotNull();
-                assertThat(createdDoc.getSize()).isEqualTo(1024L);
-            })
-            .verifyComplete();
-
-        verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+        assertThat(key).isEqualTo("documents/" + documentId);
+        ArgumentCaptor<PutObjectRequest> req = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(s3Client).putObject(req.capture(), any(RequestBody.class));
+        assertThat(req.getValue().bucket()).isEqualTo("test-bucket");
+        assertThat(req.getValue().key()).isEqualTo("documents/" + documentId);
     }
-}
+```
 
 #### DocuSign Adapter Testing
 
@@ -449,11 +395,11 @@ class S3AdapterIntegrationTest {
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("firefly.ecm.adapter-type", () -> "s3");
-        registry.add("firefly.ecm.properties.bucket-name", () -> "test-bucket");
-        registry.add("firefly.ecm.properties.region", () -> "us-east-1");
-        registry.add("firefly.ecm.properties.endpoint", localstack::getEndpointOverride);
-        registry.add("firefly.ecm.properties.access-key", localstack::getAccessKey);
-        registry.add("firefly.ecm.properties.secret-key", localstack::getSecretKey);
+        registry.add("firefly.ecm.adapter.s3.bucket-name", () -> "test-bucket");
+        registry.add("firefly.ecm.adapter.s3.region", () -> "us-east-1");
+        registry.add("firefly.ecm.adapter.s3.endpoint", localstack::getEndpointOverride);
+        registry.add("firefly.ecm.adapter.s3.access-key", localstack::getAccessKey);
+        registry.add("firefly.ecm.adapter.s3.secret-key", localstack::getSecretKey);
     }
     
     @Autowired
@@ -508,10 +454,10 @@ class SignatureWorkflowTest {
     @Autowired
     private SignatureService signatureService;
     
-    @MockBean
+    @MockitoBean
     private DocumentPort documentPort;
     
-    @MockBean
+    @MockitoBean
     private SignatureEnvelopePort envelopePort;
     
     @Test
@@ -723,16 +669,16 @@ void shouldHandleConcurrentDocumentUploads() {
 
 ### Testing Best Practices
 
-1. **Test Naming**: Use descriptive test method names that explain the scenario
-2. **Given-When-Then**: Structure tests clearly with setup, action, and verification
-3. **Single Responsibility**: Each test should verify one specific behavior
-4. **Test Independence**: Tests should not depend on each other
-5. **Fast Execution**: Keep unit tests fast and integration tests reasonable
-6. **Meaningful Assertions**: Use specific assertions that provide clear failure messages
-7. **Test Coverage**: Aim for high coverage of critical business logic
-8. **Reactive Testing**: Use StepVerifier for testing reactive streams
-9. **Mock Judiciously**: Mock external dependencies but not internal logic
-10. **Clean Test Code**: Apply the same quality standards to test code as production code
+1. Test Naming: Use descriptive test method names that explain the scenario
+2. Given-When-Then: Structure tests clearly with setup, action, and verification
+3. Single Responsibility: Each test should verify one specific behavior
+4. Test Independence: Tests should not depend on each other
+5. Fast Execution: Keep unit tests fast and integration tests reasonable
+6. Meaningful Assertions: Use specific assertions that provide clear failure messages
+7. Test Coverage: Aim for high coverage of critical business logic
+8. Reactive Testing: Use StepVerifier for testing reactive streams
+9. Mock Judiciously: Mock external dependencies but not internal logic
+10. Clean Test Code: Apply the same quality standards to test code as production code
 
 ### Running Tests
 
@@ -756,33 +702,12 @@ mvn test -Dtest="*PerformanceTest"
 mvn clean install
 ```
 
-## 11. Current Test Status
+## Run current adapter tests
 
-The Firefly ECM Library maintains **100% test success rate** across all modules:
+From the repository root, select the core and the adapters whose behavior you are changing:
 
-### Test Coverage Summary
+```sh
+./mvnw -pl :fireflyframework-ecm,:fireflyframework-ecm-storage-aws,:fireflyframework-ecm-esignature-docusign -am verify
+```
 
-| **Module** | **Tests Run** | **Failures** | **Errors** | **Success Rate** |
-|------------|---------------|---------------|------------|------------------|
-| **ECM Core** | 0 | 0 | 0 | ✅ **100%** |
-| **S3 Adapter** | 21 | 0 | 0 | ✅ **100%** |
-| **DocuSign Adapter** | 10 | 0 | 0 | ✅ **100%** |
-| **TOTAL** | **31** | **0** | **0** | ✅ **100%** |
-
-### Key Testing Achievements
-
-- **Resilience Framework Integration**: Successfully resolved complex resilience4j reactive operator testing challenges
-- **External Service Mocking**: Proper mocking strategies for unmockable classes (e.g., DocuSign ApiClient)
-- **Dependency Management**: Complete resolution of all transitive dependencies for DocuSign SDK
-- **Reactive Testing**: Comprehensive StepVerifier usage for reactive stream validation
-- **Error Handling**: Thorough testing of error scenarios and exception handling
-
-### Testing Infrastructure Improvements
-
-1. **MockitoSettings Configuration**: Added `@MockitoSettings(strictness = Strictness.LENIENT)` for cleaner test execution
-2. **Real Instance Strategy**: Used real CircuitBreaker and Retry instances instead of complex mocking
-3. **Dependency Resolution**: Added all required JAX-RS, Jersey, and OAuth2 dependencies for DocuSign integration
-4. **Test Data Management**: Proper test document ID management to avoid NullPointerExceptions
-5. **Byte Array Comparisons**: Correct handling of binary content validation in tests
-
-This comprehensive testing approach ensures the reliability, maintainability, and performance of the Firefly ECM Library across all components and integration scenarios.
+Read the generated test reports for the actual run. A successful mocked-client suite establishes those tested paths; credentials, remote account permissions, network behavior, and live provider responses require separate integration acceptance. See the [ECM API reference](api/README.md) and each adapter's current test sources before copying a fixture.

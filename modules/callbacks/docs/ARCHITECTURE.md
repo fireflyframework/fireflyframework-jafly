@@ -1,6 +1,6 @@
 # Architecture Deep Dive
 
-> **Comprehensive architectural documentation for the Firefly Framework Callbacks Library**
+> Comprehensive architectural documentation for the Firefly Framework Callbacks Library
 
 ## Table of Contents
 
@@ -17,22 +17,22 @@
 
 ## Overview
 
-The Firefly Framework Callbacks Library is a **reactive, event-driven microservice** that bridges Firefly's internal event bus (Kafka) with external HTTP webhooks. It provides a complete solution for:
+The Firefly Framework Callbacks Library is a reactive, event-driven microservice that bridges Firefly's internal event bus (Kafka) with external HTTP webhooks. It provides a complete solution for:
 
-1. **Dynamic Event Subscription**: Subscribe to Kafka topics at runtime via REST API
-2. **Intelligent Event Routing**: Route events to multiple HTTP endpoints based on patterns
-3. **Reliable Delivery**: Circuit breakers, retries, and comprehensive execution tracking
-4. **Security**: Domain authorization, HMAC signatures, HTTPS enforcement
-5. **Observability**: Metrics, health checks, and execution audit trails
+1. Dynamic Event Subscription: Subscribe to Kafka topics at runtime via REST API
+2. Intelligent Event Routing: Route events to multiple HTTP endpoints based on patterns
+3. Reliable Delivery: Circuit breakers, retries, and comprehensive execution tracking
+4. Security: Domain authorization, HMAC signatures, HTTPS enforcement
+5. Observability: Metrics, health checks, and execution audit trails
 
 ### Key Design Principles
 
-- **Reactive First**: Non-blocking I/O throughout the stack (WebFlux, R2DBC, WebClient)
-- **Event-Driven**: Asynchronous event processing with backpressure support
-- **Resilient**: Circuit breakers, retries, timeouts, and graceful degradation
-- **Secure**: Defense-in-depth with domain whitelisting and signature verification
-- **Observable**: Comprehensive metrics, logging, and execution tracking
-- **Extensible**: Plugin architecture for new messaging systems and filters
+- Reactive First: Non-blocking I/O throughout the stack (WebFlux, R2DBC, WebClient)
+- Event-Driven: Asynchronous event processing with backpressure support
+- Resilient: Circuit breakers, retries, timeouts, and graceful degradation
+- Secure: Defense-in-depth with domain whitelisting and signature verification
+- Observable: Comprehensive metrics, logging, and execution tracking
+- Extensible: Plugin architecture for new messaging systems and filters
 
 ## System Architecture
 
@@ -127,7 +127,7 @@ The Firefly Framework Callbacks Library is a **reactive, event-driven microservi
 
 ### Module Structure
 
-The platform follows a **multi-module Maven architecture** for clear separation of concerns:
+The platform follows a multi-module Maven architecture for clear separation of concerns:
 
 ```
 fireflyframework-callbacks/
@@ -195,28 +195,28 @@ fireflyframework-callbacks/
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Web** | Spring WebFlux | Reactive web framework |
-| **Reactive** | Project Reactor | Reactive programming (Mono/Flux) |
-| **Database** | R2DBC + PostgreSQL | Reactive database access |
-| **Messaging** | Apache Kafka | Event streaming |
-| **EDA** | lib-common-eda | Firefly's event library |
-| **HTTP Client** | WebClient | Non-blocking HTTP calls |
-| **Resilience** | Resilience4j | Circuit breaker, retry |
-| **Mapping** | MapStruct | DTO-Entity mapping |
-| **Validation** | Jakarta Validation | Bean validation |
-| **Migrations** | Flyway | Database versioning |
-| **Metrics** | Micrometer + Prometheus | Observability |
-| **Testing** | Testcontainers | Integration testing |
+| Web | Spring WebFlux | Reactive web framework |
+| Reactive | Project Reactor | Reactive programming (Mono/Flux) |
+| Database | R2DBC + PostgreSQL | Reactive database access |
+| Messaging | Apache Kafka | Event streaming |
+| EDA | lib-common-eda | Firefly's event library |
+| HTTP Client | WebClient | Non-blocking HTTP calls |
+| Resilience | Resilience4j | Circuit breaker, retry |
+| Mapping | MapStruct | DTO-Entity mapping |
+| Validation | Jakarta Validation | Bean validation |
+| Migrations | Flyway | Database versioning |
+| Metrics | Micrometer + Prometheus | Observability |
+| Testing | Testcontainers | Integration testing |
 
 ## Core Components
 
 ### 1. Dynamic Listener Factory
 
-**Purpose**: Dynamically creates Kafka listeners based on database configuration without requiring application restart.
+Purpose: Dynamically creates Kafka listeners based on database configuration without requiring application restart.
 
-**Location**: `org.fireflyframework.callbacks.core.listener.DynamicListenerFactory`
+Location: `org.fireflyframework.callbacks.core.listener.DynamicListenerFactory`
 
-**How It Works**:
+How It Works:
 
 ```java
 @Component
@@ -253,7 +253,7 @@ public class DynamicListenerFactory {
 }
 ```
 
-**Key Features**:
+Key Features:
 - Loads subscriptions from database on startup
 - Registers listeners with `lib-common-eda`
 - Supports runtime registration when new subscriptions are created
@@ -261,11 +261,11 @@ public class DynamicListenerFactory {
 
 ### 2. Callback Router
 
-**Purpose**: Routes incoming events to matching callback configurations.
+Purpose: Routes incoming events to matching callback configurations.
 
-**Location**: `org.fireflyframework.callbacks.core.service.impl.CallbackRouterImpl`
+Location: `org.fireflyframework.callbacks.core.service.impl.CallbackRouterImpl`
 
-**Routing Logic**:
+Routing Logic:
 
 ```java
 public Mono<Integer> routeEvent(
@@ -290,7 +290,7 @@ public Mono<Integer> routeEvent(
 }
 ```
 
-**Features**:
+Features:
 - Event type matching with PostgreSQL array queries
 - Filter expression evaluation (JSONPath)
 - Parallel callback execution
@@ -298,11 +298,11 @@ public Mono<Integer> routeEvent(
 
 ### 3. Callback Dispatcher
 
-**Purpose**: Executes HTTP callbacks with retry logic, circuit breakers, and HMAC signing.
+Purpose: Executes HTTP callbacks with retry logic, circuit breakers, and HMAC signing.
 
-**Location**: `org.fireflyframework.callbacks.core.service.impl.CallbackDispatcherImpl`
+Location: `org.fireflyframework.callbacks.core.service.impl.CallbackDispatcherImpl`
 
-**Execution Flow**:
+Execution Flow:
 
 ```
 1. Domain Authorization Check
@@ -328,7 +328,7 @@ public Mono<Integer> routeEvent(
    └─ Update domain statistics
 ```
 
-**Circuit Breaker Configuration**:
+Circuit Breaker Configuration:
 
 ```java
 CircuitBreakerConfig config = CircuitBreakerConfig.custom()
@@ -338,7 +338,7 @@ CircuitBreakerConfig config = CircuitBreakerConfig.custom()
     .build();
 ```
 
-**Retry Configuration**:
+Retry Configuration:
 
 ```java
 RetryBackoffSpec retrySpec = Retry.backoff(
@@ -351,11 +351,11 @@ RetryBackoffSpec retrySpec = Retry.backoff(
 
 ### 4. Domain Authorization Service
 
-**Purpose**: Validates callback URLs against a whitelist of authorized domains.
+Purpose: Validates callback URLs against a whitelist of authorized domains.
 
-**Location**: `org.fireflyframework.callbacks.core.service.impl.DomainAuthorizationServiceImpl`
+Location: `org.fireflyframework.callbacks.core.service.impl.DomainAuthorizationServiceImpl`
 
-**Authorization Flow**:
+Authorization Flow:
 
 ```java
 public Mono<Boolean> isAuthorized(String url) {
@@ -370,7 +370,7 @@ public Mono<Boolean> isAuthorized(String url) {
 }
 ```
 
-**Security Features**:
+Security Features:
 - Domain extraction from URLs
 - Active and verified status checks
 - HTTPS enforcement (configurable)
@@ -380,11 +380,11 @@ public Mono<Boolean> isAuthorized(String url) {
 
 ### 5. Generic Filtering System
 
-**Purpose**: Provides unified filtering, pagination, and sorting across all entities.
+Purpose: Provides unified filtering, pagination, and sorting across all entities.
 
-**Location**: `org.fireflyframework.callbacks.core.filters.*`
+Location: `org.fireflyframework.callbacks.core.filters.*`
 
-**FilterRequest Structure**:
+FilterRequest Structure:
 
 ```java
 public class FilterRequest<T> {
@@ -396,7 +396,7 @@ public class FilterRequest<T> {
 }
 ```
 
-**Usage Example**:
+Usage Example:
 
 ```java
 // In service layer
@@ -410,7 +410,7 @@ public Mono<PaginationResponse<CallbackConfigurationDTO>> filterConfigurations(
 }
 ```
 
-**PaginationResponse Structure**:
+PaginationResponse Structure:
 
 ```java
 public class PaginationResponse<T> {
@@ -507,7 +507,7 @@ CREATE TABLE event_subscriptions (
 );
 ```
 
-**Field Validations**:
+Field Validations:
 - `name`: Required, 1-255 characters
 - `messaging_system_type`: Required, 1-50 characters
 - `connection_config`: Required, must contain at least one entry
@@ -517,7 +517,7 @@ CREATE TABLE event_subscriptions (
 - `polling_interval_ms`: 100-60000ms, default 1000ms
 - `tenant_id`: Optional, max 100 characters
 
-**Indexes**:
+Indexes:
 - `idx_event_subs_active` on `active`
 - `idx_event_subs_tenant` on `tenant_id`
 
@@ -553,7 +553,7 @@ CREATE TABLE authorized_domains (
 );
 ```
 
-**Field Validations**:
+Field Validations:
 - `domain`: Required, 1-255 characters
 - `organization`: Optional, max 255 characters
 - `contact_email`: Optional, must be valid email, max 255 characters
@@ -563,7 +563,7 @@ CREATE TABLE authorized_domains (
 - `tenant_id`: Optional, max 100 characters
 - `notes`: Optional, max 2000 characters
 
-**Indexes**:
+Indexes:
 - `idx_auth_domains_domain` on `domain`
 - `idx_auth_domains_active_verified` on `(active, verified)`
 
@@ -603,7 +603,7 @@ CREATE TABLE callback_configurations (
 );
 ```
 
-**Field Validations**:
+Field Validations:
 - `name`: Required, 1-255 characters
 - `description`: Optional, max 2000 characters
 - `url`: Required, max 2048 characters, must start with http:// or https://
@@ -621,7 +621,7 @@ CREATE TABLE callback_configurations (
 - `failure_threshold`: 1-100, default 10
 - `failure_count`: Non-negative, default 0
 
-**Indexes**:
+Indexes:
 - `idx_callback_configs_status` on `status`
 - `idx_callback_configs_active` on `active`
 - `idx_callback_configs_event_types` (GIN) on `subscribed_event_types`
@@ -654,7 +654,7 @@ CREATE TABLE callback_executions (
 );
 ```
 
-**Field Validations**:
+Field Validations:
 - `event_type`: Optional, max 255 characters
 - `status`: Required, one of PENDING, IN_PROGRESS, SUCCESS, FAILED_RETRYING, FAILED_PERMANENT, SKIPPED
 - `response_status_code`: 100-599 (valid HTTP status codes)
@@ -665,7 +665,7 @@ CREATE TABLE callback_executions (
 - `error_stack_trace`: Optional, max 10000 characters
 - `request_duration_ms`: Non-negative
 
-**Indexes**:
+Indexes:
 - `idx_callback_exec_config` on `configuration_id`
 - `idx_callback_exec_status` on `status`
 - `idx_callback_exec_event_type` on `event_type`
@@ -680,7 +680,7 @@ All DTOs include comprehensive Jakarta validation annotations to ensure data int
 
 Represents a dynamic subscription to a messaging system.
 
-**Key Fields**:
+Key Fields:
 - `id` (UUID): Unique identifier (read-only)
 - `name` (String, required): Subscription name (1-255 chars)
 - `description` (String): Description (max 2000 chars)
@@ -705,7 +705,7 @@ Represents a dynamic subscription to a messaging system.
 
 Represents an HTTP callback configuration.
 
-**Key Fields**:
+Key Fields:
 - `id` (UUID): Unique identifier (read-only)
 - `name` (String, required): Configuration name (1-255 chars)
 - `description` (String): Description (max 2000 chars)
@@ -735,7 +735,7 @@ Represents an HTTP callback configuration.
 
 Represents an authorized domain for callback URLs.
 
-**Key Fields**:
+Key Fields:
 - `id` (UUID): Unique identifier (read-only)
 - `domain` (String, required): Domain name (1-255 chars)
 - `organization` (String): Organization name (max 255 chars)
@@ -763,7 +763,7 @@ Represents an authorized domain for callback URLs.
 
 Represents a callback execution attempt.
 
-**Key Fields**:
+Key Fields:
 - `id` (UUID): Unique identifier (read-only)
 - `configurationId` (UUID): Configuration ID
 - `eventType` (String): Event type (max 255 chars)
@@ -957,7 +957,7 @@ sequenceDiagram
 
 ### 1. Repository Pattern
 
-**BaseRepository** provides common methods for all repositories:
+BaseRepository provides common methods for all repositories:
 
 ```java
 @NoRepositoryBean
@@ -1114,7 +1114,7 @@ private String generateHmacSignature(String payload, String secret) {
 }
 ```
 
-**Headers Sent**:
+Headers Sent:
 ```
 X-Event-Type: customer.created
 X-Event-Id: 123e4567-e89b-12d3-a456-426614174000
@@ -1123,7 +1123,7 @@ X-Signature: base64-encoded-hmac-sha256-signature
 Content-Type: application/json
 ```
 
-**Recipient Verification**:
+Recipient Verification:
 ```javascript
 // Recipient verifies signature
 const crypto = require('crypto');
@@ -1167,7 +1167,7 @@ function verifySignature(payload, signature, secret) {
        └─── Still failing ─────▶ Back to OPEN
 ```
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   callbacks:
@@ -1182,7 +1182,7 @@ firefly:
 
 ### Retry Strategy
 
-**Exponential Backoff**:
+Exponential Backoff:
 
 ```
 Attempt 1: Immediate
@@ -1193,18 +1193,18 @@ Attempt 4: Wait 4s (2s * 2.0)
 Max Wait: 60s
 ```
 
-**Retry Conditions**:
+Retry Conditions:
 - HTTP 5xx errors (server errors)
 - HTTP 408 (Request Timeout)
 - HTTP 429 (Too Many Requests)
 - Network errors (connection refused, timeout)
 
-**Non-Retryable**:
+Non-Retryable:
 - HTTP 4xx errors (except 408, 429)
 - Invalid configuration
 - Domain not authorized
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   callbacks:
@@ -1217,19 +1217,19 @@ firefly:
 
 ### Timeout Management
 
-**Levels of Timeouts**:
+Levels of Timeouts:
 
-1. **HTTP Request Timeout**: Per-callback configuration
+1. HTTP Request Timeout: Per-callback configuration
    ```java
    .timeout(Duration.ofMillis(configuration.getTimeoutMs()))
    ```
 
-2. **Circuit Breaker Timeout**: Slow call threshold
+2. Circuit Breaker Timeout: Slow call threshold
    ```yaml
    slow-call-duration-threshold-ms: 10000
    ```
 
-3. **Database Query Timeout**: R2DBC connection timeout
+3. Database Query Timeout: R2DBC connection timeout
    ```yaml
    spring:
      r2dbc:
@@ -1241,7 +1241,7 @@ firefly:
 
 ### Reactive Architecture Benefits
 
-**Traditional Blocking**:
+Traditional Blocking:
 ```
 Thread Pool (200 threads)
 ├─ Thread 1: Waiting for HTTP response (blocked)
@@ -1253,7 +1253,7 @@ Thread Pool (200 threads)
 Max Concurrent Requests: ~200
 ```
 
-**Reactive Non-Blocking**:
+Reactive Non-Blocking:
 ```
 Event Loop (8 threads)
 ├─ Thread 1: Handling 1000s of requests
@@ -1266,7 +1266,7 @@ Max Concurrent Requests: Tens of thousands
 
 ### Database Optimization
 
-**Connection Pooling**:
+Connection Pooling:
 ```yaml
 spring:
   r2dbc:
@@ -1276,12 +1276,12 @@ spring:
       max-idle-time: 30m
 ```
 
-**Indexes**:
+Indexes:
 - GIN index on `subscribed_event_types` for fast event type matching
 - B-tree indexes on `active`, `status`, `tenant_id`
 - Composite index on `(active, verified)` for domain authorization
 
-**Query Optimization**:
+Query Optimization:
 ```sql
 -- Optimized query using GIN index
 SELECT * FROM callback_configurations
@@ -1291,7 +1291,7 @@ WHERE status = 'ACTIVE'
 
 ### HTTP Client Optimization
 
-**Connection Pooling**:
+Connection Pooling:
 ```java
 WebClient webClient = WebClient.builder()
     .codecs(configurer -> configurer
@@ -1300,7 +1300,7 @@ WebClient webClient = WebClient.builder()
     .build();
 ```
 
-**Parallel Execution**:
+Parallel Execution:
 ```java
 // Multiple callbacks executed in parallel
 return configurationService.findActiveByEventType(eventType)
@@ -1442,14 +1442,14 @@ logging:
 
 ---
 
-**For more information, see:**
+For more information, see:
 - [Quickstart Guide](QUICKSTART_GUIDE.md)
 - [Testing Guide](TESTING_GUIDE.md)
 - [Main README](../README.md)
 
 ---
 
-**© 2025 Firefly Software Foundation. All rights reserved.**
+© 2025 Firefly Software Foundation. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1462,4 +1462,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-

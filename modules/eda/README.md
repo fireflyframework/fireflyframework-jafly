@@ -26,9 +26,12 @@ Once a submitted application must notify another service, define an application.
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 This optional extension publishes an application ID after the onboarding service has accepted a submission. The Java class is an API fragment: register it in a Spring application with EDA enabled, inject it into application code, and subscribe to or compose its returned `Mono`. It does not save the application or make the save and publication atomic.
 
 ```java
+import lombok.RequiredArgsConstructor;
 import java.util.UUID;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
@@ -36,12 +39,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class ApplicationEventPublisher {
     private final EventPublisherFactory publishers;
 
-    public ApplicationEventPublisher(EventPublisherFactory publishers) {
-        this.publishers = publishers;
-    }
+
 
     public Mono<Void> submitted(UUID applicationId) {
         return publishers.getPublisher(PublisherType.APPLICATION_EVENT)
@@ -77,7 +79,9 @@ The `firefly.eda` namespace is bound by [EdaProperties.java](https://github.com/
 
 ## Continue the application
 
-Use the [EDA - Kafka guide](../../docs/site/modules/eda-kafka.md) for the next part of this integration. ## Build and validation
+Use the [EDA - Kafka guide](../../docs/site/modules/eda-kafka.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

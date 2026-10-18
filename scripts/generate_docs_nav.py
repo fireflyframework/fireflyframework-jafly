@@ -54,10 +54,10 @@ def sentence_case(title):
     brands = {word.lower(): word for word in (
         'API SPI WebFlux OAuth2 BFF IDP AWS Cognito Azure AD Keycloak Cerbos OPA '
         'OpenFGA R2DBC Vault CQRS SDK Agentic Firebase Resend SendGrid Twilio EDA '
-        'Kafka RabbitMQ PostgreSQL JCache Hazelcast Redis ECM S3 Blob Adobe Sign '
+        'Kafka RabbitMQ PostgreSQL Postgres JCache Hazelcast Redis ECM S3 Blob Adobe Sign '
         'DocuSign Logalty Java BOM eSignature'
     ).split()}
-    words = title.replace(' - ', ': ').split()
+    words = title.replace(' - ', ': ').replace('(S3)', 'S3').split()
     return ' '.join(brands.get(word.rstrip(':').lower(),
                               word.rstrip(':') if index == 0 else word.rstrip(':').lower()) +
                     (':' if word.endswith(':') else '')
@@ -81,6 +81,25 @@ def generated(root):
     return '\n'.join(lines) + '\n', json.dumps(capabilities, indent=2) + '\n'
 
 
+def journey_navigation(root):
+    learning = [
+        ('Installation', 'installation.md'),
+        ('Your first service', 'getting-started.md'),
+        ('Keep an onboarding history', 'guides/onboarding-event-store.md'),
+        ('Coordinate an onboarding application', 'guides/onboarding-coordination.md'),
+        ('Examples and tutorials', 'examples.md'),
+    ]
+    journeys = [(title, f'capabilities/{slug}.md') for slug, title, _ in CAPABILITIES]
+    for _, path in learning + journeys:
+        if not (root / 'docs/site' / path).is_file():
+            raise ValueError(f'learning or capability guide is missing: {path}')
+    lines = ['  - Learning path:']
+    lines.extend('      - ' + json.dumps(title) + ': ' + path for title, path in learning)
+    lines.append('  - Capabilities:')
+    lines.extend('      - ' + json.dumps(title) + ': ' + path for title, path in journeys)
+    return '\n'.join(lines) + '\n'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -92,6 +111,11 @@ def main():
     updated, count = re.subn(r'  - Modules:\n.*?(?=  - Contribute:)', lambda _: navigation, current, flags=re.S)
     if count != 1:
         raise ValueError('MkDocs Modules navigation boundary is missing or ambiguous')
+    journeys = journey_navigation(root)
+    updated, journey_count = re.subn(r'  - (?:Get started|Learning path):\n.*?(?=  - Architecture:)',
+                                     lambda _: journeys, updated, flags=re.S)
+    if journey_count != 1:
+        raise ValueError('MkDocs learning navigation boundary is missing or ambiguous')
     data = root / 'docs/site/assets/capabilities.json'
     if args.check:
         if current != updated or not data.exists() or data.read_text() != capabilities:
@@ -99,7 +123,7 @@ def main():
     else:
         config.write_text(updated)
         data.write_text(capabilities)
-    print('Validated eight capability sections and all module navigation links')
+    print('Validated learning path, eight capability journeys, and all module navigation links')
 
 
 if __name__ == '__main__':

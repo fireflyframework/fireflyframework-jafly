@@ -29,9 +29,9 @@ This document provides a comprehensive guide to the data quality framework in `f
 
 The data quality framework provides a rule-based validation system for ensuring data correctness, completeness, and consistency as records flow through enrichment and transformation pipelines. It is built around three core abstractions:
 
-- **DataQualityRule** -- a port interface representing a single validation concern
-- **DataQualityEngine** -- an engine that evaluates rules against a data object and produces a report
-- **QualityReport** -- an aggregated result summarizing pass/fail counts and individual rule outcomes
+- DataQualityRule -- a port interface representing a single validation concern
+- DataQualityEngine -- an engine that evaluates rules against a data object and produces a report
+- QualityReport -- an aggregated result summarizing pass/fail counts and individual rule outcomes
 
 The framework follows the hexagonal architecture pattern: rules are ports (abstractions), and built-in rules are adapters (implementations) that can be swapped or extended.
 
@@ -67,7 +67,7 @@ The framework follows the hexagonal architecture pattern: rules are ports (abstr
 └────────────────────────────────────────────────────────┘
 ```
 
-**Key classes:**
+Key classes:
 
 | Class | Package | Role |
 |---|---|---|
@@ -107,7 +107,7 @@ firefly:
       enabled: false
 ```
 
-> **See also:** [Configuration Guide](configuration.md) for the full property reference.
+> See also: [Configuration Guide](configuration.md) for the full property reference.
 
 ---
 
@@ -186,9 +186,9 @@ DataQualityRule<Customer> criticalRule = new NotNullRule<>(
 );
 ```
 
-**Rule name format:** `not-null:<fieldName>` (e.g., `not-null:email`)
+Rule name format: `not-null:<fieldName>` (e.g., `not-null:email`)
 
-**Failure message:** `"<fieldName> must not be null"`
+Failure message: `"<fieldName> must not be null"`
 
 ### PatternRule
 
@@ -213,11 +213,11 @@ DataQualityRule<Customer> phoneRule = new PatternRule<>(
 );
 ```
 
-**Rule name format:** `pattern:<fieldName>` (e.g., `pattern:email`)
+Rule name format: `pattern:<fieldName>` (e.g., `pattern:email`)
 
-**Failure message:** `"<fieldName> does not match pattern: <regex>"`
+Failure message: `"<fieldName> does not match pattern: <regex>"`
 
-**Note:** If the extracted value is null, the rule fails (null does not match any pattern).
+Note: If the extracted value is null, the rule fails (null does not match any pattern).
 
 ### RangeRule
 
@@ -240,11 +240,11 @@ DataQualityRule<Metric> scoreRule = new RangeRule<>(
 );
 ```
 
-**Rule name format:** `range:<fieldName>` (e.g., `range:age`)
+Rule name format: `range:<fieldName>` (e.g., `range:age`)
 
-**Failure message:** `"<fieldName> value <actual> is outside range [<min>, <max>]"`
+Failure message: `"<fieldName> value <actual> is outside range [<min>, <max>]"`
 
-**Note:** If the extracted value is null, the rule fails with a null-specific message.
+Note: If the extracted value is null, the rule fails with a null-specific message.
 
 ---
 
@@ -382,7 +382,7 @@ QualityResult detailed = QualityResult.builder()
     .build();
 ```
 
-**Fields:**
+Fields:
 
 | Field | Type | Description |
 |---|---|---|
@@ -397,7 +397,7 @@ QualityResult detailed = QualityResult.builder()
 
 Aggregated report produced by the engine after evaluating all applicable rules.
 
-**Fields:**
+Fields:
 
 | Field | Type | Description |
 |---|---|---|
@@ -408,7 +408,7 @@ Aggregated report produced by the engine after evaluating all applicable rules.
 | `results` | `List<QualityResult>` | All individual rule results |
 | `timestamp` | `Instant` | When the evaluation was performed |
 
-**Convenience methods:**
+Convenience methods:
 
 ```java
 // Get only failures
@@ -468,10 +468,10 @@ public class QualityAuditor {
 
 ### Use Cases for Event Listeners
 
-- **Audit logging** -- persist quality results for compliance
-- **Metrics** -- publish pass/fail counts to Prometheus or Micrometer
-- **Alerting** -- send notifications on critical failures
-- **Dashboard** -- aggregate quality trends over time
+- Audit logging -- persist quality results for compliance
+- Metrics -- publish pass/fail counts to Prometheus or Micrometer
+- Alerting -- send notifications on critical failures
+- Dashboard -- aggregate quality trends over time
 
 ---
 
@@ -513,7 +513,7 @@ public class EnrichmentPipeline {
 }
 ```
 
-**Configuration for the quality gate rules:**
+Configuration for the quality gate rules:
 
 ```java
 @Configuration
@@ -550,20 +550,20 @@ public class EnrichmentQualityRules {
 
 ## Best Practices
 
-1. **Set appropriate severity levels.** Reserve `CRITICAL` for fields that absolutely must pass (e.g., primary keys, required references). Use `WARNING` for desirable but non-blocking validations. Use `INFO` for advisory checks.
+1. Set appropriate severity levels. Reserve `CRITICAL` for fields that absolutely must pass (e.g., primary keys, required references). Use `WARNING` for desirable but non-blocking validations. Use `INFO` for advisory checks.
 
-2. **Use COLLECT_ALL for auditing.** When generating quality reports or dashboards, use `COLLECT_ALL` so you see every issue. Reserve `FAIL_FAST` for hot paths where early termination saves processing time.
+2. Use COLLECT_ALL for auditing. When generating quality reports or dashboards, use `COLLECT_ALL` so you see every issue. Reserve `FAIL_FAST` for hot paths where early termination saves processing time.
 
-3. **Register rules as Spring beans.** Let auto-configuration discover rules automatically rather than constructing the engine manually. This ensures event publishing works and keeps configuration centralized.
+3. Register rules as Spring beans. Let auto-configuration discover rules automatically rather than constructing the engine manually. This ensures event publishing works and keeps configuration centralized.
 
-4. **Name rules consistently.** The built-in rules use the format `<type>:<fieldName>` (e.g., `not-null:email`, `pattern:phone`). Follow this convention for custom rules so log messages and reports are easy to parse.
+4. Name rules consistently. The built-in rules use the format `<type>:<fieldName>` (e.g., `not-null:email`, `pattern:phone`). Follow this convention for custom rules so log messages and reports are easy to parse.
 
-5. **Listen for DataQualityEvents.** Use Spring event listeners to decouple quality monitoring from validation logic. This keeps your validation code focused on pass/fail decisions and lets separate components handle alerting and metrics.
+5. Listen for DataQualityEvents. Use Spring event listeners to decouple quality monitoring from validation logic. This keeps your validation code focused on pass/fail decisions and lets separate components handle alerting and metrics.
 
-6. **Validate after enrichment, not just before.** Enrichment can introduce invalid data (e.g., unexpected null fields from a failed provider). Add a quality gate between enrichment and persistence.
+6. Validate after enrichment, not just before. Enrichment can introduce invalid data (e.g., unexpected null fields from a failed provider). Add a quality gate between enrichment and persistence.
 
-7. **Compose granular rules.** Prefer many small, single-concern rules over monolithic validators. This makes reports more actionable and rules more reusable.
+7. Compose granular rules. Prefer many small, single-concern rules over monolithic validators. This makes reports more actionable and rules more reusable.
 
-8. **Use QualityResult.builder() for rich failure context.** Include `fieldName` and `actualValue` in failure results so downstream consumers can pinpoint exactly what failed and why.
+8. Use QualityResult.builder() for rich failure context. Include `fieldName` and `actualValue` in failure results so downstream consumers can pinpoint exactly what failed and why.
 
-> **See also:** [Data Lineage](data-lineage.md) | [Data Transformation](data-transformation.md) | [GenAI Bridge](genai-bridge.md)
+> See also: [Data Lineage](data-lineage.md) | [Data Transformation](data-transformation.md) | [GenAI Bridge](genai-bridge.md)

@@ -58,10 +58,10 @@ CertificatePinningManager pinning = CertificatePinningManager.builder()
 
 ### Best Practices
 
-- **Always have backup pins**: Include at least 2 pins (current + backup)
-- **Pin to intermediate CA**: More flexible than pinning to leaf certificate
-- **Monitor expiration**: Set up alerts for certificate expiration
-- **Test in staging first**: Validate pins in non-production environments
+- Always have backup pins: Include at least 2 pins (current + backup)
+- Pin to intermediate CA: More flexible than pinning to leaf certificate
+- Monitor expiration: Set up alerts for certificate expiration
+- Test in staging first: Validate pins in non-production environments
 
 ---
 
@@ -458,4 +458,3 @@ CertificatePinningManager pinning = CertificatePinningManager.builder()
 - [ ] Monitor security metrics
 - [ ] Keep dependencies up to date
 - [ ] Conduct regular security audits
-

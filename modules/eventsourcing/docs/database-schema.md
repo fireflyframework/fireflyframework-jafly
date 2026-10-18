@@ -33,11 +33,11 @@ CREATE TABLE events (
 ```
 
 Key points:
-- `event_data` and `metadata` are **TEXT**, not JSONB. This makes the store database-agnostic.
-- `global_sequence` is **BIGSERIAL** -- the database auto-assigns it. The R2dbcEventStore INSERT statement **excludes** `global_sequence`.
+- `event_data` and `metadata` are TEXT, not JSONB. This makes the store database-agnostic.
+- `global_sequence` is BIGSERIAL -- the database auto-assigns it. The R2dbcEventStore INSERT statement excludes `global_sequence`.
 - The `UNIQUE(aggregate_id, aggregate_version)` constraint enforces optimistic concurrency at the database level.
 
-**V1 Indexes:**
+V1 Indexes:
 
 | Index | Columns |
 |-------|---------|
@@ -61,10 +61,10 @@ CREATE TABLE snapshots (
 ```
 
 Key points:
-- The PK is `(aggregate_id, aggregate_type)` -- only **one snapshot per aggregate** is stored.
+- The PK is `(aggregate_id, aggregate_type)` -- only one snapshot per aggregate is stored.
 - Saving a snapshot performs an UPSERT (INSERT ON CONFLICT UPDATE).
 
-**V2 Indexes:**
+V2 Indexes:
 
 | Index | Columns |
 |-------|---------|
@@ -92,7 +92,7 @@ CREATE TABLE event_outbox (
 );
 ```
 
-**V3 Indexes:**
+V3 Indexes:
 
 | Index | Columns | Condition |
 |-------|---------|-----------|
@@ -117,20 +117,20 @@ Adds columns to the `events` table:
 | `event_size_bytes` | `INTEGER` | Calculated by trigger |
 | `checksum` | `VARCHAR(64)` | SHA-256 integrity check |
 
-**V4 Constraints:**
+V4 Constraints:
 
 - `chk_aggregate_version_positive`: `aggregate_version >= 0`
 - `chk_event_type_not_empty`: `event_type <> ''`
 - `chk_aggregate_type_not_empty`: `aggregate_type <> ''`
 
-**V4 Triggers:**
+V4 Triggers:
 
 | Trigger | Fires | Function | Purpose |
 |---------|-------|----------|---------|
 | `trigger_events_updated_at` | BEFORE UPDATE | `update_events_updated_at()` | Auto-set `updated_at` |
 | `trigger_calculate_event_size` | BEFORE INSERT OR UPDATE | `calculate_event_size()` | Calculate `event_size_bytes = LENGTH(event_data)` |
 
-**V4 Views:**
+V4 Views:
 
 | View | Type | Purpose |
 |------|------|---------|
@@ -138,7 +138,7 @@ Adds columns to the `events` table:
 | `v_recent_events` | VIEW | Events from last 24 hours |
 | `mv_aggregate_summary` | MATERIALIZED VIEW | Per-aggregate stats (version, event count, size) |
 
-**V4 Functions:**
+V4 Functions:
 
 - `refresh_aggregate_summary()` -- refreshes the materialized view concurrently
 
@@ -156,20 +156,20 @@ Adds columns to the `snapshots` table:
 | `compression_type` | `VARCHAR(50)` | GZIP, LZ4, ZSTD, NONE |
 | `is_compressed` | `BOOLEAN` | Default FALSE |
 
-**V5 Constraints:**
+V5 Constraints:
 
 - `chk_snapshot_version_positive`: `aggregate_version > 0`
 - `chk_snapshot_type_not_empty`: `aggregate_type <> ''`
 - `chk_compression_type_valid`: NULL or one of GZIP, LZ4, ZSTD, NONE
 
-**V5 Triggers:**
+V5 Triggers:
 
 | Trigger | Function | Purpose |
 |---------|----------|---------|
 | `trigger_snapshots_updated_at` | `update_snapshots_updated_at()` | Auto-set `updated_at` |
 | `trigger_calculate_snapshot_size` | `calculate_snapshot_size()` | Calculate `snapshot_size_bytes` |
 
-**V5 Views and Functions:**
+V5 Views and Functions:
 
 - `v_snapshot_statistics` -- aggregated stats by aggregate type
 - `cleanup_old_snapshots(keep_count INTEGER DEFAULT 3)` -- keeps only latest N snapshots per aggregate
@@ -187,25 +187,25 @@ Adds columns to the `event_outbox` table:
 | `max_retries` | `INTEGER` | `3` | Maximum retry attempts |
 | `partition_key` | `VARCHAR(255)` | | Ordered processing key |
 
-**V6 Constraints:**
+V6 Constraints:
 
 - `chk_outbox_priority_range`: `priority BETWEEN 1 AND 10`
 - `chk_outbox_max_retries_positive`: `max_retries >= 0`
 - `chk_outbox_retry_count_valid`: `retry_count >= 0 AND retry_count <= max_retries + 10`
 
-**V6 Triggers:**
+V6 Triggers:
 
 | Trigger | Function | Purpose |
 |---------|----------|---------|
 | `trigger_outbox_updated_at` | `update_outbox_updated_at()` | Auto-set `updated_at` |
 | `trigger_calculate_next_retry` | `calculate_next_retry()` | Exponential backoff: `2^retry_count` minutes |
 
-**V6 Views:**
+V6 Views:
 
 - `v_outbox_statistics` -- counts by status and event type
 - `v_outbox_failed_entries` -- entries that exceeded max retries
 
-**V6 Functions:**
+V6 Functions:
 
 | Function | Purpose |
 |----------|---------|

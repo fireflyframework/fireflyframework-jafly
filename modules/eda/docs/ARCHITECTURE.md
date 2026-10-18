@@ -19,7 +19,7 @@ This document provides a comprehensive overview of the Firefly Event-Driven Arch
 
 ## Overview
 
-The Firefly EDA Library implements a **Layered Architecture** with clear separation of concerns, following **SOLID principles** and **Reactive Programming** paradigms. It provides a unified abstraction layer over multiple messaging platforms while maintaining platform-specific optimizations.
+The Firefly EDA Library implements a Layered Architecture with clear separation of concerns, following SOLID principles and Reactive Programming paradigms. It provides a unified abstraction layer over multiple messaging platforms while maintaining platform-specific optimizations.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -57,27 +57,27 @@ The Firefly EDA Library implements a **Layered Architecture** with clear separat
 
 ## Architecture Principles
 
-### 1. **Reactive-First Design**
+### 1. Reactive-First Design
 - All operations return `Mono<T>` or `Flux<T>`
 - Non-blocking I/O throughout the stack
 - Backpressure support for high-throughput scenarios
 - Scheduler-aware for proper thread management
 
-### 2. **Platform Agnostic**
+### 2. Platform Agnostic
 - Unified interfaces hide platform-specific details
 - Auto-discovery and configuration
 - Pluggable architecture for new platforms
 
-### 3. **Production Ready**
+### 3. Production Ready
 - Built-in resilience patterns
 - Comprehensive observability
 - Health monitoring and metrics
 - Graceful degradation
 
-### 4. **Spring Boot Integration**
+### 4. Spring Boot Integration
 - Auto-configuration with sensible defaults
 - Property-driven configuration
-- Seamless integration with Spring ecosystem
+- Integration with Spring ecosystem
 
 ## Core Components
 
@@ -94,11 +94,11 @@ public interface EventPublisher {
 }
 ```
 
-**Design Decisions:**
-- **Reactive Return Type**: `Mono<Void>` enables non-blocking publishing
-- **Generic Event Type**: `Object` allows any serializable event
-- **Flexible Headers**: `Map<String, Object>` supports platform-specific metadata
-- **Health Awareness**: Built-in health checking for circuit breaker integration
+Design Decisions:
+- Reactive Return Type: `Mono<Void>` enables non-blocking publishing
+- Generic Event Type: `Object` allows any serializable event
+- Flexible Headers: `Map<String, Object>` supports platform-specific metadata
+- Health Awareness: Built-in health checking for circuit breaker integration
 
 ### EventConsumer Interface
 
@@ -114,10 +114,10 @@ public interface EventConsumer {
 }
 ```
 
-**Key Features:**
-- **Backpressure Support**: `Flux<EventEnvelope>` handles high-throughput scenarios
-- **Lifecycle Management**: Start/stop semantics for controlled consumption
-- **Multi-Destination**: Support for consuming from multiple sources
+Key Features:
+- Backpressure Support: `Flux<EventEnvelope>` handles high-throughput scenarios
+- Lifecycle Management: Start/stop semantics for controlled consumption
+- Multi-Destination: Support for consuming from multiple sources
 
 ### EventEnvelope Record
 
@@ -139,10 +139,10 @@ public record EventEnvelope(
 }
 ```
 
-**Design Benefits:**
-- **Immutable**: Thread-safe and predictable
-- **Rich Metadata**: Full context for event processing
-- **Acknowledgment Support**: Platform-agnostic ack/nack semantics
+Design Benefits:
+- Immutable: Thread-safe and predictable
+- Rich Metadata: Full context for event processing
+- Acknowledgment Support: Platform-agnostic ack/nack semantics
 
 ## Component Interactions
 
@@ -190,7 +190,7 @@ sequenceDiagram
 
 ### Publisher Factory Pattern
 
-The `EventPublisherFactory` implements a **Factory Pattern** with caching:
+The `EventPublisherFactory` implements a Factory Pattern with caching:
 
 ```java
 @Component
@@ -205,11 +205,11 @@ public class EventPublisherFactory {
 }
 ```
 
-**Benefits:**
-- **Performance**: Cached publisher instances
-- **Thread Safety**: ConcurrentHashMap for concurrent access
-- **Auto-Discovery**: Automatic detection of available publishers
-- **Connection Management**: Multiple connections per publisher type
+Benefits:
+- Performance: Cached publisher instances
+- Thread Safety: ConcurrentHashMap for concurrent access
+- Auto-Discovery: Automatic detection of available publishers
+- Connection Management: Multiple connections per publisher type
 
 ### Connection-Aware Publishers
 
@@ -223,7 +223,7 @@ public interface ConnectionAwarePublisher extends EventPublisher {
 }
 ```
 
-**Use Cases:**
+Use Cases:
 - Multi-tenant applications
 - Different environments (dev/staging/prod)
 - Load balancing across clusters
@@ -246,14 +246,14 @@ PublisherType[] priorityOrder = {
 
 ### Event Processing Pipeline
 
-The consumer architecture implements a **Pipeline Pattern**:
+The consumer architecture implements a Pipeline Pattern:
 
-1. **Message Reception**: Platform-specific message polling
-2. **Envelope Creation**: Wrapping in EventEnvelope with metadata
-3. **Filtering**: EventFilter chain application
-4. **Listener Matching**: @EventListener method resolution
-5. **Method Invocation**: Reactive method execution
-6. **Acknowledgment**: Success/failure acknowledgment
+1. Message Reception: Platform-specific message polling
+2. Envelope Creation: Wrapping in EventEnvelope with metadata
+3. Filtering: EventFilter chain application
+4. Listener Matching: @EventListener method resolution
+5. Method Invocation: Reactive method execution
+6. Acknowledgment: Success/failure acknowledgment
 
 ### Event Filtering System
 
@@ -274,11 +274,11 @@ EventFilter complexFilter = EventFilter.and(
 );
 ```
 
-**Filter Types:**
-- **DestinationEventFilter**: Topic/queue matching
-- **EventTypeFilter**: Type pattern matching (with globs)
-- **HeaderEventFilter**: Header-based filtering
-- **CompositeEventFilter**: Logical combinations (AND/OR/NOT)
+Filter Types:
+- DestinationEventFilter: Topic/queue matching
+- EventTypeFilter: Type pattern matching (with globs)
+- HeaderEventFilter: Header-based filtering
+- CompositeEventFilter: Logical combinations (AND/OR/NOT)
 
 ## Serialization Layer
 
@@ -296,16 +296,16 @@ public interface MessageSerializer {
 }
 ```
 
-**Available Implementations:**
-- **JsonMessageSerializer**: Jackson-based JSON serialization
-- **AvroMessageSerializer**: Schema-based binary serialization (planned)
-- **ProtobufMessageSerializer**: Protocol Buffers support (planned)
+Available Implementations:
+- JsonMessageSerializer: Jackson-based JSON serialization
+- AvroMessageSerializer: Schema-based binary serialization (planned)
+- ProtobufMessageSerializer: Protocol Buffers support (planned)
 
 ### Serialization Strategy
 
-1. **Priority-Based Selection**: Highest priority serializer wins
-2. **Content-Type Negotiation**: Based on message headers
-3. **Fallback Mechanism**: Default to JSON if others fail
+1. Priority-Based Selection: Highest priority serializer wins
+2. Content-Type Negotiation: Based on message headers
+3. Fallback Mechanism: Default to JSON if others fail
 
 ## Resilience Patterns
 
@@ -515,45 +515,45 @@ public class CustomMessageSerializer implements MessageSerializer {
 ## Design Patterns Used
 
 ### Creational Patterns
-- **Factory Pattern**: EventPublisherFactory for publisher creation
-- **Builder Pattern**: Configuration objects and health status
-- **Singleton Pattern**: Cached publisher instances
+- Factory Pattern: EventPublisherFactory for publisher creation
+- Builder Pattern: Configuration objects and health status
+- Singleton Pattern: Cached publisher instances
 
 ### Structural Patterns
-- **Adapter Pattern**: Platform-specific publisher/consumer adapters
-- **Decorator Pattern**: ResilientEventPublisher wrapping
-- **Facade Pattern**: EventPublisherFactory simplifying access
-- **Composite Pattern**: EventFilter combinations
+- Adapter Pattern: Platform-specific publisher/consumer adapters
+- Decorator Pattern: ResilientEventPublisher wrapping
+- Facade Pattern: EventPublisherFactory simplifying access
+- Composite Pattern: EventFilter combinations
 
 ### Behavioral Patterns
-- **Strategy Pattern**: Multiple serialization strategies
-- **Observer Pattern**: Spring Application Events
-- **Template Method Pattern**: Base publisher implementations
-- **Chain of Responsibility**: Event filter chains
+- Strategy Pattern: Multiple serialization strategies
+- Observer Pattern: Spring Application Events
+- Template Method Pattern: Base publisher implementations
+- Chain of Responsibility: Event filter chains
 
 ### Reactive Patterns
-- **Publisher-Subscriber**: Reactive Streams implementation
-- **Circuit Breaker**: Resilience4j integration
-- **Retry Pattern**: Configurable retry strategies
-- **Rate Limiting**: Token bucket implementation
+- Publisher-Subscriber: Reactive Streams implementation
+- Circuit Breaker: Resilience4j integration
+- Retry Pattern: Configurable retry strategies
+- Rate Limiting: Token bucket implementation
 
 ## Performance Considerations
 
 ### Threading Model
-- **Publisher Pool**: Bounded elastic scheduler for I/O operations
-- **Consumer Pool**: Configurable concurrency for message processing
-- **Metric Collection**: Separate thread pool to avoid blocking
+- Publisher Pool: Bounded elastic scheduler for I/O operations
+- Consumer Pool: Configurable concurrency for message processing
+- Metric Collection: Separate thread pool to avoid blocking
 
 ### Memory Management
-- **Publisher Caching**: Prevents object creation overhead
-- **Connection Pooling**: Reuse of platform connections
-- **Backpressure**: Controlled memory usage under load
+- Publisher Caching: Prevents object creation overhead
+- Connection Pooling: Reuse of platform connections
+- Backpressure: Controlled memory usage under load
 
 ### Scalability Features
-- **Horizontal Scaling**: Support for multiple consumer instances
-- **Partition Awareness**: Kafka partition key support
-- **Load Balancing**: Round-robin publisher selection
+- Horizontal Scaling: Support for multiple consumer instances
+- Partition Awareness: Kafka partition key support
+- Load Balancing: Round-robin publisher selection
 
 ---
 
-This architecture enables the Firefly EDA Library to provide a unified, reactive, and production-ready event-driven architecture solution while maintaining flexibility and extensibility for diverse use cases.
+This architecture enables the Firefly EDA Library to provide a unified, reactive, and event-driven architecture solution while maintaining flexibility and extensibility for diverse use cases.

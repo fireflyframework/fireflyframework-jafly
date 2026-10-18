@@ -120,9 +120,9 @@ firefly:
 
 Maximum number of entries the cache can hold.
 
-- **Type**: Long
-- **Default**: 1000
-- **Example**: `maximum-size: 10000`
+- Type: Long
+- Default: 1000
+- Example: `maximum-size: 10000`
 
 When the cache reaches this size, entries are evicted based on the eviction policy (LRU by default).
 
@@ -130,9 +130,9 @@ When the cache reaches this size, entries are evicted based on the eviction poli
 
 Duration after which entries are automatically removed after creation or update.
 
-- **Type**: Duration (ISO-8601 format)
-- **Default**: PT1H (1 hour)
-- **Examples**:
+- Type: Duration (ISO-8601 format)
+- Default: PT1H (1 hour)
+- Examples:
   - `PT30M` - 30 minutes
   - `PT2H` - 2 hours
   - `P1D` - 1 day
@@ -141,9 +141,9 @@ Duration after which entries are automatically removed after creation or update.
 
 Duration after which entries are automatically removed after last access.
 
-- **Type**: Duration (ISO-8601 format)
-- **Default**: None (disabled)
-- **Example**: `expire-after-access: PT30M`
+- Type: Duration (ISO-8601 format)
+- Default: None (disabled)
+- Example: `expire-after-access: PT30M`
 
 Useful for keeping frequently accessed items longer.
 
@@ -151,9 +151,9 @@ Useful for keeping frequently accessed items longer.
 
 Duration after which entries are eligible for automatic refresh.
 
-- **Type**: Duration (ISO-8601 format)
-- **Default**: None (disabled)
-- **Example**: `refresh-after-write: PT45M`
+- Type: Duration (ISO-8601 format)
+- Default: None (disabled)
+- Example: `refresh-after-write: PT45M`
 
 Requires async loading support.
 
@@ -161,17 +161,17 @@ Requires async loading support.
 
 Enable statistics collection for monitoring.
 
-- **Type**: Boolean
-- **Default**: true
-- **Example**: `record-stats: true`
+- Type: Boolean
+- Default: true
+- Example: `record-stats: true`
 
 #### weak-keys / weak-values / soft-values
 
 Control reference types for memory management.
 
-- **Type**: Boolean
-- **Default**: false
-- **Use Cases**:
+- Type: Boolean
+- Default: false
+- Use Cases:
   - `weak-keys`: Keys can be garbage collected
   - `weak-values`: Values can be garbage collected
   - `soft-values`: Values collected only under memory pressure
@@ -550,14 +550,14 @@ firefly:
 
 ## Best Practices
 
-1. **Use environment variables** for sensitive data (passwords, hosts)
-2. **Set appropriate TTLs** based on data volatility
-3. **Monitor cache statistics** in production
-4. **Use named caches** for different data types
-5. **Configure connection pools** based on load
-6. **Enable SSL** for production Redis
-7. **Set reasonable timeouts** to prevent hanging
-8. **Use key prefixes** to avoid collisions
+1. Use environment variables for sensitive data (passwords, hosts)
+2. Set appropriate TTLs based on data volatility
+3. Monitor cache statistics in production
+4. Use named caches for different data types
+5. Configure connection pools based on load
+6. Enable SSL for production Redis
+7. Set reasonable timeouts to prevent hanging
+8. Use key prefixes to avoid collisions
 
 ## Validation
 
@@ -569,4 +569,3 @@ The library validates configuration at startup:
 - Connection settings are valid
 
 Invalid configuration will prevent application startup with clear error messages.
-

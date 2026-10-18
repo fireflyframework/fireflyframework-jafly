@@ -6,27 +6,27 @@ This guide provides step-by-step instructions for integrating Adobe Sign with th
 
 The Adobe Sign adapter provides comprehensive eSignature functionality through Adobe Sign's REST API, supporting:
 
-- **Signature Envelopes**: Create, send, and manage signature workflows
-- **Signature Requests**: Individual signer management and tracking
-- **Signature Validation**: Verify signatures and audit trails
-- **Embedded Signing**: Generate signing URLs for integrated workflows
-- **OAuth 2.0 Authentication**: Secure API access with refresh tokens
+- Signature Envelopes: Create, send, and manage signature workflows
+- Signature Requests: Individual signer management and tracking
+- Signature Validation: Verify signatures and audit trails
+- Embedded Signing: Generate signing URLs for integrated workflows
+- OAuth 2.0 Authentication: Secure API access with refresh tokens
 
 ## Prerequisites
 
 ### Adobe Sign Account Setup
 
-1. **Adobe Sign Account**: Ensure you have an Adobe Sign business account
-2. **API Access**: Enable API access in your Adobe Sign account
-3. **Application Registration**: Register your application in Adobe Sign Developer Console
+1. Adobe Sign Account: Ensure you have an Adobe Sign business account
+2. API Access: Enable API access in your Adobe Sign account
+3. Application Registration: Register your application in Adobe Sign Developer Console
 
 ### Required Information
 
 You'll need the following from your Adobe Sign account:
-- **Client ID**: Your application's client identifier
-- **Client Secret**: Your application's client secret
-- **Refresh Token**: OAuth refresh token for API access
-- **Base URL**: Adobe Sign API base URL (varies by region)
+- Client ID: Your application's client identifier
+- Client Secret: Your application's client secret
+- Refresh Token: OAuth refresh token for API access
+- Base URL: Adobe Sign API base URL (varies by region)
 
 ## Configuration
 
@@ -37,7 +37,7 @@ Add the Adobe Sign adapter dependency to your `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.fireflyframework.ecm</groupId>
-    <artifactId>fireflyframework-ecm-adapter-adobe-sign</artifactId>
+    <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
     <version>${firefly.ecm.version}</version>
 </dependency>
 ```
@@ -145,10 +145,10 @@ public Mono<String> getSigningUrl(UUID envelopeId, String signerEmail) {
 
 Adobe Sign uses different base URLs for different regions:
 
-- **North America**: `https://api.na1.adobesign.com`
-- **Europe**: `https://api.eu1.adobesign.com`
-- **Asia Pacific**: `https://api.ap1.adobesign.com`
-- **Australia**: `https://api.au1.adobesign.com`
+- North America: `https://api.na1.adobesign.com`
+- Europe: `https://api.eu1.adobesign.com`
+- Asia Pacific: `https://api.ap1.adobesign.com`
+- Australia: `https://api.au1.adobesign.com`
 
 ### Webhook Configuration
 
@@ -181,20 +181,20 @@ firefly:
 
 ## Security Considerations
 
-1. **Secure Storage**: Store client secrets and refresh tokens securely
-2. **Token Rotation**: Implement refresh token rotation for enhanced security
-3. **Webhook Security**: Validate webhook signatures using the webhook secret
-4. **Network Security**: Use HTTPS for all communications
-5. **Access Control**: Implement proper access controls for envelope operations
+1. Secure Storage: Store client secrets and refresh tokens securely
+2. Token Rotation: Implement refresh token rotation for enhanced security
+3. Webhook Security: Validate webhook signatures using the webhook secret
+4. Network Security: Use HTTPS for all communications
+5. Access Control: Implement proper access controls for envelope operations
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Authentication Errors**: Verify client ID, secret, and refresh token
-2. **Regional Issues**: Ensure correct base URL for your Adobe Sign region
-3. **Document Access**: Verify document storage adapter is properly configured
-4. **Network Timeouts**: Adjust timeout settings for large documents
+1. Authentication Errors: Verify client ID, secret, and refresh token
+2. Regional Issues: Ensure correct base URL for your Adobe Sign region
+3. Document Access: Verify document storage adapter is properly configured
+4. Network Timeouts: Adjust timeout settings for large documents
 
 ### Logging
 
@@ -209,9 +209,9 @@ logging:
 ## API Reference
 
 For detailed API documentation, see:
-- [SignatureEnvelopePort](../api/signature-envelope-port.md)
-- [SignatureRequestPort](../api/signature-request-port.md)
-- [SignatureValidationPort](../api/signature-validation-port.md)
+- [SignatureEnvelopePort source](../../src/main/java/org/fireflyframework/ecm/port/esignature/SignatureEnvelopePort.java)
+- [SignatureRequestPort source](../../src/main/java/org/fireflyframework/ecm/port/esignature/SignatureRequestPort.java)
+- [SignatureValidationPort source](../../src/main/java/org/fireflyframework/ecm/port/esignature/SignatureValidationPort.java)
 
 ## Support
 

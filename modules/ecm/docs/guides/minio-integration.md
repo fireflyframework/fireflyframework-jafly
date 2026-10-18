@@ -1,4 +1,6 @@
-# MinIO Integration Guide
+# MinIO integration design (historical)
+
+This retained design proposal describes a dedicated adapter that is not shipped. For current storage choices, use [the component guide](../../../../docs/site/modules/ecm-storage-aws.md).
 
 > **⚠️ IMPLEMENTATION STATUS: PLANNED**
 >

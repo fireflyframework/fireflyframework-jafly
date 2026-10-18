@@ -66,7 +66,7 @@ Choose a capability below to find its contracts and provider integrations.
 
 Map principals to policy decisions with security contracts, a reactive resource server, method guards, and provider adapters.
 
-[Read the guide](modules/security-api.md)
+[Read the guide](capabilities/security-and-identity.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -74,7 +74,7 @@ Map principals to policy decisions with security contracts, a reactive resource 
 
 Dispatch commands and queries through validation, authorization, handlers, and optional event and cache bridges.
 
-[Read the guide](modules/cqrs.md)
+[Read the guide](capabilities/business-operations.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -82,7 +82,7 @@ Dispatch commands and queries through validation, authorization, handlers, and o
 
 Connect HTTP, SOAP, gRPC, notifications, callbacks, and Agentic through explicit service and provider integrations.
 
-[Read the guide](modules/client.md)
+[Read the guide](capabilities/external-services.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -90,7 +90,7 @@ Connect HTTP, SOAP, gRPC, notifications, callbacks, and Agentic through explicit
 
 Use event contracts and transport adapters for in-process events, Kafka, RabbitMQ, PostgreSQL, and inbound webhooks.
 
-[Read the guide](modules/eda.md)
+[Read the guide](capabilities/event-driven-integration.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -98,7 +98,7 @@ Use event contracts and transport adapters for in-process events, Kafka, RabbitM
 
 Choose reactive data helpers, optional event history, cache providers, content storage, and signature adapters.
 
-[Read the guide](modules/r2dbc.md)
+[Read the guide](capabilities/domain-and-data.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -106,7 +106,7 @@ Choose reactive data helpers, optional event history, cache providers, content s
 
 Coordinate workflows, compensating sagas, and try-confirm-cancel steps with explicit recovery and failure policies.
 
-[Read the guide](modules/orchestration.md)
+[Read the guide](capabilities/business-coordination.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -114,7 +114,7 @@ Coordinate workflows, compensating sagas, and try-confirm-cancel steps with expl
 
 Connect application telemetry, HTTP conventions, health checks, and centralized configuration.
 
-[Read the guide](modules/observability.md)
+[Read the guide](capabilities/service-operations.md)
 </div>
 <div class="jafly-capability" markdown>
 
@@ -122,7 +122,7 @@ Connect application telemetry, HTTP conventions, health checks, and centralized 
 
 Share a dependency train, build conventions, service-layer starters, common types, validation, and extension contracts.
 
-[Read the guide](modules/parent.md)
+[Read the guide](capabilities/team-wide-architecture.md)
 </div>
 </div>
 

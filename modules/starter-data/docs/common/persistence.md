@@ -16,18 +16,18 @@ This document describes the persistence features in fireflyframework-starter-dat
 
 The library provides built-in support for persisting:
 
-- **Audit Trail** - Complete history of all job operations for compliance and debugging
-- **Execution Results** - Job outputs with caching support for performance optimization
+- Audit Trail - Complete history of all job operations for compliance and debugging
+- Execution Results - Job outputs with caching support for performance optimization
 
 Key features:
 
-- **Hexagonal Architecture** - Port/adapter pattern for flexible implementations
-- **Reactive** - Fully reactive with R2DBC support
-- **Multi-Database** - PostgreSQL, MySQL, H2, MongoDB, DynamoDB, Redis
-- **Automatic** - Integrated into AbstractResilientDataJobService
-- **Configurable** - Enable/disable features via properties
-- **Retention Policies** - Automatic cleanup of old data
-- **Security** - Sensitive data sanitization
+- Hexagonal Architecture - Port/adapter pattern for flexible implementations
+- Reactive - Fully reactive with R2DBC support
+- Multi-Database - PostgreSQL, MySQL, H2, MongoDB, DynamoDB, Redis
+- Automatic - Integrated into AbstractResilientDataJobService
+- Configurable - Enable/disable features via properties
+- Retention Policies - Automatic cleanup of old data
+- Security - Sensitive data sanitization
 
 ## Architecture
 
@@ -84,32 +84,32 @@ Key features:
 
 Every job operation is automatically audited with:
 
-- **Operation Details** - Stage, execution ID, request ID, job type
-- **Timing** - Timestamp, duration
-- **Status** - Success, failure, retry attempts
-- **Context** - Initiator, orchestrator type, service name, environment
-- **Tracing** - **Real trace ID and span ID** extracted from Micrometer Tracing for distributed tracing correlation
-- **Data** - Input parameters, output data (configurable)
-- **Errors** - Error messages, stack traces (optional)
-- **Resiliency** - Circuit breaker events, rate limiting
+- Operation Details - Stage, execution ID, request ID, job type
+- Timing - Timestamp, duration
+- Status - Success, failure, retry attempts
+- Context - Initiator, orchestrator type, service name, environment
+- Tracing - Real trace ID and span ID extracted from Micrometer Tracing for distributed tracing correlation
+- Data - Input parameters, output data (configurable)
+- Errors - Error messages, stack traces (optional)
+- Resiliency - Circuit breaker events, rate limiting
 
 #### Tracing Integration
 
-The library provides **tracing context extraction** using `TracingContextExtractor`:
+The library provides tracing context extraction using `TracingContextExtractor`:
 
-- **Real Trace IDs** - Extracted from Micrometer Tracing (not generated timestamps)
-- **Real Span IDs** - Extracted from current observation span
-- **OpenTelemetry Support** - Full support for OpenTelemetry tracing backend
-- **Automatic Configuration** - Tracer is automatically injected via Spring Boot
-- **Distributed Tracing** - Full correlation with Jaeger, Grafana Tempo, and other OpenTelemetry-compatible systems
+- Real Trace IDs - Extracted from Micrometer Tracing (not generated timestamps)
+- Real Span IDs - Extracted from current observation span
+- OpenTelemetry Support - Full support for OpenTelemetry tracing backend
+- Automatic Configuration - Tracer is automatically injected via Spring Boot
+- Distributed Tracing - Full correlation with Jaeger, Grafana Tempo, and other OpenTelemetry-compatible systems
 
-**Example trace IDs:**
+Example trace IDs:
 ```
 traceId: 4bf92f3577b34da6a3ce929d0e0e4736  (32-character hex from OpenTelemetry)
 spanId: 00f067aa0ba902b7   (16-character hex from OpenTelemetry)
 ```
 
-**Implementation:** See `TracingContextExtractor` utility class for details.
+Implementation: See `TracingContextExtractor` utility class for details.
 
 ### Audit Event Types
 
@@ -133,27 +133,27 @@ public enum AuditEventType {
 
 Job execution results include:
 
-- **Execution Metadata** - Execution ID, request ID, job type, status
-- **Timing** - Start time, end time, duration
-- **Data** - Raw output (COLLECT stage), transformed output (RESULT stage)
-- **Transformation** - Target DTO class, mapper name
-- **Caching** - Cacheable flag, TTL, expiration time
-- **Context** - Initiator, orchestrator, job definition
-- **Metrics** - **Precise data size in bytes** (calculated via JSON serialization), progress percentage, retry attempts
-- **Tracing** - **Real trace ID and span ID** from Micrometer Tracing
+- Execution Metadata - Execution ID, request ID, job type, status
+- Timing - Start time, end time, duration
+- Data - Raw output (COLLECT stage), transformed output (RESULT stage)
+- Transformation - Target DTO class, mapper name
+- Caching - Cacheable flag, TTL, expiration time
+- Context - Initiator, orchestrator, job definition
+- Metrics - Precise data size in bytes (calculated via JSON serialization), progress percentage, retry attempts
+- Tracing - Real trace ID and span ID from Micrometer Tracing
 
 #### Data Size Calculation
 
-The library provides **data size calculation** using `DataSizeCalculator`:
+The library provides data size calculation using `DataSizeCalculator`:
 
-- **Precise Measurement** - Actual byte size via JSON serialization (not toString() estimation)
-- **UTF-8 Encoding** - Accurate byte count using UTF-8 encoding
-- **Combined Calculation** - Calculates total size of raw + transformed output
-- **Human-Readable Formatting** - Converts bytes to KB, MB, GB, etc.
-- **Size Validation** - Check if data exceeds size limits
-- **Automatic Integration** - Used automatically in `JobExecutionResultService`
+- Precise Measurement - Actual byte size via JSON serialization (not toString() estimation)
+- UTF-8 Encoding - Accurate byte count using UTF-8 encoding
+- Combined Calculation - Calculates total size of raw + transformed output
+- Human-Readable Formatting - Converts bytes to KB, MB, GB, etc.
+- Size Validation - Check if data exceeds size limits
+- Automatic Integration - Used automatically in `JobExecutionResultService`
 
-**Example usage:**
+Example usage:
 ```java
 // Automatic in JobExecutionResultService
 long size = DataSizeCalculator.calculateCombinedSize(
@@ -169,7 +169,7 @@ boolean tooLarge = DataSizeCalculator.exceedsSize(data, 1024 * 1024);
 // tooLarge = false (< 1MB)
 ```
 
-**Implementation:** See `DataSizeCalculator` utility class for details.
+Implementation: See `DataSizeCalculator` utility class for details.
 
 ### Result Caching
 
@@ -516,10 +516,10 @@ Implement the port interfaces with R2DBC adapters.
 
 Key points for adapter implementation:
 
-1. **JSON Serialization** - Use ObjectMapper to convert Maps to JSON strings for JSONB columns
-2. **Enum Conversion** - Convert domain enums to strings and vice versa
-3. **Error Handling** - Log errors and handle serialization failures gracefully
-4. **Reactive Patterns** - Use `Mono.fromCallable()` for blocking operations like JSON serialization
+1. JSON Serialization - Use ObjectMapper to convert Maps to JSON strings for JSONB columns
+2. Enum Conversion - Convert domain enums to strings and vice versa
+3. Error Handling - Log errors and handle serialization failures gracefully
+4. Reactive Patterns - Use `Mono.fromCallable()` for blocking operations like JSON serialization
 
 Example adapter skeleton:
 
@@ -661,7 +661,7 @@ public class PersistenceCleanupConfig {
 R2DBC is the recommended persistence technology for reactive applications. It provides:
 - Non-blocking database access
 - Better resource utilization
-- Seamless integration with Project Reactor
+- Integration with Project Reactor
 - Support for PostgreSQL, MySQL, H2, and more
 
 ### 2. Implement Proper Error Handling
@@ -696,9 +696,9 @@ firefly:
 
 Balance compliance requirements with storage costs:
 
-- **Audit Trail**: 90-365 days for compliance
-- **Execution Results**: 30-90 days for debugging
-- **Cached Results**: 1-24 hours for performance
+- Audit Trail: 90-365 days for compliance
+- Execution Results: 30-90 days for debugging
+- Cached Results: 1-24 hours for performance
 
 ### 5. Monitor Database Performance
 

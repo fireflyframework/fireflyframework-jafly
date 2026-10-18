@@ -55,8 +55,12 @@ console.log(`Exported official Jafly artwork and Manrope to ${output}`);
 const { outlined } = await import(pathToFileURL(join(kit, 'scripts/type.mjs')));
 const { placed } = await import(pathToFileURL(join(kit, 'vendor/firefly/scripts/logo.mjs')));
 const catalog = JSON.parse(await readFile(join(root, 'docs/site/assets/module-catalog.json'), 'utf8'));
+const capabilityCovers = JSON.parse(await readFile(join(root, 'docs/site/assets/capabilities.json'), 'utf8'));
 const corePages = {
+  ...Object.fromEntries(capabilityCovers.map(item => ['capability-' + item.id, item.title])),
   'getting-started': 'Get started', installation: 'Installation and prerequisites',
+  'onboarding-event-store': 'Onboarding event store',
+  'onboarding-coordination': 'Onboarding coordination',
   architecture: 'Architecture', maven: 'Maven parent and BOM', versioning: 'Versioning',
   migration: 'Move to Boot 4', development: 'Development', examples: 'Examples and tutorials',
   releases: 'Releases', documentation: 'Documentation workflow', brand: 'Brand provenance',
@@ -156,6 +160,50 @@ for(let i=0;i<8;i++){
 }
 await writeFile(join(diagramDir,'capability-map.svg'),drawing(1200,660,'The eight Jafly capability areas','Illustrations group the eight capabilities. Positions carry no runtime dependency or deployment meaning.',map+text('Choose modules and adapters for the operations in your service.',35,641,17,'#bfb8ab')));
 await writeFile(join(diagramDir,'capability-map-narrow.svg'),drawing(550,1240,'The eight capability areas, compact layout','Conceptual illustrations of security, business operations, services, events, domain data, coordination, operations and shared architecture.',narrowMap+text('Positions carry no runtime dependency meaning.',24,1220,17,'#bfb8ab')));
+const eventStoreDescription = 'The onboarding aggregate produces domain events. R2dbcEventStore appends them with an expected version in the configured PostgreSQL transaction. Loading ordered typed events reconstructs a fresh aggregate.';
+const historySteps = [
+  ['Your aggregate', 'submit or approve', 'Application-owned state rules'],
+  ['R2dbcEventStore', 'Append with expected version', 'One configured transaction'],
+  ['PostgreSQL events', 'Commit the event rows', 'Unique aggregate/version'],
+  ['Load the stream', 'Read in aggregate-version order', 'No snapshot used in this example'],
+  ['Decode domain events', 'Explicit Jackson type registration', 'Preserve the concrete event types'],
+  ['Fresh aggregate', 'Replay with loadFromHistory', 'Reconstruct state and version'],
+];
+let history=text('Persist the onboarding history',40,52,30)+text('Write the facts; rebuild application state from the stored sequence.',40,90,19,'#bfb8ab');
+for(let side=0;side<2;side++){
+ const x=65+side*590;
+ history+=text(side===0?'Write':'Read',x-25,137,24,'#ffb34a')+rail(`M${x} 190V470`);
+ for(let row=0;row<3;row++){
+  const i=side*3+row,y=195+row*140;
+  history+=stationDot(x,y,i+1)+text(historySteps[i][0],x+45,y+4,25)+text(historySteps[i][1],x+45,y+42,19,'#bfb8ab')+text(historySteps[i][2],x+45,y+73,17,'#bfb8ab');
+ }
+}
+history+=text('The tests prove one append transaction. External calls and broker delivery need their own policy.',40,590,18,'#bfb8ab');
+await writeFile(join(diagramDir,'event-store.svg'),drawing(1200,625,'Persist and reconstruct an onboarding application',eventStoreDescription,history));
+let narrowHistory=text('Persist the onboarding history',25,46,27)+text('Store facts. Replay application state.',25,82,18,'#bfb8ab');
+for(let side=0;side<2;side++){
+ const start=side===0?185:780;
+ narrowHistory+=text(side===0?'Write':'Read',25,start-50,26,'#ffb34a')+rail(`M48 ${start}V${start+280}`);
+ for(let row=0;row<3;row++){
+  const i=side*3+row,y=start+row*140;
+  narrowHistory+=stationDot(48,y,i+1)+text(historySteps[i][0],93,y+4,27)+text(historySteps[i][1],93,y+43,19,'#bfb8ab')+text(historySteps[i][2],93,y+76,17,'#bfb8ab');
+ }
+}
+narrowHistory+=text('One configured append transaction is tested.',25,1200,18,'#bfb8ab');
+await writeFile(join(diagramDir,'event-store-narrow.svg'),drawing(520,1240,'Event persistence and replay, vertical layout',eventStoreDescription,narrowHistory));
+const coordinationDescription = 'Three independent onboarding examples. A Saga compensates a recorded application when eligibility fails. TCC confirms successful reservations or cancels held reservations after a try failure. A Workflow orders validation, document checking and the review result.';
+let coordination=text('Choose a coordination model',40,52,32)+text('Each example runs independently with application-owned providers.',40,94,23,'#bfb8ab');
+coordination+='<path d="M410 140V610M820 140V610" stroke="#44483b"/>';
+coordination+=text('Saga',40,153,32,'#ffb34a')+rail('M65 220V330')+stationDot(65,220,1)+stationDot(65,330,2)+text('Record application',110,228,23)+text('Check eligibility',110,338,23)+text('If eligibility fails',110,405,23,'#bfb8ab')+rail('M65 356V448',true)+text('Remove application record',110,477,23);
+coordination+=text('TCC',435,153,32,'#ffb34a')+rail('M460 220V330')+stationDot(460,220,1)+stationDot(460,330,2)+text('Try reviewer reservation',505,228,23)+text('Try document reservation',505,338,23)+text('Both succeed',505,405,23,'#bfb8ab')+rail('M460 356V448')+text('Confirm reservations',505,477,23)+rail('M460 350H800V560H460',true)+text('If a try fails',505,535,23,'#bfb8ab')+text('Cancel held reservations',505,594,23);
+coordination+=text('Workflow',845,153,32,'#ffb34a')+rail('M870 220V440')+stationDot(870,220,1)+stationDot(870,330,2)+stationDot(870,440,3)+text('Validate applicant',915,228,23)+text('Check documents',915,338,23)+text('Record ready for review',915,448,23);
+coordination+=text('Compensations and reservation actions are business operations supplied by the application.',40,658,23,'#bfb8ab');
+await writeFile(join(diagramDir,'onboarding-coordination.svg'),drawing(1240,695,'Independent Saga, TCC and Workflow examples',coordinationDescription,coordination));
+let narrowCoordination=text('Three coordination models',25,46,29)+text('Each runs independently.',25,85,22,'#bfb8ab');
+narrowCoordination+=text('Compensate with a Saga',25,147,31,'#ffb34a')+rail('M48 210V315')+stationDot(48,210,1)+stationDot(48,315,2)+text('Record application',93,218,24)+text('Check eligibility',93,323,24)+text('On eligibility failure',93,383,22,'#bfb8ab')+rail('M48 341V415',true)+text('Remove application record',93,450,24)+text('Application-owned compensation',93,489,22,'#bfb8ab')+'<path d="M25 540H495" stroke="#44483b"/>';
+narrowCoordination+=text('Reserve with TCC',25,598,31,'#ffb34a')+rail('M48 665V770')+stationDot(48,665,1)+stationDot(48,770,2)+text('Try reviewer reservation',93,673,24)+text('Try document reservation',93,778,24)+text('Both tries succeed',25,840,22,'#bfb8ab')+rail('M48 860V885')+text('Confirm both reservations',93,920,24)+text('A try fails',25,990,22,'#bfb8ab')+rail('M48 1010V1035',true)+text('Cancel held reservations',93,1070,24)+text('Application-owned cancel actions',93,1109,22,'#bfb8ab')+'<path d="M25 1160H495" stroke="#44483b"/>';
+narrowCoordination+=text('Order a Workflow',25,1220,31,'#ffb34a')+rail('M48 1280V1500')+stationDot(48,1280,1)+stationDot(48,1390,2)+stationDot(48,1500,3)+text('Validate applicant',93,1288,24)+text('Check documents',93,1398,24)+text('Record ready for review',93,1508,24)+text('Choose recovery for a failed execution.',25,1605,22,'#bfb8ab');
+await writeFile(join(diagramDir,'onboarding-coordination-narrow.svg'),drawing(520,1650,'Independent coordination models, vertical layout',coordinationDescription,narrowCoordination));
 const diagramExports={};
-for(const name of ['reactor.svg','reactor-narrow.svg','request-flow.svg','request-flow-narrow.svg','service-boundaries.svg','service-boundaries-narrow.svg','capability-map.svg','capability-map-narrow.svg',...machineKinds.map((_,i)=>'capability-'+i+'.svg')])diagramExports[name]=await hash(join(diagramDir,name));
+for(const name of ['onboarding-coordination.svg','onboarding-coordination-narrow.svg','event-store.svg','event-store-narrow.svg','reactor.svg','reactor-narrow.svg','request-flow.svg','request-flow-narrow.svg','service-boundaries.svg','service-boundaries-narrow.svg','capability-map.svg','capability-map-narrow.svg',...machineKinds.map((_,i)=>'capability-'+i+'.svg')])diagramExports[name]=await hash(join(diagramDir,name));
 await writeFile(join(diagramDir,'ORIGIN.json'),JSON.stringify({source:'../brand/ORIGIN.json',recipe:'scripts/generate_brand.mjs',exports:diagramExports},null,2)+'\n');

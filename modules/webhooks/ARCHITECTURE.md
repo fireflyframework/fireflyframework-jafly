@@ -14,16 +14,18 @@
 
 ## Overview
 
-The Firefly Framework Webhooks Library is built using a **microservices-oriented architecture** with clear separation between webhook ingestion (producer) and webhook processing (consumer). The platform follows **reactive programming principles** using Spring WebFlux and Project Reactor for non-blocking, high-throughput operations.
+The Kafka and Redis diagrams illustrate a configured deployment. Select the EDA transport and shared cache explicitly; these diagrams do not describe the infrastructure-free onboarding tutorial.
+
+The Firefly Framework Webhooks Library is built using a microservices-oriented architecture with clear separation between webhook ingestion (producer) and webhook processing (consumer). The platform follows reactive programming principles using Spring WebFlux and Project Reactor for non-blocking, high-throughput operations.
 
 ### Core Architectural Principles
 
-1. **Separation of Concerns**: Ingestion logic is completely decoupled from business logic
-2. **Reactive Programming**: Non-blocking I/O throughout the stack
-3. **Event-Driven Architecture**: Asynchronous communication via message queues
-4. **Hexagonal Architecture**: Ports and adapters pattern in the processor module
-5. **Idempotency**: Exactly-once processing semantics
-6. **Scalability**: Horizontal scaling for both ingestion and processing
+1. Separation of Concerns: Ingestion logic is completely decoupled from business logic
+2. Reactive Programming: Non-blocking I/O throughout the stack
+3. Event-Driven Architecture: Asynchronous communication via message queues
+4. Hexagonal Architecture: Ports and adapters pattern in the processor module
+5. Duplicate handling: Processing locks and markers, with application-owned idempotent effects
+6. Scalability: Horizontal scaling for both ingestion and processing
 
 ## Architectural Patterns
 
@@ -38,11 +40,11 @@ The platform implements a classic producer-consumer pattern:
 └──────────────────┘         └─────────────┘         └──────────────────┘
 ```
 
-**Benefits**:
-- **Decoupling**: Producers and consumers evolve independently
-- **Buffering**: Kafka acts as a buffer during traffic spikes
-- **Scalability**: Scale producers and consumers independently
-- **Reliability**: Messages are persisted in Kafka
+Benefits:
+- Decoupling: Producers and consumers evolve independently
+- Buffering: Kafka acts as a buffer during traffic spikes
+- Scalability: Scale producers and consumers independently
+- Reliability: Messages are persisted in Kafka
 
 ### 2. Hexagonal Architecture (Ports & Adapters)
 
@@ -68,10 +70,10 @@ The processor module follows hexagonal architecture:
 └─────────────────┘                  └─────────────────┘
 ```
 
-**Benefits**:
-- **Testability**: Core logic can be tested without infrastructure
-- **Flexibility**: Swap adapters without changing core logic
-- **Maintainability**: Clear boundaries between layers
+Benefits:
+- Testability: Core logic can be tested without infrastructure
+- Flexibility: Swap adapters without changing core logic
+- Maintainability: Clear boundaries between layers
 
 ### 3. Event-Driven Architecture
 
@@ -81,23 +83,23 @@ All communication between components is event-driven:
 HTTP Request → Domain Event → Kafka Event → Processing Event → Business Logic
 ```
 
-**Benefits**:
-- **Asynchronous Processing**: Non-blocking operations
-- **Loose Coupling**: Components communicate via events
-- **Audit Trail**: All events are logged and traceable
-- **Replay Capability**: Events can be replayed for recovery
+Benefits:
+- Asynchronous Processing: Non-blocking operations
+- Loose Coupling: Components communicate via events
+- Audit Trail: All events are logged and traceable
+- Replay Capability: Events can be replayed for recovery
 
 ### 4. CQRS (Command Query Responsibility Segregation)
 
 The platform separates write operations (commands) from read operations (queries):
 
-- **Commands**: Webhook ingestion (write to Kafka)
-- **Queries**: Health checks, status queries (read from cache/state)
+- Commands: Webhook ingestion (write to Kafka)
+- Queries: Health checks, status queries (read from cache/state)
 
-**Benefits**:
-- **Performance**: Optimize reads and writes independently
-- **Scalability**: Scale read and write paths separately
-- **Simplicity**: Clear separation of concerns
+Benefits:
+- Performance: Optimize reads and writes independently
+- Scalability: Scale read and write paths separately
+- Simplicity: Clear separation of concerns
 
 ## System Architecture
 
@@ -171,28 +173,28 @@ The platform separates write operations (commands) from read operations (queries
 ### Component Responsibilities
 
 #### Webhook Platform (Producer)
-- **Responsibility**: Receive webhooks and publish to Kafka
-- **Scaling**: Horizontal (stateless)
-- **Technology**: Spring Boot WebFlux, Netty
-- **Performance**: ~10,000 requests/second per instance
+- Responsibility: Receive webhooks and publish to Kafka
+- Scaling: Horizontal (stateless)
+- Technology: Spring Boot WebFlux, Netty
+- Performance: ~10,000 requests/second per instance
 
 #### Kafka Cluster
-- **Responsibility**: Message broker and event log
-- **Scaling**: Horizontal (add brokers and partitions)
-- **Technology**: Apache Kafka 3.6.1
-- **Performance**: Millions of messages/second
+- Responsibility: Message broker and event log
+- Scaling: Horizontal (add brokers and partitions)
+- Technology: Apache Kafka 3.6.1
+- Performance: Millions of messages/second
 
 #### Worker Applications (Consumers)
-- **Responsibility**: Process webhooks with business logic
-- **Scaling**: Horizontal (consumer groups)
-- **Technology**: Spring Boot, Spring Kafka
-- **Performance**: Depends on business logic complexity
+- Responsibility: Process webhooks with business logic
+- Scaling: Horizontal (consumer groups)
+- Technology: Spring Boot, Spring Kafka
+- Performance: Depends on business logic complexity
 
 #### Redis Cluster
-- **Responsibility**: Distributed idempotency and caching
-- **Scaling**: Horizontal (Redis Cluster mode)
-- **Technology**: Redis 7+
-- **Performance**: Sub-millisecond latency
+- Responsibility: Distributed idempotency and caching
+- Scaling: Horizontal (Redis Cluster mode)
+- Technology: Redis 7+
+- Performance: Sub-millisecond latency
 
 ## Module Architecture
 
@@ -240,11 +242,11 @@ The platform separates write operations (commands) from read operations (queries
 ### Module Details
 
 #### interfaces Module
-**Purpose**: Shared contracts and DTOs
+Purpose: Shared contracts and DTOs
 
-**Design Pattern**: Data Transfer Object (DTO)
+Design Pattern: Data Transfer Object (DTO)
 
-**Key Classes**:
+Key Classes:
 - `WebhookEventDTO`: Immutable DTO with all webhook data (eventId, providerName, payload, headers, etc.)
 - `WebhookResponseDTO`: Enhanced HTTP response DTO with:
   - Event tracking (eventId, status, message)
@@ -252,23 +254,23 @@ The platform separates write operations (commands) from read operations (queries
   - Payload echo (receivedPayload)
   - Processing metadata (destination, sourceIp, payloadSize, headerCount)
 
-**Dependencies**: None (pure POJOs with Jackson annotations)
+Dependencies: None (pure POJOs with Jackson annotations)
 
-**Design Decisions**:
+Design Decisions:
 - Immutable objects for thread safety
 - Jackson annotations for JSON serialization
 - Lombok for boilerplate reduction
 - Validation annotations for input validation
 
 #### core Module
-**Purpose**: Business logic, services, configuration, and infrastructure
+Purpose: Business logic, services, configuration, and infrastructure
 
-**Design Patterns**:
+Design Patterns:
 - Domain-Driven Design (DDD)
 - Decorator Pattern (Resilience)
 - Strategy Pattern (Validation)
 
-**Package Structure**:
+Package Structure:
 ```
 org.fireflyframework.webhooks.core/
 ├── config/                    # Configuration classes
@@ -297,14 +299,14 @@ org.fireflyframework.webhooks.core/
     └── WebhookValidator       # Request validation
 ```
 
-**Key Features**:
-- **Resilience Patterns**: Circuit breaker, rate limiter, timeout, bulkhead
-- **Security**: Payload validation, rate limiting, IP whitelisting
-- **Observability**: Custom metrics, distributed tracing, health indicators
-- **HTTP Idempotency**: Handled by lib-common-web IdempotencyWebFilter (transparent)
-- **Event Idempotency**: Worker-level via CacheBasedWebhookIdempotencyService (processor module)
+Key Features:
+- Resilience Patterns: Circuit breaker, rate limiter, timeout, bulkhead
+- Security: Payload validation, rate limiting, IP whitelisting
+- Observability: Custom metrics, distributed tracing, health indicators
+- HTTP Idempotency: Handled by lib-common-web IdempotencyWebFilter (transparent)
+- Event Idempotency: Worker-level via CacheBasedWebhookIdempotencyService (processor module)
 
-**Dependencies**:
+Dependencies:
 - `lib-common-eda` - Event publishing
 - `lib-common-cache` - Redis/Caffeine caching
 - `lib-common-core` - Core utilities
@@ -313,24 +315,24 @@ org.fireflyframework.webhooks.core/
 - MapStruct - DTO mapping
 - Apache Commons Net - CIDR notation IP matching
 
-**Design Decisions**:
-- **Decorator Pattern**: `ResilientWebhookProcessingService` decorates `WebhookProcessingServiceImpl`
-- **Environment Variables**: All properties support environment variable configuration
-- **Reactive Programming**: All services return Mono/Flux for non-blocking operations
-- **Separation of Concerns**: Each package has a single responsibility
+Design Decisions:
+- Decorator Pattern: `ResilientWebhookProcessingService` decorates `WebhookProcessingServiceImpl`
+- Environment Variables: All properties support environment variable configuration
+- Reactive Programming: All services return Mono/Flux for non-blocking operations
+- Separation of Concerns: Each package has a single responsibility
 
 #### web Module
-**Purpose**: Main Spring Boot application and REST controllers **ONLY**
+Purpose: Main Spring Boot application and REST controllers ONLY
 
-**Design Pattern**: MVC (Model-View-Controller)
+Design Pattern: MVC (Model-View-Controller)
 
-**Key Classes**:
+Key Classes:
 - `WebhookManagementApplication`: Main application class
 - `controllers/WebhookController`: REST controller for webhook ingestion
 
-**Note**: All business logic, services, configuration, and infrastructure code has been moved to the `-core` module. This module contains only the application entry point and REST controllers.
+Note: All business logic, services, configuration, and infrastructure code has been moved to the `-core` module. This module contains only the application entry point and REST controllers.
 
-**Dependencies**:
+Dependencies:
 - `fireflyframework-webhooks-core` - Core business logic
 - Spring Boot WebFlux
 - Spring Boot Actuator
@@ -339,37 +341,37 @@ org.fireflyframework.webhooks.core/
 - `lib-common-eda`
 - `lib-common-cache`
 
-**Design Decisions**:
+Design Decisions:
 - Reactive controllers for non-blocking I/O
 - OpenAPI for API documentation
 - Actuator for health checks and metrics
 - Minimal business logic (delegated to core)
 
 #### processor Module
-**Purpose**: Worker framework for webhook processing
+Purpose: Worker framework for webhook processing
 
-**Design Pattern**: Hexagonal Architecture (Ports & Adapters)
+Design Pattern: Hexagonal Architecture (Ports & Adapters)
 
-**Key Classes**:
-- **Ports** (Interfaces):
+Key Classes:
+- Ports (Interfaces):
   - `WebhookProcessor` - Business logic interface
   - `WebhookIdempotencyService` - Idempotency interface
   - `WebhookSignatureValidator` - Signature validation interface
 
-- **Adapters** (Implementations):
+- Adapters (Implementations):
   - `AbstractWebhookEventListener` - Kafka consumer adapter
   - `CacheBasedWebhookIdempotencyService` - Redis adapter
 
-- **Models**:
+- Models:
   - `WebhookProcessingContext` - Context object
   - `WebhookProcessingResult` - Result object
 
-**Dependencies**:
+Dependencies:
 - `lib-common-eda` - Event consumption
 - `lib-common-cache` - Caching
 - Spring Kafka
 
-**Design Decisions**:
+Design Decisions:
 - Abstract base class for common logic
 - Template method pattern for lifecycle hooks
 - Strategy pattern for signature validation
@@ -695,19 +697,19 @@ firefly:
       validate-payload-size: true
 ```
 
-**Environment Variable**:
+Environment Variable:
 ```bash
 FIREFLY_WEBHOOKS_SECURITY_MAX_PAYLOAD_SIZE=1048576
 FIREFLY_WEBHOOKS_SECURITY_VALIDATE_PAYLOAD_SIZE=true
 ```
 
-**Behavior**: Returns HTTP 413 Payload Too Large if exceeded
+Behavior: Returns HTTP 413 Payload Too Large if exceeded
 
 #### 2. Provider Name Validation
 
-**Purpose**: Prevent injection attacks via malicious provider names
+Purpose: Prevent injection attacks via malicious provider names
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   webhooks:
@@ -716,29 +718,29 @@ firefly:
       provider-name-pattern: "^[a-z0-9-]+$"  # Alphanumeric and hyphens only
 ```
 
-**Environment Variable**:
+Environment Variable:
 ```bash
 FIREFLY_WEBHOOKS_SECURITY_VALIDATE_PROVIDER_NAME=true
 FIREFLY_WEBHOOKS_SECURITY_PROVIDER_NAME_PATTERN="^[a-z0-9-]+$"
 ```
 
-**Behavior**: Returns HTTP 400 Bad Request if invalid
+Behavior: Returns HTTP 400 Bad Request if invalid
 
 #### 3. IP Whitelisting
 
-**Purpose**: Restrict access to known provider IPs
+Purpose: Restrict access to known provider IPs
 
-**Supported Formats**:
-- **Exact IP addresses**: `54.187.174.169`
-- **CIDR notation**: `192.30.252.0/22` (matches entire IP ranges)
+Supported Formats:
+- Exact IP addresses: `54.187.174.169`
+- CIDR notation: `192.30.252.0/22` (matches entire IP ranges)
 
-**Implementation**:
+Implementation:
 - Uses Apache Commons Net library (`SubnetUtils`) for CIDR matching
 - Validates both exact IP matches and CIDR range matches
 - Logs warnings for invalid IP addresses or CIDR notations
 - Configured per provider for granular control
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   webhooks:
@@ -755,16 +757,16 @@ firefly:
           - "173.0.82.0/24"       # CIDR notation (173.0.82.0 - 173.0.82.255)
 ```
 
-**Environment Variable**:
+Environment Variable:
 ```bash
 FIREFLY_WEBHOOKS_SECURITY_ENABLE_IP_WHITELIST=true
 # Supports both exact IPs and CIDR notation
 FIREFLY_WEBHOOKS_SECURITY_IP_WHITELIST='{"stripe":["54.187.174.169","54.187.205.235"],"github":["192.30.252.0/22","185.199.108.0/22"]}'
 ```
 
-**Behavior**: Returns HTTP 403 Forbidden if IP not whitelisted
+Behavior: Returns HTTP 403 Forbidden if IP not whitelisted
 
-**Example CIDR Ranges**:
+Example CIDR Ranges:
 - `/32` - Single IP (e.g., `192.168.1.1/32` = only `192.168.1.1`)
 - `/24` - 256 IPs (e.g., `192.168.1.0/24` = `192.168.1.0` - `192.168.1.255`)
 - `/22` - 1024 IPs (e.g., `192.30.252.0/22` = `192.30.252.0` - `192.30.255.255`)
@@ -772,23 +774,23 @@ FIREFLY_WEBHOOKS_SECURITY_IP_WHITELIST='{"stripe":["54.187.174.169","54.187.205.
 
 #### 4. Rate Limiting
 
-**Purpose**: Prevent abuse and DoS attacks
+Purpose: Prevent abuse and DoS attacks
 
-**Per-Provider Rate Limiting**:
+Per-Provider Rate Limiting:
 - Default: 100 requests/second per provider
 - Configurable per provider via Resilience4j
 
-**Per-IP Rate Limiting**:
+Per-IP Rate Limiting:
 - Default: 100 requests/second per IP address
 - Prevents single IP from overwhelming the system
 
-**Behavior**: Returns HTTP 429 Too Many Requests if exceeded
+Behavior: Returns HTTP 429 Too Many Requests if exceeded
 
 #### 5. HTTP-level Idempotency
 
-**Purpose**: Prevent duplicate processing of the same webhook
+Purpose: Prevent duplicate processing of the same webhook
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   webhooks:
@@ -797,13 +799,13 @@ firefly:
       http-idempotency-ttl-seconds: 86400  # 24 hours
 ```
 
-**Environment Variable**:
+Environment Variable:
 ```bash
 FIREFLY_WEBHOOKS_SECURITY_ENABLE_HTTP_IDEMPOTENCY=true
 FIREFLY_WEBHOOKS_SECURITY_HTTP_IDEMPOTENCY_TTL_SECONDS=86400
 ```
 
-**Usage**:
+Usage:
 ```bash
 curl -X POST http://localhost:8080/api/v1/webhook/stripe \
   -H "Content-Type: application/json" \
@@ -811,15 +813,15 @@ curl -X POST http://localhost:8080/api/v1/webhook/stripe \
   -d '{"event": "payment.succeeded"}'
 ```
 
-**Behavior**:
+Behavior:
 - First request: Processes webhook and caches response
 - Duplicate requests (within 24h): Returns cached response (HTTP 200)
 
 #### 6. Content-Type Validation
 
-**Purpose**: Ensure proper content type headers
+Purpose: Ensure proper content type headers
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   webhooks:
@@ -828,27 +830,27 @@ firefly:
       require-content-type: true
 ```
 
-**Environment Variable**:
+Environment Variable:
 ```bash
 FIREFLY_WEBHOOKS_SECURITY_ENABLE_REQUEST_VALIDATION=true
 FIREFLY_WEBHOOKS_SECURITY_REQUIRE_CONTENT_TYPE=true
 ```
 
-**Behavior**: Returns HTTP 400 Bad Request if Content-Type header missing
+Behavior: Returns HTTP 400 Bad Request if Content-Type header missing
 
 ### Authentication & Authorization
 
 #### Webhook Platform (Ingestion)
-- **No Authentication**: Webhook providers don't support OAuth/JWT
-- **IP Whitelisting**: Restrict access to known provider IPs (optional, configurable)
-- **Rate Limiting**: Prevent abuse (per-provider and per-IP)
-- **Payload Validation**: Validate payload size, provider name, content-type
+- No Authentication: Webhook providers don't support OAuth/JWT
+- IP Whitelisting: Restrict access to known provider IPs (optional, configurable)
+- Rate Limiting: Prevent abuse (per-provider and per-IP)
+- Payload Validation: Validate payload size, provider name, content-type
 
 #### Worker Applications (Processing)
-- **Signature Validation**: Verify webhook signatures (provider-specific)
-- **HMAC SHA256**: Most providers use HMAC SHA256
-- **Timestamp Validation**: Reject old webhooks (prevent replay attacks)
-- **Idempotency**: Prevent duplicate processing using Redis locks (7 days TTL)
+- Signature Validation: Verify webhook signatures (provider-specific)
+- HMAC SHA256: Most providers use HMAC SHA256
+- Timestamp Validation: Reject old webhooks (prevent replay attacks)
+- Idempotency: Prevent duplicate processing using Redis locks (7 days TTL)
 
 ### Signature Validation
 
@@ -879,33 +881,33 @@ boolean valid = signature.equals(expectedSignature);
 ### Data Protection
 
 #### In Transit
-- **TLS 1.2+**: All HTTP traffic uses TLS
-- **Kafka TLS**: Enable TLS for Kafka (optional)
-- **Redis TLS**: Enable TLS for Redis (optional)
+- TLS 1.2+: All HTTP traffic uses TLS
+- Kafka TLS: Enable TLS for Kafka (optional)
+- Redis TLS: Enable TLS for Redis (optional)
 
 #### At Rest
-- **Kafka Encryption**: Enable encryption at rest (optional)
-- **Redis Encryption**: Enable encryption at rest (optional)
-- **Secrets Management**: Use Kubernetes Secrets or Vault
+- Kafka Encryption: Enable encryption at rest (optional)
+- Redis Encryption: Enable encryption at rest (optional)
+- Secrets Management: Use Kubernetes Secrets or Vault
 
 ### Compliance
 
-- **GDPR**: Webhook payloads may contain PII
-- **PCI DSS**: Payment webhooks may contain sensitive data
-- **Data Retention**: Configure Kafka retention policy
-- **Audit Logging**: All webhooks are logged with correlation IDs
+- GDPR: Webhook payloads may contain PII
+- PCI DSS: Payment webhooks may contain sensitive data
+- Data Retention: Configure Kafka retention policy
+- Audit Logging: All webhooks are logged with correlation IDs
 
 ## Error Handling & Resilience
 
 ### Resilience Patterns Implementation
 
-The platform implements comprehensive resilience patterns using **Resilience4j**:
+The platform implements comprehensive resilience patterns using Resilience4j:
 
 #### 1. Circuit Breaker
 
-**Purpose**: Prevents cascading failures when Kafka is down
+Purpose: Prevents cascading failures when Kafka is down
 
-**Configuration**:
+Configuration:
 ```yaml
 resilience4j:
   circuitbreaker:
@@ -921,7 +923,7 @@ resilience4j:
         minimum-number-of-calls: 5
 ```
 
-**Implementation**:
+Implementation:
 ```java
 @Service
 @Primary
@@ -944,12 +946,12 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
 }
 ```
 
-**Behavior**:
-- **CLOSED**: Normal operation, all requests pass through
-- **OPEN**: Circuit is open, requests fail immediately (no fallback, relies on lib-common-eda)
-- **HALF_OPEN**: Testing if service recovered, limited requests allowed
+Behavior:
+- CLOSED: Normal operation, all requests pass through
+- OPEN: Circuit is open, requests fail immediately (no fallback, relies on lib-common-eda)
+- HALF_OPEN: Testing if service recovered, limited requests allowed
 
-**Health Check**:
+Health Check:
 ```json
 {
   "webhookCircuitBreaker": {
@@ -966,9 +968,9 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
 
 #### 2. Rate Limiting
 
-**Purpose**: Protects against abuse and DoS attacks
+Purpose: Protects against abuse and DoS attacks
 
-**Per-Provider Rate Limiting**:
+Per-Provider Rate Limiting:
 ```yaml
 resilience4j:
   ratelimiter:
@@ -979,7 +981,7 @@ resilience4j:
         timeout-duration: 0s         # Fail immediately if limit exceeded
 ```
 
-**Per-IP Rate Limiting**:
+Per-IP Rate Limiting:
 ```yaml
 resilience4j:
   ratelimiter:
@@ -990,7 +992,7 @@ resilience4j:
         timeout-duration: 0s
 ```
 
-**Implementation**:
+Implementation:
 ```java
 @Service
 public class WebhookRateLimitService {
@@ -1013,13 +1015,13 @@ public class WebhookRateLimitService {
 }
 ```
 
-**Response**: HTTP 429 Too Many Requests
+Response: HTTP 429 Too Many Requests
 
 #### 3. Timeout Protection
 
-**Purpose**: Prevents hanging operations
+Purpose: Prevents hanging operations
 
-**Configuration**:
+Configuration:
 ```yaml
 resilience4j:
   timelimiter:
@@ -1029,16 +1031,16 @@ resilience4j:
         cancel-running-future: true  # Cancel the future on timeout
 ```
 
-**Behavior**:
+Behavior:
 - If Kafka publishing takes > 10 seconds, the operation times out
 - Returns HTTP 500 to webhook sender
 - Webhook sender should retry
 
 #### 4. Bulkhead Pattern
 
-**Purpose**: Resource isolation to prevent thread pool exhaustion
+Purpose: Resource isolation to prevent thread pool exhaustion
 
-**Configuration** (configured but not yet fully implemented):
+Configuration (configured but not yet fully implemented):
 ```yaml
 resilience4j:
   bulkhead:
@@ -1051,18 +1053,18 @@ resilience4j:
 ### Error Handling Strategy
 
 #### Webhook Platform (Ingestion)
-- **Circuit Breaker**: Fails fast if Kafka is unavailable (no fallback)
-- **Timeout**: Returns 500 if publishing takes > 10 seconds
-- **Rate Limiting**: Returns 429 if rate limit exceeded
-- **Validation Errors**: Returns 400 for invalid payloads
-- **Logging**: All errors logged with correlation IDs (traceId, spanId, transactionId)
+- Circuit Breaker: Fails fast if Kafka is unavailable (no fallback)
+- Timeout: Returns 500 if publishing takes > 10 seconds
+- Rate Limiting: Returns 429 if rate limit exceeded
+- Validation Errors: Returns 400 for invalid payloads
+- Logging: All errors logged with correlation IDs (traceId, spanId, transactionId)
 
 #### Worker Applications (Processing)
-- **Retry Logic**: Retry transient failures with exponential backoff
-- **Dead Letter Queue**: Move failed messages to DLQ after max retries
-- **Circuit Breaker**: Stop processing if downstream service is down
-- **Graceful Degradation**: Continue processing other events
-- **Idempotency**: Prevent duplicate processing using Redis locks
+- Retry Logic: Retry transient failures with exponential backoff
+- Dead Letter Queue: Move failed messages to DLQ after max retries
+- Circuit Breaker: Stop processing if downstream service is down
+- Graceful Degradation: Continue processing other events
+- Idempotency: Prevent duplicate processing using Redis locks
 
 ### Retry Strategy (Worker Applications)
 
@@ -1076,58 +1078,28 @@ public Mono<WebhookProcessingResult> process(WebhookProcessingContext context) {
 }
 ```
 
-### Idempotency
+### Duplicate handling
 
-Idempotency ensures exactly-once processing:
+The listener uses the configured idempotency service for a processing lock and a processed marker. Multiple instances need shared backing state; a local cache cannot coordinate a fleet. An application update and its processed marker are separate effects, so the worker must tolerate retries and partial failures.
 
-1. **Acquire Lock**: Try to acquire processing lock in Redis
-2. **Check Processed**: Check if event already processed
-3. **Process**: Execute business logic
-4. **Mark Processed**: Mark event as processed in Redis
-5. **Release Lock**: Release processing lock
-
-```java
-public Mono<WebhookProcessingResult> processWithIdempotency(WebhookProcessingContext context) {
-    return idempotencyService.tryAcquireProcessingLock(context.getEventId())
-        .flatMap(acquired -> {
-            if (!acquired) {
-                return Mono.just(WebhookProcessingResult.skipped("Already processing"));
-            }
-
-            return idempotencyService.isAlreadyProcessed(context.getEventId())
-                .flatMap(processed -> {
-                    if (processed) {
-                        return Mono.just(WebhookProcessingResult.skipped("Already processed"));
-                    }
-
-                    return processor.process(context)
-                        .flatMap(result ->
-                            idempotencyService.markAsProcessed(context.getEventId())
-                                .thenReturn(result));
-                })
-                .doFinally(signal ->
-                    idempotencyService.releaseProcessingLock(context.getEventId()).subscribe());
-        });
-}
-```
+Use the [processor guide](../../docs/site/modules/webhooks-processor.md) for the actual listener constructor, content-key behavior, provider verification, and result/acknowledgment boundaries. A retry result value does not itself schedule broker redelivery. A cache marker does not establish end-to-end exactly-once delivery.
 
 ### Monitoring & Alerting
 
 #### Key Metrics
-- **Ingestion Rate**: Webhooks received per second
-- **Processing Rate**: Webhooks processed per second
-- **Error Rate**: Failed webhooks per second
-- **Consumer Lag**: Kafka consumer lag
-- **Idempotency Hit Rate**: Duplicate webhook rate
+- Ingestion Rate: Webhooks received per second
+- Processing Rate: Webhooks processed per second
+- Error Rate: Failed webhooks per second
+- Consumer Lag: Kafka consumer lag
+- Idempotency Hit Rate: Duplicate webhook rate
 
 #### Alerts
-- **High Error Rate**: Alert if error rate > 5%
-- **High Consumer Lag**: Alert if lag > 10,000 messages
-- **Kafka Down**: Alert if Kafka is unavailable
-- **Redis Down**: Alert if Redis is unavailable
-- **High Latency**: Alert if P99 latency > 1 second
+- High Error Rate: Alert if error rate > 5%
+- High Consumer Lag: Alert if lag > 10,000 messages
+- Kafka Down: Alert if Kafka is unavailable
+- Redis Down: Alert if Redis is unavailable
+- High Latency: Alert if P99 latency > 1 second
 
-## Conclusion
+## Validate the deployment
 
-The Firefly Framework Webhooks Library is designed for **high throughput**, **scalability**, and **reliability**. The architecture follows industry best practices including reactive programming, event-driven architecture, hexagonal architecture, and idempotency. The platform can handle millions of webhooks per day while maintaining low latency and high availability.
-```
+Measure ingestion and processing latency with the chosen broker, cache, payload sizes, and provider workload. Verify duplicate delivery, partial failure, restart, and signature-rejection behavior in that deployment before using its results as an operating baseline.

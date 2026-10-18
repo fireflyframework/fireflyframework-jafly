@@ -1,8 +1,8 @@
 # Firefly Framework Rule Engine - Quick Start Guide
 
-**Get started with the Firefly Framework Rule Engine in 15 minutes**
+Use the rule engine for a defined evaluation over application input. For the onboarding service, rule evaluation is an optional step after validating the submitted application.
 
-*A beginner-friendly introduction to writing your first rules*
+The YAML examples below illustrate the DSL. They need an evaluator or the configured rule web service; YAML alone does not add a decision route to the onboarding tutorial. See [the component guide](../../../docs/site/modules/rule-engine.md) for the current API and service choices.
 
 ---
 
@@ -15,7 +15,7 @@
 
 ---
 
-## Your First Rule in 5 Minutes
+## Write a rule
 
 Let's create a simple credit approval rule:
 
@@ -44,24 +44,24 @@ output:
   reason: text
 ```
 
-**That's it!** You've written your first rule. Let's break it down:
+That's it! You've written your first rule. Let's break it down:
 
 ### Required Sections
 
 Every rule needs these four sections:
 
-1. **`name`** - A human-readable identifier
-2. **`description`** - What the rule does
-3. **`inputs`** - Variables that come from your application
-4. **`output`** - Variables the rule will return
+1. `name` - A human-readable identifier
+2. `description` - What the rule does
+3. `inputs` - Variables that come from your application
+4. `output` - Variables the rule will return
 
 ### Logic Sections
 
-Choose **one** of these approaches:
+Choose one of these approaches:
 
-- **Simple Logic**: `when` + `then` + `else` (recommended for beginners)
-- **Complex Logic**: `conditions` blocks (for advanced scenarios)
-- **Multiple Rules**: `rules` array (for sequential processing)
+- Simple Logic: `when` + `then` + `else` (recommended for beginners)
+- Complex Logic: `conditions` blocks (for advanced scenarios)
+- Multiple Rules: `rules` array (for sequential processing)
 
 ---
 
@@ -234,7 +234,7 @@ output:
   average: number
 ```
 
-**Key forEach Concepts:**
+Key forEach Concepts:
 - Use `forEach item in list: action` to process each element
 - The iteration variable (`amount`) is available only within the forEach
 - You can use `forEach item, index in list: action` to access the position
@@ -266,9 +266,9 @@ output:
   iterations: number
 ```
 
-**Key while Concepts:**
+Key while Concepts:
 - Use `while condition: action` to repeat actions while condition is true
-- Condition is checked **before** each iteration
+- Condition is checked before each iteration
 - If condition is false initially, the loop never executes
 - Maximum 1000 iterations to prevent infinite loops
 - Multiple actions separated by semicolons: `while x < 10: action1; action2`
@@ -300,9 +300,9 @@ output:
   count: number
 ```
 
-**Key do-while Concepts:**
+Key do-while Concepts:
 - Use `do: action while condition` for loops that execute at least once
-- Condition is checked **after** each iteration
+- Condition is checked after each iteration
 - Guarantees first execution even if condition is initially false
 - Perfect for retry logic and validation scenarios
 - Multiple actions separated by semicolons: `do: action1; action2 while condition`
@@ -315,9 +315,9 @@ The rule engine uses naming conventions to understand your data:
 
 | Type | Format | Example | Source |
 |------|--------|---------|---------|
-| **Input Variables** | `camelCase` | `creditScore`, `annualIncome` | From your API call |
-| **System Constants** | `UPPER_CASE` | `MIN_CREDIT_SCORE` | From database |
-| **Computed Variables** | `snake_case` | `debt_ratio`, `final_score` | Created by rules |
+| Input Variables | `camelCase` | `creditScore`, `annualIncome` | From your API call |
+| System Constants | `UPPER_CASE` | `MIN_CREDIT_SCORE` | From database |
+| Computed Variables | `snake_case` | `debt_ratio`, `final_score` | Created by rules |
 
 ```yaml
 inputs: [creditScore, annualIncome]  # camelCase from API
@@ -357,10 +357,10 @@ then:
 
 Once you're comfortable with these basics:
 
-1. **📖 Explore Patterns**: Check out the [Common Patterns Guide](common-patterns-guide.md) for real-world examples
-2. **🏗️ Learn Advanced Features**: See the [Full YAML DSL Reference](yaml-dsl-reference.md) for all capabilities
-3. **🎯 Follow Best Practices**: Review the [Governance Guidelines](governance-guidelines.md) for team standards
-4. **💡 Try the Tutorial**: Work through the [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
+1. 📖 Explore Patterns: Check out the [Common Patterns Guide](common-patterns-guide.md) for real-world examples
+2. 🏗️ Learn Advanced Features: See the [Full YAML DSL Reference](yaml-dsl-reference.md) for all capabilities
+3. 🎯 Follow Best Practices: Review the [Governance Guidelines](governance-guidelines.md) for team standards
+4. 💡 Try the Tutorial: Work through the [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
 
 ---
 
@@ -387,7 +387,7 @@ if condition then action
 ```
 
 ### Basic Structure Template
-<!-- doc-test:skip (template placeholder; `input1`, `condition1`, etc. are illustrative names, not real DSL) -->
+<!-- doc-test:skip (template placeholder; `input1`, `condition1`, etc. Are illustrative names, not real DSL) -->
 ```yaml
 name: "Your Rule Name"
 description: "What this rule does"

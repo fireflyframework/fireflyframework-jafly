@@ -30,24 +30,26 @@ A larger onboarding service may adopt this bundle for shared HTTP-client and ope
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 Add the dependency and the auto-configurations do the rest. The listed auto-configurations register its beans. A resilient, transaction-aware `WebClient` (and `WebClientTemplate`) are available for injection:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.core.web.client.WebClientTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerGateway {
 
     private final WebClientTemplate webClient;
 
-    public CustomerGateway(WebClientTemplate webClient) {
-        this.webClient = webClient;
-    }
+
 
     // Inbound headers (minus the configured skip-list) are forwarded downstream,
     // and X-Transaction-Id is propagated automatically.
@@ -60,17 +62,17 @@ public class CustomerGateway {
 Prefer the raw `WebClient`? The auto-configured bean is already resilience-wrapped (circuit breaker, retry, timeout, bulkhead, metrics):
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryClient {
 
     private final WebClient webClient; // resilient + transaction-aware by default
 
-    public InventoryClient(WebClient webClient) {
-        this.webClient = webClient;
-    }
+
 
     public Mono<Stock> stock(String sku) {
         return webClient.get()

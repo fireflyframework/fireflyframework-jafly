@@ -1,4 +1,6 @@
-# Architecture Overview
+# Core infrastructure architecture (historical)
+
+This retained architecture describes the earlier combined core/messaging layout. Current HTTP, event transport, and orchestration contracts are documented separately in the component guide. [Current guide](../../../docs/site/modules/starter-core.md).
 
 **Firefly Common Core Library**  
 *Copyright (c) 2025 Firefly Software Foundation*  

@@ -30,6 +30,8 @@ If onboarding includes a signed agreement, use the DocuSign adapter for the conf
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (see [Installation](#add-the-component)) to a service that already builds on `fireflyframework-ecm`.
@@ -55,6 +57,7 @@ firefly:
 3. Inject the ECM port. Your code depends only on the provider-neutral `SignatureEnvelopePort`, never on DocuSign types:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
 import org.springframework.stereotype.Service;
@@ -63,13 +66,12 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContractService {
 
     private final SignatureEnvelopePort envelopes; // bound to DocuSign at runtime
 
-    public ContractService(SignatureEnvelopePort envelopes) {
-        this.envelopes = envelopes;
-    }
+
 
     public Mono<SignatureEnvelope> startSigning() {
         SignatureEnvelope envelope = SignatureEnvelope.builder()

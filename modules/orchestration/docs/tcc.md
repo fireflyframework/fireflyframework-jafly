@@ -2,7 +2,7 @@
 
 # Part IV: TCC Pattern
 
-**Contents:**
+Contents:
 - [§21 TCC Annotation Reference](#21-tcc-annotation-reference)
 - [§22 TCC Tutorial](#22-tcc-tutorial)
 - [§23 TCC Phases & Timeout/Retry](#23-tcc-phases--timeoutretry)
@@ -17,7 +17,7 @@
 
 Marks a class as a TCC (Try-Confirm-Cancel) transaction coordinator. The coordinator class contains nested `@TccParticipant` classes.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME`
+Target: `ElementType.TYPE` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -32,7 +32,7 @@ Marks a class as a TCC (Try-Confirm-Cancel) transaction coordinator. The coordin
 
 Marks a nested class as a TCC participant. Each participant implements a Try/Confirm/Cancel lifecycle.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME`
+Target: `ElementType.TYPE` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -41,13 +41,13 @@ Marks a nested class as a TCC participant. Each participant implements a Try/Con
 | `timeoutMs` | `long` | `-1` | Participant-level timeout (`-1` = use TCC default) |
 | `optional` | `boolean` | `false` | If `true`, Try failure does not trigger Cancel for other participants |
 | `jitter` | `boolean` | `false` | Apply jitter to backoff delays |
-| `jitterFactor` | `double` | `0.0` | Jitter factor (`0.0`–`1.0`) |
+| `jitterFactor` | `double` | `0.0` | Jitter factor (`0.0` to `1.0`) |
 
 ### @TryMethod
 
 Marks the Try phase method on a `@TccParticipant`. The method must return `Mono<T>`. There must be exactly one `@TryMethod` per participant.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -59,7 +59,7 @@ Marks the Try phase method on a `@TccParticipant`. The method must return `Mono<
 
 Marks the Confirm phase method. Runs when **all** Try phases succeed. Must return `Mono<?>`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -71,7 +71,7 @@ Marks the Confirm phase method. Runs when **all** Try phases succeed. Must retur
 
 Marks the Cancel phase method. Runs when **any** Try phase fails. Must return `Mono<?>`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -83,7 +83,7 @@ Marks the Cancel phase method. Runs when **any** Try phase fails. Must return `M
 
 Publishes an event when a TCC participant completes its Confirm phase.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME`
+Target: `ElementType.TYPE` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -95,7 +95,7 @@ Publishes an event when a TCC participant completes its Confirm phase.
 
 Callback invoked when the TCC transaction completes successfully (all Confirms succeed).
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -108,7 +108,7 @@ The callback method can declare `ExecutionContext` and/or `TccResult` as paramet
 
 Callback invoked when the TCC transaction fails.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -121,7 +121,7 @@ Callback invoked when the TCC transaction fails.
 
 Schedules automatic execution of a TCC transaction. `@Repeatable`.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME` | **Repeatable:** Yes (container: `@ScheduledTccs`)
+Target: `ElementType.TYPE` | Retention: `RUNTIME` | Repeatable: Yes (container: `@ScheduledTccs`)
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -152,7 +152,7 @@ Participant A: Try ok   Participant B: Try FAIL → Cancel A (B was never reserv
 Participant A: Try ok   Confirm A FAIL          → Cancel A (confirm failure triggers cancel)
 ```
 
-**Key difference from Saga:** In a Saga, the forward action is committed immediately and must be compensated on failure. In TCC, the Try phase only *reserves* resources — nothing is committed until the Confirm phase.
+Key difference from Saga: In a Saga, the forward action is committed immediately and must be compensated on failure. In TCC, the Try phase only *reserves* resources: nothing is committed until the Confirm phase.
 
 ### Step 1: Define the TCC Coordinator
 
@@ -228,7 +228,7 @@ public class TransferFundsTcc {
 Key points:
 
 - Participants are **nested static classes** inside the `@Tcc` coordinator
-- `order` determines Try phase execution order — `debit` runs before `credit`
+- `order` determines Try phase execution order: `debit` runs before `credit`
 - `@FromTry("debit")` injects the Try-phase result into Confirm/Cancel methods
 - Each phase has independent timeout and retry settings
 
@@ -360,7 +360,7 @@ long getEffectiveCancelBackoff(long defaultBackoff)
 
 ### Confirm Failure Behavior
 
-If the Confirm phase fails for any participant, the framework automatically chains into the Cancel phase to restore consistency:
+If a Confirm fails, the engine invokes Cancel. The participant must implement cancellation for partial or already-confirmed effects; the engine cannot restore a business resource by itself:
 
 - If Cancel succeeds → result status is `CANCELED`
 - If Cancel also fails → result status is `FAILED`, and a DLQ entry is created
@@ -543,7 +543,7 @@ TccInputs inputs = TccInputs.empty();
 |-------|---------|
 | `CONFIRMED` | All Try and Confirm phases succeeded |
 | `CANCELED` | A Try or Confirm failed, Cancel phases ran successfully |
-| `FAILED` | A Cancel phase failed (data may be inconsistent — DLQ entry created) |
+| `FAILED` | A Cancel phase failed (data may be inconsistent: DLQ entry created) |
 
 ### Top-Level Methods
 
@@ -568,7 +568,7 @@ TccInputs inputs = TccInputs.empty();
 
 ### ExecutionReport
 
-`TccResult` can carry an `ExecutionReport` — a unified report record shared across all three orchestration patterns (Workflow, Saga, TCC). The engine populates this report automatically after execution.
+`TccResult` can carry an `ExecutionReport`: a unified report record shared across all three orchestration patterns (Workflow, Saga, TCC). The engine populates this report automatically after execution.
 
 **`ExecutionReport` record fields:**
 
@@ -689,16 +689,16 @@ tccEngine.execute("TransferFunds", inputs)
 
 ### Overview
 
-TCC Composition provides multi-TCC orchestration with DAG topology — parallel to the saga composition subsystem. Multiple independent TCC transactions can be composed into a single coordinated execution where:
+TCC Composition provides multi-TCC orchestration with DAG topology: parallel to the saga composition subsystem. Multiple independent TCC transactions can be composed into a single coordinated execution where:
 
 - TCCs within a composition can **depend on each other**, forming a directed acyclic graph
-- TCCs **share data via mappings** — output from one TCC flows as input to downstream TCCs
+- TCCs **share data via mappings**: output from one TCC flows as input to downstream TCCs
 - On failure, confirmed TCCs are **compensated (canceled) in reverse execution order**
 - TCCs in the same layer of the DAG execute **in parallel**
 
 ### TccComposition
 
-`TccComposition` is the immutable definition of a composition — a DAG of TCC transactions with data flow between them.
+`TccComposition` is the immutable definition of a composition: a DAG of TCC transactions with data flow between them.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -707,7 +707,7 @@ TCC Composition provides multi-TCC orchestration with DAG topology — parallel 
 | `tccMap` | `Map<String, CompositionTcc>` | TCC entries keyed by alias (derived from `tccs`) |
 | `dataMappings` | `List<DataMapping>` | Data flow mappings between TCCs |
 
-**Key method:**
+Key method:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -745,7 +745,7 @@ Data flows between TCCs are defined by `DataMapping` records:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `TccCompositionBuilder.composition(String name)` | `TccCompositionBuilder` | Static factory — creates a new builder |
+| `TccCompositionBuilder.composition(String name)` | `TccCompositionBuilder` | Static factory: creates a new builder |
 | `.tcc(String alias)` | `TccEntryBuilder` | Begin defining a TCC entry |
 | `.dataFlow(String sourceTcc, String sourceField, String targetTcc, String targetField)` | `TccCompositionBuilder` | Add a data flow mapping |
 | `.build()` | `TccComposition` | Validate and build the immutable composition |
@@ -761,7 +761,7 @@ Data flows between TCCs are defined by `DataMapping` records:
 | `.condition(String)` | `TccEntryBuilder` | Set a condition expression |
 | `.add()` | `TccCompositionBuilder` | Finish this TCC entry and return to the composition builder |
 
-**Full example — multi-TCC composition:**
+Full example: multi-TCC composition:
 
 ```java
 TccComposition composition = TccCompositionBuilder.composition("OrderFulfillment")
@@ -807,13 +807,13 @@ Layer 2: [confirm-shipment, send-notification]   ← depends on upstream layers
 
 `TccCompositor` orchestrates the execution of a `TccComposition`. It delegates individual TCC execution to `TccEngine` and coordinates layer-by-layer processing with parallel execution within layers.
 
-**Dependencies:** `TccEngine`, `OrchestrationEvents`, `TccCompositionDataFlowManager`, `TccCompositionCompensationManager`, optional `BackpressureStrategy`.
+Dependencies: `TccEngine`, `OrchestrationEvents`, `TccCompositionDataFlowManager`, `TccCompositionCompensationManager`, optional `BackpressureStrategy`.
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
 | `compose(TccComposition composition, Map<String, Object> globalInput)` | `Mono<TccCompositionResult>` | Execute the full composition |
 
-**Execution behavior:**
+Execution behavior:
 
 1. Generates a `correlationId` and creates a `TccCompositionContext`
 2. Computes executable layers via `composition.getExecutableLayers()`
@@ -855,7 +855,7 @@ compositor.compose(composition, Map.of("orderId", "ORD-123", "amount", 99.99))
 | `tccResults` | `Map<String, TccResult>` | Per-alias TCC results |
 | `error` | `Throwable` | Root cause error (`null` on success) |
 
-**Static factories:**
+Static factories:
 
 | Method | Description |
 |--------|-------------|
@@ -866,7 +866,7 @@ compositor.compose(composition, Map.of("orderId", "ORD-123", "amount", 99.99))
 
 `TccCompositionContext` is the mutable execution context that tracks progress during composition execution. It is thread-safe (uses `ConcurrentHashMap` and synchronized lists).
 
-**TccStatus Enum:**
+TccStatus Enum:
 
 | Value | Meaning |
 |-------|---------|
@@ -877,7 +877,7 @@ compositor.compose(composition, Map.of("orderId", "ORD-123", "amount", 99.99))
 | `FAILED` | TCC execution failed |
 | `SKIPPED` | TCC was skipped (condition not met) |
 
-**Tracked state:**
+Tracked state:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -888,7 +888,7 @@ compositor.compose(composition, Map.of("orderId", "ORD-123", "amount", 99.99))
 | `tccStatuses` | `Map<String, TccStatus>` | Per-alias TCC statuses |
 | `executionOrder` | `List<String>` | Aliases in the order they were executed |
 
-**Key methods:**
+Key methods:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -905,7 +905,7 @@ compositor.compose(composition, Map.of("orderId", "ORD-123", "amount", 99.99))
 
 `TccCompositionCompensationManager` handles reverse-order compensation when a composition fails. It uses `CompensationPolicy` to determine the compensation strategy.
 
-**Dependencies:** `TccEngine`, `CompensationPolicy`.
+Dependencies: `TccEngine`, `CompensationPolicy`.
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -931,11 +931,11 @@ The manager retrieves confirmed aliases from `context.getConfirmedAliasesInOrder
 |--------|-------------|-------------|
 | `resolveInputs(TccComposition composition, CompositionTcc tcc, Map<String, Object> globalInput, TccCompositionContext context)` | `Map<String, Object>` | Build merged input map |
 
-**Input resolution order (later entries override earlier):**
+Input resolution order (later entries override earlier):
 
-1. **Global input** — the `Map<String, Object>` passed to `compose()`
-2. **Static input** — the `staticInput` map from the `CompositionTcc` entry
-3. **Data flow mappings** — values extracted from upstream TCC Try results via `DataMapping`
+1. **Global input**: the `Map<String, Object>` passed to `compose()`
+2. **Static input**: the `staticInput` map from the `CompositionTcc` entry
+3. **Data flow mappings**: values extracted from upstream TCC Try results via `DataMapping`
 
 For data flow extraction, the manager searches participant outcomes in the upstream `TccResult`: first checking if any participant's `tryResult` is a `Map` containing the `sourceField` key, then falling back to matching the `sourceField` against a participant ID's `tryResult` directly.
 
@@ -943,14 +943,14 @@ For data flow extraction, the manager searches participant outcomes in the upstr
 
 `TccCompositionValidator` checks a `TccComposition` for structural correctness before execution.
 
-**Dependencies:** `TccRegistry` (for verifying TCC names exist).
+Dependencies: `TccRegistry` (for verifying TCC names exist).
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
 | `validate(TccComposition composition)` | `List<String>` | Returns a list of error messages (empty if valid) |
 | `validateAndThrow(TccComposition composition)` | `void` | Throws `IllegalStateException` if validation fails |
 
-**Validation checks:**
+Validation checks:
 
 | Check | Error Condition |
 |-------|-----------------|

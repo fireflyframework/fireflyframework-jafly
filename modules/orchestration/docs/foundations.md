@@ -2,7 +2,7 @@
 
 # Part I: Foundations
 
-**Contents:**
+Contents:
 - [§1 Introduction & Quick Start](#1-introduction--quick-start)
 - [§2 Architecture Overview](#2-architecture-overview)
 - [§3 Pattern Selection Guide](#3-pattern-selection-guide)
@@ -13,7 +13,7 @@
 
 ### What Is Firefly Orchestration?
 
-Firefly Orchestration is a reactive, annotation-driven framework for coordinating multi-step business processes in Spring Boot applications. It provides three complementary execution patterns — **Workflow**, **Saga**, and **TCC** — unified by a shared core layer for persistence, observability, retry, and event integration.
+Firefly Orchestration coordinates business steps through Workflow, Saga, and TCC engines. Define steps with annotations or builders, then use the shared state, retry, persistence, and observability interfaces.
 
 Each pattern addresses a different class of distributed coordination problem:
 
@@ -21,20 +21,20 @@ Each pattern addresses a different class of distributed coordination problem:
 |--------------|-------------|-----------|------------------------|---------------------------------------------|
 | **Workflow** | Eventual    | None      | None (or compensatable)| Multi-step processes with dependency ordering|
 | **Saga**     | Eventual    | None      | Compensating actions   | Distributed transactions with undo semantics|
-| **TCC**      | Strong      | Soft-lock | Cancel (release)       | Resource reservation before commit          |
+| TCC | Participant-defined | Application reservations | Cancel (release) | Resource reservation before commit |
 
 ### Key Characteristics
 
-- **Reactive-first:** Every I/O operation returns `Mono<T>` or `Flux<T>`. No blocking calls anywhere in the execution path.
-- **Thread-safe:** `ExecutionContext` uses `ConcurrentHashMap` for all mutable state.
-- **Annotation-driven or programmatic:** Define orchestrations with `@Saga`, `@Workflow`, `@Tcc` annotations, or use fluent builder DSLs (`SagaBuilder`, `WorkflowBuilder`, `TccBuilder`).
-- **Pluggable infrastructure:** Persistence, event publishing, and observability are port interfaces with swappable adapters.
-- **Convention over configuration:** Zero-config defaults via Spring Boot auto-configuration. All three patterns are enabled out of the box.
+- Reactive engine operations return `Mono<T>` or `Flux<T>`. Application steps must keep blocking I/O off event-loop threads.
+- Thread-safe: `ExecutionContext` uses `ConcurrentHashMap` for all mutable state.
+- Annotation-driven or programmatic: Define orchestrations with `@Saga`, `@Workflow`, `@Tcc` annotations, or use fluent builder DSLs (`SagaBuilder`, `WorkflowBuilder`, `TccBuilder`).
+- Pluggable infrastructure: Persistence, event publishing, and observability are port interfaces with swappable adapters.
+- Convention over configuration: Zero-config defaults via Spring Boot auto-configuration. All three patterns are enabled out of the box.
 
 ### Requirements
 
 - Java 25+
-- Spring Boot 3.x
+- Spring Boot 4.1.1
 - Project Reactor 3.x
 
 ### Maven Dependency
@@ -43,7 +43,7 @@ Each pattern addresses a different class of distributed coordination problem:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-orchestration</artifactId>
-    <version>26.02.06</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -130,42 +130,42 @@ The module is organized into four layers. Your application defines orchestration
 
 ### Layer Components
 
-**Application Layer** — Your code:
-- `@Saga`, `@SagaStep`, `@CompensationSagaStep` — annotated saga classes
-- `@Workflow`, `@WorkflowStep`, `@WaitForSignal`, `@WaitForTimer` — annotated workflow classes
-- `@Tcc`, `@TccParticipant`, `@TryMethod`, `@ConfirmMethod`, `@CancelMethod` — annotated TCC classes
-- `SagaBuilder`, `WorkflowBuilder`, `TccBuilder` — programmatic builders
+**Application Layer**: Your code:
+- `@Saga`, `@SagaStep`, `@CompensationSagaStep`: annotated saga classes
+- `@Workflow`, `@WorkflowStep`, `@WaitForSignal`, `@WaitForTimer`: annotated workflow classes
+- `@Tcc`, `@TccParticipant`, `@TryMethod`, `@ConfirmMethod`, `@CancelMethod`: annotated TCC classes
+- `SagaBuilder`, `WorkflowBuilder`, `TccBuilder`: programmatic builders
 
-**Engine Layer** — Pattern-specific execution:
-- `WorkflowEngine` — start, suspend, resume, cancel workflows
-- `WorkflowExecutor` — executes steps layer-by-layer with signal/timer support
-- `SagaEngine` — execute sagas by name or definition
-- `SagaExecutionOrchestrator` — orchestrates step execution across topology layers
-- `SagaCompensator` — runs compensations per configured `CompensationPolicy`
-- `TccEngine` — execute TCC transactions by name or definition
-- `TccExecutionOrchestrator` — orchestrates try/confirm/cancel phases
+**Engine Layer**: Pattern-specific execution:
+- `WorkflowEngine`: start, suspend, resume, cancel workflows
+- `WorkflowExecutor`: executes steps layer-by-layer with signal/timer support
+- `SagaEngine`: execute sagas by name or definition
+- `SagaExecutionOrchestrator`: orchestrates step execution across topology layers
+- `SagaCompensator`: runs compensations per configured `CompensationPolicy`
+- `TccEngine`: execute TCC transactions by name or definition
+- `TccExecutionOrchestrator`: orchestrates try/confirm/cancel phases
 
-**Core Layer** — Shared infrastructure:
-- `ExecutionContext` — thread-safe per-execution state (variables, headers, results, statuses)
-- `StepInvoker` — invokes step methods with retry, backoff, jitter, timeout
-- `ArgumentResolver` — resolves method parameters from annotations (`@Input`, `@FromStep`, etc.)
-- `TopologyBuilder` — computes DAG layers using Kahn's algorithm
-- `RetryPolicy` — configurable retry with exponential backoff and jitter
-- `EventGateway` — routes inbound events to orchestration executors
-- `OrchestrationScheduler` — cron, fixed-rate, and fixed-delay scheduling
-- `DeadLetterService` — captures failed executions for later retry
-- `RecoveryService` — detects and cleans up stale executions
-- `OrchestrationValidator` — validates definitions at registration time (empty steps, cycles, annotation conflicts)
-- `ExecutionReportBuilder` — builds execution reports attached to results
-- `BackpressureStrategyFactory` — registry of backpressure strategies for parallel execution control
+**Core Layer**: Shared infrastructure:
+- `ExecutionContext`: thread-safe per-execution state (variables, headers, results, statuses)
+- `StepInvoker`: invokes step methods with retry, backoff, jitter, timeout
+- `ArgumentResolver`: resolves method parameters from annotations (`@Input`, `@FromStep`, etc.)
+- `TopologyBuilder`: computes DAG layers using Kahn's algorithm
+- `RetryPolicy`: configurable retry with exponential backoff and jitter
+- `EventGateway`: routes inbound events to orchestration executors
+- `OrchestrationScheduler`: cron, fixed-rate, and fixed-delay scheduling
+- `DeadLetterService`: captures failed executions for later retry
+- `RecoveryService`: detects and cleans up stale executions
+- `OrchestrationValidator`: validates definitions at registration time (empty steps, cycles, annotation conflicts)
+- `ExecutionReportBuilder`: builds execution reports attached to results
+- `BackpressureStrategyFactory`: registry of backpressure strategies for parallel execution control
 
-**Infrastructure Layer** — Pluggable adapters:
-- `ExecutionPersistenceProvider` — state storage (`InMemory`, `Redis`, `Cache`, `EventSourced`)
-- `OrchestrationEvents` — lifecycle event callbacks (26 methods)
-- `OrchestrationMetrics` — Micrometer counters and timers (8 metrics)
-- `OrchestrationTracer` — Micrometer Observation API spans
-- `OrchestrationEventPublisher` — domain event publishing (`NoOpEventPublisher` default)
-- `OrchestrationMetricsEndpoint` — Actuator endpoint for orchestration metrics summary
+**Infrastructure Layer**: Pluggable adapters:
+- `ExecutionPersistenceProvider`: state storage (`InMemory`, `Redis`, `Cache`, `EventSourced`)
+- `OrchestrationEvents`: lifecycle event callbacks (26 methods)
+- `OrchestrationMetrics`: Micrometer counters and timers (8 metrics)
+- `OrchestrationTracer`: Micrometer Observation API spans
+- `OrchestrationEventPublisher`: domain event publishing (`NoOpEventPublisher` default)
+- `OrchestrationMetricsEndpoint`: Actuator endpoint for orchestration metrics summary
 
 ### Data Flow
 
@@ -212,8 +212,8 @@ Need to coordinate multiple steps across services?
 
 | Characteristic         | Workflow                    | Saga                         | TCC                              |
 |------------------------|-----------------------------|------------------------------|----------------------------------|
-| **Consistency**        | Eventual                    | Eventual                     | Strong (two-phase)               |
-| **Isolation**          | None                        | None                         | Soft-lock during Try phase       |
+| Consistency | Application-defined | Application-defined | Participant-defined reservation protocol |
+| Isolation | Application-defined | Application-defined | Participant code must enforce reservations |
 | **Rollback**           | Optional (`compensatable`)  | Automatic (compensations)    | Cancel (release reservations)    |
 | **Step ordering**      | DAG (dependency graph)      | DAG (dependency graph)       | Sequential by `order`            |
 | **Parallel execution** | Yes (within layers)         | Yes (within layers)          | Try phase sequential             |
@@ -228,7 +228,7 @@ Need to coordinate multiple steps across services?
 
 ### When to Use Each Pattern
 
-**Use Workflow when:**
+Use Workflow when:
 
 - Steps have dependency ordering (DAG) but no rollback is needed
 - You need suspend/resume/cancel lifecycle management
@@ -236,25 +236,25 @@ Need to coordinate multiple steps across services?
 - You need child workflow spawning or continue-as-new for long-running processes
 - You need searchable execution attributes
 - Steps are idempotent and can be retried safely
-- **Examples:** ETL pipelines, report generation, multi-stage deployments, approval workflows, batch processing
+- Examples: ETL pipelines, report generation, multi-stage deployments, approval workflows, batch processing
 
-**Use Saga when:**
+Use Saga when:
 
 - Each step has a compensating action (undo)
-- All-or-nothing semantics are needed across services
-- Steps can fail independently and you need automatic rollback
+- Completed side effects have application-defined compensations
+- Steps can fail independently and the engine should invoke registered compensations
 - You need fine-grained compensation policies (sequential, parallel, circuit breaker)
 - You need fan-out processing (`ExpandEach`)
-- **Examples:** Order processing, fund transfers, booking systems, inventory management
+- Examples: Order processing, fund transfers, booking systems, inventory management
 
-**Use TCC when:**
+Use TCC when:
 
 - You need resource reservation before committing
-- Stronger isolation is required (soft-locking)
+- Participants can enforce reservation or soft-lock rules in their own storage
 - Two-phase commitment with explicit try/confirm/cancel
 - Each participant manages its own try/confirm/cancel lifecycle
 - Per-phase timeout and retry configuration is needed
-- **Examples:** Seat reservations, inventory holds, account debits, ticket booking
+- Examples: Seat reservations, inventory holds, account debits, ticket booking
 
 ---
 

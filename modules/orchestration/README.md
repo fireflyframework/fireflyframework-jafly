@@ -26,6 +26,8 @@ An extended onboarding flow might verify documents, wait for a review, and provi
 
 ## Quick start
 
+Follow [Coordinate an onboarding review](../../docs/site/guides/onboarding-coordination.md) for the complete tested extension to the onboarding service. The API fragments below illustrate individual contracts.
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Saga (annotations)
@@ -166,7 +168,9 @@ The `firefly.orchestration` namespace is bound by [OrchestrationProperties.java]
 
 ## Continue the application
 
-Use the [EDA guide](../../docs/site/modules/eda.md) for the next part of this integration. ## Build and validation
+Use the [EDA guide](../../docs/site/modules/eda.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

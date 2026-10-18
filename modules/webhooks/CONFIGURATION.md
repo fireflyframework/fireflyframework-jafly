@@ -16,17 +16,17 @@
 ## Overview
 
 The Firefly Framework Webhooks Library is configured using a combination of:
-1. **Environment Variables** - For deployment-specific values (Kafka URLs, Redis hosts, etc.)
-2. **application.yml** - For application-level configuration
-3. **Firefly Libraries** - Configuration from `lib-common-eda`, `lib-common-cache`, etc.
+1. Environment Variables - For deployment-specific values (Kafka URLs, Redis hosts, etc.)
+2. Application.yml - For application-level configuration
+3. Firefly Libraries - Configuration from `lib-common-eda`, `lib-common-cache`, etc.
 
-All configuration follows the **12-Factor App** methodology, with environment-specific values externalized as environment variables.
+All configuration follows the 12-Factor App methodology, with environment-specific values externalized as environment variables.
 
 ## Environment Variables
 
 ### Required Environment Variables
 
-These environment variables **must** be set for the application to start:
+These environment variables must be set for the application to start:
 
 | Variable | Description | Example | Default |
 |----------|-------------|---------|---------|
@@ -99,7 +99,7 @@ spring:
     allow-bean-definition-overriding: true
 ```
 
-**Why**: Required for `lib-common-cache` to override Spring Boot's default Redis configuration.
+Why: Required for `lib-common-cache` to override Spring Boot's default Redis configuration.
 
 #### WebFlux Configuration
 ```yaml
@@ -108,7 +108,7 @@ spring:
     base-path: /
 ```
 
-**Description**: Base path for all WebFlux endpoints.
+Description: Base path for all WebFlux endpoints.
 
 #### Jackson Configuration
 ```yaml
@@ -120,7 +120,7 @@ spring:
       fail-on-unknown-properties: false
 ```
 
-**Description**:
+Description:
 - `write-dates-as-timestamps: false` - Serialize dates as ISO-8601 strings
 - `fail-on-unknown-properties: false` - Ignore unknown JSON properties
 
@@ -133,7 +133,7 @@ server:
     enabled: true
 ```
 
-**Description**:
+Description:
 - `port: 8080` - HTTP server port
 - `http2.enabled: true` - Enable HTTP/2 support
 
@@ -169,7 +169,7 @@ firefly:
       custom: ""
 ```
 
-**Result**:
+Result:
 - `POST /api/v1/webhook/stripe` → Topic: `stripe`
 - `POST /api/v1/webhook/paypal` → Topic: `paypal`
 - `POST /api/v1/webhook/github` → Topic: `github`
@@ -188,7 +188,7 @@ firefly:
       custom: ""
 ```
 
-**Result**:
+Result:
 - `POST /api/v1/webhook/stripe` → Topic: `webhooks.stripe`
 - `POST /api/v1/webhook/paypal` → Topic: `webhooks.paypal`
 
@@ -206,7 +206,7 @@ firefly:
       custom: ""
 ```
 
-**Result**:
+Result:
 - `POST /api/v1/webhook/stripe` → Topic: `webhooks.stripe.received`
 - `POST /api/v1/webhook/paypal` → Topic: `webhooks.paypal.received`
 
@@ -224,7 +224,7 @@ firefly:
       custom: "webhooks.all"
 ```
 
-**Result**:
+Result:
 - All providers → Topic: `webhooks.all`
 
 #### Strategy 5: Prefix/Suffix Only (No Provider Name)
@@ -239,28 +239,28 @@ firefly:
       custom: ""
 ```
 
-**Result**:
+Result:
 - All providers → Topic: `webhooks.ingestion`
 
 ### Destination Resolution Logic
 
 The destination is resolved in the following order:
 
-1. **If `custom` is set**: Use `custom` value (ignores all other settings)
-2. **If `use-provider-as-topic` is true**: Use `{prefix}{providerName}{suffix}`
-3. **If `use-provider-as-topic` is false**: Use `{prefix}{suffix}`
+1. If `custom` is set: Use `custom` value (ignores all other settings)
+2. If `use-provider-as-topic` is true: Use `{prefix}{providerName}{suffix}`
+3. If `use-provider-as-topic` is false: Use `{prefix}{suffix}`
 
 ## Cache Configuration
 
 The platform uses `lib-common-cache` for distributed caching and event-level idempotency.
 
-**Note**: HTTP-level idempotency (X-Idempotency-Key header) is now handled by `lib-common-web` and configured separately using `idempotency.*` properties. See [HTTP Idempotency Configuration](#http-idempotency-configuration) below.
+Note: HTTP-level idempotency (X-Idempotency-Key header) is now handled by `lib-common-web` and configured separately using `idempotency.*` properties. See [HTTP Idempotency Configuration](#http-idempotency-configuration) below.
 
 ### Cache Types
 
 #### Redis (Distributed Cache)
 
-**Use Case**: Production deployments with multiple instances
+Use Case: Production deployments with multiple instances
 
 ```yaml
 firefly:
@@ -285,7 +285,7 @@ firefly:
       ssl: ${REDIS_SSL:false}
 ```
 
-**Configuration Details**:
+Configuration Details:
 - `cache-name`: Name of the cache (used for metrics)
 - `key-prefix`: Prefix for all Redis keys
 - `default-ttl`: Time-to-live for cache entries (7 days)
@@ -296,7 +296,7 @@ firefly:
 
 #### Caffeine (In-Memory Cache)
 
-**Use Case**: Local development or single-instance deployments
+Use Case: Local development or single-instance deployments
 
 ```yaml
 firefly:
@@ -313,7 +313,7 @@ firefly:
       record-stats: true
 ```
 
-**Configuration Details**:
+Configuration Details:
 - `maximum-size`: Maximum number of entries in cache
 - `expire-after-write`: Expiration time after write
 - `record-stats`: Enable cache statistics
@@ -351,7 +351,7 @@ idempotency:
 
 ### How It Works
 
-1. **Client sends request with X-Idempotency-Key header**:
+1. Client sends request with X-Idempotency-Key header:
    ```bash
    curl -X POST http://localhost:8080/api/v1/webhook/stripe \
      -H "Content-Type: application/json" \
@@ -359,12 +359,12 @@ idempotency:
      -d '{"type": "payment_intent.succeeded"}'
    ```
 
-2. **IdempotencyWebFilter intercepts the request**:
+2. IdempotencyWebFilter intercepts the request:
    - Checks cache for the idempotency key
    - If found: returns cached HTTP response (status, headers, body)
    - If not found: proceeds with request processing and caches the complete response
 
-3. **Subsequent requests with same key**:
+3. Subsequent requests with same key:
    - Return cached response immediately
    - No controller or business logic execution
    - Exact same HTTP response (202 ACCEPTED with same eventId, timestamps, etc.)
@@ -399,14 +399,14 @@ IDEMPOTENCY_CACHE_TTL_HOURS=24
 
 ### Difference from Event-Level Idempotency
 
-The platform has **two levels** of idempotency:
+The platform has two levels of idempotency:
 
-1. **HTTP-level (lib-common-web)**: Prevents duplicate HTTP requests
+1. HTTP-level (lib-common-web): Prevents duplicate HTTP requests
    - Scope: Request/Response
    - Key: `X-Idempotency-Key` header
    - Cache prefix: `:idempotency:`
 
-2. **Event-level (CacheBasedWebhookIdempotencyService)**: Prevents duplicate event processing by workers
+2. Event-level (CacheBasedWebhookIdempotencyService): Prevents duplicate event processing by workers
    - Scope: Kafka consumer / Worker processing
    - Key: `eventId` (UUID)
    - Cache prefixes: `webhook:processing:`, `webhook:processed:`, `webhook:failures:`
@@ -443,7 +443,7 @@ firefly:
             buffer.memory: 33554432
 ```
 
-**Configuration Details**:
+Configuration Details:
 - `acks: all` - Wait for all replicas to acknowledge
 - `retries: 3` - Retry failed sends up to 3 times
 - `compression.type: snappy` - Use Snappy compression
@@ -471,7 +471,7 @@ firefly:
             metadata.max.age.ms: 1000
 ```
 
-**Configuration Details**:
+Configuration Details:
 - `group-id`: Kafka consumer group ID
 - `auto-offset-reset: earliest` - Start from earliest offset if no offset exists
 - `enable.auto.commit: true` - Automatically commit offsets
@@ -507,7 +507,7 @@ management:
       enabled: ${REDIS_HEALTH_ENABLED:true}
 ```
 
-**Exposed Endpoints**:
+Exposed Endpoints:
 - `/actuator/health` - Health check
 - `/actuator/info` - Application info
 - `/actuator/metrics` - Metrics
@@ -532,7 +532,7 @@ springdoc:
   paths-to-match: /api/**
 ```
 
-**Endpoints**:
+Endpoints:
 - `/swagger-ui.html` - Interactive API documentation
 - `/v3/api-docs` - OpenAPI JSON specification
 
@@ -548,7 +548,7 @@ firefly:
     metrics-enabled: true
 ```
 
-**Metrics Exposed**:
+Metrics Exposed:
 - Cache hit/miss rates
 - Kafka producer/consumer metrics
 - HTTP request metrics
@@ -567,7 +567,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 ```
 
-**Log Levels**:
+Log Levels:
 - `root: INFO` - Default log level for all packages
 - `org.fireflyframework.webhooks: DEBUG` - Debug level for webhook platform
 - `org.fireflyframework.common.eda: DEBUG` - Debug level for EDA library
@@ -675,7 +675,7 @@ firefly:
 
 ### 1. Use Environment Variables for Secrets
 
-**Bad**:
+Bad:
 ```yaml
 firefly:
   cache:
@@ -683,7 +683,7 @@ firefly:
       password: "my-secret-password"  # Hardcoded secret
 ```
 
-**Good**:
+Good:
 ```yaml
 firefly:
   cache:
@@ -693,14 +693,14 @@ firefly:
 
 ### 2. Use Different Cache Types per Environment
 
-**Development**:
+Development:
 ```yaml
 firefly:
   cache:
     default-cache-type: CAFFEINE  # In-memory for local dev
 ```
 
-**Production**:
+Production:
 ```yaml
 firefly:
   cache:
@@ -709,7 +709,7 @@ firefly:
 
 ### 3. Configure Appropriate TTLs
 
-**Event Idempotency (Worker-level)**:
+Event Idempotency (Worker-level):
 ```yaml
 firefly:
   cache:
@@ -717,7 +717,7 @@ firefly:
       default-ttl: 7d  # Keep for 7 days (webhook providers may retry)
 ```
 
-**HTTP Idempotency (Request-level)**:
+HTTP Idempotency (Request-level):
 ```yaml
 idempotency:
   header-name: X-Idempotency-Key
@@ -727,7 +727,7 @@ idempotency:
 
 ### 4. Use Topic Prefixes for Multi-Tenancy
 
-**Tenant A**:
+Tenant A:
 ```yaml
 firefly:
   webhooks:
@@ -736,7 +736,7 @@ firefly:
       use-provider-as-topic: true
 ```
 
-**Tenant B**:
+Tenant B:
 ```yaml
 firefly:
   webhooks:
@@ -759,7 +759,7 @@ firefly:
 
 ### 6. Configure Connection Pools Appropriately
 
-**Low Traffic**:
+Low Traffic:
 ```yaml
 firefly:
   cache:
@@ -768,7 +768,7 @@ firefly:
       min-pool-size: 2
 ```
 
-**High Traffic**:
+High Traffic:
 ```yaml
 firefly:
   cache:
@@ -781,9 +781,9 @@ firefly:
 
 ### Issue: Application fails to start with "ClassNotFoundException: FireflyCacheManager"
 
-**Cause**: `lib-common-cache` dependency is missing or has wrong scope
+Cause: `lib-common-cache` dependency is missing or has wrong scope
 
-**Solution**: Ensure dependency is in compile/runtime scope:
+Solution: Ensure dependency is in compile/runtime scope:
 ```xml
 <dependency>
     <groupId>org.fireflyframework.common</groupId>
@@ -795,9 +795,9 @@ firefly:
 
 ### Issue: Redis connection fails with "Connection refused"
 
-**Cause**: Redis is not running or wrong host/port
+Cause: Redis is not running or wrong host/port
 
-**Solution**: Verify Redis is running and check configuration:
+Solution: Verify Redis is running and check configuration:
 ```bash
 # Test Redis connection
 redis-cli -h localhost -p 6379 ping
@@ -809,9 +809,9 @@ echo $REDIS_PORT
 
 ### Issue: Kafka producer fails with "TimeoutException"
 
-**Cause**: Kafka is not reachable or wrong bootstrap servers
+Cause: Kafka is not reachable or wrong bootstrap servers
 
-**Solution**: Verify Kafka is running and check configuration:
+Solution: Verify Kafka is running and check configuration:
 ```bash
 # Test Kafka connection
 nc -zv localhost 29092
@@ -822,9 +822,9 @@ echo $FIREFLY_KAFKA_BOOTSTRAP_SERVERS
 
 ### Issue: Bean definition conflict for "redisConnectionFactory"
 
-**Cause**: Multiple beans trying to create Redis connection factory
+Cause: Multiple beans trying to create Redis connection factory
 
-**Solution**: Enable bean definition overriding:
+Solution: Enable bean definition overriding:
 ```yaml
 spring:
   main:
@@ -833,9 +833,9 @@ spring:
 
 ### Issue: Webhooks not being published to expected topic
 
-**Cause**: Incorrect destination configuration
+Cause: Incorrect destination configuration
 
-**Solution**: Check destination configuration and test:
+Solution: Check destination configuration and test:
 ```bash
 # Send test webhook
 curl -X POST http://localhost:8080/api/v1/webhook/stripe \

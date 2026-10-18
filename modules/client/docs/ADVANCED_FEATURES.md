@@ -20,11 +20,11 @@ Test your system's resilience by injecting controlled faults.
 
 ### Features
 
-- **Latency Injection** - Add artificial delays to requests
-- **Error Injection** - Throw exceptions or return error responses
-- **Timeout Injection** - Force requests to timeout
-- **Network Failure Simulation** - Simulate connection failures
-- **Response Corruption** - Corrupt response data
+- Latency Injection - Add artificial delays to requests
+- Error Injection - Throw exceptions or return error responses
+- Timeout Injection - Force requests to timeout
+- Network Failure Simulation - Simulate connection failures
+- Response Corruption - Corrupt response data
 
 ### Example Usage
 
@@ -73,12 +73,12 @@ HTTP caching with ETag support, Cache-Control directives, and TTL-based expirati
 
 ### Features
 
-- **ETag-based validation** (If-None-Match)
-- **Last-Modified validation** (If-Modified-Since)
-- **Cache-Control directives** (max-age, no-cache, no-store)
-- **TTL-based expiration**
-- **Cache warming and invalidation**
-- **Conditional requests** (304 Not Modified)
+- ETag-based validation (If-None-Match)
+- Last-Modified validation (If-Modified-Since)
+- Cache-Control directives (max-age, no-cache, no-store)
+- TTL-based expiration
+- Cache warming and invalidation
+- Conditional requests (304 Not Modified)
 
 ### Example Usage
 
@@ -132,11 +132,11 @@ Dynamic endpoint resolution with support for Kubernetes, Eureka, Consul, and sta
 
 ### Features
 
-- **Kubernetes Service Discovery** - DNS-based discovery
-- **Eureka Integration** - Netflix OSS service registry
-- **Consul Integration** - HashiCorp Consul
-- **Static Configuration** - Manual endpoint configuration
-- **Health-based routing** - Only route to healthy instances
+- Kubernetes Service Discovery - DNS-based discovery
+- Eureka Integration - Netflix OSS service registry
+- Consul Integration - HashiCorp Consul
+- Static Configuration - Manual endpoint configuration
+- Health-based routing - Only route to healthy instances
 
 ### Example Usage
 
@@ -169,11 +169,11 @@ Prevent duplicate operations with idempotency keys and request fingerprinting.
 
 ### Features
 
-- **Idempotency key generation**
-- **Request fingerprinting** (SHA-256)
-- **In-flight request tracking**
-- **Automatic deduplication**
-- **TTL-based cleanup**
+- Idempotency key generation
+- Request fingerprinting (SHA-256)
+- In-flight request tracking
+- Automatic deduplication
+- TTL-based cleanup
 
 ### Example Usage
 
@@ -210,12 +210,12 @@ Client-side load balancing with multiple strategies.
 
 ### Strategies
 
-- **Round Robin** - Distributes requests evenly
-- **Weighted Round Robin** - Distributes based on weights
-- **Random** - Selects random instance
-- **Least Connections** - Selects instance with fewest active connections
-- **Sticky Session** - Routes to same instance based on session ID
-- **Zone-Aware** - Prefers instances in same zone
+- Round Robin - Distributes requests evenly
+- Weighted Round Robin - Distributes based on weights
+- Random - Selects random instance
+- Least Connections - Selects instance with fewest active connections
+- Sticky Session - Routes to same instance based on session ID
+- Zone-Aware - Prefers instances in same zone
 
 ### Example Usage
 
@@ -257,11 +257,11 @@ Event-driven integrations with webhook support.
 
 ### Features
 
-- **Webhook subscription management**
-- **Signature verification** (HMAC-SHA256)
-- **Automatic retry** for webhook delivery
-- **Event filtering and routing**
-- **Webhook health monitoring**
+- Webhook subscription management
+- Signature verification (HMAC-SHA256)
+- Automatic retry for webhook delivery
+- Event filtering and routing
+- Webhook health monitoring
 
 ### Example Usage
 
@@ -310,11 +310,11 @@ Extend the framework with custom plugins using the Service Provider Interface (S
 
 ### Features
 
-- **Plugin discovery** via ServiceLoader
-- **Lifecycle management** (initialize, beforeRequest, afterResponse, shutdown)
-- **Priority-based execution**
-- **Enable/disable plugins**
-- **Plugin statistics**
+- Plugin discovery via ServiceLoader
+- Lifecycle management (initialize, beforeRequest, afterResponse, shutdown)
+- Priority-based execution
+- Enable/disable plugins
+- Plugin statistics
 
 ### Creating a Plugin
 
@@ -387,13 +387,13 @@ System.out.println("Enabled: " + stats.enabledPlugins());
 
 ## Best Practices
 
-1. **Chaos Engineering**: Only enable in testing/staging environments
-2. **Caching**: Use conservative TTLs for frequently changing data
-3. **Service Discovery**: Implement health checks for accurate routing
-4. **Deduplication**: Use appropriate TTL based on operation duration
-5. **Load Balancing**: Choose strategy based on your use case
-6. **Webhooks**: Always verify signatures in production
-7. **Plugins**: Keep plugins lightweight and focused
+1. Chaos Engineering: Only enable in testing/staging environments
+2. Caching: Use conservative TTLs for frequently changing data
+3. Service Discovery: Implement health checks for accurate routing
+4. Deduplication: Use appropriate TTL based on operation duration
+5. Load Balancing: Choose strategy based on your use case
+6. Webhooks: Always verify signatures in production
+7. Plugins: Keep plugins lightweight and focused
 
 ---
 
@@ -402,5 +402,4 @@ System.out.println("Enabled: " + stats.enabledPlugins());
 - [Security Guide](SECURITY.md)
 - [Observability Guide](OBSERVABILITY.md)
 - [Integration Testing Guide](INTEGRATION_TESTING.md)
-- [Migration Guide](MIGRATION_GUIDE.md)
-
+- [Installation and current client API](../../../docs/site/modules/client.md)

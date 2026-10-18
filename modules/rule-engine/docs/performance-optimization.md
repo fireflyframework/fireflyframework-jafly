@@ -6,9 +6,9 @@ This guide provides comprehensive information about the Firefly Framework Rule E
 
 The Firefly Framework Rule Engine includes three major performance optimization systems:
 
-1. **AST Caching** - Dual cache providers (Caffeine/Redis) for parsed AST models
-2. **Connection Pool Tuning** - Optimized R2DBC connection pools for high-load scenarios  
-3. **Batch Operations** - Concurrent rule evaluation with configurable concurrency limits
+1. AST Caching - Dual cache providers (Caffeine/Redis) for parsed AST models
+2. Connection Pool Tuning - Optimized R2DBC connection pools for high-load scenarios
+3. Batch Operations - Concurrent rule evaluation with configurable concurrency limits
 
 ## 🚀 AST Caching System
 
@@ -17,16 +17,16 @@ The Firefly Framework Rule Engine includes three major performance optimization 
 The system supports two cache providers that can be selected via configuration:
 
 #### Caffeine Cache Provider (Default)
-- **Ultra-fast local caching** - 664x faster reads than Redis
-- **Memory-efficient** - Automatic eviction and size management
-- **Zero network overhead** - Perfect for single-instance deployments
-- **Thread-safe** - Concurrent access without locks
+- Ultra-fast local caching - 664x faster reads than Redis
+- Memory-efficient - Automatic eviction and size management
+- Zero network overhead - Perfect for single-instance deployments
+- Thread-safe - Concurrent access without locks
 
 #### Redis Cache Provider (Optional)
-- **Distributed caching** - Share cache across multiple instances
-- **Persistence** - Survive application restarts
-- **Scalability** - Handle large cache datasets
-- **High availability** - Redis cluster support
+- Distributed caching - Share cache across multiple instances
+- Persistence - Survive application restarts
+- Scalability - Handle large cache datasets
+- High availability - Redis cluster support
 
 ### Configuration
 
@@ -68,16 +68,16 @@ firefly:
 
 | Operation | Caffeine | Redis | Performance Gain |
 |-----------|----------|-------|------------------|
-| **Read Operations** | 0.26 ms | 175.12 ms | **664x faster** |
-| **Write Operations** | 0.25 ms | 44.28 ms | **180x faster** |
-| **Network Overhead** | None | TCP/Redis Protocol | **Zero vs Network** |
-| **Use Case** | Single instance | Multi-instance | **Deployment specific** |
+| Read Operations | 0.26 ms | 175.12 ms | 664x faster |
+| Write Operations | 0.25 ms | 44.28 ms | 180x faster |
+| Network Overhead | None | TCP/Redis Protocol | Zero vs Network |
+| Use Case | Single instance | Multi-instance | Deployment specific |
 
 ### Cache Usage Patterns
 
-- **AST Cache**: Stores parsed AST models using SHA-256 hash of YAML content
-- **Constants Cache**: Caches system constants to avoid repeated database queries
-- **Validation Cache**: Caches validation results for frequently validated rules
+- AST Cache: Stores parsed AST models using SHA-256 hash of YAML content
+- Constants Cache: Caches system constants to avoid repeated database queries
+- Validation Cache: Caches validation results for frequently validated rules
 
 ### Monitoring Cache Performance
 
@@ -176,18 +176,18 @@ curl -X POST http://localhost:8080/api/v1/rules/batch/evaluate \
 
 | Parameter | Description | Default | Range | Impact |
 |-----------|-------------|---------|-------|---------|
-| `maxConcurrency` | Concurrent evaluations | 10 | 1-50 | **Throughput** |
-| `timeoutSeconds` | Batch timeout | 300 | 30-1800 | **Reliability** |
-| `failFast` | Stop on first error | false | true/false | **Error Handling** |
-| `returnPartialResults` | Return partial success | true | true/false | **Availability** |
-| `sortByPriority` | Process by priority | false | true/false | **Ordering** |
+| `maxConcurrency` | Concurrent evaluations | 10 | 1-50 | Throughput |
+| `timeoutSeconds` | Batch timeout | 300 | 30-1800 | Reliability |
+| `failFast` | Stop on first error | false | true/false | Error Handling |
+| `returnPartialResults` | Return partial success | true | true/false | Availability |
+| `sortByPriority` | Process by priority | false | true/false | Ordering |
 
 ### Performance Characteristics
 
-- **Throughput**: Up to 2000 rules/minute with optimal configuration
-- **Latency**: Average 45ms per rule evaluation
-- **Concurrency**: Configurable from 1-50 concurrent evaluations
-- **Error Resilience**: Partial results with detailed error reporting
+- Throughput: Up to 2000 rules/minute with optimal configuration
+- Latency: Average 45ms per rule evaluation
+- Concurrency: Configurable from 1-50 concurrent evaluations
+- Error Resilience: Partial results with detailed error reporting
 
 ### Batch Statistics
 
@@ -219,11 +219,11 @@ curl http://localhost:8080/api/v1/rules/batch/statistics
 
 | Metric | Target | Description |
 |--------|--------|-------------|
-| **Cache Hit Rate** | >80% | Percentage of cache hits vs total requests |
-| **Average Response Time** | <50ms | Average time per rule evaluation |
-| **Throughput** | >1000 rules/min | Rules processed per minute in batch mode |
-| **Error Rate** | <1% | Percentage of failed evaluations |
-| **Resource Utilization** | CPU <70%, Memory <80% | System resource usage |
+| Cache Hit Rate | >80% | Percentage of cache hits vs total requests |
+| Average Response Time | <50ms | Average time per rule evaluation |
+| Throughput | >1000 rules/min | Rules processed per minute in batch mode |
+| Error Rate | <1% | Percentage of failed evaluations |
+| Resource Utilization | CPU <70%, Memory <80% | System resource usage |
 
 ### Health Checks
 
@@ -241,50 +241,50 @@ curl http://localhost:8080/actuator/health/r2dbc
 ## 🎯 Best Practices
 
 ### Cache Optimization
-1. **Use Caffeine for single-instance deployments** - 664x faster than Redis
-2. **Use Redis for multi-instance deployments** - Shared cache across instances
-3. **Monitor cache hit rates** - Target >80% for optimal performance
-4. **Tune cache sizes** - Balance memory usage vs hit rates
-5. **Set appropriate TTL values** - Balance freshness vs performance
+1. Use Caffeine for single-instance deployments - 664x faster than Redis
+2. Use Redis for multi-instance deployments - Shared cache across instances
+3. Monitor cache hit rates - Target >80% for optimal performance
+4. Tune cache sizes - Balance memory usage vs hit rates
+5. Set appropriate TTL values - Balance freshness vs performance
 
 ### Connection Pool Tuning
-1. **Size pools for peak load** - Monitor connection usage patterns
-2. **Set appropriate timeouts** - Balance responsiveness vs resource usage
-3. **Enable connection validation** - Ensure connection health
-4. **Monitor pool metrics** - Track acquired, allocated, pending connections
+1. Size pools for peak load - Monitor connection usage patterns
+2. Set appropriate timeouts - Balance responsiveness vs resource usage
+3. Enable connection validation - Ensure connection health
+4. Monitor pool metrics - Track acquired, allocated, pending connections
 
 ### Batch Processing
-1. **Tune concurrency for your hardware** - Start with 10, adjust based on CPU cores
-2. **Use priority sorting for critical rules** - Process high-priority rules first
-3. **Enable partial results** - Improve availability in error scenarios
-4. **Monitor batch statistics** - Track throughput and error rates
-5. **Set appropriate timeouts** - Balance completeness vs responsiveness
+1. Tune concurrency for your hardware - Start with 10, adjust based on CPU cores
+2. Use priority sorting for critical rules - Process high-priority rules first
+3. Enable partial results - Improve availability in error scenarios
+4. Monitor batch statistics - Track throughput and error rates
+5. Set appropriate timeouts - Balance completeness vs responsiveness
 
 ### Memory Management
-1. **Monitor heap usage** - Ensure adequate memory for caches
-2. **Tune garbage collection** - Use G1GC for low-latency applications
-3. **Set cache size limits** - Prevent out-of-memory errors
-4. **Monitor memory leaks** - Watch for growing heap usage
+1. Monitor heap usage - Ensure adequate memory for caches
+2. Tune garbage collection - Use G1GC for low-latency applications
+3. Set cache size limits - Prevent out-of-memory errors
+4. Monitor memory leaks - Watch for growing heap usage
 
 ## 🚨 Troubleshooting
 
 ### Common Performance Issues
 
 #### Low Cache Hit Rate
-- **Symptoms**: High response times, frequent database queries
-- **Solutions**: Increase cache sizes, adjust TTL values, check cache key patterns
+- Symptoms: High response times, frequent database queries
+- Solutions: Increase cache sizes, adjust TTL values, check cache key patterns
 
 #### High Connection Pool Contention
-- **Symptoms**: High acquire times, pending connections
-- **Solutions**: Increase pool size, optimize query performance, check for connection leaks
+- Symptoms: High acquire times, pending connections
+- Solutions: Increase pool size, optimize query performance, check for connection leaks
 
 #### Batch Processing Timeouts
-- **Symptoms**: Batch operations timing out, partial results
-- **Solutions**: Increase timeout values, reduce concurrency, optimize rule complexity
+- Symptoms: Batch operations timing out, partial results
+- Solutions: Increase timeout values, reduce concurrency, optimize rule complexity
 
 #### Memory Issues
-- **Symptoms**: OutOfMemoryError, high GC pressure
-- **Solutions**: Increase heap size, reduce cache sizes, tune GC settings
+- Symptoms: OutOfMemoryError, high GC pressure
+- Solutions: Increase heap size, reduce cache sizes, tune GC settings
 
 ### Performance Tuning Checklist
 

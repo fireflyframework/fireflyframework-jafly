@@ -10,11 +10,11 @@ contributors and integrators.
 
 ## 1. Purpose
 
-The bridge is the **first-class Java integration layer** for
-[`fireflyframework-agentic`](https://github.com/fireflyframework/fireflyframework-agentic) —
+The bridge is the first-class Java integration layer for
+[`fireflyframework-agentic`](https://github.com/fireflyframework/fireflyframework-agentic) :
 the Python GenAI metaframework that hosts agents, tools, reasoning patterns, and
 orchestration pipelines. Java applications running on the Firefly Framework
-(Spring Boot 3.x, reactive WebFlux, Reactor) need a structured, professional
+(Spring Boot 4.1.1, reactive WebFlux, Reactor) need a structured, professional
 client to:
 
 - Invoke remote agents over REST with strongly-typed requests and responses.
@@ -33,36 +33,29 @@ agent from a Java microservice?".
 
 ## 2. Design Principles
 
-1. **Reactive by default** — All network operations return `Mono<T>` or
+1. Reactive by default. All network operations return `Mono<T>` or
    `Flux<T>`. The bridge integrates seamlessly with WebFlux pipelines, CQRS
    handlers, and reactive sagas without thread-blocking calls.
-2. **Builder-driven** — `AgenticClientBuilder` mirrors the fluent style of
+2. Builder-driven. `AgenticClientBuilder` mirrors the fluent style of
    `RestClientBuilder` from `fireflyframework-client`, so Firefly developers
    already know the API.
-3. **Transport-agnostic core** — `AgenticTransport` abstracts how an
+3. Transport-agnostic core. `AgenticTransport` abstracts how an
    invocation reaches the agent. REST, WebSocket, and queue transports all
    implement the same contract; consumers write against the interface.
-4. **Faithful protocol** — Request and response DTOs match exactly the
+4. Faithful protocol. Request and response DTOs match exactly the
    `AgentRequest`, `AgentResponse`, multimodal parts, and SSE events emitted
    by `fireflyframework-agentic`. There is no translation layer.
-5. **Spring Boot autoconfiguration** — A separate autoconfigure artifact
+5. Spring Boot autoconfiguration. A separate autoconfigure artifact
    wires `AgenticClient`, health indicators, metrics, and a discovered
-   `AgentCatalog` from `application.yml` so that nothing more than adding
-   the starter is required.
-6. **Observable** — Every invocation produces a Micrometer timer plus
-   counters; every queue dispatch is traced; every reactive chain carries a
-   correlation ID; W3C Trace Context headers (`traceparent`, `tracestate`)
-   are propagated bidirectionally.
-7. **Resilient** — Timeouts, reactive retries with exponential backoff and
+   `AgentCatalog` from `application.yml` when the configured endpoint and optional transport dependencies are available.
+6. Instrumentation: Transport implementations accept metrics and trace-context collaborators. Configure those collaborators and the telemetry backend for the calls the service needs to observe; a plain client may use no-op metrics.
+7. Resilient. Timeouts, reactive retries with exponential backoff and
    jitter, and an optional Resilience4j circuit breaker are first-class
    builder options.
-8. **Strict error model** — Every failure surfaces as a typed subclass of
+8. Strict error model. Every failure surfaces as a typed subclass of
    `AgenticBridgeException`, which extends `FireflyInfrastructureException`
    from `fireflyframework-kernel` so existing framework error handlers catch
    it.
-9. **Zero stubs, zero TODOs** — Every public API in the published artifacts
-   has a working implementation. There are no abstract holes left for
-   downstream consumers to fill.
 
 ---
 
@@ -71,8 +64,8 @@ agent from a Java microservice?".
 ```
 fireflyframework-agentic-bridge/                    aggregator (pom)
 ├── fireflyframework-agentic-bridge-core/           SDK + transport implementations (jar)
-├── fireflyframework-agentic-bridge-autoconfigure/  Spring Boot 3 auto-configuration (jar)
-├── fireflyframework-agentic-bridge-starter/        Starter convenience (pom)
+├── fireflyframework-agentic-bridge-autoconfigure/  Spring Boot 4.1.1 auto-configuration (jar)
+├── fireflyframework-agentic-bridge-starter/        Starter convenience (jar)
 └── fireflyframework-agentic-bridge-samples/        Runnable Spring Boot sample (jar)
 ```
 
@@ -303,7 +296,7 @@ queue message.
 
 ### 9.1 Transport security
 
-- **HTTPS/WSS** is the default; the bridge refuses to start with an `http://`
+- HTTPS/WSS is the default; the bridge refuses to start with an `http://`
   base URL when `firefly.agentic-bridge.security.require-tls=true` (the
   production default profile).
 - Custom truststores can be supplied via the standard `javax.net.ssl.*`
@@ -342,7 +335,7 @@ FireflyException
 ```
 
 Each exception captures the agent name, transport, HTTP status (where
-applicable), and originating request ID — surfaced through `getErrorContext()`
+applicable), and originating request ID. Surfaced through `getErrorContext()`
 in the same shape as `ServiceClientException` from `fireflyframework-client`.
 
 ---

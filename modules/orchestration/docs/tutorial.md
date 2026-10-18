@@ -1,14 +1,12 @@
 [← Back to Index](README.md)
 
-# Tutorial: Fintech Payment Processing
+# Payment coordination reference
 
-Build a complete **inter-bank fund transfer system** using all three Firefly Orchestration patterns. By the end, you'll have a working system that:
+These API fragments describe how a payment application could combine TCC, Saga, and Workflow. `AccountService`, `ComplianceService`, `LedgerService`, and the other business services are application-owned placeholders. The fragments are not a complete transfer implementation and have not been qualified against a bank, ledger, or clearing provider.
 
-- **Reserves funds** using TCC (try/confirm/cancel) for strong isolation
-- **Orchestrates the transfer** using Saga with automatic compensation on failure
-- **Tracks settlement** using Workflow with signals and timers for long-running lifecycle
+For a runnable example of all three engines with tests, use [customer onboarding coordination](../../../docs/site/guides/onboarding-coordination.md). It uses explicit in-memory providers and needs no database or broker.
 
-> **Prerequisites:** Java 25+, Spring Boot 3.x, Maven, basic familiarity with Project Reactor (`Mono`/`Flux`).
+Use Java 25, Spring Boot 4.1.1, Maven, and Project Reactor (`Mono`/`Flux`).
 
 ---
 
@@ -24,7 +22,7 @@ Build a complete **inter-bank fund transfer system** using all three Firefly Orc
 - [8. Builder DSL Alternative](#8-builder-dsl-alternative)
 - [9. Adding Observability](#9-adding-observability)
 - [10. Production Configuration](#10-production-configuration)
-- [11. Running the Complete System](#11-running-the-complete-system)
+- [11. Integrating the reference fragments](#11-integrating-the-reference-fragments)
 
 ---
 
@@ -50,7 +48,7 @@ Customer initiates transfer: $500 from Account A → Account B
 3. TRACK SETTLEMENT (Workflow)
    Step 1: Create settlement record
    Step 2: Wait for clearing house confirmation (signal)
-   Step 3: Wait for settlement window (timer — T+1 delay)
+   Step 3: Wait for settlement window (timer: T+1 delay)
    Step 4: Reconcile and close
 ```
 
@@ -58,8 +56,8 @@ Customer initiates transfer: $500 from Account A → Account B
 
 | Pattern | Role | Why This Pattern? |
 |---------|------|-------------------|
-| **TCC** | Account reservation | Need strong isolation — funds must be soft-locked before commit to prevent double-spend |
-| **Saga** | Transfer orchestration | Need compensating transactions — if ledger posting fails, TCC must be canceled and accounts restored |
+| **TCC** | Account reservation | Account provider must enforce holds before committing funds |
+| **Saga** | Transfer orchestration | Need compensating transactions: if ledger posting fails, TCC must be canceled and accounts restored |
 | **Workflow** | Settlement tracking | Long-running process with external signals (clearing house) and timed delays (T+1 settlement) |
 
 ---
@@ -72,7 +70,7 @@ Customer initiates transfer: $500 from Account A → Account B
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-orchestration</artifactId>
-    <version>26.02.06</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -200,9 +198,9 @@ public class NotificationService {
 
 ### Why TCC for Account Reservations?
 
-In fund transfers, we need **strong isolation** — when Account A's $500 is being transferred, no other transaction should be able to spend those same funds. TCC provides this through its Try phase: funds are soft-locked (held) during Try, committed during Confirm, or released during Cancel.
+The account provider must enforce reservations so another operation cannot spend held funds. TCC invokes the Try, Confirm, and Cancel methods; those application methods own the hold and commit semantics.
 
-The key difference from a Saga: in a Saga, the debit would execute immediately (real money moves). In TCC, the Try phase only *reserves* — nothing is committed until all participants confirm.
+The key difference from a Saga: in a Saga, the debit would execute immediately (real money moves). In TCC, the Try phase only *reserves*: nothing is committed until all participants confirm.
 
 ### Step-by-Step Implementation
 
@@ -283,13 +281,13 @@ public class AccountReservationTcc {
 
 ### Key Design Decisions
 
-1. **`order = 0` for debit, `order = 1` for credit** — Debit runs first. If the debit hold fails, we never even attempt the credit preparation.
+1. **`order = 0` for debit, `order = 1` for credit**: Debit runs first. If the debit hold fails, we never even attempt the credit preparation.
 
-2. **`@FromTry("debit")` in confirm/cancel** — The hold ID returned by the Try phase is automatically injected into Confirm and Cancel methods. No manual state passing needed.
+2. **`@FromTry("debit")` in confirm/cancel**: The hold ID returned by the Try phase is automatically injected into Confirm and Cancel methods. No manual state passing needed.
 
-3. **Per-phase retry configuration** — Try has 2 retries with 200ms backoff (fast fail); Confirm has 3 retries with 500ms backoff (more patient for finalization).
+3. **Per-phase retry configuration**: Try has 2 retries with 200ms backoff (fast fail); Confirm has 3 retries with 500ms backoff (more patient for finalization).
 
-4. **`@TccEvent` on credit participant** — Publishes a `CreditPrepared` event when the credit's Confirm phase succeeds, for downstream consumers.
+4. **`@TccEvent` on credit participant**: Publishes a `CreditPrepared` event when the credit's Confirm phase succeeds, for downstream consumers.
 
 ### Testing the TCC in Isolation
 
@@ -335,19 +333,20 @@ void accountReservation_debitFails_creditNeverTried() {
 
 ### Why Saga for Transfer Orchestration?
 
-The fund transfer involves multiple steps that must either all succeed or all be undone. Unlike TCC (which handles the reservation phase), the saga orchestrates the **entire transfer lifecycle** — validation, reservation, ledger posting, and notification. Each step has a compensating action:
+The saga coordinates validation, account operations, ledger posting, and notification. A completed TCC has already run Confirm; a later saga failure therefore needs a separate business reversal. Register and test those compensations before using this composition:
 
 ```
-validateAccounts   →  (no compensation — validation is idempotent)
-reserveFunds       →  cancelReservation (triggers TCC cancel)
+validateAccounts   →  (no compensation: validation is idempotent)
+reserveFunds       →  cancelReservation (requires business reversal)
 postLedger         →  reverseLedger
-notifyCustomer     →  (no compensation — notification is best-effort)
+notifyCustomer     →  (no compensation: notification is best-effort)
 ```
 
 ### Step-by-Step Implementation
 
 ```java
 @Saga(name = "FundTransfer", triggerEventType = "TransferRequested")
+@RequiredArgsConstructor
 public class FundTransferSaga {
 
     private final ComplianceService complianceService;
@@ -355,15 +354,6 @@ public class FundTransferSaga {
     private final LedgerService ledgerService;
     private final NotificationService notificationService;
 
-    public FundTransferSaga(ComplianceService complianceService,
-                             TccEngine tccEngine,
-                             LedgerService ledgerService,
-                             NotificationService notificationService) {
-        this.complianceService = complianceService;
-        this.tccEngine = tccEngine;
-        this.ledgerService = ledgerService;
-        this.notificationService = notificationService;
-    }
 
     // ── Step 1: Validate accounts and compliance ──────────────────
 
@@ -400,11 +390,10 @@ public class FundTransferSaga {
     }
 
     public Mono<Void> cancelReservation(@FromStep("reserve") TccResult tccResult) {
-        // TCC already handles cancel internally — this compensation
-        // is for cases where the saga needs to explicitly undo
-        log.info("Reservation already canceled by TCC for correlation: {}",
-            tccResult.correlationId());
-        return Mono.empty();
+        // A confirmed TCC has already committed its business effects.
+        // Supply a provider-specific reversal before using this fragment.
+        return Mono.error(new UnsupportedOperationException(
+            "Implement reversal of the confirmed transfer"));
     }
 
     // ── Step 3: Post ledger entries ───────────────────────────────
@@ -463,13 +452,13 @@ public class FundTransferSaga {
 
 ### Key Design Decisions
 
-1. **`triggerEventType = "TransferRequested"`** — The saga can be triggered by an external event via `EventGateway`, enabling event-driven architecture.
+1. **`triggerEventType = "TransferRequested"`**: The saga can be triggered by an external event via `EventGateway`, enabling event-driven architecture.
 
-2. **`compensationCritical = true` on ledger step** — If ledger reversal fails, this is a critical data integrity issue. With `RETRY_WITH_BACKOFF` policy, the compensator will retry 5 times. If it still fails, the DLQ captures it for manual resolution.
+2. **`compensationCritical = true` on ledger step**: If ledger reversal fails, this is a critical data integrity issue. With `RETRY_WITH_BACKOFF` policy, the compensator will retry 5 times. If it still fails, the DLQ captures it for manual resolution.
 
-3. **TCC nested inside Saga** — Step 2 calls `tccEngine.execute()` directly. The saga provides the compensation wrapper; the TCC provides the reservation semantics.
+3. **TCC nested inside Saga**: Step 2 calls `tccEngine.execute()` directly. The saga provides the compensation wrapper; the TCC provides the reservation semantics.
 
-4. **`@StepEvent` on reserve step** — Publishes a `FundsReserved` event when reservation succeeds, which can trigger downstream workflows.
+4. **`@StepEvent` on reserve step**: Publishes a `FundsReserved` event when reservation succeeds, which can trigger downstream workflows.
 
 ### Understanding the DAG
 
@@ -491,7 +480,7 @@ public class FundTransferSaga {
          +-----------+
 ```
 
-All steps are sequential here — each depends on the previous. If you had independent steps (e.g., sending notifications to both sender and receiver), they'd be in the same layer and run in parallel.
+All steps are sequential here: each depends on the previous. If you had independent steps (e.g., sending notifications to both sender and receiver), they'd be in the same layer and run in parallel.
 
 ### Testing the Saga
 
@@ -540,9 +529,9 @@ void fundTransfer_ledgerFailure_compensatesReservation() {
 ### Why Workflow for Settlement?
 
 Settlement is a **long-running process** that spans hours or days. It needs:
-- **Signal gates** — wait for the clearing house to confirm the transfer
-- **Timer delays** — wait for the T+1 settlement window
-- **Lifecycle management** — ability to suspend/resume/cancel
+- **Signal gates**: wait for the clearing house to confirm the transfer
+- **Timer delays**: wait for the T+1 settlement window
+- **Lifecycle management**: ability to suspend/resume/cancel
 
 Neither Saga nor TCC support signals, timers, or lifecycle management. Workflow is the only pattern designed for these requirements.
 
@@ -552,16 +541,12 @@ Neither Saga nor TCC support signals, timers, or lifecycle management. Workflow 
 @Workflow(id = "SettlementTracking", version = "1.0",
           publishEvents = true,
           triggerEventType = "FundsReserved")
+@RequiredArgsConstructor
 public class SettlementTrackingWorkflow {
 
     private final SettlementService settlementService;
     private final ReconciliationService reconciliationService;
 
-    public SettlementTrackingWorkflow(SettlementService settlementService,
-                                       ReconciliationService reconciliationService) {
-        this.settlementService = settlementService;
-        this.reconciliationService = reconciliationService;
-    }
 
     // ── Step 1: Create settlement record ──────────────────────────
 
@@ -629,13 +614,13 @@ public class SettlementTrackingWorkflow {
 
 ### Key Design Decisions
 
-1. **`triggerEventType = "FundsReserved"`** — The workflow starts automatically when the saga's reserve step publishes a `FundsReserved` event. No manual wiring needed.
+1. `triggerEventType = "FundsReserved"` registers the workflow as an inbound event target. An application publisher/consumer must route the outbound event into `EventGateway`; the default publisher is a no-op.
 
-2. **`@WaitForSignal("clearing-confirmed")` with 24h timeout** — The workflow pauses at step 3 until the clearing house sends a confirmation signal. If no signal arrives within 24 hours, the step times out.
+2. **`@WaitForSignal("clearing-confirmed")` with 24h timeout**: The workflow pauses at step 3 until the clearing house sends a confirmation signal. If no signal arrives within 24 hours, the step times out.
 
-3. **`@WaitForTimer(delayMs = 86400000, timerId = "t-plus-one")`** — After clearing confirmation, the workflow pauses for 24 hours (T+1 settlement delay). The named `timerId` allows external cancellation if needed.
+3. **`@WaitForTimer(delayMs = 86400000, timerId = "t-plus-one")`**: After clearing confirmation, the workflow pauses for 24 hours (T+1 settlement delay). The named `timerId` allows external cancellation if needed.
 
-4. **`publishEvents = true`** — Every step completion publishes an `OrchestrationEvent`, enabling monitoring dashboards.
+4. **`publishEvents = true`**: Every step completion publishes an `OrchestrationEvent`, enabling monitoring dashboards.
 
 ### Sending the Clearing Signal
 
@@ -715,7 +700,7 @@ void settlement_happyPath_withSignalAndTimer() {
         .block();
 
     // Workflow proceeds to the timer step, then reconciliation
-    // In tests, you can use TimerService to fire timers immediately
+    // Use short configured delays or Reactor virtual time in a focused timer test
 }
 ```
 
@@ -723,7 +708,7 @@ void settlement_happyPath_withSignalAndTimer() {
 
 ## 7. Composing the Patterns
 
-The three patterns connect through **event-driven composition** — each pattern publishes events that trigger the next.
+The application can connect the patterns through events. Implement `OrchestrationEventPublisher` and a consumer that calls `EventGateway.routeEvent`; registering a trigger alone does not connect outbound publishing to inbound routing.
 
 ### End-to-End Flow
 
@@ -749,7 +734,7 @@ Customer Request
   │  ├── ledger                     │
   │  └── notify                     │
   └──────────────┬──────────────────┘
-                 │  @StepEvent: "FundsReserved"
+                 │  publisher + consumer route "FundsReserved"
                  ▼
   ┌─────────────────────────────────┐
   │  SettlementTrackingWorkflow     │
@@ -766,15 +751,12 @@ Customer Request
 ```java
 @RestController
 @RequestMapping("/api/transfers")
+@RequiredArgsConstructor
 public class TransferController {
 
     private final EventGateway eventGateway;
     private final SagaEngine sagaEngine;
 
-    public TransferController(EventGateway eventGateway, SagaEngine sagaEngine) {
-        this.eventGateway = eventGateway;
-        this.sagaEngine = sagaEngine;
-    }
 
     // Option 1: Direct saga execution
     @PostMapping("/direct")
@@ -920,10 +902,10 @@ public class DynamicTransferSaga {
 
 | Use Case | Preferred Style |
 |----------|----------------|
-| Static, well-defined orchestrations | **Annotations** — clearer, more readable, Spring-scanned |
-| Dynamic step composition at runtime | **Builder** — compose steps based on runtime conditions |
-| Integration tests | **Builder** — no annotation scanning, full control, fast setup |
-| Multi-tenant with different workflows per tenant | **Builder** — build definitions dynamically per tenant |
+| Static, well-defined orchestrations | **Annotations**: clearer, more readable, Spring-scanned |
+| Dynamic step composition at runtime | **Builder**: compose steps based on runtime conditions |
+| Integration tests | **Builder**: no annotation scanning, full control, fast setup |
+| Multi-tenant with different workflows per tenant | **Builder**: build definitions dynamically per tenant |
 
 ---
 
@@ -1021,7 +1003,7 @@ public class SettlementSearchService {
 
 ## 10. Production Configuration
 
-### Full Production YAML
+### Example deployment YAML
 
 ```yaml
 firefly:
@@ -1141,7 +1123,7 @@ With `health.enabled=true`, the `/actuator/health` endpoint includes:
 
 ---
 
-## 11. Running the Complete System
+## 11. Integrating the reference fragments
 
 ### Application Class
 
@@ -1241,7 +1223,7 @@ public LedgerService failingLedgerService() {
 When the ledger step fails:
 1. The saga marks `ledger` as `FAILED`
 2. Compensation runs in reverse: `cancelReservation` for the `reserve` step
-3. The TCC's Cancel phase releases all holds
+3. The application compensation must reverse effects of the already-confirmed TCC. The placeholder above fails until that reversal is implemented.
 4. `@OnSagaError` fires with the error details
 5. A DLQ entry is created for the failed step
 
@@ -1251,12 +1233,12 @@ The complete execution flow is visible in the logs via `OrchestrationLoggerEvent
 
 ## Next Steps
 
-- **[Foundations](foundations.md)** — Architecture deep dive and pattern selection guide
-- **[Saga Reference](saga.md)** — Complete annotation and builder API reference
-- **[TCC Reference](tcc.md)** — Per-phase timeout/retry configuration details
-- **[Workflow Reference](workflow.md)** — Signals, timers, child workflows, search attributes
-- **[Core Infrastructure](core-infrastructure.md)** — ExecutionContext, argument injection, persistence providers
-- **[Recipes & Production](recipes-and-production.md)** — Testing strategies, error handling patterns, production checklist
+- **[Foundations](foundations.md)**: Architecture deep dive and pattern selection guide
+- **[Saga Reference](saga.md)**: Complete annotation and builder API reference
+- **[TCC Reference](tcc.md)**: Per-phase timeout/retry configuration details
+- **[Workflow Reference](workflow.md)**: Signals, timers, child workflows, search attributes
+- **[Core Infrastructure](core-infrastructure.md)**: ExecutionContext, argument injection, persistence providers
+- **[Recipes & Production](recipes-and-production.md)**: Testing strategies, error handling patterns, production checklist
 
 ---
 

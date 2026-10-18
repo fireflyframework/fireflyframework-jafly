@@ -58,13 +58,49 @@ Import the framework BOM into your dependency management:
 </dependencyManagement>
 ```
 
-Declare the framework dependencies you need without repeating their version. Your existing parent or build must still configure a compatible Spring Boot/Cloud platform and Java 25 compiler. The BOM manages Jafly artifact versions only.
+Declare the framework dependencies you need without repeating their version. Your existing parent or build must still configure a compatible Spring Boot/Cloud platform and Java 25 compiler. The BOM supplies Jafly's version catalog and its explicit third-party constraints; it does not import Spring Boot's or Spring Cloud's complete platform management.
 
 ## Resolve the management POMs
 
 Before using the parent or BOM in a separate application, install the source locally or select a verified published version. Use `fireflyframework-parent` or `fireflyframework-bom` for application management. The checkout's root `fireflyframework-jafly` POM aggregates source builds and cannot serve as a consumer parent.
 
 For source builds, follow [installation](installation.md). For application code and tests, continue with [your first service](getting-started.md).
+
+## Read packages from GitHub
+
+Maven Central requires no additional framework repository entry. When using a version verified in GitHub Packages, the libraries retain their original package homes. GitHub documents an owner-wide URL for reading across those repositories:
+
+```xml
+<repositories>
+    <repository>
+        <id>firefly-github</id>
+        <url>https://maven.pkg.github.com/fireflyframework/*</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
+Configure credentials for the same `firefly-github` server ID in your local Maven settings. GitHub requires an authorized token even for public Maven packages. Keep token values out of the POM and source tree. The wildcard URL is for reading; publication uses the reviewed per-artifact repository map. See [GitHub's Maven registry instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
+
+## Constructor injection
+
+The examples use Lombok's `@RequiredArgsConstructor` for Spring components with `final` dependencies. Lombok generates one constructor for those fields, and Spring injects its arguments. This keeps required dependencies visible and lets a unit test construct the component directly.
+
+Declare Lombok in an application that uses these annotations:
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+The Jafly parent manages the Lombok version and compiler annotation processor. If you import only the BOM, your existing build must manage Lombok and enable its annotation processor. The [onboarding application POM](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/pom.xml) is a complete parent-based example.
+
+Keep an explicit constructor when it performs initialization, calls a superclass constructor, or carries parameter annotations that the generated constructor would not preserve. Use Spring's `@Autowired` when an explicit constructor choice is needed. The single generated constructor in these examples needs no additional injection annotation.
 
 ## Diagnose dependency selection
 

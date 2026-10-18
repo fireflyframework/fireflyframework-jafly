@@ -26,6 +26,8 @@ If the product needs application history as the source of truth, model submitted
 
 ## Quick start
 
+Follow [Persist onboarding application history](../../docs/site/guides/onboarding-event-store.md) for the complete tested extension to the onboarding service. The API fragments below illustrate individual contracts.
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### 1. Define domain events
@@ -156,7 +158,9 @@ The `firefly.eventsourcing` namespace is bound by [EventSourcingProperties.java]
 
 ## Continue the application
 
-Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration. ## Build and validation
+Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

@@ -27,7 +27,7 @@ This document provides a comprehensive overview of the Firefly Framework Rule En
 
 ## System Overview
 
-The Firefly Framework Rule Engine is built as a reactive, microservice-ready application using Spring Boot 3 and WebFlux. It features a **modern AST-based (Abstract Syntax Tree) architecture** that completely replaces the legacy string-based evaluation system with structured, type-safe rule processing. The system includes comprehensive **audit trail capabilities** for compliance and monitoring, tracking all rule operations and evaluations with detailed metadata.
+The Firefly Framework Rule Engine is built as a reactive, microservice-ready application using Spring Boot 4.1.1 and WebFlux. It features a modern AST-based (Abstract Syntax Tree) architecture that completely replaces the legacy string-based evaluation system with structured, type-safe rule processing. The system includes comprehensive audit trail capabilities for compliance and monitoring, tracking all rule operations and evaluations with detailed metadata.
 
 ```mermaid
 graph TB
@@ -107,35 +107,35 @@ graph TB
 
 ## AST-Based Architecture
 
-The Firefly Framework Rule Engine has been completely modernized with an **Abstract Syntax Tree (AST) based architecture** that provides:
+The Firefly Framework Rule Engine has been completely modernized with an Abstract Syntax Tree (AST) based architecture that provides:
 
-### 🏗️ **Structured Rule Processing**
-- **Type-Safe Evaluation**: AST nodes provide compile-time type safety
-- **Visitor Pattern**: Clean separation of concerns for different operations
-- **Extensible Design**: Easy to add new operators, functions, and validation rules
-- **Performance Optimized**: Direct AST traversal eliminates string parsing overhead
+### 🏗️ Structured Rule Processing
+- Type-Safe Evaluation: AST nodes provide compile-time type safety
+- Visitor Pattern: Clean separation of concerns for different operations
+- Extensible Design: Easy to add new operators, functions, and validation rules
+- Performance Optimized: Direct AST traversal eliminates string parsing overhead
 
-### 🔄 **Legacy vs. Modern Architecture**
+### 🔄 Legacy vs. Modern Architecture
 
 | Aspect | Legacy (String-Based) | Modern (AST-Based) |
 |--------|----------------------|-------------------|
-| **Parsing** | String manipulation | Structured AST nodes |
-| **Evaluation** | Runtime string parsing | Direct AST traversal |
-| **Validation** | Basic syntax checking | Comprehensive semantic validation |
-| **Type Safety** | Runtime type checking | Compile-time type safety |
-| **Performance** | String parsing overhead | Optimized AST operations |
-| **Extensibility** | Monolithic evaluators | Visitor pattern modularity |
-| **Audit Trail** | Limited logging | Comprehensive audit tracking |
-| **Compliance** | Manual tracking | Automated compliance reporting |
+| Parsing | String manipulation | Structured AST nodes |
+| Evaluation | Runtime string parsing | Direct AST traversal |
+| Validation | Basic syntax checking | Comprehensive semantic validation |
+| Type Safety | Runtime type checking | Compile-time type safety |
+| Performance | String parsing overhead | Optimized AST operations |
+| Extensibility | Monolithic evaluators | Visitor pattern modularity |
+| Audit Trail | Limited logging | Comprehensive audit tracking |
+| Compliance | Manual tracking | Automated compliance reporting |
 
 ## Module Architecture
 
 The system is organized into five distinct Maven modules, each with specific responsibilities:
 
 ### 1. fireflyframework-rule-engine-web
-**Purpose**: Web layer and REST API endpoints
+Purpose: Web layer and REST API endpoints
 
-**Key Components**:
+Key Components:
 - `RulesEvaluationController` - Main API for rule evaluation using AST engine
 - `RuleDefinitionController` - CRUD operations for YAML DSL rule definitions
 - `ValidationController` - Comprehensive YAML DSL validation endpoints
@@ -144,35 +144,35 @@ The system is organized into five distinct Maven modules, each with specific res
 - `RuleEngineApplication` - Spring Boot main application
 - OpenAPI/Swagger configuration
 
-**Dependencies**:
+Dependencies:
 - `fireflyframework-rule-engine-core`
 - `fireflyframework-rule-engine-interfaces`
 
 ### 2. fireflyframework-rule-engine-core
-**Purpose**: AST-based core business logic and rule evaluation engine
+Purpose: AST-based core business logic and rule evaluation engine
 
-**Key Components**:
-- **AST Engine**: `ASTRulesEvaluationEngine` - Pure AST-based rule evaluation orchestrator
-- **AST Parser**: `ASTRulesDSLParser` - Converts YAML to structured AST nodes
-- **AST Validation**: `YamlDslValidator` - Comprehensive DSL validation using AST
-- **AST Visitors**:
+Key Components:
+- AST Engine: `ASTRulesEvaluationEngine` - Pure AST-based rule evaluation orchestrator
+- AST Parser: `ASTRulesDSLParser` - Converts YAML to structured AST nodes
+- AST Validation: `YamlDslValidator` - Comprehensive DSL validation using AST
+- AST Visitors:
   - `ExpressionEvaluator` - Evaluates expressions using visitor pattern
   - `ActionExecutor` - Executes actions using visitor pattern
   - `ValidationVisitor` - Validates AST nodes for semantic correctness
   - `VariableReferenceCollector` - Extracts variable references for constant loading
-- **AST Model**: Complete hierarchy of AST node classes
-- **Services**: `RuleDefinitionService`, `RulesEvaluationService`, `ConstantService`, `AuditTrailService` - Business logic services
-- **Context**: `EvaluationContext` - Maintains state during AST evaluation
-- **Audit Integration**: Comprehensive audit trail recording for all operations
+- AST Model: Complete hierarchy of AST node classes
+- Services: `RuleDefinitionService`, `RulesEvaluationService`, `ConstantService`, `AuditTrailService` - Business logic services
+- Context: `EvaluationContext` - Maintains state during AST evaluation
+- Audit Integration: Comprehensive audit trail recording for all operations
 
-**Dependencies**:
+Dependencies:
 - `fireflyframework-rule-engine-interfaces`
 - `fireflyframework-rule-engine-models`
 
 ### 3. fireflyframework-rule-engine-models
-**Purpose**: Data entities and repository interfaces
+Purpose: Data entities and repository interfaces
 
-**Key Components**:
+Key Components:
 - `Constant` - Entity for system constants
 - `RuleDefinition` - Entity for stored YAML DSL rule definitions
 - `AuditTrail` - Entity for audit trail records
@@ -181,23 +181,23 @@ The system is organized into five distinct Maven modules, each with specific res
 - `AuditTrailRepository` - R2DBC repository interface for audit trails
 - Database migration scripts (V1__Create_constants_table.sql, V2__Create_rule_definitions_table.sql, V3__Create_audit_trails_table.sql)
 
-**Dependencies**: None (base module)
+Dependencies: None (base module)
 
 ### 4. fireflyframework-rule-engine-interfaces
-**Purpose**: DTOs, service interfaces, and contracts
+Purpose: DTOs, service interfaces, and contracts
 
-**Key Components**:
+Key Components:
 - `RulesEvaluationRequestDTO` - API request structure
 - `RulesEvaluationResponseDTO` - API response structure
 - `ConstantDTO` - Data transfer object for constants
 - Service interfaces and enums
 
-**Dependencies**: None (base module)
+Dependencies: None (base module)
 
 ### 5. fireflyframework-rule-engine-sdk
-**Purpose**: Client SDK for integration (future implementation)
+Purpose: Client SDK for integration (future implementation)
 
-**Key Components**:
+Key Components:
 - Client libraries for Java applications
 - Helper utilities for rule management
 
@@ -390,19 +390,19 @@ sequenceDiagram
 
 ### Variable Resolution Priority & Naming Conventions
 
-The system resolves variables in the following order using **distinct naming patterns**:
+The system resolves variables in the following order using distinct naming patterns:
 
-1. **Computed Variables** (highest priority - `snake_case`)
+1. Computed Variables (highest priority - `snake_case`)
    - Created during rule execution with `calculate` or `set` actions
    - Can override input variables
    - Examples: `debt_to_income`, `risk_score`, `final_decision`
 
-2. **Input Variables** (medium priority - `camelCase`)
+2. Input Variables (medium priority - `camelCase`)
    - Provided via API request in the `inputData` field
    - Runtime data specific to each evaluation
    - Examples: `creditScore`, `annualIncome`, `employmentYears`
 
-3. **System Constants** (lowest priority - `UPPER_CASE_WITH_UNDERSCORES`)
+3. System Constants (lowest priority - `UPPER_CASE_WITH_UNDERSCORES`)
    - Stored in database and auto-loaded when referenced
    - Follow regex pattern `^[A-Z][A-Z0-9_]*$`
    - Examples: `MIN_CREDIT_SCORE`, `MAX_LOAN_AMOUNT`, `RISK_MULTIPLIER`
@@ -436,7 +436,7 @@ private boolean isConstantName(String name) {
 }
 ```
 
-**Examples**:
+Examples:
 - ✅ `MIN_CREDIT_SCORE` - Auto-loaded from database (UPPER_CASE)
 - ✅ `MAX_LOAN_AMOUNT_2024` - Auto-loaded from database (UPPER_CASE)
 - ❌ `creditScore` - Treated as input variable (camelCase)
@@ -464,26 +464,26 @@ public class EvaluationContext {
 ## Technology Stack
 
 ### Core Technologies
-- **Java 25** - Latest LTS version with virtual threads (Java 21+ compatible)
-- **Spring Boot 3.x** - Application framework
-- **Spring WebFlux** - Reactive web stack
-- **R2DBC** - Reactive database connectivity
-- **PostgreSQL** - Primary database
-- **Maven** - Build and dependency management
+- Java 25 - Latest LTS version with virtual threads (Java 25 compatible)
+- Spring Boot 4.1.1 - Application framework
+- Spring WebFlux - Reactive web stack
+- R2DBC - Reactive database connectivity
+- PostgreSQL - Primary database
+- Maven - Build and dependency management
 
 ### Libraries and Frameworks
-- **Jackson** - JSON/YAML processing
-- **Lombok** - Code generation
-- **MapStruct** - Object mapping
-- **OpenAPI 3** - API documentation
-- **Reactor** - Reactive programming
-- **Flyway** - Database migrations
+- Jackson - JSON/YAML processing
+- Lombok - Code generation
+- MapStruct - Object mapping
+- OpenAPI 3 - API documentation
+- Reactor - Reactive programming
+- Flyway - Database migrations
 
 ### Development Tools
-- **Docker** - Containerization
-- **Swagger UI** - Interactive API documentation
-- **Actuator** - Health checks and metrics
-- **Prometheus** - Metrics collection
+- Docker - Containerization
+- Swagger UI - Interactive API documentation
+- Actuator - Health checks and metrics
+- Prometheus - Metrics collection
 
 ## Design Patterns
 
@@ -559,12 +559,12 @@ switch (functionName.toLowerCase()) {
 
 The `ASTRulesEvaluationEngine` provides pure AST-based rule evaluation with:
 
-**Core Features**:
-- **Type-Safe Processing**: Direct AST node traversal eliminates string parsing
-- **Visitor Pattern**: Clean separation of evaluation, execution, and validation logic
-- **Reactive Support**: Full Mono/Flux integration for non-blocking operations
-- **Comprehensive Logging**: Structured JSON logging with operation IDs
-- **Error Handling**: Graceful degradation with detailed error reporting
+Core Features:
+- Type-Safe Processing: Direct AST node traversal eliminates string parsing
+- Visitor Pattern: Clean separation of evaluation, execution, and validation logic
+- Reactive Support: Full Mono/Flux integration for non-blocking operations
+- Comprehensive Logging: Structured JSON logging with operation IDs
+- Error Handling: Graceful degradation with detailed error reporting
 
 ### AST Visitor Pattern Implementation
 
@@ -635,16 +635,16 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
 
 ### Supported Operations
 
-**Comparison Operators** (26 total):
-- **Numeric**: `greater_than`, `less_than`, `at_least`, `at_most`, `between`, `equals`, `not_equals`
-- **String**: `contains`, `starts_with`, `ends_with`, `matches`, `not_matches`
-- **List**: `in_list`, `not_in_list`, `in`, `not_in`
-- **Validation**: `is_null`, `is_not_null`, `is_empty`, `is_not_empty`, `is_numeric`
-- **Financial**: `is_credit_score`, `is_ssn`, `is_account_number`, `is_routing_number`
+Comparison Operators (26 total):
+- Numeric: `greater_than`, `less_than`, `at_least`, `at_most`, `between`, `equals`, `not_equals`
+- String: `contains`, `starts_with`, `ends_with`, `matches`, `not_matches`
+- List: `in_list`, `not_in_list`, `in`, `not_in`
+- Validation: `is_null`, `is_not_null`, `is_empty`, `is_not_empty`, `is_numeric`
+- Financial: `is_credit_score`, `is_ssn`, `is_account_number`, `is_routing_number`
 
-**Built-in Functions**:
-- **Financial**: `calculate_loan_payment`, `calculate_debt_ratio`, `debt_to_income_ratio`
-- **Utility**: `format_currency`, `log`, `audit_log`
+Built-in Functions:
+- Financial: `calculate_loan_payment`, `calculate_debt_ratio`, `debt_to_income_ratio`
+- Utility: `format_currency`, `log`, `audit_log`
 
 ### Circuit Breaker Pattern
 
@@ -659,7 +659,7 @@ public Void visitCircuitBreakerAction(CircuitBreakerAction node) {
 }
 ```
 
-**Use Cases**:
+Use Cases:
 - High-risk transaction detection
 - Fraud prevention
 - System overload protection
@@ -667,7 +667,7 @@ public Void visitCircuitBreakerAction(CircuitBreakerAction node) {
 
 ## Validation Architecture
 
-The Firefly Framework Rule Engine features a comprehensive **multi-layer validation architecture** that ensures YAML DSL compliance and quality:
+The Firefly Framework Rule Engine features a comprehensive multi-layer validation architecture that ensures YAML DSL compliance and quality:
 
 ### Validation Pipeline
 
@@ -693,31 +693,31 @@ graph TD
 ### Validation Layers
 
 #### 1. Syntax Validation
-- **YAML Structure**: Validates basic YAML syntax and structure
-- **Required Sections**: Ensures presence of mandatory sections (name, description, inputs, output)
-- **Data Types**: Validates correct data types for each section
+- YAML Structure: Validates basic YAML syntax and structure
+- Required Sections: Ensures presence of mandatory sections (name, description, inputs, output)
+- Data Types: Validates correct data types for each section
 
 #### 2. AST-Based Semantic Validation
-- **Variable References**: Validates all variable references using `ValidationVisitor`
-- **Type Compatibility**: Ensures type compatibility in expressions and conditions
-- **Function Calls**: Validates function names and parameter counts
-- **Circular Dependencies**: Detects circular references in variable calculations
+- Variable References: Validates all variable references using `ValidationVisitor`
+- Type Compatibility: Ensures type compatibility in expressions and conditions
+- Function Calls: Validates function names and parameter counts
+- Circular Dependencies: Detects circular references in variable calculations
 
 #### 3. DSL Reference Compliance
-- **Complete Coverage**: Validates against the full YAML DSL Reference specification
-- **Operator Support**: Ensures all operators are documented and supported
-- **Function Registry**: Validates against built-in function registry
-- **Syntax Patterns**: Enforces documented syntax patterns
+- Complete Coverage: Validates against the full YAML DSL Reference specification
+- Operator Support: Ensures all operators are documented and supported
+- Function Registry: Validates against built-in function registry
+- Syntax Patterns: Enforces documented syntax patterns
 
 #### 4. Naming Convention Validation
-- **Input Variables**: Enforces `camelCase` naming (e.g., `creditScore`, `annualIncome`)
-- **System Constants**: Validates `UPPER_CASE_WITH_UNDERSCORES` pattern (e.g., `MIN_CREDIT_SCORE`)
-- **Computed Variables**: Enforces `snake_case` naming (e.g., `debt_to_income`, `final_score`)
+- Input Variables: Enforces `camelCase` naming (e.g., `creditScore`, `annualIncome`)
+- System Constants: Validates `UPPER_CASE_WITH_UNDERSCORES` pattern (e.g., `MIN_CREDIT_SCORE`)
+- Computed Variables: Enforces `snake_case` naming (e.g., `debt_to_income`, `final_score`)
 
 #### 5. Best Practices Validation
-- **Performance Optimization**: Suggests improvements for complex expressions
-- **Code Quality**: Recommends better variable names and structure
-- **Maintainability**: Identifies potential maintenance issues
+- Performance Optimization: Suggests improvements for complex expressions
+- Code Quality: Recommends better variable names and structure
+- Maintainability: Identifies potential maintenance issues
 
 ### Validation Result Structure
 
@@ -733,34 +733,34 @@ public class ValidationResult {
 
 ### Integration Points
 
-- **ValidationController**: REST API endpoints for standalone validation
-- **RuleDefinitionService**: Automatic validation before rule storage
-- **YamlDslValidator**: Central orchestrator for all validation components
-- **AST Visitors**: Deep semantic validation using visitor pattern
+- ValidationController: REST API endpoints for standalone validation
+- RuleDefinitionService: Automatic validation before rule storage
+- YamlDslValidator: Central orchestrator for all validation components
+- AST Visitors: Deep semantic validation using visitor pattern
 
 ## Performance Considerations
 
-The Firefly Framework Rule Engine implements enterprise-grade performance optimizations designed for high-load production environments. These optimizations provide significant performance improvements while maintaining reliability and scalability.
+The Firefly Framework Rule Engine implements performance optimizations designed for high-load production environments. These optimizations provide significant performance improvements while maintaining reliability and scalability.
 
 ### 1. AST-Based Performance Optimizations
-- **Direct AST Traversal**: Eliminates string parsing overhead during evaluation
-- **Type-Safe Operations**: Compile-time type checking reduces runtime validation
-- **Visitor Pattern Efficiency**: Single-pass AST traversal for multiple operations
-- **Structured Memory Layout**: AST nodes provide better memory locality
-- **Single-Pass Parsing**: YAML to AST conversion in one pass
-- **Lazy Evaluation**: Expressions evaluated only when needed
-- **Short-Circuit Logic**: Logical operators stop evaluation early when possible
-- **Optimized Visitor Dispatch**: Direct method calls instead of reflection
+- Direct AST Traversal: Eliminates string parsing overhead during evaluation
+- Type-Safe Operations: Compile-time type checking reduces runtime validation
+- Visitor Pattern Efficiency: Single-pass AST traversal for multiple operations
+- Structured Memory Layout: AST nodes provide better memory locality
+- Single-Pass Parsing: YAML to AST conversion in one pass
+- Lazy Evaluation: Expressions evaluated only when needed
+- Short-Circuit Logic: Logical operators stop evaluation early when possible
+- Optimized Visitor Dispatch: Direct method calls instead of reflection
 
 ### 2. Reactive Architecture
-- **Non-blocking I/O**: WebFlux for high-throughput processing
-- **Reactive Database Access**: R2DBC for non-blocking database operations
-- **Parallel Rule Processing**: Concurrent evaluation of multiple rules
-- **Backpressure Handling**: Reactive streams manage load automatically
+- Non-blocking I/O: WebFlux for high-throughput processing
+- Reactive Database Access: R2DBC for non-blocking database operations
+- Parallel Rule Processing: Concurrent evaluation of multiple rules
+- Backpressure Handling: Reactive streams manage load automatically
 
 ### 3. Advanced Caching System
 
-#### **Dual Cache Provider Architecture**
+#### Dual Cache Provider Architecture
 
 The system supports both local and distributed caching with configurable providers:
 
@@ -796,18 +796,18 @@ graph TB
     VALIDATION_CACHE --> CP
 ```
 
-#### **Cache Provider Performance Comparison**
+#### Cache Provider Performance Comparison
 
 | Metric | Caffeine (Local) | Redis (Distributed) | Performance Gain |
 |--------|------------------|---------------------|------------------|
-| **Read Operations** | 0.26 ms | 175.12 ms | **664x faster** |
-| **Write Operations** | 0.25 ms | 44.28 ms | **180x faster** |
-| **Network Overhead** | None | TCP/Redis Protocol | **Zero vs Network** |
-| **Memory Usage** | JVM Heap | External Redis | **Local vs Remote** |
-| **Persistence** | None | Configurable | **Volatile vs Persistent** |
-| **Scalability** | Single JVM | Multi-instance | **Local vs Distributed** |
+| Read Operations | 0.26 ms | 175.12 ms | 664x faster |
+| Write Operations | 0.25 ms | 44.28 ms | 180x faster |
+| Network Overhead | None | TCP/Redis Protocol | Zero vs Network |
+| Memory Usage | JVM Heap | External Redis | Local vs Remote |
+| Persistence | None | Configurable | Volatile vs Persistent |
+| Scalability | Single JVM | Multi-instance | Local vs Distributed |
 
-#### **Cache Configuration**
+#### Cache Configuration
 
 ```yaml
 firefly:
@@ -843,17 +843,17 @@ firefly:
           validation-cache: 1h
 ```
 
-#### **Cache Usage Patterns**
+#### Cache Usage Patterns
 
-- **AST Cache**: Stores parsed AST models using SHA-256 hash of YAML content as key
-- **Constants Cache**: Caches system constants to avoid repeated database queries
-- **Validation Cache**: Caches validation results for frequently validated rules
-- **Automatic Eviction**: LRU eviction for Caffeine, TTL-based for Redis
-- **Cache Statistics**: Real-time hit/miss rates and performance metrics
+- AST Cache: Stores parsed AST models using SHA-256 hash of YAML content as key
+- Constants Cache: Caches system constants to avoid repeated database queries
+- Validation Cache: Caches validation results for frequently validated rules
+- Automatic Eviction: LRU eviction for Caffeine, TTL-based for Redis
+- Cache Statistics: Real-time hit/miss rates and performance metrics
 
 ### 4. Optimized Connection Pooling
 
-#### **Environment-Specific Pool Configuration**
+#### Environment-Specific Pool Configuration
 
 ```yaml
 spring:
@@ -876,18 +876,18 @@ spring:
       # max-acquire-time: 30s
 ```
 
-#### **Connection Pool Monitoring**
+#### Connection Pool Monitoring
 
-- **Pool Metrics**: Active, idle, pending connections
-- **Performance Tracking**: Acquire time, validation time, creation time
-- **Health Checks**: Connection validation and leak detection
-- **Resource Management**: Automatic cleanup and lifecycle management
+- Pool Metrics: Active, idle, pending connections
+- Performance Tracking: Acquire time, validation time, creation time
+- Health Checks: Connection validation and leak detection
+- Resource Management: Automatic cleanup and lifecycle management
 
 ### 5. Batch Processing Optimization
 
-#### **High-Throughput Concurrent Evaluation**
+#### High-Throughput Concurrent Evaluation
 
-The batch processing system provides enterprise-grade concurrent rule evaluation:
+The batch processing system provides concurrent rule evaluation:
 
 ```mermaid
 graph TB
@@ -917,42 +917,42 @@ graph TB
     end
 ```
 
-#### **Batch Configuration Options**
+#### Batch Configuration Options
 
 | Parameter | Description | Default | Range | Impact |
 |-----------|-------------|---------|-------|---------|
-| `maxConcurrency` | Concurrent evaluations | 10 | 1-50 | **Throughput** |
-| `timeoutSeconds` | Batch timeout | 300 | 30-1800 | **Reliability** |
-| `failFast` | Stop on first error | false | true/false | **Error Handling** |
-| `returnPartialResults` | Return partial success | true | true/false | **Availability** |
-| `sortByPriority` | Process by priority | false | true/false | **Ordering** |
+| `maxConcurrency` | Concurrent evaluations | 10 | 1-50 | Throughput |
+| `timeoutSeconds` | Batch timeout | 300 | 30-1800 | Reliability |
+| `failFast` | Stop on first error | false | true/false | Error Handling |
+| `returnPartialResults` | Return partial success | true | true/false | Availability |
+| `sortByPriority` | Process by priority | false | true/false | Ordering |
 
-#### **Performance Characteristics**
+#### Performance Characteristics
 
-- **Throughput**: Up to 2000 rules/minute with optimal configuration
-- **Latency**: Average 45ms per rule evaluation
-- **Concurrency**: Configurable from 1-50 concurrent evaluations
-- **Error Resilience**: Partial results with detailed error reporting
-- **Resource Efficiency**: Reactive streams with backpressure handling
+- Throughput: Up to 2000 rules/minute with optimal configuration
+- Latency: Average 45ms per rule evaluation
+- Concurrency: Configurable from 1-50 concurrent evaluations
+- Error Resilience: Partial results with detailed error reporting
+- Resource Efficiency: Reactive streams with backpressure handling
 
 ### 6. Memory Management & Optimization
 
-#### **Efficient Memory Usage**
-- **Immutable AST Nodes**: Thread-safe and memory-efficient
-- **Context Isolation**: Separate evaluation contexts prevent memory leaks
-- **Efficient Collections**: ConcurrentHashMap for thread-safe variable storage
-- **Minimal Object Creation**: Reuse of visitor instances and evaluation contexts
-- **Cache Size Limits**: Configurable maximum cache sizes to prevent OOM
+#### Efficient Memory Usage
+- Immutable AST Nodes: Thread-safe and memory-efficient
+- Context Isolation: Separate evaluation contexts prevent memory leaks
+- Efficient Collections: ConcurrentHashMap for thread-safe variable storage
+- Minimal Object Creation: Reuse of visitor instances and evaluation contexts
+- Cache Size Limits: Configurable maximum cache sizes to prevent OOM
 
-#### **Garbage Collection Optimization**
-- **Short-lived Objects**: Most evaluation objects are short-lived
-- **Pool Reuse**: Connection and thread pool reuse
-- **Weak References**: Cache entries use appropriate reference types
-- **Memory Monitoring**: Built-in memory usage tracking and alerts
+#### Garbage Collection Optimization
+- Short-lived Objects: Most evaluation objects are short-lived
+- Pool Reuse: Connection and thread pool reuse
+- Weak References: Cache entries use appropriate reference types
+- Memory Monitoring: Built-in memory usage tracking and alerts
 
 ### 7. Performance Monitoring & Metrics
 
-#### **Real-time Performance Metrics**
+#### Real-time Performance Metrics
 
 ```bash
 # Cache Performance
@@ -984,42 +984,42 @@ curl http://localhost:8080/api/v1/rules/batch/statistics
 }
 ```
 
-#### **Key Performance Indicators (KPIs)**
+#### Key Performance Indicators (KPIs)
 
-- **Cache Hit Rate**: Target >80% for optimal performance
-- **Average Response Time**: Target <50ms per rule evaluation
-- **Throughput**: Target >1000 rules/minute for batch operations
-- **Error Rate**: Target <1% for production workloads
-- **Resource Utilization**: CPU <70%, Memory <80% under normal load
+- Cache Hit Rate: Target >80% for optimal performance
+- Average Response Time: Target <50ms per rule evaluation
+- Throughput: Target >1000 rules/minute for batch operations
+- Error Rate: Target <1% for production workloads
+- Resource Utilization: CPU <70%, Memory <80% under normal load
 
 ## Audit Trail System
 
 The Firefly Framework Rule Engine includes a comprehensive audit trail system that tracks all rule operations for compliance, monitoring, and debugging purposes.
 
-### 🔍 **Audit Trail Features**
+### 🔍 Audit Trail Features
 
-#### **1. Comprehensive Operation Tracking**
-- **Rule Definition Operations**: Create, update, delete, activate/deactivate
-- **Rule Evaluations**: Direct YAML, stored rule by code, plain YAML
-- **Validation Operations**: DSL validation requests and results
-- **System Operations**: Constant management, configuration changes
+#### 1. Comprehensive Operation Tracking
+- Rule Definition Operations: Create, update, delete, activate/deactivate
+- Rule Evaluations: Direct YAML, stored rule by code, plain YAML
+- Validation Operations: DSL validation requests and results
+- System Operations: Constant management, configuration changes
 
-#### **2. Detailed Audit Records**
+#### 2. Detailed Audit Records
 Each audit trail record captures:
-- **Operation Metadata**: Type, timestamp, user, IP address, user agent
-- **Request/Response Data**: Full request and response payloads as JSON
-- **Performance Metrics**: Execution time, status codes, success/failure
-- **Business Context**: Rule codes, entity IDs, correlation IDs
-- **Error Information**: Detailed error messages and stack traces
-- **Custom Metadata**: Extensible metadata for business-specific information
+- Operation Metadata: Type, timestamp, user, IP address, user agent
+- Request/Response Data: Full request and response payloads as JSON
+- Performance Metrics: Execution time, status codes, success/failure
+- Business Context: Rule codes, entity IDs, correlation IDs
+- Error Information: Detailed error messages and stack traces
+- Custom Metadata: Extensible metadata for business-specific information
 
-#### **3. Reactive Audit Integration**
+#### 3. Reactive Audit Integration
 The audit system is fully integrated with the reactive architecture:
-- **Non-blocking Operations**: All audit operations use reactive patterns
-- **Proper Error Handling**: Audit failures don't affect business operations
-- **Backpressure Support**: Handles high-volume audit scenarios gracefully
+- Non-blocking Operations: All audit operations use reactive patterns
+- Proper Error Handling: Audit failures don't affect business operations
+- Backpressure Support: Handles high-volume audit scenarios gracefully
 
-### 📊 **Audit Trail Architecture**
+### 📊 Audit Trail Architecture
 
 ```mermaid
 graph TB
@@ -1060,7 +1060,7 @@ graph TB
     style AUDIT_DB fill:#fff3e0
 ```
 
-### 🎯 **Audit Event Types**
+### 🎯 Audit Event Types
 
 | Event Type | Description | Tracked Data |
 |------------|-------------|--------------|
@@ -1072,9 +1072,9 @@ graph TB
 | `RULE_EVALUATION_PLAIN` | Plain YAML evaluation | YAML content, input data, results |
 | `DSL_VALIDATION` | YAML DSL validation | Validation results, errors, suggestions |
 
-### 🔧 **Audit Trail API**
+### 🔧 Audit Trail API
 
-#### **Query Audit Trails**
+#### Query Audit Trails
 ```http
 POST /api/v1/audit/trails
 Content-Type: application/json
@@ -1091,49 +1091,49 @@ Content-Type: application/json
 }
 ```
 
-#### **Get Audit Trail by ID**
+#### Get Audit Trail by ID
 ```http
 GET /api/v1/audit/trails/{auditId}
 ```
 
-#### **Get Recent Trails for Entity**
+#### Get Recent Trails for Entity
 ```http
 GET /api/v1/audit/trails/entity/{entityId}?limit=10
 ```
 
-### 📈 **Compliance and Reporting**
+### 📈 Compliance and Reporting
 
-#### **Regulatory Compliance**
-- **SOX Compliance**: Complete audit trail for financial rule changes
-- **GDPR Compliance**: User activity tracking with data protection
-- **PCI DSS**: Secure audit logging for payment processing rules
-- **Basel III**: Risk management rule audit trails
+#### Regulatory Compliance
+- SOX Compliance: Complete audit trail for financial rule changes
+- GDPR Compliance: User activity tracking with data protection
+- PCI DSS: Secure audit logging for payment processing rules
+- Basel III: Risk management rule audit trails
 
-#### **Business Intelligence**
-- **Rule Usage Analytics**: Track which rules are evaluated most frequently
-- **Performance Monitoring**: Identify slow-performing rules and optimizations
-- **Error Analysis**: Pattern detection in rule failures and validation errors
-- **User Activity**: Monitor rule management activities by user and department
+#### Business Intelligence
+- Rule Usage Analytics: Track which rules are evaluated most frequently
+- Performance Monitoring: Identify slow-performing rules and optimizations
+- Error Analysis: Pattern detection in rule failures and validation errors
+- User Activity: Monitor rule management activities by user and department
 
-#### **Operational Insights**
-- **System Health**: Monitor rule engine performance and reliability
-- **Capacity Planning**: Analyze usage patterns for scaling decisions
-- **Security Monitoring**: Detect unusual access patterns or potential security issues
-- **Change Management**: Track rule evolution and impact analysis
+#### Operational Insights
+- System Health: Monitor rule engine performance and reliability
+- Capacity Planning: Analyze usage patterns for scaling decisions
+- Security Monitoring: Detect unusual access patterns or potential security issues
+- Change Management: Track rule evolution and impact analysis
 
-### 🔒 **Audit Trail Security**
+### 🔒 Audit Trail Security
 
-#### **Data Protection**
-- **Sensitive Data Masking**: Automatic masking of PII in audit records
-- **Encryption at Rest**: Audit data encrypted in database storage
-- **Access Control**: Role-based access to audit trail data
-- **Retention Policies**: Configurable retention periods for compliance
+#### Data Protection
+- Sensitive Data Masking: Automatic masking of PII in audit records
+- Encryption at Rest: Audit data encrypted in database storage
+- Access Control: Role-based access to audit trail data
+- Retention Policies: Configurable retention periods for compliance
 
-#### **Integrity Assurance**
-- **Immutable Records**: Audit trails cannot be modified after creation
-- **Checksums**: Data integrity verification for audit records
-- **Audit of Audits**: Meta-auditing for audit system operations
-- **Backup and Recovery**: Secure backup strategies for audit data
+#### Integrity Assurance
+- Immutable Records: Audit trails cannot be modified after creation
+- Checksums: Data integrity verification for audit records
+- Audit of Audits: Meta-auditing for audit system operations
+- Backup and Recovery: Secure backup strategies for audit data
 
 ## Security Architecture
 
@@ -1145,15 +1145,15 @@ GET /api/v1/audit/trails/entity/{entityId}?limit=10
 
 ### 2. SSRF Protection
 The `RestCallServiceImpl` includes comprehensive URL validation before executing any outbound HTTP request:
-- **Scheme restriction**: Only `http` and `https` schemes are allowed
-- **Private IP blocking**: Loopback, link-local, site-local, and any-local addresses are rejected
-- **Cloud metadata blocking**: Requests to `169.254.169.254` (cloud metadata endpoint) are blocked
-- **Host validation**: URLs without a valid host are rejected
+- Scheme restriction: Only `http` and `https` schemes are allowed
+- Private IP blocking: Loopback, link-local, site-local, and any-local addresses are rejected
+- Cloud metadata blocking: Requests to `169.254.169.254` (cloud metadata endpoint) are blocked
+- Host validation: URLs without a valid host are rejected
 
 ### 3. Safe Code Evaluation
-- **No unsafe reflection**: `ExpressionEvaluator.getPropertyValue()` uses public getter methods only (`getX` / `isX`); `field.setAccessible(true)` is never called. A missing getter throws `IllegalArgumentException` with the class + property name rather than silently returning null.
-- **Division/modulo by zero**: `ExpressionEvaluator` and `ActionExecutor` throw `ArithmeticException` rather than returning null or silently failing.
-- **Short-circuit evaluation**: AND/OR operators use lazy evaluation to prevent unnecessary side effects.
+- No unsafe reflection: `ExpressionEvaluator.getPropertyValue()` uses public getter methods only (`getX` / `isX`); `field.setAccessible(true)` is never called. A missing getter throws `IllegalArgumentException` with the class + property name rather than silently returning null.
+- Division/modulo by zero: `ExpressionEvaluator` and `ActionExecutor` throw `ArithmeticException` rather than returning null or silently failing.
+- Short-circuit evaluation: AND/OR operators use lazy evaluation to prevent unnecessary side effects.
 
 ### 4. Error Handling (Fail-Loud Contract)
 
@@ -1177,7 +1177,7 @@ plausible-but-wrong output.
 | Cache read failure                         | Treated as cache miss; logged via `doOnError`                            |
 
 Surrounding mechanisms:
-- Graceful degradation for missing **optional** constants (with explicit `defaultValue`).
+- Graceful degradation for missing optional constants (with explicit `defaultValue`).
 - Circuit breaker pattern for external dependencies.
 - Comprehensive audit trail (every evaluation logged with correlation ID).
 - Null-safe audit context extraction (defaults to "system" when no web exchange is available).

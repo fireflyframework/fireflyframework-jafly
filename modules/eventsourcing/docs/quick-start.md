@@ -1,13 +1,13 @@
 # Quick Start
 
-Build your first event-sourced application with Firefly in six steps.
+Use event history to reconstruct an aggregate. In an onboarding service, that would mean recording application lifecycle events as the source of truth. The task example below is a separate API illustration; it supplies no HTTP controller or complete host application.
 
 ## Prerequisites
 
-- Java 21+
-- Maven 3.9+
+- JDK 25
+- The repository Maven wrapper
 - PostgreSQL running locally (or use Testcontainers)
-- A Spring Boot 3.x project
+- A Spring Boot 4.1.1 host application
 
 ## Step 1: Add Dependency
 
@@ -15,11 +15,11 @@ Build your first event-sourced application with Firefly in six steps.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eventsourcing</artifactId>
-    <version>26.02.06</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-The library brings in R2DBC, Flyway, Jackson, and Spring Boot Actuator transitively.
+The library brings in R2DBC, Flyway, Jackson, and Spring Boot Actuator transitively. See [installation and version availability](../../../docs/site/installation.md) before selecting the dependency version. Configure the host database and JDBC driver before running migrations.
 
 ## Step 2: Configure R2DBC and Flyway
 
@@ -225,11 +225,11 @@ The `expectedVersion` for `appendEvents`:
 - Use `-1L` when creating a new aggregate (no events exist yet)
 - Use `task.getCurrentVersion() - task.getUncommittedEventCount()` when updating an existing aggregate (this gives the version before the new events were applied)
 
-## Step 6: Run and Verify
+## Step 6: Verify in a configured host
 
 Start your application. Flyway will create the database tables. The `EventTypeRegistry` will scan for `@DomainEvent` classes and register them with Jackson.
 
-Test with a REST controller or a test:
+The following test fixture needs the application configuration, database, test dependencies, and imports supplied by its host:
 
 ```java
 @SpringBootTest

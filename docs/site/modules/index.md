@@ -6,7 +6,7 @@ Each guide explains the component's role, a practical entry path, configuration,
 
 ## Security and identity
 
-Map principals to policy decisions with security contracts, a reactive resource server, method guards, and provider adapters.
+Protect applicant records and reviewer actions. [Follow the security journey](../capabilities/security-and-identity.md) to choose a route or method boundary before adding provider adapters.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ Map principals to policy decisions with security contracts, a reactive resource 
 
 ## Business operations
 
-Dispatch commands and queries through validation, authorization, handlers, and optional event and cache bridges.
+Submit applications and query their status through typed handlers. [Follow the business-operations journey](../capabilities/business-operations.md) from the runnable HTTP service to rule evaluation when needed.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Dispatch commands and queries through validation, authorization, handlers, and o
 
 ## External services
 
-Connect HTTP, SOAP, gRPC, notifications, callbacks, and Agentic through explicit service and provider integrations.
+Connect an identity check, confirmation message, or partner callback. [Follow the external-services journey](../capabilities/external-services.md) to choose one integration and define its failure policy.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ Connect HTTP, SOAP, gRPC, notifications, callbacks, and Agentic through explicit
 
 ## Event-driven integration
 
-Use event contracts and transport adapters for in-process events, Kafka, RabbitMQ, PostgreSQL, and inbound webhooks.
+Let other operations react to an accepted application. [Follow the event-integration journey](../capabilities/event-driven-integration.md) to separate transport delivery, webhook ingestion, and domain history.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -90,7 +90,7 @@ Use event contracts and transport adapters for in-process events, Kafka, RabbitM
 
 ## Domain and data
 
-Choose reactive data helpers, optional event history, cache providers, content storage, and signature adapters.
+Persist the application, retain its history, or store supporting documents. [Follow the data journey](../capabilities/domain-and-data.md) to choose the state model before adding stores and caches.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ Choose reactive data helpers, optional event history, cache providers, content s
 
 ## Business coordination
 
-Coordinate workflows, compensating sagas, and try-confirm-cancel steps with explicit recovery and failure policies.
+Coordinate eligibility checks, capacity reservations, and review steps. [Follow the coordination journey](../capabilities/business-coordination.md) to choose Saga, TCC, or Workflow from the required recovery behavior.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -118,7 +118,7 @@ Coordinate workflows, compensating sagas, and try-confirm-cancel steps with expl
 
 ## Service operations
 
-Connect application telemetry, HTTP conventions, health checks, and centralized configuration.
+Make submission and review outcomes visible to operators. [Follow the operations journey](../capabilities/service-operations.md) to connect application signals to the deployment and its telemetry backend.
 
 | Component | Purpose | Role |
 | --- | --- | --- |
@@ -128,7 +128,7 @@ Connect application telemetry, HTTP conventions, health checks, and centralized 
 
 ## Team-wide architecture
 
-Share a dependency train, build conventions, service-layer starters, common types, validation, and extension contracts.
+Share dependencies and service conventions across teams. [Follow the architecture journey](../capabilities/team-wide-architecture.md) before choosing parent/BOM management, starters, or extension contracts.
 
 | Component | Purpose | Role |
 | --- | --- | --- |

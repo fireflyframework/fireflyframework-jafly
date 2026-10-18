@@ -1,6 +1,6 @@
 # Callback System - Practical Examples
 
-> **Practical guide with real integration examples**
+> Practical guide with real integration examples
 
 ## Table of Contents
 
@@ -243,9 +243,9 @@ global class FireflyWebhookHandler {
 
 ### Zap Configuration
 
-1. **Trigger**: Webhooks by Zapier → Catch Hook
-2. **URL**: Copy from callback configuration
-3. **Action**: Slack → Send Channel Message
+1. Trigger: Webhooks by Zapier → Catch Hook
+2. URL: Copy from callback configuration
+3. Action: Slack → Send Channel Message
 
 ```javascript
 // Zapier Code (optional for data transformation)
@@ -617,5 +617,4 @@ def test_hmac_signature():
 
 ---
 
-**© 2025 Firefly Software Foundation. All rights reserved.**
-
+© 2025 Firefly Software Foundation. All rights reserved.

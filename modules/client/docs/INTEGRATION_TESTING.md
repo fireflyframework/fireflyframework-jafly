@@ -46,7 +46,7 @@ WireMock is used to mock HTTP-based services (REST and SOAP):
 </dependency>
 ```
 
-**Key Features:**
+Key Features:
 - Dynamic port allocation
 - Request matching and verification
 - Scenario-based testing (for retry logic)
@@ -70,7 +70,7 @@ For gRPC testing, we use in-process servers:
 </dependency>
 ```
 
-**Key Features:**
+Key Features:
 - No network overhead
 - Fast test execution
 - Full gRPC feature support
@@ -357,9 +357,9 @@ mvn test -Dtest=SoapClientIntegrationTest
 
 ### GraphQL Helper
 
-**Unit Tests Location:** `src/test/java/org/fireflyframework/common/client/helpers/GraphQLClientHelperTest.java`
+Unit Tests Location: `src/test/java/org/fireflyframework/common/client/helpers/GraphQLClientHelperTest.java`
 
-**Coverage:**
+Coverage:
 - ✅ Query execution
 - ✅ Mutation execution
 - ✅ Variable handling
@@ -370,9 +370,9 @@ mvn test -Dtest=SoapClientIntegrationTest
 
 ### OAuth2 Helper
 
-**Unit Tests Location:** `src/test/java/org/fireflyframework/common/client/helpers/OAuth2ClientHelperTest.java`
+Unit Tests Location: `src/test/java/org/fireflyframework/common/client/helpers/OAuth2ClientHelperTest.java`
 
-**Coverage:**
+Coverage:
 - ✅ Token acquisition
 - ✅ Token caching
 - ✅ Multi-scope support
@@ -382,9 +382,9 @@ mvn test -Dtest=SoapClientIntegrationTest
 
 ### Multipart Upload Helper
 
-**Unit Tests Location:** `src/test/java/org/fireflyframework/common/client/helpers/MultipartUploadHelperTest.java`
+Unit Tests Location: `src/test/java/org/fireflyframework/common/client/helpers/MultipartUploadHelperTest.java`
 
-**Coverage:**
+Coverage:
 - ✅ File upload
 - ✅ Progress tracking
 - ✅ Chunked uploads
@@ -395,9 +395,9 @@ mvn test -Dtest=SoapClientIntegrationTest
 
 ### WebSocket Helper
 
-**Unit Tests Location:** `src/test/java/org/fireflyframework/common/client/helpers/WebSocketClientHelperTest.java`
+Unit Tests Location: `src/test/java/org/fireflyframework/common/client/helpers/WebSocketClientHelperTest.java`
 
-**Coverage:**
+Coverage:
 - ✅ Connection management
 - ✅ Automatic reconnection
 - ✅ Heartbeat/ping-pong
@@ -527,7 +527,7 @@ mvn test -T 4
 | OAuth2 Helper | 17 tests | ✅ 100% |
 | Multipart Helper | 16 tests | ✅ 100% |
 | WebSocket Helper | 20 tests | ✅ 100% |
-| **Total** | **280+ tests** | **✅ 100%** |
+| Total | 280+ tests | ✅ 100% |
 
 ---
 
@@ -548,7 +548,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
       - name: Run Integration Tests
         run: mvn clean test
@@ -600,4 +600,3 @@ StepVerifier.create(result)
 - [OAuth2 Helper Guide](OAUTH2_HELPER.md)
 - [Multipart Upload Helper Guide](MULTIPART_HELPER.md)
 - [WebSocket Helper Guide](WEBSOCKET_HELPER.md)
-

@@ -2,39 +2,53 @@
 
 ![Examples and tutorials](assets/banners/examples.svg)
 
-Start with the HTTP tutorial to learn the command path. For a particular integration, choose the example that uses that provider.
+Follow one customer application from submission to a stored history and coordinated review. Each project runs on its own so its dependencies and failure behavior are visible.
 
-## Continue the onboarding service
+## Follow the learning path
 
-The [first service tutorial](getting-started.md) is the main learning project. It begins with a WebFlux route, submits a customer application through a command handler, then reads it through a query handler. Tests cover valid and invalid HTTP requests. Its complete application runs without providers or credentials.
-
-After that, choose a module for the next requirement in your service. The provider examples below are separate projects with their own setup; they are not required by the onboarding application.
-
-## Choose an example
-
-| Goal | Entry point | Build boundary |
+| Step | Project | What to observe |
 | --- | --- | --- |
-| Start a small HTTP application | [Getting started](getting-started.md#begin-with-http) | Separate application using a locally installed framework train |
-| Explore the complete HTTP client | [Complete client example](modules/client-complete-example.md) | Standalone application outside the root reactor |
-| Connect a Java service to Agentic | [Agentic bridge samples](modules/agentic-bridge-samples.md) | Source sample included in the reactor; not published |
-| Learn commands and handlers | [CQRS guide](modules/cqrs.md) | Library tests and example source linked from the guide |
-| Choose a provider integration | [Module catalog](modules/index.md) | Provider-specific prerequisites and tests |
+| 1. Accept an application | [Your first service](getting-started.md) | Submit over HTTP, read through QueryBus, reject invalid input, and return 404 for an unknown ID |
+| 2. Retain its history | [Onboarding event store](guides/onboarding-event-store.md) | Append and reconstruct typed events in PostgreSQL, reject a stale writer, and roll back an invalid batch |
+| 3. Coordinate a review | [Onboarding coordination](guides/onboarding-coordination.md) | Exercise Saga compensation, TCC confirmation/cancellation, and ordered Workflow steps with controlled providers |
 
-## Run examples against the current source
+The HTTP project uses an application-owned in-memory repository. The event-store project uses a real PostgreSQL Testcontainers database. The coordination project uses the real framework engines with in-memory provider implementations. They demonstrate separate boundaries; no project silently turns the others into a distributed transaction.
 
-Install the framework before building a standalone example:
+The source and test locations are:
+
+- [`docs/examples/getting-started`](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/docs/examples/getting-started)
+- [`docs/examples/onboarding-event-store`](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/docs/examples/onboarding-event-store)
+- [`docs/examples/onboarding-coordination`](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/docs/examples/onboarding-coordination)
+
+## Run the projects
+
+Use JDK 25 and install the framework first. Docker is required for the full framework tests and the PostgreSQL event-store example:
 
 ```sh
 ./mvnw -B -ntp install
-./mvnw -B -ntp -f modules/client/examples/complete-example/pom.xml verify
+./mvnw -B -ntp -f docs/examples/getting-started/pom.xml clean verify
+./mvnw -B -ntp -f docs/examples/onboarding-event-store/pom.xml clean verify
+./mvnw -B -ntp -f docs/examples/onboarding-coordination/pom.xml clean verify
 ```
 
-A standalone example can compile successfully while still needing provider configuration to run. Read its README before starting external services or supplying credentials.
+Use the individual guides for the HTTP run command and expected responses. Do not supply production credentials or customer data to these examples.
 
-## Follow a component guide
+## Extend one capability
 
-Module guides link to the relevant source and examples. Check names and signatures against the version you are using.
+Choose the next requirement from the [capability journeys](index.md#find-the-layer-your-service-needs). The journeys explain the smallest component choice and link to its configuration and test sources.
 
-For CQRS, `CommandBus.send(Command<R>)` returns `Mono<R>`. Handlers extend `CommandHandler<C, R>`. The command pipeline is reactive; durability and idempotency depend on the persistence implementation and policies you add to the application.
+| Requirement | Entry point | Setup boundary |
+| --- | --- | --- |
+| Protect customer records | [Security and identity](capabilities/security-and-identity.md) | Trusted issuer, keys, policy, and service-specific access tests |
+| Call another service | [External services](capabilities/external-services.md) | Provider endpoint, credentials, and repeat/failure policy |
+| Publish or receive integration events | [Event-driven integration](capabilities/event-driven-integration.md) | Transport or webhook configuration and delivery tests |
+| Add persistent state or documents | [Domain and data](capabilities/domain-and-data.md) | Schema, store, retention, and access configuration |
+| Inspect runtime outcomes | [Service operations](capabilities/service-operations.md) | Endpoint exposure, exporters, and operational backend |
 
-The [Java by example book](https://github.com/fireflyframework/fireflyframework-java-book) remains a separate repository. Match the book's sample dependency train to the framework version used in your checkout.
+The [complete client example](modules/client-complete-example.md) and [Agentic bridge samples](modules/agentic-bridge-samples.md) are additional applications with their own setup. A compile or library test does not establish access to a real provider. Check each example's README before starting services or supplying credentials.
+
+## Read reference fragments in context
+
+Module guides also contain scoped API fragments. They show a contract or integration point and identify the application-owned collaborators needed around it. Use the matching source version when copying a fragment; a snippet from a provider guide is not automatically part of the runnable onboarding service.
+
+The [Java by example book](https://github.com/fireflyframework/fireflyframework-java-book) is a separate repository. Match its sample dependency train to the framework version you are using.

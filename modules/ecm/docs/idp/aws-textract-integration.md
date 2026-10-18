@@ -1,5 +1,7 @@
 # AWS Textract Integration Guide
 
+This guide is an implementation blueprint for a custom document-processing adapter. Jafly supplies the processing ports but no adapter artifact for this provider. Implement and wire the required [processing contracts](../api/README.md#ports) before using provider configuration in an application.
+
 ## Overview
 
 This guide provides step-by-step instructions for integrating Amazon Textract with the Firefly OpenCore Platform ECM library. AWS Textract is a machine learning service that automatically extracts text, handwriting, and data from scanned documents.
@@ -8,8 +10,8 @@ This guide provides step-by-step instructions for integrating Amazon Textract wi
 
 - AWS Account with Textract service access
 - AWS CLI configured or IAM credentials available
-- Java 21 or higher
-- Spring Boot 3.x application
+- Java 25 or higher
+- Spring Boot 4.1.1 application
 
 ## Step 1: AWS Setup
 
@@ -137,7 +139,7 @@ export AWS_DEFAULT_REGION=us-east-1
 
 ## Step 4: Adapter Implementation
 
-**Note: The AWS Textract adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.**
+Note: The AWS Textract adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.
 
 Here's how you would implement the AWS Textract adapter for all four IDP port interfaces:
 
@@ -343,13 +345,13 @@ public class TextractMetrics {
 ### 6.3 Common Issues and Solutions
 
 #### Issue: "Access Denied" Error
-**Solution**: Verify IAM permissions and ensure the S3 bucket policy allows access.
+Solution: Verify IAM permissions and ensure the S3 bucket policy allows access.
 
 #### Issue: "Document too large" Error
-**Solution**: Enable asynchronous processing for documents larger than 5MB.
+Solution: Enable asynchronous processing for documents larger than 5MB.
 
 #### Issue: Low confidence scores
-**Solution**: Ensure document quality is good and adjust confidence thresholds.
+Solution: Ensure document quality is good and adjust confidence thresholds.
 
 ## Step 7: Advanced Configuration
 

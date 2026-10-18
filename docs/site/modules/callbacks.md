@@ -55,6 +55,8 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Run the service
@@ -62,7 +64,7 @@ The Java examples in this section are API fragments for application code. Use th
 Build the aggregator and start the web module against a PostgreSQL database and a Kafka broker:
 
 ```bash
-./mvnw -pl :fireflyframework-callbacks -am install
+./mvnw -pl :fireflyframework-callbacks,:fireflyframework-callbacks-core,:fireflyframework-callbacks-interfaces,:fireflyframework-callbacks-models,:fireflyframework-callbacks-sdk,:fireflyframework-callbacks-web -am install
 ./mvnw -f modules/callbacks/fireflyframework-callbacks-web/pom.xml spring-boot:run
 ```
 
@@ -117,6 +119,7 @@ curl -X POST http://localhost:8080/api/v1/event-subscriptions \
 If you embed the core module, dispatching is a reactive call that takes a resolved configuration, the event metadata, and a JSON payload:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.callbacks.core.service.CallbackDispatcher;
 import org.fireflyframework.callbacks.interfaces.dto.CallbackConfigurationDTO;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -124,13 +127,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class OrderNotifier {
 
     private final CallbackDispatcher dispatcher;
 
-    public OrderNotifier(CallbackDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
-    }
+
 
     public Mono<Void> notify(CallbackConfigurationDTO config, UUID eventId, JsonNode payload) {
         // Validates the domain, signs the payload, retries, and records the execution.
@@ -150,8 +152,8 @@ Use Java 25. From the repository root, build this component with its required de
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-callbacks -am verify
-./mvnw -pl :fireflyframework-callbacks -am install
+./mvnw -pl :fireflyframework-callbacks,:fireflyframework-callbacks-core,:fireflyframework-callbacks-interfaces,:fireflyframework-callbacks-models,:fireflyframework-callbacks-sdk,:fireflyframework-callbacks-web -am verify
+./mvnw -pl :fireflyframework-callbacks,:fireflyframework-callbacks-core,:fireflyframework-callbacks-interfaces,:fireflyframework-callbacks-models,:fireflyframework-callbacks-sdk,:fireflyframework-callbacks-web -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

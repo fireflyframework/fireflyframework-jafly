@@ -87,10 +87,21 @@ extra:
       name: Framework by Firefly
 nav:
   - Home: index.md
-  - Get started:
-      - getting-started.md
-      - installation.md
-      - examples.md
+  - Learning path:
+      - "Installation": installation.md
+      - "Your first service": getting-started.md
+      - "Keep an onboarding history": guides/onboarding-event-store.md
+      - "Coordinate an onboarding application": guides/onboarding-coordination.md
+      - "Examples and tutorials": examples.md
+  - Capabilities:
+      - "Security and identity": capabilities/security-and-identity.md
+      - "Business operations": capabilities/business-operations.md
+      - "External services": capabilities/external-services.md
+      - "Event-driven integration": capabilities/event-driven-integration.md
+      - "Domain and data": capabilities/domain-and-data.md
+      - "Business coordination": capabilities/business-coordination.md
+      - "Service operations": capabilities/service-operations.md
+      - "Team-wide architecture": capabilities/team-wide-architecture.md
   - Architecture:
       - architecture.md
       - maven.md
@@ -164,9 +175,9 @@ nav:
           - "Enterprise content management": modules/ecm.md
           - "Cache: Hazelcast": modules/cache-hazelcast.md
           - "Cache: JCache": modules/cache-jcache.md
-          - "Cache: postgres": modules/cache-postgres.md
+          - "Cache: Postgres": modules/cache-postgres.md
           - "Cache: Redis": modules/cache-redis.md
-          - "ECM storage: AWS (s3)": modules/ecm-storage-aws.md
+          - "ECM storage: AWS S3": modules/ecm-storage-aws.md
           - "ECM storage: Azure Blob": modules/ecm-storage-azure.md
           - "ECM eSignature: Adobe Sign": modules/ecm-esignature-adobe-sign.md
           - "ECM eSignature: DocuSign": modules/ecm-esignature-docusign.md

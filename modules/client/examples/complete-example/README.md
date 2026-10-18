@@ -64,7 +64,9 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 ## Continue the application
 
-Use the [Client guide](../../../../docs/site/modules/client.md) for the next part of this integration. ## Build and validation
+Use the [Client guide](../../../../docs/site/modules/client.md) for the next part of this integration.
+
+## Build and validation
 
 Build the client dependency first, then build the standalone example:
 

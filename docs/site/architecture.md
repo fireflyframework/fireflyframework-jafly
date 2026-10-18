@@ -56,14 +56,14 @@ These illustrations group capabilities. Their positions carry no meaning about r
 
 | Capability | Start with | Design decision |
 | --- | --- | --- |
-| Security and identity | [Security API](modules/security-api.md), [resource server](modules/security-resource-server.md), [policy adapters](modules/index.md#security-and-identity) | Which principal and policy source may authorize an operation? |
-| Business operations | [CQRS](modules/cqrs.md), [business rules](modules/rule-engine.md) | Where do validation, authorization, and business decisions belong? |
-| External services | [Client](modules/client.md), [notifications](modules/notifications.md), [callbacks](modules/callbacks.md), [agentic bridge](modules/agentic-bridge.md) | Which provider contract and retry behavior fit this call? |
-| Event-driven integration | [EDA](modules/eda.md), [webhooks](modules/webhooks.md) | Which transport, envelope, and delivery behavior does the service need? |
-| Domain and data | [R2DBC](modules/r2dbc.md), [event sourcing](modules/eventsourcing.md), [cache](modules/cache.md), [ECM](modules/ecm.md) | What is persisted, cached, reconstructed, or retained? |
-| Business coordination | [Orchestration](modules/orchestration.md) | Which steps, compensations, and recovery checks define the operation? |
-| Service operations | [Observability](modules/observability.md), [web](modules/web.md), [configuration](modules/config-server.md) | Which metrics, traces, HTTP conventions, and configuration does the service operate? |
-| Team-wide architecture | [Parent/BOM](maven.md), [starters](modules/index.md#team-wide-architecture), [kernel](modules/kernel.md), [plugins](modules/plugins.md) | Which shared contracts and dependency conventions should teams adopt? |
+| [Security and identity](capabilities/security-and-identity.md) | [Security API](modules/security-api.md), [resource server](modules/security-resource-server.md), [policy adapters](modules/index.md#security-and-identity) | Which principal and policy source may authorize an operation? |
+| [Business operations](capabilities/business-operations.md) | [CQRS](modules/cqrs.md), [business rules](modules/rule-engine.md) | Where do validation, authorization, and business decisions belong? |
+| [External services](capabilities/external-services.md) | [Client](modules/client.md), [notifications](modules/notifications.md), [callbacks](modules/callbacks.md), [agentic bridge](modules/agentic-bridge.md) | Which provider contract and retry behavior fit this call? |
+| [Event-driven integration](capabilities/event-driven-integration.md) | [EDA](modules/eda.md), [webhooks](modules/webhooks.md) | Which transport, envelope, and delivery behavior does the service need? |
+| [Domain and data](capabilities/domain-and-data.md) | [R2DBC](modules/r2dbc.md), [event sourcing](modules/eventsourcing.md), [cache](modules/cache.md), [ECM](modules/ecm.md) | What is persisted, cached, reconstructed, or retained? |
+| [Business coordination](capabilities/business-coordination.md) | [Orchestration](modules/orchestration.md) | Which steps, compensations, and recovery checks define the operation? |
+| [Service operations](capabilities/service-operations.md) | [Observability](modules/observability.md), [web](modules/web.md), [configuration](modules/config-server.md) | Which metrics, traces, HTTP conventions, and configuration does the service operate? |
+| [Team-wide architecture](capabilities/team-wide-architecture.md) | [Parent/BOM](maven.md), [starters](modules/index.md#team-wide-architecture), [kernel](modules/kernel.md), [plugins](modules/plugins.md) | Which shared contracts and dependency conventions should teams adopt? |
 
 ## Check each provider's behavior
 

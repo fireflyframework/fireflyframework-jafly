@@ -2,7 +2,7 @@
 
 Real-world usage examples for `fireflyframework-starter-data`.
 
-> **Note**: These examples demonstrate usage patterns and integration scenarios. Some examples reference external services (cache, database, SAGA orchestrator) that are not part of this starter but show how to integrate fireflyframework-starter-data with other components in your application.
+> Note: These examples demonstrate usage patterns and integration scenarios. Some examples reference external services (cache, database, SAGA orchestrator) that are not part of this starter but show how to integrate fireflyframework-starter-data with other components in your application.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ Real-world usage examples for `fireflyframework-starter-data`.
 
 Complete example of extracting customer data:
 
-**1. Define DTO**
+1. Define DTO
 
 ```java
 package com.example.dto;
@@ -40,7 +40,7 @@ public class CustomerDTO {
 }
 ```
 
-**2. Create Mapper**
+2. Create Mapper
 
 ```java
 package com.example.mapper;
@@ -70,7 +70,7 @@ public interface CustomerDataMapper extends JobResultMapper<Map<String, Object>,
 }
 ```
 
-**3. Create Service**
+3. Create Service
 
 ```java
 package com.example.service;
@@ -140,7 +140,7 @@ public class CustomerDataJobService {
 }
 ```
 
-**4. Create Controller**
+4. Create Controller
 
 ```java
 package com.example.controller;
@@ -165,13 +165,13 @@ public class CustomerDataController {
 }
 ```
 
-**5. Test**
+5. Test
 
 ```bash
 curl http://localhost:8080/api/v1/customers/12345/data
 ```
 
-**Response:**
+Response:
 ```json
 {
   "customerId": "12345",
@@ -308,7 +308,7 @@ public class RobustDataJobService {
 
 ### Example 5: Graceful Degradation
 
-> **Note**: This example shows integration with external services (cache, database) that you would implement in your application.
+> Note: This example shows integration with external services (cache, database) that you would implement in your application.
 
 ```java
 @Service
@@ -367,7 +367,7 @@ public class FallbackDataService {
 
 ## Event-Driven Workflows
 
-> **Note**: These examples show integration with event publishing. The `EventPublisher` would be from `fireflyframework-eda` or your own event publishing implementation.
+> Note: These examples show integration with event publishing. The `EventPublisher` would be from `fireflyframework-eda` or your own event publishing implementation.
 
 ### Example 6: Event-Driven Job Processing
 
@@ -492,7 +492,7 @@ public class CustomerDataEventListener {
 
 ## SAGA Integration
 
-> **Note**: This example demonstrates integration with `fireflyframework-orchestration` (orchestration engine). The `SagaEngine`, `Saga`, and `Step` classes are from that module, not from fireflyframework-starter-data. The orchestration module provides its own `EventGateway` for EDA bridging.
+> Note: This example demonstrates integration with `fireflyframework-orchestration` (orchestration engine). The `SagaEngine`, `Saga`, and `Step` classes are from that module, not from fireflyframework-starter-data. The orchestration module provides its own `EventGateway` for EDA bridging.
 
 ### Example 8: Multi-Step Data Processing SAGA
 
@@ -617,7 +617,7 @@ public class BatchDataJobService {
 
 ### Example 10: Caching Results
 
-> **Note**: This example uses Spring's caching abstraction. Configure your cache provider (Redis, Caffeine, etc.) separately.
+> Note: This example uses Spring's caching abstraction. Configure your cache provider (Redis, Caffeine, etc.) separately.
 
 ```java
 @Service
@@ -656,4 +656,3 @@ public class CachedDataJobService {
 - [Mappers](mappers.md) - Transformation patterns
 - [SAGA Integration](../data-jobs/guide.md#saga-and-step-events) - SAGA examples
 - [Testing](testing.md) - Testing strategies
-

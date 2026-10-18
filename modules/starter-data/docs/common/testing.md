@@ -17,10 +17,10 @@ Comprehensive testing strategies for `fireflyframework-starter-data`.
 
 Testing data jobs requires different strategies depending on what you're testing:
 
-- **Unit Tests** - Test individual components in isolation
-- **Integration Tests** - Test complete workflows with real dependencies
-- **Contract Tests** - Verify API contracts
-- **End-to-End Tests** - Test complete user scenarios
+- Unit Tests - Test individual components in isolation
+- Integration Tests - Test complete workflows with real dependencies
+- Contract Tests - Verify API contracts
+- End-to-End Tests - Test complete user scenarios
 
 ---
 
@@ -219,7 +219,7 @@ class CustomerDataControllerTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @MockBean
+    @MockitoBean
     private CustomerDataJobService customerDataJobService;
 
     @Test
@@ -609,4 +609,3 @@ void shouldRetryOnTransientFailure() {
 - [Examples](examples.md) - Complete code examples
 - [Getting Started](getting-started.md) - Setup guide
 - [Reactor Testing Documentation](https://projectreactor.io/docs/test/release/reference/) - Official Reactor testing docs
-

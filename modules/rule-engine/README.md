@@ -38,6 +38,8 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Embedded library usage
@@ -94,14 +96,16 @@ public class CreditCheckService {
 Persist rule definitions and evaluate them by stable `code` (each evaluation is audited automatically):
 
 ```java
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class DecisionService {
 
     private final RulesEvaluationService evaluationService;
 
-    public DecisionService(RulesEvaluationService evaluationService) {
-        this.evaluationService = evaluationService;
-    }
+
 
     public Mono<RulesEvaluationResponseDTO> decide(Map<String, Object> inputData,
                                                    ServerWebExchange exchange) {
@@ -144,15 +148,17 @@ This POM has no runtime configuration namespace. Configure the selected child li
 
 ## Continue the application
 
-Use the [Rule Engine Core guide](../../docs/site/modules/rule-engine-core.md) for the next part of this integration. ## Build and validation
+Use the [Rule Engine Core guide](../../docs/site/modules/rule-engine-core.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-rule-engine -am verify
-./mvnw -pl :fireflyframework-rule-engine -am install
+./mvnw -pl :fireflyframework-rule-engine,:fireflyframework-rule-engine-core,:fireflyframework-rule-engine-interfaces,:fireflyframework-rule-engine-models,:fireflyframework-rule-engine-sdk,:fireflyframework-rule-engine-web -am verify
+./mvnw -pl :fireflyframework-rule-engine,:fireflyframework-rule-engine-core,:fireflyframework-rule-engine-interfaces,:fireflyframework-rule-engine-models,:fireflyframework-rule-engine-sdk,:fireflyframework-rule-engine-web -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

@@ -26,6 +26,8 @@ Manage applicant identities in the configured Keycloak realm. Set its server and
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Select the Keycloak provider and point it at your server (`application.yaml`):
@@ -45,6 +47,7 @@ firefly:
 2. Inject the `IdpAdapter` and call it. The same provider-agnostic API works for every IDP backend:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
 import org.fireflyframework.security.idp.dtos.LoginRequest;
 import org.fireflyframework.security.idp.dtos.TokenResponse;
@@ -53,13 +56,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final IdpAdapter idp;
 
-    public AuthService(IdpAdapter idp) {
-        this.idp = idp;
-    }
+
 
     public Mono<ResponseEntity<TokenResponse>> login(String username, String password) {
         LoginRequest request = new LoginRequest();
@@ -91,7 +93,9 @@ The `firefly.security.idp.keycloak` namespace is bound by [KeycloakProperties.ja
 
 ## Continue the application
 
-Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration. ## Build and validation
+Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

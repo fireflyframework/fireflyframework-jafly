@@ -30,56 +30,24 @@ Background document enrichment or verification jobs may need the data-job and pr
 
 ## Quick start
 
-The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
+A verification-job HTTP boundary can delegate to an application-supplied `DataJobService`. This is an API class, not a complete data provider. Register a service bean implementing START, CHECK, COLLECT, RESULT, and STOP, and configure its orchestrator/provider dependencies.
 
 ```java
-import org.fireflyframework.data.service.AbstractResilientDataJobService;
 import org.fireflyframework.data.controller.AbstractDataJobController;
+import org.fireflyframework.data.service.DataJobService;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/data-jobs")
-public class MyDataJobController extends AbstractDataJobController<MyRequest, MyResponse> {
-
-    public MyDataJobController(DataJobService<MyRequest, MyResponse> service) {
+@RequestMapping("/api/verification-jobs")
+public class VerificationJobController extends AbstractDataJobController {
+    public VerificationJobController(DataJobService service) {
         super(service);
     }
 }
-
-@Service
-public class MyDataJobService extends AbstractResilientDataJobService {
-
-    @Override
-    protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
-        return processData(request)
-            .map(result -> JobStageResponse.success(
-                JobStage.START, request.getExecutionId(), "Job completed"));
-    }
-
-    @Override
-    protected Mono<JobStageResponse> doCheckJob(JobStageRequest request) {
-        return Mono.just(JobStageResponse.success(
-            JobStage.CHECK, request.getExecutionId(), "Job is running"));
-    }
-
-    @Override
-    protected Mono<JobStageResponse> doCollectJobResults(JobStageRequest request) {
-        return Mono.just(JobStageResponse.success(
-            JobStage.COLLECT, request.getExecutionId(), "Results collected"));
-    }
-
-    @Override
-    protected Mono<JobStageResponse> doGetJobResult(JobStageRequest request) {
-        return Mono.just(JobStageResponse.success(
-            JobStage.RESULT, request.getExecutionId(), "Result retrieved"));
-    }
-
-    @Override
-    protected Mono<JobStageResponse> doStopJob(JobStageRequest request, String reason) {
-        return Mono.just(JobStageResponse.success(
-            JobStage.STOP, request.getExecutionId(), "Job stopped"));
-    }
-}
 ```
+
+`AbstractDataJobController` and `DataJobService` have no generic parameters. To use `AbstractResilientDataJobService`, supply its tracing, metrics, and resiliency collaborators through a supported constructor and implement the protected lifecycle methods. The starter does not create those business operations for the application.
 
 ## Configuration and wiring
 
@@ -218,10 +186,10 @@ void generateKey_shouldProduceDifferentKeysForDifferentProviders() {
 ```yaml
 firefly:
   data:
-    job-orchestration:
-      enabled: true
-      max-concurrent-jobs: 10
+    orchestration:
+      enabled: false
     enrichment:
+      enabled: true
       cache-enabled: true
       cache-ttl-seconds: 300
       operations:
@@ -229,15 +197,11 @@ firefly:
         cache-ttl-seconds: 600
     quality:
       enabled: true
-      fail-fast: false
     lineage:
       enabled: true
-    persistence:
-      enabled: true
-    observability:
-      metrics-enabled: true
-      tracing-enabled: true
 ```
+
+This example enables enrichment, quality-rule discovery, and the default in-memory lineage tracker. Register application-owned enrichers and quality rules; lineage records are lost on restart. Job orchestration is disabled here. To add it, supply a `JobOrchestrator` and configure `firefly.data.orchestration`; its observability and persistence settings live under that same namespace.
 
 ## Continue the application
 

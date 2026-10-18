@@ -10,7 +10,7 @@ behind TLS and gated by API keys or bearer tokens.
 
 ## Transport security
 
-- **HTTPS / WSS** is the default; configure `base-url` with `https://`
+- HTTPS / WSS is the default; configure `base-url` with `https://`
   and the WebSocket transport will automatically negotiate over `wss://`.
 - Set `firefly.agentic-bridge.primary.require-tls=true` in production to
   fail fast at startup if the configured `base-url` is plaintext.
@@ -38,8 +38,8 @@ Auto-configuration binds the YAML `auth` block to one of these via the
 
 - Token values are never logged at INFO. DEBUG logs redact tokens to the
   last four characters.
-- Suppliers are evaluated on **every request** so token refresh requires
-  no client rebuild — wire `AuthStrategy.bearer(oauth2Helper::currentToken)`
+- Suppliers are evaluated on every request so token refresh requires
+  no client rebuild. Wire `AuthStrategy.bearer(oauth2Helper::currentToken)`
   to the existing `OAuth2ClientHelper` in `fireflyframework-client`.
 
 ## CORS / origin checks

@@ -18,12 +18,12 @@ The DocuSign adapter provides eSignature capabilities using DocuSign as the back
 
 Before integrating the DocuSign adapter, ensure you have:
 
-1. **DocuSign Developer Account**: A DocuSign developer account with API access
-2. **Integration Key**: A DocuSign integration key (client ID)
-3. **RSA Key Pair**: An RSA key pair for JWT authentication
-4. **User Consent**: User consent granted for the integration
-5. **Java 21+**: The ECM library requires Java 21 or higher
-6. **Spring Boot 3.0+**: Compatible Spring Boot version
+1. DocuSign Developer Account: A DocuSign developer account with API access
+2. Integration Key: A DocuSign integration key (client ID)
+3. RSA Key Pair: An RSA key pair for JWT authentication
+4. User Consent: User consent granted for the integration
+5. Java 25: The ECM library requires Java 25 or higher
+6. Spring Boot 4.1.1: Compatible Spring Boot version
 
 ## Step 1: Set Up DocuSign Developer Account
 
@@ -35,8 +35,8 @@ Before integrating the DocuSign adapter, ensure you have:
 
 ### Create Integration Key
 
-1. Navigate to **Apps and Keys**
-2. Click **Add App and Integration Key**
+1. Navigate to Apps and Keys
+2. Click Add App and Integration Key
 3. Enter application details
 4. Generate an RSA key pair
 5. Save the integration key and private key
@@ -59,15 +59,15 @@ Add the DocuSign adapter dependency to your `pom.xml`:
     <!-- Core ECM Library -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
-        <artifactId>fireflyframework-ecm-core</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>fireflyframework-ecm</artifactId>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
 
     <!-- DocuSign Adapter -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
-        <artifactId>fireflyframework-ecm-adapter-docusign</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
@@ -76,15 +76,15 @@ Add the DocuSign adapter dependency to your `pom.xml`:
 
 The DocuSign adapter automatically includes all required dependencies:
 
-- **DocuSign eSign Java SDK** (`docusign-esign-java:4.3.0`)
-- **JAX-RS API** (`jakarta.ws.rs-api:3.1.0`) - For REST client compatibility
-- **Jersey Client** (`jersey-client:3.1.3`) - HTTP client implementation
-- **Jersey Media JSON** (`jersey-media-json-jackson:3.1.3`) - JSON processing
-- **Jersey HK2** (`jersey-hk2:3.1.3`) - Dependency injection
-- **Jersey Multipart** (`jersey-media-multipart:3.1.3`) - Multipart support
-- **Apache Oltu OAuth2** (`org.apache.oltu.oauth2.client:1.0.2`) - OAuth2 authentication
+- DocuSign eSign Java SDK (`docusign-esign-java:4.3.0`)
+- JAX-RS API (`jakarta.ws.rs-api:3.1.0`) - For REST client compatibility
+- Jersey Client (`jersey-client:3.1.3`) - HTTP client implementation
+- Jersey Media JSON (`jersey-media-json-jackson:3.1.3`) - JSON processing
+- Jersey HK2 (`jersey-hk2:3.1.3`) - Dependency injection
+- Jersey Multipart (`jersey-media-multipart:3.1.3`) - Multipart support
+- Apache Oltu OAuth2 (`org.apache.oltu.oauth2.client:1.0.2`) - OAuth2 authentication
 
-> **Note**: All transitive dependencies are automatically managed by the parent POM. No additional configuration is required.
+> Note: All transitive dependencies are automatically managed by the parent POM. No additional configuration is required.
 
 ## Step 3: Configure DocuSign Credentials
 
@@ -296,7 +296,7 @@ public class DocuSignWebhookController {
 ### Configure Webhook in DocuSign
 
 1. Go to DocuSign Admin panel
-2. Navigate to **Integrations** > **Webhooks**
+2. Navigate to Integrations > Webhooks
 3. Create a new webhook with your endpoint URL
 4. Configure events to monitor (envelope status changes)
 
@@ -340,10 +340,10 @@ public class DocuSignTestConfig {
 
 ### Security Considerations
 
-1. **Secure Private Key Storage**: Use secure key management services
-2. **Webhook Security**: Implement proper signature verification
-3. **Network Security**: Use HTTPS for all communications
-4. **Access Control**: Implement proper authentication and authorization
+1. Secure Private Key Storage: Use secure key management services
+2. Webhook Security: Implement proper signature verification
+3. Network Security: Use HTTPS for all communications
+4. Access Control: Implement proper authentication and authorization
 
 ### Monitoring and Logging
 
@@ -382,9 +382,9 @@ public class DocuSignHealthIndicator implements HealthIndicator {
 
 #### Dependency Resolution Errors
 
-**Problem**: `NoClassDefFoundError` for JAX-RS, Jersey, or OAuth2 classes
+Problem: `NoClassDefFoundError` for JAX-RS, Jersey, or OAuth2 classes
 
-**Solution**: The DocuSign adapter automatically includes all required dependencies:
+Solution: The DocuSign adapter automatically includes all required dependencies:
 - JAX-RS API (`jakarta.ws.rs-api:3.1.0`)
 - Jersey Client (`jersey-client:3.1.3`)
 - Jersey Media JSON (`jersey-media-json-jackson:3.1.3`)
@@ -396,16 +396,16 @@ If you encounter dependency conflicts, ensure you're using the latest version of
 
 #### Test Execution Issues
 
-**Problem**: Mockito cannot mock ApiClient class
+Problem: Mockito cannot mock ApiClient class
 
-**Solution**: The test framework uses real ApiClient instances with mocked EnvelopesApi for better reliability.
+Solution: The test framework uses real ApiClient instances with mocked EnvelopesApi for better reliability.
 
 #### Configuration Issues
 
-1. **Authentication Errors**: Check integration key, user ID, and private key
-2. **User Consent Required**: Complete the consent process
-3. **Account Access Denied**: Verify account ID and user permissions
-4. **Webhook Failures**: Check endpoint accessibility and signature verification
+1. Authentication Errors: Check integration key, user ID, and private key
+2. User Consent Required: Complete the consent process
+3. Account Access Denied: Verify account ID and user permissions
+4. Webhook Failures: Check endpoint accessibility and signature verification
 
 ### Debug Logging
 
@@ -418,34 +418,22 @@ logging:
     com.docusign.esign: DEBUG
 ```
 
-## Quality Assurance & Testing
+## Test the configured adapter
 
-The DocuSign adapter maintains **100% test success rate** with comprehensive coverage:
-
-### Test Coverage
-- **10/10 tests passing** ✅
-- **Complete workflow testing**: Envelope creation, status sync, signing URLs
-- **Error handling scenarios**: API failures, authentication issues, timeout handling
-- **Dependency integration**: All transitive dependencies properly resolved
-
-### Testing Infrastructure
-- **Real ApiClient instances** for better integration testing
-- **Mocked EnvelopesApi** for isolated unit testing
-- **Comprehensive error simulation** for robust error handling validation
-- **Reactive stream testing** using StepVerifier for async operations
+Use the [current test sources](../../../ecm-esignature-docusign/src/test) and the reports from the actual build. Mocked-client tests check their declared request/response cases; they do not establish live-provider acceptance or a permanent success rate. Configure and test credentials, account permissions, and provider failures separately.
 
 ## Best Practices
 
-1. **Use Sandbox for Development**: Always test in sandbox environment first
-2. **Implement Webhooks**: Use webhooks for real-time status updates
-3. **Handle Rate Limits**: Implement proper retry logic for API calls
-4. **Secure Credentials**: Never hardcode credentials in source code
-5. **Monitor Usage**: Track API usage to avoid limits
-6. **Error Handling**: Implement comprehensive error handling
-7. **Dependencies**: Rely on automatic dependency management for seamless integration
+1. Use Sandbox for Development: Always test in sandbox environment first
+2. Implement Webhooks: Use webhooks for real-time status updates
+3. Handle Rate Limits: Implement proper retry logic for API calls
+4. Secure Credentials: Never hardcode credentials in source code
+5. Monitor Usage: Track API usage to avoid limits
+6. Error Handling: Implement error handling
+7. Dependencies: Rely on automatic dependency management for seamless integration
 
 ## Next Steps
 
 - [S3 Integration Guide](s3-integration-guide.md)
 - [Configuration Reference](../configuration-reference.md)
-- [API Documentation](../api-reference.md)
+- [ECM API contracts](../api/README.md)

@@ -2,25 +2,25 @@
 
 # Part V: Core Infrastructure
 
-**Contents:**
-- [§25 ExecutionContext](#25-executioncontext)
-- [§26 Argument Injection (Parameter Resolution)](#26-argument-injection-parameter-resolution)
-- [§27 RetryPolicy](#27-retrypolicy)
-- [§28 Event Integration](#28-event-integration)
-- [§29 Scheduling](#29-scheduling)
-- [§30 Lifecycle Callbacks](#30-lifecycle-callbacks)
-- [§31 Persistence](#31-persistence)
-- [§32 Dead-Letter Queue](#32-dead-letter-queue)
-- [§33 Recovery Service](#33-recovery-service)
-- [§34 Observability: Events Interface](#34-observability-events-interface)
-- [§35 Observability: Metrics & Tracing](#35-observability-metrics--tracing)
-- [§36 Topology & DAG Execution](#36-topology--dag-execution)
-- [§37 REST API](#37-rest-api)
-- [§38 Backpressure Strategies](#38-backpressure-strategies)
-- [§39 Execution Reporting](#39-execution-reporting)
-- [§40 Validation Framework](#40-validation-framework)
-- [§41 Metrics Endpoint](#41-metrics-endpoint)
-- [§42 Event Sourcing](#42-event-sourcing)
+Contents:
+- [§25 ExecutionContext](#28-executioncontext)
+- [§26 Argument Injection (Parameter Resolution)](#29-argument-injection-parameter-resolution)
+- [§27 RetryPolicy](#30-retrypolicy)
+- [§28 Event Integration](#31-event-integration)
+- [§29 Scheduling](#32-scheduling)
+- [§30 Lifecycle Callbacks](#33-lifecycle-callbacks)
+- [§31 Persistence](#34-persistence)
+- [§32 Dead-Letter Queue](#35-dead-letter-queue)
+- [§33 Recovery Service](#36-recovery-service)
+- [§34 Observability: Events Interface](#37-observability-events-interface)
+- [§35 Observability: Metrics & Tracing](#38-observability-metrics--tracing)
+- [§36 Topology & DAG Execution](#39-topology--dag-execution)
+- [§37 REST API](#40-rest-api)
+- [§38 Backpressure Strategies](#41-backpressure-strategies)
+- [§39 Execution Reporting](#42-execution-reporting)
+- [§40 Validation Framework](#43-validation-framework)
+- [§41 Metrics Endpoint](#44-metrics-endpoint)
+- [§42 Event Sourcing](#45-event-sourcing)
 
 ## 28. ExecutionContext
 
@@ -103,7 +103,7 @@ Instant started = ctx.getStepStartedAt("validate");
 
 ### Idempotency Keys
 
-Prevent duplicate step execution across retries or re-runs.
+Record keys in the execution context for the engine or application to check. A context key alone does not make an external provider operation idempotent across processes; enforce that at the provider boundary.
 
 ```java
 boolean isNew = ctx.addIdempotencyKey("debit:ORD-123");    // true if new
@@ -169,7 +169,7 @@ The `ArgumentResolver` automatically injects values into step method parameters 
 | `@Variable("name")` | A single context variable | `@Variable("orderId") String id` |
 | `@Variables` | The full variables map | `@Variables Map<String,Object> vars` |
 | `@CorrelationId` | The execution's correlation ID | `@CorrelationId String corrId` |
-| `@Required` | Modifier — enforces non-null (throws if null) | `@Required @FromStep("x") Object r` |
+| `@Required` | Modifier: enforces non-null (throws if null) | `@Required @FromStep("x") Object r` |
 
 ### Method-Level Annotations
 
@@ -192,7 +192,7 @@ public Mono<Void> charge(@Variable("customerId") String customerId) {
 
 ### ExecutionContext Injection
 
-If a parameter's type is `ExecutionContext`, it is injected by type — no annotation needed:
+If a parameter's type is `ExecutionContext`, it is injected by type: no annotation needed:
 
 ```java
 @SagaStep(id = "process")
@@ -310,13 +310,13 @@ Jittered delay = 2s ± (2s * 0.1) = between 1.8s and 2.2s
 
 Retry can be configured at multiple levels with this precedence (highest first):
 
-1. **Step-level annotation:** `@SagaStep(retry = 5, backoffMs = 1000)` or `@WorkflowStep(maxRetries = 5)`
-2. **Step-level builder:** `.retry(5).backoffMs(1000)`
-3. **Workflow-level annotation:** `@Workflow(maxRetries = 3, retryDelayMs = 1000)`
-4. **Workflow-level builder:** `.retryPolicy(RetryPolicy.DEFAULT)`
-5. **Global default:** `RetryPolicy.DEFAULT`
+1. Step-level annotation: `@SagaStep(retry = 5, backoffMs = 1000)` or `@WorkflowStep(maxRetries = 5)`
+2. Step-level builder: `.retry(5).backoffMs(1000)`
+3. Workflow-level annotation: `@Workflow(maxRetries = 3, retryDelayMs = 1000)`
+4. Workflow-level builder: `.retryPolicy(RetryPolicy.DEFAULT)`
+5. Global default: `RetryPolicy.DEFAULT`
 
-For sagas and TCCs, there is no saga/tcc-level default — retry is always per-step or per-participant.
+For sagas and TCCs, there is no saga/tcc-level default: retry is always per-step or per-participant.
 
 ---
 
@@ -328,7 +328,7 @@ The event system has two directions: **inbound** (triggering orchestrations from
 
 Any orchestration can be triggered by an external event using `triggerEventType`. The `EventGateway` maintains a registry of event type → orchestration mappings.
 
-**Annotation:**
+Annotation:
 
 ```java
 @Saga(name = "OrderSaga", triggerEventType = "OrderCreated")
@@ -336,7 +336,7 @@ Any orchestration can be triggered by an external event using `triggerEventType`
 @Workflow(id = "Pipeline", triggerEventType = "DataIngested")
 ```
 
-**Builder:**
+Builder:
 
 ```java
 SagaBuilder.saga("OrderSaga").triggerEventType("OrderCreated")
@@ -344,7 +344,7 @@ TccBuilder.tcc("PaymentTcc").triggerEventType("PaymentRequested")
 new WorkflowBuilder("Pipeline").triggerEventType("DataIngested")
 ```
 
-**Routing events:**
+Routing events:
 
 ```java
 eventGateway.routeEvent("OrderCreated", Map.of("orderId", "ORD-123"))
@@ -365,7 +365,7 @@ Registration happens automatically during startup via `EventGatewayAutoConfigura
 
 ### Outbound: Step-Level Event Publishing
 
-**Saga — @StepEvent:**
+Saga: @StepEvent:
 
 Publishes an event each time a step completes successfully:
 
@@ -377,7 +377,7 @@ public Mono<String> reserve(@Input OrderRequest req) { ... }
 
 Builder equivalent: `.stepEvent("inventory", "InventoryReserved", "orderId")`
 
-**TCC — @TccEvent:**
+TCC: @TccEvent:
 
 Publishes an event when a participant completes its Confirm phase:
 
@@ -389,7 +389,7 @@ public static class DebitParticipant { ... }
 
 Builder equivalent: `.event("payments", "PaymentConfirmed", "txId")`
 
-**Workflow — publishEvents:**
+Workflow: publishEvents:
 
 When `publishEvents = true`, the engine publishes an `OrchestrationEvent` for each step completion:
 
@@ -421,7 +421,7 @@ Factory methods: `executionStarted(...)`, `executionCompleted(...)`, `stepComple
 
 ### OrchestrationEventPublisher
 
-Events are published through the `OrchestrationEventPublisher` interface. The default is `NoOpEventPublisher` — replace it with a custom bean for your messaging infrastructure:
+Events are published through the `OrchestrationEventPublisher` interface. The default is `NoOpEventPublisher`: replace it with a custom bean for your messaging infrastructure:
 
 ```java
 @Component
@@ -443,7 +443,7 @@ All three patterns support scheduled execution with full attribute parity.
 
 ### Scheduling Annotations
 
-All scheduling annotations share the same 8 attributes (see [§4](#4-workflow-annotation-reference), [§12](#12-saga-annotation-reference), [§19](#19-tcc-annotation-reference) for the full tables):
+The scheduling annotations share eight attributes. See the [Workflow](workflow.md#4-workflow-annotation-reference), [Saga](saga.md#13-saga-annotation-reference), and [TCC](tcc.md#21-tcc-annotation-reference) tables.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -479,7 +479,7 @@ public class ReportWorkflow { ... }
 
 ### Multiple Schedules
 
-All scheduling annotations are `@Repeatable` — apply multiple to a single class:
+All scheduling annotations are `@Repeatable`: apply multiple to a single class:
 
 ```java
 @Saga(name = "multi-schedule")
@@ -524,7 +524,7 @@ All three patterns support lifecycle callbacks for handling success and error co
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `async` | `boolean` | `false` | Run callback on bounded-elastic scheduler (non-blocking) |
-| `priority` | `int` | `0` | Ordering — lower values execute first |
+| `priority` | `int` | `0` | Ordering: lower values execute first |
 
 Error callbacks add:
 
@@ -550,7 +550,7 @@ public void onError(Throwable error, ExecutionContext ctx) {
 
 `@OnSagaComplete` receives both `ExecutionContext` and `SagaResult` via argument resolution. Either is optional.
 
-`@OnSagaError` with `suppressError = true` converts the saga result to a success — useful for fallback behavior.
+`@OnSagaError` with `suppressError = true` converts the saga result to a success: useful for fallback behavior.
 
 ### TCC Callbacks
 
@@ -692,11 +692,11 @@ firefly:
 - Requires: `spring-boot-starter-data-redis-reactive` on classpath
 - Condition: `firefly.orchestration.persistence.provider=redis`
 - Key patterns:
-  - `{prefix}state:{correlationId}` — serialized execution state
-  - `{prefix}meta:{correlationId}` — lightweight metadata (pattern, status, timestamp)
+  - `{prefix}state:{correlationId}`: serialized execution state
+  - `{prefix}meta:{correlationId}`: lightweight metadata (pattern, status, timestamp)
 - Configurable key prefix and TTL
-- Full query support, durable across restarts
-- Best for: production, multi-instance deployments
+- Supports execution-state queries. Survival across restarts depends on the Redis deployment and its persistence configuration.
+- Use when execution snapshots must be shared between instances. Signal waiters and timers still belong to their process.
 
 #### CachePersistenceProvider
 
@@ -704,9 +704,9 @@ firefly:
 - Condition: `firefly.orchestration.persistence.provider=cache`
 - Uses the Firefly `CacheAdapter` abstraction
 - Key patterns:
-  - `orchestration:state:{correlationId}` — full execution state
-  - `orchestration:pattern:{pattern}:{correlationId}` — pattern index
-  - `orchestration:status:{status}:{correlationId}` — status index
+  - `orchestration:state:{correlationId}`: full execution state
+  - `orchestration:pattern:{pattern}:{correlationId}`: pattern index
+  - `orchestration:status:{status}:{correlationId}`: status index
 - Configurable TTL via `firefly.orchestration.persistence.key-ttl`
 - Best for: when you already use the Firefly Cache module
 
@@ -717,7 +717,7 @@ firefly:
 - Aggregate type: `orchestration-execution`
 - Event type: `ExecutionStateChanged`
 - Write-optimized (append-only events)
-- **Limitations:** `findByPattern()`, `findByStatus()`, `findInFlight()`, `findStale()` return empty; `cleanup()` is a no-op (events are immutable)
+- Limitations: `findByPattern()`, `findByStatus()`, `findInFlight()`, `findStale()` return empty; `cleanup()` is a no-op (events are immutable)
 - Best for: audit-heavy environments requiring full event history
 
 ### Provider Comparison
@@ -804,9 +804,9 @@ Factory method: `DeadLetterEntry.create(executionName, correlationId, pattern, s
 
 ### When Entries Are Created
 
-- **Saga:** One DLQ entry per failed step (each with its own `stepId`)
-- **TCC:** One DLQ entry for the failed transaction (only for `FAILED` status, not `CANCELED`)
-- **Workflow:** One DLQ entry per failed step when the step exhausts all retries
+- Saga: One DLQ entry per failed step (each with its own `stepId`)
+- TCC: One DLQ entry for the failed transaction (only for `FAILED` status, not `CANCELED`)
+- Workflow: One DLQ entry per failed step when the step exhausts all retries
 
 ### Custom DLQ Store
 
@@ -837,7 +837,7 @@ DELETE /api/orchestration/dlq/{id}     # remove an entry
 
 ## 36. Recovery Service
 
-The `RecoveryService` detects and cleans up stale executions — those that started but never reached a terminal state.
+`RecoveryService` queries stale executions and removes retained completed executions through the persistence provider. It does not rebuild active signal waiters or timer subscriptions after a process restart.
 
 ### Configuration
 
@@ -863,8 +863,8 @@ firefly:
 
 When recovery is enabled, `OrchestrationAutoConfiguration` registers a `SmartInitializingSingleton` bean that schedules periodic cleanup:
 
-- **Interval:** `firefly.orchestration.persistence.cleanup-interval` (default: 1 hour)
-- **Retention:** `firefly.orchestration.persistence.retention-period` (default: 7 days)
+- Interval: `firefly.orchestration.persistence.cleanup-interval` (default: 1 hour)
+- Retention: `firefly.orchestration.persistence.retention-period` (default: 7 days)
 
 ### Usage
 
@@ -940,7 +940,7 @@ All orchestration lifecycle events flow through the `OrchestrationEvents` interf
 
 ### CompositeOrchestrationEvents
 
-The auto-configuration collects **all** `OrchestrationEvents` beans and wraps them in a `CompositeOrchestrationEvents` that fans out each call to every delegate. Each delegate has error isolation — one listener failing does not prevent others from firing.
+The auto-configuration collects **all** `OrchestrationEvents` beans and wraps them in a `CompositeOrchestrationEvents` that fans out each call to every delegate. Each delegate has error isolation: one listener failing does not prevent others from firing.
 
 ### Custom Event Listener
 
@@ -999,11 +999,11 @@ firefly:
 
 `OrchestrationTracer` creates Micrometer Observations (spans) at two levels:
 
-**Execution-level span:**
+Execution-level span:
 - Observation name: `orchestration.execution`
 - Tags: `orchestration.name`, `orchestration.pattern`, `orchestration.correlationId`
 
-**Step-level span:**
+Step-level span:
 - Observation name: `orchestration.step`
 - Tags: `orchestration.name`, `orchestration.step`, `orchestration.correlationId`
 
@@ -1014,7 +1014,7 @@ firefly:
 | `<T> Mono<T> traceExecution(String name, ExecutionPattern pattern, String correlationId, Mono<T> mono)` | Wrap an execution in a traced observation |
 | `<T> Mono<T> traceStep(String executionName, String stepId, String correlationId, Mono<T> mono)` | Wrap a step in a traced observation |
 
-The tracer is wired automatically into engines when present — you don't need to call these methods directly.
+The tracer is wired automatically into engines when present: you don't need to call these methods directly.
 
 ---
 
@@ -1069,7 +1069,7 @@ Layer 1: [charge, reserve, log]  → all three run in parallel
 Layer 2: [ship]                  → waits for all Layer 1 steps
 ```
 
-Within a layer, steps are ordered by their `order` attribute (ascending) as a tiebreaker — but this only affects order within the concurrent batch, not serial execution.
+Within a layer, steps are ordered by their `order` attribute (ascending) as a tiebreaker: but this only affects order within the concurrent batch, not serial execution.
 
 ### Example DAG Visualization
 
@@ -1102,7 +1102,7 @@ firefly:
 
 ### Workflow Controller
 
-**Base Path:** `/api/orchestration/workflows`
+Base Path: `/api/orchestration/workflows`
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -1121,7 +1121,7 @@ firefly:
 
 ### Orchestration Controller (Cross-Pattern)
 
-**Base Path:** `/api/orchestration`
+Base Path: `/api/orchestration`
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -1130,7 +1130,7 @@ firefly:
 
 ### Dead-Letter Controller
 
-**Base Path:** `/api/orchestration/dlq`
+Base Path: `/api/orchestration/dlq`
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -1155,15 +1155,15 @@ All orchestration exceptions extend the sealed `OrchestrationException`:
 
 ```
 OrchestrationException (sealed)
-├── ExecutionNotFoundException       — workflow/saga/tcc ID not found in registry
-├── StepExecutionException           — step method invocation failed
-│     getStepId()                    — which step failed
-├── TopologyValidationException      — DAG has cycles, missing deps, duplicates
-├── DuplicateDefinitionException     — two definitions share the same name
-├── ExecutionTimeoutException        — execution or step timed out
-├── CompensationException            — saga compensation step failed
-└── TccPhaseException                — TCC Try/Confirm/Cancel phase error
-      getPhase()                     — which phase (TRY, CONFIRM, CANCEL)
+├── ExecutionNotFoundException      : workflow/saga/tcc ID not found in registry
+├── StepExecutionException          : step method invocation failed
+│     getStepId()                   : which step failed
+├── TopologyValidationException     : DAG has cycles, missing deps, duplicates
+├── DuplicateDefinitionException    : two definitions share the same name
+├── ExecutionTimeoutException       : execution or step timed out
+├── CompensationException           : saga compensation step failed
+└── TccPhaseException               : TCC Try/Confirm/Cancel phase error
+      getPhase()                    : which phase (TRY, CONFIRM, CANCEL)
 ```
 
 ---
@@ -1201,7 +1201,7 @@ Dynamic concurrency adjustment based on real-time error rates. Uses `AtomicInteg
 | `maxConcurrency` | `int` | `16` | Ceiling for concurrency scaling |
 | `errorRateThreshold` | `double` | `0.1` | Error rate above which concurrency is reduced |
 
-**Scaling behavior:**
+Scaling behavior:
 
 - When error rate exceeds `errorRateThreshold` → concurrency is **halved** (floored at `minConcurrency`)
 - When error rate drops below half of `errorRateThreshold` → concurrency is **incremented by 1** (capped at `maxConcurrency`)
@@ -1233,7 +1233,7 @@ Three-state circuit breaker using `AtomicReference<State>`.
 | `recoveryTimeout` | `Duration` | `30s` | Time in OPEN before transitioning to HALF_OPEN |
 | `halfOpenMaxCalls` | `int` | `3` | Successful calls in HALF_OPEN to close the circuit |
 
-**State transitions:**
+State transitions:
 
 ```
 CLOSED ──(failureThreshold consecutive failures)──→ OPEN
@@ -1260,7 +1260,7 @@ Configuration record with 9 fields:
 | `minConcurrency` | `int` | Minimum concurrency for adaptive strategy |
 | `errorRateThreshold` | `double` | Error rate threshold for adaptive strategy |
 
-Factory method: `BackpressureConfig.defaults()` — returns an adaptive strategy configuration with sensible defaults.
+Factory method: `BackpressureConfig.defaults()`: returns an adaptive strategy configuration with sensible defaults.
 
 ### BackpressureStrategyFactory
 
@@ -1273,7 +1273,7 @@ Static utility class with a `ConcurrentHashMap<String, Supplier<BackpressureStra
 | `fromConfig(BackpressureConfig config)` | `BackpressureStrategy` | Build a strategy from a configuration record |
 | `resetDefaults()` | `void` | Reset the registry to the 5 built-in strategies |
 
-**Pre-registered strategies (5):**
+Pre-registered strategies (5):
 
 | Name | Strategy | Configuration |
 |------|----------|---------------|
@@ -1319,7 +1319,7 @@ The reporting subsystem in `org.fireflyframework.orchestration.core.report` prov
 | `failureReason` | `String` | Error message (if failed) |
 | `compensationReport` | `CompensationReport` | Compensation details (if applicable) |
 
-**Computed methods (5):**
+Computed methods (5):
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -1395,7 +1395,7 @@ state.report().ifPresent(report -> {
 });
 ```
 
-Reports are wired automatically by all three engines — no additional configuration is required.
+Reports are wired automatically by all three engines: no additional configuration is required.
 
 ---
 
@@ -1473,7 +1473,7 @@ firefly:
       enabled: true   # default
 ```
 
-- `ERROR` issues abort registration — the definition is not added to the registry
+- `ERROR` issues abort registration: the definition is not added to the registry
 - `WARNING` and `INFO` issues are logged but registration proceeds
 
 ```java
@@ -1495,7 +1495,7 @@ The `org.fireflyframework.orchestration.core.observability.OrchestrationMetricsE
 @Endpoint(id = "orchestration-metrics")
 ```
 
-Conditional on Spring Boot Actuator being on the classpath. Reads counters from the `MeterRegistry` registered by `OrchestrationMetrics` (see [§35](#35-observability-metrics--tracing)).
+Conditional on Spring Boot Actuator being on the classpath. Reads counters from the `MeterRegistry` registered by `OrchestrationMetrics` (see [§35](#38-observability-metrics--tracing)).
 
 ### Endpoints
 
@@ -1562,7 +1562,7 @@ The event sourcing subsystem in `org.fireflyframework.orchestration.persistence.
 
 Sealed interface with 26 permitted event records covering the complete execution lifecycle:
 
-**Execution lifecycle (6):**
+Execution lifecycle (6):
 
 | Event | Description |
 |-------|-------------|
@@ -1573,7 +1573,7 @@ Sealed interface with 26 permitted event records covering the complete execution
 | `ExecutionSuspendedEvent` | Execution suspended (workflow) |
 | `ExecutionResumedEvent` | Execution resumed (workflow) |
 
-**Step lifecycle (5):**
+Step lifecycle (5):
 
 | Event | Description |
 |-------|-------------|
@@ -1583,7 +1583,7 @@ Sealed interface with 26 permitted event records covering the complete execution
 | `StepSkippedEvent` | Step skipped (condition or dry-run) |
 | `StepRetriedEvent` | Step retry attempted |
 
-**Compensation (3):**
+Compensation (3):
 
 | Event | Description |
 |-------|-------------|
@@ -1591,7 +1591,7 @@ Sealed interface with 26 permitted event records covering the complete execution
 | `CompensationStepCompletedEvent` | Compensation step succeeded |
 | `CompensationStepFailedEvent` | Compensation step failed |
 
-**TCC phases (3):**
+TCC phases (3):
 
 | Event | Description |
 |-------|-------------|
@@ -1599,40 +1599,40 @@ Sealed interface with 26 permitted event records covering the complete execution
 | `PhaseCompletedEvent` | TCC phase completed |
 | `PhaseFailedEvent` | TCC phase failed |
 
-**Signals (2):**
+Signals (2):
 
 | Event | Description |
 |-------|-------------|
 | `SignalReceivedEvent` | Signal received by workflow |
 | `SignalConsumedEvent` | Signal consumed by a waiting step |
 
-**Timers (2):**
+Timers (2):
 
 | Event | Description |
 |-------|-------------|
 | `TimerRegisteredEvent` | Timer registered for a workflow |
 | `TimerFiredEvent` | Timer fired |
 
-**Child workflows (2):**
+Child workflows (2):
 
 | Event | Description |
 |-------|-------------|
 | `ChildWorkflowSpawnedEvent` | Child workflow started |
 | `ChildWorkflowCompletedEvent` | Child workflow completed |
 
-**Search attributes (1):**
+Search attributes (1):
 
 | Event | Description |
 |-------|-------------|
 | `SearchAttributeUpdatedEvent` | Search attribute updated on execution |
 
-**Continue-as-new (1):**
+Continue-as-new (1):
 
 | Event | Description |
 |-------|-------------|
 | `ContinueAsNewEvent` | Workflow continued as new execution |
 
-**Checkpoints (1):**
+Checkpoints (1):
 
 | Event | Description |
 |-------|-------------|
@@ -1651,7 +1651,7 @@ Mutable aggregate that accumulates state by applying domain events.
 | `getUncommittedEvents()` | Returns the list of events not yet persisted |
 | `markEventsCommitted()` | Clears the uncommitted events list |
 
-**State maintained by the aggregate:**
+State maintained by the aggregate:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -1690,7 +1690,7 @@ All map fields are defensively copied via `Map.copyOf()` to ensure immutability.
 
 Read-side projection maintaining an in-memory view of execution summaries using `ConcurrentHashMap<String, ExecutionSummary>`.
 
-**Update method:**
+Update method:
 
 ```java
 public void processEvent(OrchestrationDomainEvent event)
@@ -1698,7 +1698,7 @@ public void processEvent(OrchestrationDomainEvent event)
 
 Processes each domain event to create or update the corresponding `ExecutionSummary`.
 
-**Query methods:**
+Query methods:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -1706,7 +1706,7 @@ Processes each domain event to create or update the corresponding `ExecutionSumm
 | `findByStatus(ExecutionStatus status)` | `List<ExecutionSummary>` | Find all executions with a given status |
 | `findByPattern(ExecutionPattern pattern)` | `List<ExecutionSummary>` | Find all executions of a given pattern |
 
-**ExecutionSummary record:**
+ExecutionSummary record:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -1724,7 +1724,7 @@ Processes each domain event to create or update the corresponding `ExecutionSumm
 
 Implements `ExecutionPersistenceProvider` with full event-sourcing semantics.
 
-**Dependencies:**
+Dependencies:
 
 | Component | Role |
 |-----------|------|
@@ -1733,7 +1733,7 @@ Implements `ExecutionPersistenceProvider` with full event-sourcing semantics.
 | `OrchestrationSnapshot` | Caching aggregate state for efficient hydration |
 | `OrchestrationProjection` | Cross-aggregate queries (by pattern, by status) |
 
-**Method implementations:**
+Method implementations:
 
 | Method | Behavior |
 |--------|----------|
@@ -1744,7 +1744,7 @@ Implements `ExecutionPersistenceProvider` with full event-sourcing semantics.
 | `findByStatus(ExecutionStatus)` | Delegates to `OrchestrationProjection` for efficient lookup |
 | `findInFlight()` | Delegates to projection, filtering for non-terminal statuses |
 | `findStale(Instant)` | Delegates to projection, filtering by timestamp |
-| `cleanup(Duration)` | No-op — events are immutable and are never deleted |
+| `cleanup(Duration)` | No-op: events are immutable and are never deleted |
 | `isHealthy()` | Returns `true` if the event store is accessible |
 
 ---

@@ -4,7 +4,7 @@ When data flows through multiple enrichment providers, transformation steps, and
 
 This matters for several practical reasons. During debugging, lineage lets you pinpoint exactly which enricher introduced a bad value instead of guessing across a dozen possible sources. For compliance and audit purposes, many regulated industries require a clear provenance trail showing how data was produced and modified. And for day-to-day observability, lineage records can be correlated with distributed traces to give you a complete picture of data flow through your system.
 
-In `fireflyframework-starter-data`, lineage tracking is built around a simple port-and-adapter pattern. You interact with a `LineageTracker` interface to record and query lineage events, and the framework provides a default in-memory implementation out of the box. For production use, you swap in your own implementation backed by a database, event log, or graph store -- the rest of your code stays the same.
+In `fireflyframework-starter-data`, lineage tracking is built around a simple port-and-adapter pattern. You interact with a `LineageTracker` interface to record and query lineage events, and the framework provides a default in-memory implementation with its default configuration. For production use, you swap in your own implementation backed by a database, event log, or graph store -- the rest of your code stays the same.
 
 This document provides a comprehensive guide to the data lineage tracking framework in `fireflyframework-starter-data`, covering the `LineageTracker` port, `LineageRecord` model, the default in-memory implementation, and guidance for production deployments.
 
@@ -27,15 +27,15 @@ This document provides a comprehensive guide to the data lineage tracking framew
 
 Data lineage tracking records the provenance chain of data entities as they flow through enrichments, transformations, and job collections. This enables:
 
-- **Auditability** -- full trace of how data was produced and modified
-- **Debugging** -- identify which operator introduced an error
-- **Compliance** -- satisfy regulatory requirements for data governance
-- **Observability** -- correlate data operations with distributed traces
+- Auditability -- full trace of how data was produced and modified
+- Debugging -- identify which operator introduced an error
+- Compliance -- satisfy regulatory requirements for data governance
+- Observability -- correlate data operations with distributed traces
 
 The framework is built around two core abstractions:
 
-- **LineageTracker** -- a port interface defining how lineage records are stored and queried
-- **LineageRecord** -- an immutable value object capturing a single step in the provenance chain
+- LineageTracker -- a port interface defining how lineage records are stored and queried
+- LineageRecord -- an immutable value object capturing a single step in the provenance chain
 
 ---
 
@@ -64,7 +64,7 @@ The framework is built around two core abstractions:
    Audit / Query Service  <──getLineage()─────┘
 ```
 
-**Key classes:**
+Key classes:
 
 | Class | Package | Role |
 |---|---|---|
@@ -77,7 +77,7 @@ The framework is built around two core abstractions:
 
 ## Configuration
 
-Data lineage is **disabled by default**. You must explicitly enable it:
+Data lineage is disabled by default. You must explicitly enable it:
 
 ```yaml
 firefly:
@@ -97,7 +97,7 @@ firefly:
       enabled: false
 ```
 
-> **See also:** [Configuration Guide](configuration.md) for the full property reference.
+> See also: [Configuration Guide](configuration.md) for the full property reference.
 
 ---
 
@@ -178,10 +178,10 @@ Flux.fromIterable(lineageByEntity.values())
 
 ### Limitations
 
-- **No persistence** -- all records are lost when the application stops
-- **Memory growth** -- records accumulate indefinitely; no eviction policy
-- **Single-instance** -- records are not shared across application replicas
-- **No indexing** -- operator queries require a full scan
+- No persistence -- all records are lost when the application stops
+- Memory growth -- records accumulate indefinitely; no eviction policy
+- Single-instance -- records are not shared across application replicas
+- No indexing -- operator queries require a full scan
 
 For production environments, implement a persistent `LineageTracker` backed by a database, event log, or graph database.
 
@@ -406,20 +406,20 @@ public class LineageAwareEnricher {
 
 ## Best Practices
 
-1. **Enable lineage explicitly.** Lineage tracking is opt-in (`matchIfMissing = false`) because it adds overhead. Enable it only when you need auditability or governance.
+1. Enable lineage explicitly. Lineage tracking is opt-in (`matchIfMissing = false`) because it adds overhead. Enable it only when you need auditability or governance.
 
-2. **Implement a persistent tracker for production.** The `InMemoryLineageTracker` is suitable for development and testing. Production deployments should use a database-backed (relational, graph, or event log) implementation to ensure lineage survives restarts and is shared across replicas.
+2. Implement a persistent tracker for production. The `InMemoryLineageTracker` is suitable for development and testing. Production deployments should use a database-backed (relational, graph, or event log) implementation to ensure lineage survives restarts and is shared across replicas.
 
-3. **Always set `entityId` and `operatorId`.** These are the primary query dimensions. Consistent entity IDs enable reconstructing the full provenance chain; consistent operator IDs enable tracing all operations from a given enricher or job.
+3. Always set `entityId` and `operatorId`. These are the primary query dimensions. Consistent entity IDs enable reconstructing the full provenance chain; consistent operator IDs enable tracing all operations from a given enricher or job.
 
-4. **Include input/output hashes.** Hashes enable detecting whether an operation actually changed the data. This is critical for auditing and change detection.
+4. Include input/output hashes. Hashes enable detecting whether an operation actually changed the data. This is critical for auditing and change detection.
 
-5. **Correlate with distributed tracing.** Populate the `traceId` field with the current OpenTelemetry trace ID so lineage records can be correlated with infrastructure-level traces.
+5. Correlate with distributed tracing. Populate the `traceId` field with the current OpenTelemetry trace ID so lineage records can be correlated with infrastructure-level traces.
 
-6. **Use metadata for domain context.** Store enrichment provider names, field counts, error details, or any domain-specific information in the `metadata` map rather than extending the `LineageRecord` class.
+6. Use metadata for domain context. Store enrichment provider names, field counts, error details, or any domain-specific information in the `metadata` map rather than extending the `LineageRecord` class.
 
-7. **Index operator queries in your persistent store.** The `getLineageByOperator` method requires scanning all records when using the in-memory implementation. Ensure your production tracker has proper indexes on `operator_id`.
+7. Index operator queries in your persistent store. The `getLineageByOperator` method requires scanning all records when using the in-memory implementation. Ensure your production tracker has proper indexes on `operator_id`.
 
-8. **Consider retention policies.** Lineage data grows over time. Implement TTL-based cleanup or archival in your persistent tracker to manage storage.
+8. Consider retention policies. Lineage data grows over time. Implement TTL-based cleanup or archival in your persistent tracker to manage storage.
 
-> **See also:** [Data Quality](data-quality.md) | [Data Transformation](data-transformation.md) | [GenAI Bridge](genai-bridge.md)
+> See also: [Data Quality](data-quality.md) | [Data Transformation](data-transformation.md) | [GenAI Bridge](genai-bridge.md)

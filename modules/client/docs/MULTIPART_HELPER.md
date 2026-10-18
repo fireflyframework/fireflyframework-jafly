@@ -1,6 +1,6 @@
 # File Upload Helper Guide
 
-Complete guide for using the **Enterprise-Grade** Multipart Upload helper in the Firefly Common Client Library.
+Complete guide for using the Enterprise-Grade Multipart Upload helper in the Firefly Common Client Library.
 
 ---
 
@@ -26,9 +26,9 @@ Complete guide for using the **Enterprise-Grade** Multipart Upload helper in the
 
 ## Overview
 
-The `MultipartUploadHelper` provides an **enterprise-grade** API for uploading files using multipart/form-data encoding with Spring WebClient.
+The `MultipartUploadHelper` provides an API for uploading files using multipart/form-data encoding with Spring WebClient.
 
-**Key Features**:
+Key Features:
 - ✅ Single and multiple file uploads
 - ✅ Upload with additional metadata
 - ✅ Stream-based uploads
@@ -36,14 +36,14 @@ The `MultipartUploadHelper` provides an **enterprise-grade** API for uploading f
 - ✅ Configurable timeouts
 - ✅ Reactive programming with `Mono<T>` and `Flux<T>`
 - ✅ Type-safe response handling
-- ✅ **NEW: Real-time progress tracking**
-- ✅ **NEW: Chunked uploads for large files (resumable)**
-- ✅ **NEW: Parallel uploads for multiple files**
-- ✅ **NEW: File validation (size, MIME type, extension)**
-- ✅ **NEW: Automatic compression (GZIP)**
-- ✅ **NEW: Upload cancellation support**
-- ✅ **NEW: Automatic retry with exponential backoff**
-- ✅ **NEW: Advanced configuration with builder pattern**
+- ✅ NEW: Real-time progress tracking
+- ✅ NEW: Chunked uploads for large files (resumable)
+- ✅ NEW: Parallel uploads for multiple files
+- ✅ NEW: File validation (size, MIME type, extension)
+- ✅ NEW: Automatic compression (GZIP)
+- ✅ NEW: Upload cancellation support
+- ✅ NEW: Automatic retry with exponential backoff
+- ✅ NEW: Advanced configuration with builder pattern
 
 ---
 
@@ -56,10 +56,10 @@ The `MultipartUploadHelper` provides an **enterprise-grade** API for uploading f
 - You need to upload images, PDFs, or other binary files
 - You want to send files with additional form data
 - You're building file upload functionality in microservices
-- **You need to upload large files (>100MB) with chunking**
-- **You need resumable uploads**
-- **You need progress tracking for user feedback**
-- **You need to validate files before upload**
+- You need to upload large files (>100MB) with chunking
+- You need resumable uploads
+- You need progress tracking for user feedback
+- You need to validate files before upload
 
 ### ❌ Consider Alternatives When:
 
@@ -371,11 +371,11 @@ response.subscribe(
 
 ### How Chunked Upload Works
 
-1. **File is split into chunks** (default 5MB, configurable)
-2. **Each chunk is uploaded separately** with metadata (chunk index, session ID)
-3. **Progress is tracked per chunk**
-4. **Server reassembles chunks** using session ID
-5. **Upload can be resumed** if interrupted
+1. File is split into chunks (default 5MB, configurable)
+2. Each chunk is uploaded separately with metadata (chunk index, session ID)
+3. Progress is tracked per chunk
+4. Server reassembles chunks using session ID
+5. Upload can be resumed if interrupted
 
 ### Server-Side Requirements
 
@@ -480,12 +480,12 @@ UploadConfig config = UploadConfig.builder()
 
 ### How Compression Works
 
-1. **File is compressed using GZIP** before upload
-2. **Compressed file is uploaded** with metadata
-3. **Server receives compressed file** and can decompress it
-4. **Temporary compressed file is deleted** after upload
+1. File is compressed using GZIP before upload
+2. Compressed file is uploaded with metadata
+3. Server receives compressed file and can decompress it
+4. Temporary compressed file is deleted after upload
 
-**Note**: Server must support decompression or store compressed files.
+Note: Server must support decompression or store compressed files.
 
 ---
 
@@ -612,17 +612,17 @@ UploadConfig config = UploadConfig.builder()
 ### Retryable Errors
 
 The helper automatically retries on:
-- **Network errors** (IOException)
-- **Timeouts**
-- **Connection refused**
+- Network errors (IOException)
+- Timeouts
+- Connection refused
 
-**Non-retryable errors** (fail immediately):
-- **Validation errors** (file too large, invalid extension)
-- **4xx client errors** (except timeouts)
+Non-retryable errors (fail immediately):
+- Validation errors (file too large, invalid extension)
+- 4xx client errors (except timeouts)
 
 ### Retry Behavior
 
-**Exponential Backoff**:
+Exponential Backoff:
 - Attempt 1: Immediate
 - Attempt 2: Wait 2 seconds
 - Attempt 3: Wait 4 seconds
@@ -831,5 +831,4 @@ public class DocumentService {
 
 ---
 
-**Need Help?** Check the [main documentation](README.md) or open an issue on GitHub.
-
+Need Help? Check the [main documentation](README.md) or open an issue on GitHub.

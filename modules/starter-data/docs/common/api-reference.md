@@ -25,7 +25,7 @@ Complete API reference for `fireflyframework-starter-data`.
 
 Business logic interface for multi-stage job operations.
 
-**Package:** `org.fireflyframework.data.service`
+Package: `org.fireflyframework.data.service`
 
 ```java
 public interface DataJobService {
@@ -48,19 +48,19 @@ Mono<JobStageResponse> startJob(JobStageRequest request)
 
 Starts a new data processing job.
 
-**Parameters:**
+Parameters:
 - `request` - Job start request containing input parameters
 
-**Returns:**
+Returns:
 - `Mono<JobStageResponse>` - Response with execution details
 
-**Responsibilities:**
+Responsibilities:
 - Validate input parameters
 - Initialize resources needed for the job
 - Trigger job execution via orchestrator
 - Return job metadata for tracking
 
-**Example:**
+Example:
 ```java
 JobStageRequest request = JobStageRequest.builder()
     .stage(JobStage.START)
@@ -81,19 +81,19 @@ Mono<JobStageResponse> checkJob(JobStageRequest request)
 
 Checks the status and progress of a running job.
 
-**Parameters:**
+Parameters:
 - `request` - Check request containing execution ID
 
-**Returns:**
+Returns:
 - `Mono<JobStageResponse>` - Response with status and progress
 
-**Responsibilities:**
+Responsibilities:
 - Query orchestrator for job status
 - Gather progress metrics
 - Check for errors or issues
 - Return current state information
 
-**Example:**
+Example:
 ```java
 JobStageRequest request = JobStageRequest.builder()
     .stage(JobStage.CHECK)
@@ -113,19 +113,19 @@ Mono<JobStageResponse> collectJobResults(JobStageRequest request)
 
 Collects intermediate or final raw results from a job.
 
-**Parameters:**
+Parameters:
 - `request` - Collect request containing execution ID
 
-**Returns:**
+Returns:
 - `Mono<JobStageResponse>` - Response with raw collected data
 
-**Responsibilities:**
+Responsibilities:
 - Retrieve raw processed data from storage or job execution
 - Validate data quality and completeness
 - Return raw/unprocessed data in original format
-- **NO transformation or mapping applied**
+- NO transformation or mapping applied
 
-**Example:**
+Example:
 ```java
 JobStageRequest request = JobStageRequest.builder()
     .stage(JobStage.COLLECT)
@@ -145,22 +145,22 @@ Mono<JobStageResponse> getJobResult(JobStageRequest request)
 
 Retrieves final results, performs mapping/transformation, and cleanup.
 
-**Parameters:**
+Parameters:
 - `request` - Result request containing execution ID and target DTO class info
 
-**Returns:**
+Returns:
 - `Mono<JobStageResponse>` - Response with transformed/mapped final results
 
-**Responsibilities:**
+Responsibilities:
 1. Retrieve raw results (possibly by calling collectJobResults internally)
 2. Apply transformation using configured mapper (MapStruct)
 3. Map raw data to target DTO specified in request
 4. Clean up temporary resources
 5. Return mapped/transformed final results
 
-**Note:** The response status will be `SUCCEEDED` for successful operations, `FAILED` for failures, or `RUNNING` if still in progress.
+Note: The response status will be `SUCCEEDED` for successful operations, `FAILED` for failures, or `RUNNING` if still in progress.
 
-**Example:**
+Example:
 ```java
 JobStageRequest request = JobStageRequest.builder()
     .stage(JobStage.RESULT)
@@ -179,7 +179,7 @@ Mono<JobStageResponse> response = dataJobService.getJobResult(request);
 
 Business logic interface for single-stage synchronous job operations.
 
-**Package:** `org.fireflyframework.data.service`
+Package: `org.fireflyframework.data.service`
 
 ```java
 public interface SyncDataJobService {
@@ -199,19 +199,19 @@ Mono<JobStageResponse> execute(JobStageRequest request)
 
 Executes a synchronous data job in a single operation.
 
-**Parameters:**
+Parameters:
 - `request` - Job execution request containing input parameters
 
-**Returns:**
+Returns:
 - `Mono<JobStageResponse>` - Response with execution results
 
-**Responsibilities:**
+Responsibilities:
 - Validate input parameters
 - Execute the job logic synchronously
 - Return results immediately (< 30 seconds)
 - Handle errors gracefully
 
-**Example:**
+Example:
 ```java
 JobStageRequest request = JobStageRequest.builder()
     .stage(JobStage.ALL)
@@ -221,20 +221,20 @@ JobStageRequest request = JobStageRequest.builder()
 Mono<JobStageResponse> response = syncDataJobService.execute(request);
 ```
 
-**Use Cases:**
+Use Cases:
 - Customer data enrichment
 - Real-time validation
 - Credit checks
 - Quick transformations
 - Synchronous lookups
 
-**When to Use:**
+When to Use:
 - Operations complete in < 30 seconds
 - Real-time response required
 - No need for progress tracking
 - Simple, single-step operations
 
-See [Data Jobs — Complete Guide](../data-jobs/guide.md#quick-start-sync) for complete documentation and examples.
+See [Data Jobs. Complete Guide](../data-jobs/guide.md#quick-start-sync) for complete documentation and examples.
 
 ---
 
@@ -246,9 +246,9 @@ See [Data Jobs — Complete Guide](../data-jobs/guide.md#quick-start-sync) for c
 
 REST API interface for job stage endpoints.
 
-**Package:** `org.fireflyframework.data.controller`
+Package: `org.fireflyframework.data.controller`
 
-**Base Path:** `/api/v1/jobs`
+Base Path: `/api/v1/jobs`
 
 ```java
 @Tag(name = "Data Jobs", description = "Data processing job management endpoints")
@@ -268,7 +268,7 @@ public interface DataJobController {
 
 Start a new data processing job.
 
-**Request Body (JobStartRequest):**
+Request Body (JobStartRequest):
 ```json
 {
   "parameters": {
@@ -282,15 +282,15 @@ Start a new data processing job.
 }
 ```
 
-**Request Fields:**
+Request Fields:
 - `parameters` (Map<String, Object>, required): Input parameters for the job
 - `requestId` (String, optional): Request ID for tracing and correlation
 - `initiator` (String, optional): User or system that initiated the request
 - `metadata` (Map<String, String>, optional): Additional metadata
 
-**Note:** The `stage`, `executionId`, and `jobType` fields are NOT part of the request body. These are managed internally by the controller and service layer.
+Note: The `stage`, `executionId`, and `jobType` fields are NOT part of the request body. These are managed internally by the controller and service layer.
 
-**Response:**
+Response:
 ```json
 {
   "stage": "START",
@@ -302,7 +302,7 @@ Start a new data processing job.
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Job started successfully
 - `400` - Invalid request parameters
 - `500` - Internal server error
@@ -313,13 +313,13 @@ Start a new data processing job.
 
 Check job status.
 
-**Path Parameters:**
+Path Parameters:
 - `executionId` - The job execution ID (required)
 
-**Query Parameters:**
+Query Parameters:
 - `requestId` - Optional request ID for tracing
 
-**Response:**
+Response:
 ```json
 {
   "stage": "CHECK",
@@ -332,7 +332,7 @@ Check job status.
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Status retrieved successfully
 - `404` - Job execution not found
 - `500` - Internal server error
@@ -343,13 +343,13 @@ Check job status.
 
 Collect job results (raw data).
 
-**Path Parameters:**
+Path Parameters:
 - `executionId` - The job execution ID (required)
 
-**Query Parameters:**
+Query Parameters:
 - `requestId` - Optional request ID for tracing
 
-**Response:**
+Response:
 ```json
 {
   "stage": "COLLECT",
@@ -366,7 +366,7 @@ Collect job results (raw data).
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Results collected successfully
 - `404` - Job execution not found
 - `500` - Internal server error
@@ -377,14 +377,14 @@ Collect job results (raw data).
 
 Get final results (transformed data).
 
-**Path Parameters:**
+Path Parameters:
 - `executionId` - The job execution ID (required)
 
-**Query Parameters:**
+Query Parameters:
 - `requestId` - Optional request ID for tracing
 - `targetDtoClass` - Target DTO class name for transformation
 
-**Response:**
+Response:
 ```json
 {
   "stage": "RESULT",
@@ -403,7 +403,7 @@ Get final results (transformed data).
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Results retrieved successfully
 - `404` - Job execution not found
 - `500` - Internal server error
@@ -414,14 +414,14 @@ Get final results (transformed data).
 
 Stop a running job execution.
 
-**Path Parameters:**
+Path Parameters:
 - `executionId` - The job execution ID (required)
 
-**Query Parameters:**
+Query Parameters:
 - `requestId` - Optional request ID for tracing
 - `reason` - Optional reason for stopping the job
 
-**Response:**
+Response:
 ```json
 {
   "stage": "STOP",
@@ -433,7 +433,7 @@ Stop a running job execution.
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Job stopped successfully
 - `404` - Job execution not found
 - `500` - Internal server error
@@ -446,7 +446,7 @@ Stop a running job execution.
 
 REST API interface for synchronous job operations.
 
-**Package:** `org.fireflyframework.data.controller`
+Package: `org.fireflyframework.data.controller`
 
 ```java
 @Tag(name = "Sync Data Jobs")
@@ -468,13 +468,13 @@ public interface SyncDataJobController {
 
 Execute a synchronous data job (single operation, returns results immediately).
 
-**Request Parameters:**
+Request Parameters:
 - `parameters` (Map<String, Object>, required): Input parameters for the job
 - `requestId` (String, optional): Request ID for tracing and correlation
 - `initiator` (String, optional): User or system that initiated the request
 - `metadata` (String, optional): Additional metadata as JSON string
 
-**Example Request:**
+Example Request:
 ```bash
 curl -X POST "http://localhost:8080/api/v1/execute" \
   -H "Content-Type: application/x-www-form-urlencoded" \
@@ -484,7 +484,7 @@ curl -X POST "http://localhost:8080/api/v1/execute" \
   -d 'metadata={"department":"sales"}'
 ```
 
-**Response:**
+Response:
 ```json
 {
   "stage": "ALL",
@@ -504,31 +504,31 @@ curl -X POST "http://localhost:8080/api/v1/execute" \
 }
 ```
 
-**Status Codes:**
+Status Codes:
 - `200` - Job executed successfully
 - `400` - Invalid request parameters
 - `500` - Internal server error
 
-**Use Cases:**
+Use Cases:
 - Quick data enrichment (< 30 seconds)
 - Real-time validation
 - Synchronous transformations
 - Credit checks
 - Customer lookups
 
-**When to Use:**
+When to Use:
 - Operations that complete in < 30 seconds
 - Real-time API responses required
 - No need for progress tracking
 - Simple, single-step operations
 
-**When NOT to Use:**
+When NOT to Use:
 - Long-running operations (> 30 seconds)
 - Complex multi-step workflows
 - Operations requiring progress monitoring
 - Jobs that may timeout
 
-See [Data Jobs — Complete Guide](../data-jobs/guide.md#quick-start-sync) for complete documentation.
+See [Data Jobs. Complete Guide](../data-jobs/guide.md#quick-start-sync) for complete documentation.
 
 ---
 
@@ -538,15 +538,15 @@ See [Data Jobs — Complete Guide](../data-jobs/guide.md#quick-start-sync) for c
 
 Global controller for discovering available data enrichment providers.
 
-**Package:** `org.fireflyframework.data.controller`
+Package: `org.fireflyframework.data.controller`
 
-**Purpose:**
+Purpose:
 - Provides endpoints to discover which data enrichers are available in the microservice
 - Useful for service discovery, multi-region support, and dynamic configuration
 - Lists providers with their supported types, descriptions, and REST endpoints
 - Can filter providers by enrichment type
 
-**Configuration:**
+Configuration:
 ```yaml
 # Enabled by default. To disable:
 firefly.data.enrichment.discovery.enabled: false
@@ -558,12 +558,12 @@ firefly.data.enrichment.discovery.enabled: false
 
 Lists all available data enrichment providers in this microservice.
 
-**Query Parameters:**
+Query Parameters:
 - `enrichmentType` (optional) - Filter to only return providers that support this enrichment type
 
-**Response:** `List<ProviderInfo>`
+Response: `List<ProviderInfo>`
 
-**ProviderInfo Structure:**
+ProviderInfo Structure:
 ```json
 {
   "providerName": "Financial Data Provider",
@@ -585,7 +585,7 @@ Lists all available data enrichment providers in this microservice.
 }
 ```
 
-**Example - List All Providers:**
+Example - List All Providers:
 ```bash
 GET /api/v1/enrichment/providers
 
@@ -606,7 +606,7 @@ Response:
 ]
 ```
 
-**Example - Filter by Enrichment Type:**
+Example - Filter by Enrichment Type:
 ```bash
 GET /api/v1/enrichment/providers?enrichmentType=company-profile
 
@@ -621,13 +621,13 @@ Response:
 ]
 ```
 
-**Use Cases:**
-- **Service Discovery:** Finding which providers and enrichment types are available
-- **Multi-Region Support:** Discovering regional implementations (e.g., Provider A Spain vs Provider A USA)
-- **Dynamic Configuration:** Building UIs or configurations based on available providers
-- **Health Monitoring:** Checking which enrichers are registered and active
+Use Cases:
+- Service Discovery: Finding which providers and enrichment types are available
+- Multi-Region Support: Discovering regional implementations (e.g., Provider A Spain vs Provider A USA)
+- Dynamic Configuration: Building UIs or configurations based on available providers
+- Health Monitoring: Checking which enrichers are registered and active
 
-**Architecture Context:**
+Architecture Context:
 
 In a typical deployment, you might have multiple microservices, each dedicated to a specific provider:
 
@@ -653,7 +653,7 @@ Microservice: core-data-provider-b-enricher
 
 Each microservice exposes its own discovery endpoint that lists only the providers available in that microservice.
 
-**Implementation:**
+Implementation:
 
 The controller uses `DataEnricherRegistry` to discover all enrichers:
 
@@ -680,7 +680,7 @@ public class EnrichmentDiscoveryController {
 }
 ```
 
-**Note:** All enrichers extend `DataEnricher<TSource, TProvider, TTarget>` which provides automatic observability, resiliency, caching, and strategy application.
+Note: All enrichers extend `DataEnricher<TSource, TProvider, TTarget>` which provides automatic observability, resiliency, caching, and strategy application.
 
 ---
 
@@ -690,7 +690,7 @@ public class EnrichmentDiscoveryController {
 
 Enum defining job lifecycle stages.
 
-**Package:** `org.fireflyframework.data.model`
+Package: `org.fireflyframework.data.model`
 
 ```java
 public enum JobStage {
@@ -709,7 +709,7 @@ public enum JobStage {
 
 Request model for job operations.
 
-**Package:** `org.fireflyframework.data.model`
+Package: `org.fireflyframework.data.model`
 
 ```java
 @Data
@@ -727,7 +727,7 @@ public class JobStageRequest {
 }
 ```
 
-**Fields:**
+Fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -747,7 +747,7 @@ public class JobStageRequest {
 
 Response model with execution details and status.
 
-**Package:** `org.fireflyframework.data.model`
+Package: `org.fireflyframework.data.model`
 
 ```java
 @Data
@@ -766,7 +766,7 @@ public class JobStageResponse {
 }
 ```
 
-**Fields:**
+Fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -789,7 +789,7 @@ public class JobStageResponse {
 
 Port interface for workflow orchestrators.
 
-**Package:** `org.fireflyframework.data.orchestration.port`
+Package: `org.fireflyframework.data.orchestration.port`
 
 ```java
 public interface JobOrchestrator {
@@ -811,10 +811,10 @@ Mono<JobExecution> startJob(JobExecutionRequest request)
 
 Starts a new job execution.
 
-**Parameters:**
+Parameters:
 - `request` - Job execution request containing job definition and input parameters
 
-**Returns:**
+Returns:
 - `Mono<JobExecution>` - Job execution information including execution ID
 
 ---
@@ -827,10 +827,10 @@ Mono<JobExecutionStatus> checkJobStatus(String executionId)
 
 Checks the status of a running job execution.
 
-**Parameters:**
+Parameters:
 - `executionId` - Unique identifier of the job execution
 
-**Returns:**
+Returns:
 - `Mono<JobExecutionStatus>` - Current status of the job execution
 
 ---
@@ -843,11 +843,11 @@ Mono<JobExecutionStatus> stopJob(String executionId, String reason)
 
 Stops a running job execution.
 
-**Parameters:**
+Parameters:
 - `executionId` - Unique identifier of the job execution to stop
 - `reason` - Optional reason for stopping the execution
 
-**Returns:**
+Returns:
 - `Mono<JobExecutionStatus>` - Final status of the stopped job
 
 ---
@@ -860,10 +860,10 @@ Mono<JobExecution> getJobExecution(String executionId)
 
 Retrieves the execution history of a job.
 
-**Parameters:**
+Parameters:
 - `executionId` - Unique identifier of the job execution
 
-**Returns:**
+Returns:
 - `Mono<JobExecution>` - Complete job execution details including history
 
 ---
@@ -872,7 +872,7 @@ Retrieves the execution history of a job.
 
 Request model for starting a job execution in the orchestrator.
 
-**Package:** `org.fireflyframework.data.orchestration.model`
+Package: `org.fireflyframework.data.orchestration.model`
 
 ```java
 @Data
@@ -888,7 +888,7 @@ public class JobExecutionRequest {
 }
 ```
 
-**Fields:**
+Fields:
 - `jobDefinition` (String, required) - The job definition identifier (e.g., state machine ARN for AWS Step Functions)
 - `executionName` (String, optional) - Unique name for this execution (auto-generated if not provided)
 - `input` (Map<String, Object>) - Input parameters for the job execution
@@ -897,7 +897,7 @@ public class JobExecutionRequest {
 - `traceHeader` (String) - Optional trace header for distributed tracing (e.g., X-Amzn-Trace-Id)
 - `metadata` (Map<String, String>) - Additional metadata, tags, or contextual information
 
-**Best Practice:**
+Best Practice:
 Use the `buildJobExecutionRequest()` helper method in `AbstractResilientDataJobService` to automatically populate all fields from `JobStageRequest`:
 
 ```java
@@ -918,7 +918,7 @@ protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
 
 Enum of execution states.
 
-**Package:** `org.fireflyframework.data.orchestration.model`
+Package: `org.fireflyframework.data.orchestration.model`
 
 ```java
 public enum JobExecutionStatus {
@@ -938,7 +938,7 @@ public enum JobExecutionStatus {
 
 Generic mapper interface for result transformation.
 
-**Package:** `org.fireflyframework.data.mapper`
+Package: `org.fireflyframework.data.mapper`
 
 ```java
 public interface JobResultMapper<S, T> {
@@ -948,7 +948,7 @@ public interface JobResultMapper<S, T> {
 }
 ```
 
-**Type Parameters:**
+Type Parameters:
 - `S` - Source type (raw data from job execution)
 - `T` - Target type (transformed DTO)
 
@@ -962,13 +962,13 @@ T mapToTarget(S source)
 
 Maps raw job result data to the target DTO.
 
-**Parameters:**
+Parameters:
 - `source` - Raw data from job execution
 
-**Returns:**
+Returns:
 - `T` - Transformed target DTO
 
-**Example:**
+Example:
 ```java
 @Mapper(componentModel = "spring")
 public interface CustomerDataMapper extends JobResultMapper<Map<String, Object>, CustomerDTO> {
@@ -991,7 +991,7 @@ public interface CustomerDataMapper extends JobResultMapper<Map<String, Object>,
 
 Registry for managing job result mappers.
 
-**Package:** `org.fireflyframework.data.mapper`
+Package: `org.fireflyframework.data.mapper`
 
 ```java
 @Component
@@ -1012,13 +1012,13 @@ Optional<JobResultMapper<?, ?>> getMapper(Class<?> targetType)
 
 Retrieves a mapper for the specified target type.
 
-**Parameters:**
+Parameters:
 - `targetType` - Target DTO class
 
-**Returns:**
+Returns:
 - `Optional<JobResultMapper<?, ?>>` - Mapper if found
 
-**Example:**
+Example:
 ```java
 JobResultMapper mapper = mapperRegistry.getMapper(CustomerDTO.class)
     .orElseThrow(() -> new MapperNotFoundException(CustomerDTO.class));
@@ -1032,9 +1032,9 @@ CustomerDTO result = mapper.mapToTarget(rawData);
 
 Registry for managing and discovering data enrichers.
 
-**Package:** `org.fireflyframework.data.service`
+Package: `org.fireflyframework.data.service`
 
-**Purpose:**
+Purpose:
 - Auto-discovers all `DataEnricher` implementations in the Spring context
 - Provides lookup by provider name or enrichment type
 - Used by the discovery endpoint to list available providers
@@ -1083,13 +1083,13 @@ Optional<DataEnricher<?, ?, ?>> getEnricherByProvider(String providerName)
 
 Gets an enricher by provider name (case-insensitive).
 
-**Parameters:**
+Parameters:
 - `providerName` - The provider name (e.g., "Financial Data Provider", "Credit Bureau")
 
-**Returns:**
+Returns:
 - `Optional<DataEnricher<?, ?, ?>>` - Enricher if found, empty otherwise
 
-**Example:**
+Example:
 ```java
 DataEnricher<?, ?, ?> enricher = enricherRegistry
     .getEnricherByProvider("Financial Data Provider")
@@ -1106,13 +1106,13 @@ Optional<DataEnricher<?, ?, ?>> getEnricherForType(String enrichmentType)
 
 Gets an enricher that supports the specified enrichment type.
 
-**Parameters:**
+Parameters:
 - `enrichmentType` - The enrichment type (e.g., "company-profile", "credit-report")
 
-**Returns:**
+Returns:
 - `Optional<DataEnricher<?, ?, ?>>` - First enricher that supports this type, empty if none found
 
-**Example:**
+Example:
 ```java
 // Dynamically select enricher based on enrichment type
 DataEnricher<?, ?, ?> enricher = enricherRegistry
@@ -1122,7 +1122,7 @@ DataEnricher<?, ?, ?> enricher = enricherRegistry
 EnrichmentResponse response = enricher.enrich(request).block();
 ```
 
-**Note:** In the standard architecture, each enricher has its own dedicated REST endpoint, so this method is typically used for programmatic lookup in advanced scenarios.
+Note: In the standard architecture, each enricher has its own dedicated REST endpoint, so this method is typically used for programmatic lookup in advanced scenarios.
 
 ##### getAllEnrichers
 
@@ -1132,10 +1132,10 @@ List<DataEnricher<?, ?, ?>> getAllEnrichers()
 
 Gets all registered enrichers.
 
-**Returns:**
+Returns:
 - `List<DataEnricher<?, ?, ?>>` - List of all enrichers in the registry
 
-**Example:**
+Example:
 ```java
 List<DataEnricher<?, ?, ?>> enrichers = enricherRegistry.getAllEnrichers();
 log.info("Found {} enrichers", enrichers.size());
@@ -1156,10 +1156,10 @@ List<String> getAllProviderNames()
 
 Gets all registered provider names (distinct).
 
-**Returns:**
+Returns:
 - `List<String>` - List of unique provider names
 
-**Example:**
+Example:
 ```java
 List<String> providers = enricherRegistry.getAllProviderNames();
 // ["Financial Data Provider", "Credit Bureau", "Business Data Provider"]
@@ -1173,10 +1173,10 @@ List<String> getAllEnrichmentTypes()
 
 Gets all registered enrichment types (sorted).
 
-**Returns:**
+Returns:
 - `List<String>` - List of unique enrichment types
 
-**Example:**
+Example:
 ```java
 List<String> types = enricherRegistry.getAllEnrichmentTypes();
 // ["company-financials", "company-profile", "credit-report", "credit-score"]
@@ -1190,10 +1190,10 @@ Set<UUID> getAllTenantIds()
 
 Gets all registered tenant IDs.
 
-**Returns:**
+Returns:
 - `Set<UUID>` - Set of unique tenant IDs
 
-**Example:**
+Example:
 ```java
 Set<UUID> tenants = enricherRegistry.getAllTenantIds();
 // [00000000-0000-0000-0000-000000000000, 550e8400-e29b-41d4-a716-446655440001]
@@ -1207,14 +1207,14 @@ Optional<DataEnricher<?, ?, ?>> getEnricherByProviderAndTenant(String providerNa
 
 Gets an enricher by provider name and tenant ID.
 
-**Parameters:**
+Parameters:
 - `providerName` - The provider name
 - `tenantId` - The tenant UUID
 
-**Returns:**
+Returns:
 - `Optional<DataEnricher<?, ?, ?>>` - Enricher if found, empty otherwise
 
-**Example:**
+Example:
 ```java
 UUID tenantId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 DataEnricher<?, ?, ?> enricher = enricherRegistry
@@ -1230,14 +1230,14 @@ Optional<DataEnricher<?, ?, ?>> getEnricherForTypeAndTenant(String enrichmentTyp
 
 Gets the highest-priority enricher for a specific type and tenant.
 
-**Parameters:**
+Parameters:
 - `enrichmentType` - The enrichment type
 - `tenantId` - The tenant UUID
 
-**Returns:**
+Returns:
 - `Optional<DataEnricher<?, ?, ?>>` - Highest-priority enricher if found, empty otherwise
 
-**Example:**
+Example:
 ```java
 UUID tenantId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 DataEnricher<?, ?, ?> enricher = enricherRegistry
@@ -1253,14 +1253,14 @@ List<DataEnricher<?, ?, ?>> getAllEnrichersForTypeAndTenant(String enrichmentTyp
 
 Gets all enrichers for a specific type and tenant, sorted by priority (descending).
 
-**Parameters:**
+Parameters:
 - `enrichmentType` - The enrichment type
 - `tenantId` - The tenant UUID
 
-**Returns:**
+Returns:
 - `List<DataEnricher<?, ?, ?>>` - List of enrichers sorted by priority
 
-**Example:**
+Example:
 ```java
 UUID tenantId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 List<DataEnricher<?, ?, ?>> enrichers = enricherRegistry
@@ -1287,13 +1287,13 @@ List<DataEnricher<?, ?, ?>> getEnrichersByTenant(UUID tenantId)
 
 Gets all enrichers for a specific tenant.
 
-**Parameters:**
+Parameters:
 - `tenantId` - The tenant UUID
 
-**Returns:**
+Returns:
 - `List<DataEnricher<?, ?, ?>>` - List of enrichers for this tenant
 
-**Example:**
+Example:
 ```java
 UUID tenantId = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 List<DataEnricher<?, ?, ?>> enrichers = enricherRegistry.getEnrichersByTenant(tenantId);
@@ -1308,13 +1308,13 @@ List<DataEnricher<?, ?, ?>> getEnrichersByTag(String tag)
 
 Gets all enrichers with a specific tag.
 
-**Parameters:**
+Parameters:
 - `tag` - The tag to search for
 
-**Returns:**
+Returns:
 - `List<DataEnricher<?, ?, ?>>` - List of enrichers with this tag
 
-**Example:**
+Example:
 ```java
 List<DataEnricher<?, ?, ?>> financialEnrichers = enricherRegistry.getEnrichersByTag("financial");
 List<DataEnricher<?, ?, ?>> premiumEnrichers = enricherRegistry.getEnrichersByTag("premium");
@@ -1328,10 +1328,10 @@ boolean hasEnricherForProvider(String providerName)
 
 Checks if an enricher exists for the specified provider.
 
-**Parameters:**
+Parameters:
 - `providerName` - The provider name
 
-**Returns:**
+Returns:
 - `boolean` - true if enricher exists, false otherwise
 
 ##### hasEnricherForType
@@ -1342,10 +1342,10 @@ boolean hasEnricherForType(String enrichmentType)
 
 Checks if an enricher exists for the specified enrichment type.
 
-**Parameters:**
+Parameters:
 - `enrichmentType` - The enrichment type
 
-**Returns:**
+Returns:
 - `boolean` - true if enricher exists, false otherwise
 
 ##### getEnricherCount
@@ -1356,14 +1356,14 @@ int getEnricherCount()
 
 Gets the number of registered enrichers.
 
-**Returns:**
+Returns:
 - `int` - Count of enrichers
 
 #### Auto-Discovery
 
 All Spring beans implementing `DataEnricher` are automatically registered when the application context starts.
 
-**Example:**
+Example:
 ```java
 @EnricherMetadata(
     providerName = "Financial Data Provider",
@@ -1380,20 +1380,20 @@ public class FinancialDataEnricher extends DataEnricher<...> {
 }
 ```
 
-**Metadata Annotation:**
+Metadata Annotation:
 
-The `@EnricherMetadata` annotation is **required** for all enrichers and provides:
+The `@EnricherMetadata` annotation is required for all enrichers and provides:
 
-- **providerName** (required): Unique identifier for the provider
-- **tenantId** (optional): UUID of the tenant this enricher serves (default: global tenant `00000000-0000-0000-0000-000000000000`)
-- **type** (required): The single enrichment type this enricher supports (one enricher = one type)
-- **description** (optional): Human-readable description
-- **version** (optional): Version string (default: "1.0.0")
-- **tags** (optional): Array of tags for categorization
-- **priority** (optional): Priority for selection when multiple enrichers match (default: 50, higher = higher priority)
-- **enabled** (optional): Whether the enricher is enabled (default: true)
+- providerName (required): Unique identifier for the provider
+- tenantId (optional): UUID of the tenant this enricher serves (default: global tenant `00000000-0000-0000-0000-000000000000`)
+- type (required): The single enrichment type this enricher supports (one enricher = one type)
+- description (optional): Human-readable description
+- version (optional): Version string (default: "1.0.0")
+- tags (optional): Array of tags for categorization
+- priority (optional): Priority for selection when multiple enrichers match (default: 50, higher = higher priority)
+- enabled (optional): Whether the enricher is enabled (default: true)
 
-**Multi-Tenancy:**
+Multi-Tenancy:
 
 Enrichers can be tenant-specific or global:
 
@@ -1413,7 +1413,7 @@ Enrichers can be tenant-specific or global:
 )
 ```
 
-**Registration Process:**
+Registration Process:
 1. Spring creates all `DataEnricher` beans
 2. `DataEnricherRegistry` receives them via constructor injection
 3. Registry reads `@EnricherMetadata` annotation from each enricher
@@ -1426,7 +1426,7 @@ Enrichers can be tenant-specific or global:
 5. Lists are sorted by priority (descending)
 6. Disabled enrichers are skipped
 
-**Logging:**
+Logging:
 ```
 INFO  DataEnricherRegistry - Registering 3 data enrichers
 DEBUG DataEnricherRegistry - Registered enricher for provider: Financial Data Provider (tenant: 550e8400-e29b-41d4-a716-446655440001)
@@ -1443,9 +1443,9 @@ INFO  DataEnricherRegistry - Data enricher registration complete. Providers: 3, 
 
 Utility class for extracting trace IDs and span IDs from Micrometer Observation.
 
-**Package:** `org.fireflyframework.data.util`
+Package: `org.fireflyframework.data.util`
 
-**Features:**
+Features:
 - Real trace ID and span ID extraction from Micrometer Tracing
 - Support for OpenTelemetry backend
 - Multiple extraction strategies with fallbacks
@@ -1461,10 +1461,10 @@ public static void setTracer(Tracer tracerInstance)
 
 Sets the tracer instance to use for extraction. This is automatically called by `ObservabilityAutoConfiguration`.
 
-**Parameters:**
+Parameters:
 - `tracerInstance` - The Micrometer Tracer instance
 
-**Note:** This method is called automatically during Spring Boot startup. Manual invocation is rarely needed.
+Note: This method is called automatically during Spring Boot startup. Manual invocation is rarely needed.
 
 ##### extractTraceId
 
@@ -1474,13 +1474,13 @@ public static String extractTraceId(Observation observation)
 
 Extracts the trace ID from the current observation.
 
-**Parameters:**
+Parameters:
 - `observation` - The Micrometer Observation
 
-**Returns:**
+Returns:
 - `String` - The trace ID (32-character hex for OpenTelemetry), or `null` if not available
 
-**Example:**
+Example:
 ```java
 Observation observation = observationRegistry.getCurrentObservation();
 String traceId = TracingContextExtractor.extractTraceId(observation);
@@ -1495,13 +1495,13 @@ public static String extractSpanId(Observation observation)
 
 Extracts the span ID from the current observation.
 
-**Parameters:**
+Parameters:
 - `observation` - The Micrometer Observation
 
-**Returns:**
+Returns:
 - `String` - The span ID (16-character hex for OpenTelemetry), or `null` if not available
 
-**Example:**
+Example:
 ```java
 Observation observation = observationRegistry.getCurrentObservation();
 String spanId = TracingContextExtractor.extractSpanId(observation);
@@ -1516,13 +1516,13 @@ public static boolean hasTracingContext(Observation observation)
 
 Checks if the observation has an active tracing context.
 
-**Parameters:**
+Parameters:
 - `observation` - The Micrometer Observation
 
-**Returns:**
+Returns:
 - `boolean` - `true` if tracing context is available, `false` otherwise
 
-**Example:**
+Example:
 ```java
 if (TracingContextExtractor.hasTracingContext(observation)) {
     String traceId = TracingContextExtractor.extractTraceId(observation);
@@ -1536,9 +1536,9 @@ if (TracingContextExtractor.hasTracingContext(observation)) {
 
 Utility class for calculating data sizes by JSON serialization.
 
-**Package:** `org.fireflyframework.data.util`
+Package: `org.fireflyframework.data.util`
 
-**Features:**
+Features:
 - Precise byte size calculation via JSON serialization
 - UTF-8 encoding for accurate byte count
 - Support for complex objects and nested structures
@@ -1555,13 +1555,13 @@ public static long calculateSize(Object data)
 
 Calculates the size of a data object in bytes by serializing it to JSON.
 
-**Parameters:**
+Parameters:
 - `data` - The object to measure
 
-**Returns:**
+Returns:
 - `long` - Size in bytes, or `0` if data is `null`
 
-**Example:**
+Example:
 ```java
 Map<String, Object> data = Map.of("key", "value", "count", 42);
 long size = DataSizeCalculator.calculateSize(data);
@@ -1576,13 +1576,13 @@ public static long calculateCombinedSize(Object... dataObjects)
 
 Calculates the combined size of multiple data objects.
 
-**Parameters:**
+Parameters:
 - `dataObjects` - Variable number of objects to measure
 
-**Returns:**
+Returns:
 - `long` - Total size in bytes
 
-**Example:**
+Example:
 ```java
 long totalSize = DataSizeCalculator.calculateCombinedSize(
     rawOutput,
@@ -1600,13 +1600,13 @@ public static long calculateMapSize(Map<?, ?> map)
 
 Calculates the size of a Map by serializing it to JSON.
 
-**Parameters:**
+Parameters:
 - `map` - The Map to measure
 
-**Returns:**
+Returns:
 - `long` - Size in bytes, or `0` if map is `null` or empty
 
-**Example:**
+Example:
 ```java
 Map<String, String> params = Map.of("param1", "value1", "param2", "value2");
 long size = DataSizeCalculator.calculateMapSize(params);
@@ -1620,13 +1620,13 @@ public static String formatSize(long bytes)
 
 Formats a byte size into a human-readable string.
 
-**Parameters:**
+Parameters:
 - `bytes` - Size in bytes
 
-**Returns:**
+Returns:
 - `String` - Formatted size (e.g., "1.2 KB", "3.5 MB")
 
-**Example:**
+Example:
 ```java
 String formatted = DataSizeCalculator.formatSize(1247);
 // formatted = "1.2 KB"
@@ -1643,14 +1643,14 @@ public static boolean exceedsSize(Object data, long maxSizeBytes)
 
 Checks if a data object exceeds a specified size limit.
 
-**Parameters:**
+Parameters:
 - `data` - The object to check
 - `maxSizeBytes` - Maximum allowed size in bytes
 
-**Returns:**
+Returns:
 - `boolean` - `true` if data exceeds the limit, `false` otherwise
 
-**Example:**
+Example:
 ```java
 // Check if data exceeds 1MB
 boolean tooLarge = DataSizeCalculator.exceedsSize(myData, 1024 * 1024);
@@ -1671,9 +1671,9 @@ POST /api/v1/enrichment/smart/preview
 
 Preview which enricher would handle a request without executing it.
 
-**Request Body:** Same as `POST /api/v1/enrichment/smart`
+Request Body: Same as `POST /api/v1/enrichment/smart`
 
-**Response:**
+Response:
 ```json
 {
   "providerName": "Equifax",
@@ -1696,7 +1696,7 @@ Accept: text/event-stream
 
 Stream batch enrichment results via Server-Sent Events.
 
-**Request Body:** Array of enrichment requests
+Request Body: Array of enrichment requests
 ```json
 [
   {"type": "credit-report", "params": {"companyId": "123"}},
@@ -1704,7 +1704,7 @@ Stream batch enrichment results via Server-Sent Events.
 ]
 ```
 
-**Response:** SSE stream
+Response: SSE stream
 ```
 id: 0
 event: enrichment-result
@@ -1726,7 +1726,7 @@ GET /api/v1/enrichment/costs?tenantId={tenantId}
 
 Returns per-provider enrichment cost report.
 
-**Response:**
+Response:
 ```json
 {
   "totalCalls": 1500,
@@ -1743,7 +1743,7 @@ Returns per-provider enrichment cost report.
 
 The `DataExceptionHandler` (`@RestControllerAdvice`) provides structured error responses:
 
-**EnrichmentValidationException → HTTP 400:**
+EnrichmentValidationException → HTTP 400:
 ```json
 {
   "status": 400,
@@ -1833,4 +1833,3 @@ Mono<Map<String, Object>> result = chain.execute(inputData);
 - [Examples](examples.md) - Usage examples
 - [Observability](observability.md) - Tracing and metrics
 - [Persistence](persistence.md) - Audit trail and result storage
-

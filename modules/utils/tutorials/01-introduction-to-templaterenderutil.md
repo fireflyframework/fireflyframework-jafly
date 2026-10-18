@@ -160,4 +160,4 @@ Now that you understand the basics of TemplateRenderUtil, you can explore more a
 - [Template Syntax and Structure](02-template-syntax-and-structure.md)
 - [PDF Customization Options](03-pdf-customization-options.md)
 - [Advanced Features](04-advanced-features.md)
-- [Complete Examples](05-complete-examples.md)
+- [Template and PDF usage](../../../docs/site/modules/utils.md#quick-start)

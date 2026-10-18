@@ -26,6 +26,8 @@ If onboarding includes a signed agreement, use the Logalty adapter for the confi
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### 1. Add the dependency and select the provider
@@ -51,6 +53,7 @@ That is all the wiring required. `LogaltyAdapterAutoConfiguration` contributes t
 Inject the provider-neutral `SignatureEnvelopePort`. Your code never references Logalty directly:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
 import org.springframework.stereotype.Service;
@@ -59,13 +62,12 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContractSigningService {
 
     private final SignatureEnvelopePort envelopes; // backed by Logalty at runtime
 
-    public ContractSigningService(SignatureEnvelopePort envelopes) {
-        this.envelopes = envelopes;
-    }
+
 
     public Mono<SignatureEnvelope> startContract(SignatureEnvelope draft, UUID sender) {
         return envelopes.createEnvelope(draft)
@@ -102,7 +104,9 @@ The `firefly.ecm.adapter.logalty` namespace is bound by [LogaltyAdapterPropertie
 
 ## Continue the application
 
-Use the [Enterprise Content Management guide](../../docs/site/modules/ecm.md) for the next part of this integration. ## Build and validation
+Use the [Enterprise Content Management guide](../../docs/site/modules/ecm.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

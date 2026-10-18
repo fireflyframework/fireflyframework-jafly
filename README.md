@@ -35,14 +35,14 @@ The documentation follows the same eight capability areas as [Jafly on Framework
 
 | Capability | What you can build with it |
 | --- | --- |
-| [Security and identity](docs/site/modules/index.md#security-and-identity) | Map JWTs to principals, protect methods and routes, and connect identity and policy providers through shared ports. |
-| [Business operations](docs/site/modules/index.md#business-operations) | Dispatch commands and queries to typed handlers, apply configured validation and authorization, and evaluate business rules. |
-| [External services](docs/site/modules/index.md#external-services) | Call REST, SOAP, and gRPC services, send notifications, manage callbacks, and connect to the separate Agentic runtime. |
-| [Event-driven integration](docs/site/modules/index.md#event-driven-integration) | Publish and consume through Spring events, Kafka, RabbitMQ, or PostgreSQL; receive webhooks with provider-specific processing. |
-| [Domain and data](docs/site/modules/index.md#domain-and-data) | Use reactive PostgreSQL access, filtering and pagination, query caches, content storage, and optional event sourcing. |
-| [Business coordination](docs/site/modules/index.md#business-coordination) | Coordinate saga steps and compensations, try-confirm-cancel participants, and workflows with explicit application recovery policies. |
-| [Service operations](docs/site/modules/index.md#service-operations) | Configure metrics, traces, health checks, HTTP conventions, and shared configuration for your services. |
-| [Team-wide architecture](docs/site/modules/index.md#team-wide-architecture) | Adopt the parent or BOM, service-layer starters, shared kernel contracts, and plugin interfaces across a team's applications. |
+| [Security and identity](docs/site/capabilities/security-and-identity.md) | Map JWTs to principals, protect methods and routes, and connect identity and policy providers through shared ports. |
+| [Business operations](docs/site/capabilities/business-operations.md) | Dispatch commands and queries to typed handlers, apply configured validation and authorization, and evaluate business rules. |
+| [External services](docs/site/capabilities/external-services.md) | Call REST, SOAP, and gRPC services, send notifications, manage callbacks, and connect to the separate Agentic runtime. |
+| [Event-driven integration](docs/site/capabilities/event-driven-integration.md) | Publish and consume through Spring events, Kafka, RabbitMQ, or PostgreSQL; receive webhooks with provider-specific processing. |
+| [Domain and data](docs/site/capabilities/domain-and-data.md) | Use reactive PostgreSQL access, filtering and pagination, query caches, content storage, and optional event sourcing. |
+| [Business coordination](docs/site/capabilities/business-coordination.md) | Coordinate saga steps and compensations, try-confirm-cancel participants, and workflows with explicit application recovery policies. |
+| [Service operations](docs/site/capabilities/service-operations.md) | Configure metrics, traces, health checks, HTTP conventions, and shared configuration for your services. |
+| [Team-wide architecture](docs/site/capabilities/team-wide-architecture.md) | Adopt the parent or BOM, service-layer starters, shared kernel contracts, and plugin interfaces across a team's applications. |
 
 Use the [module catalog](docs/site/modules/index.md) to choose a library and find its configuration and examples. Read the [architecture guide](docs/site/architecture.md) before deciding which responsibilities belong in your handlers or provider adapters.
 
@@ -50,6 +50,18 @@ Use the [module catalog](docs/site/modules/index.md) to choose a library and fin
   <source media="(max-width: 600px)" srcset="docs/site/assets/diagrams/request-flow-narrow.svg">
   <img src="docs/site/assets/diagrams/request-flow.svg" alt="An onboarding request reaches the command bus and application handler, then returns a result. Event publishing and query-cache invalidation require their own configuration." width="100%">
 </picture>
+
+## Follow the onboarding examples
+
+The tutorials follow a customer application through three separate projects. Each has its own executable tests and states its storage and provider boundaries.
+
+| Project | What you learn |
+| --- | --- |
+| [Accept an application](docs/site/getting-started.md) | Validate HTTP input, dispatch commands and queries, and retrieve an application from an in-memory repository. |
+| [Retain its event history](docs/site/guides/onboarding-event-store.md) | Append typed events to PostgreSQL, reconstruct an aggregate, reject a stale writer, and roll back an invalid batch. |
+| [Coordinate a review](docs/site/guides/onboarding-coordination.md) | Compensate a failed Saga, confirm or cancel TCC reservations, and order Workflow steps with explicit recovery. |
+
+Continue with [examples and tutorials](docs/site/examples.md) to choose the next integration. The three projects share the onboarding story; each runs independently so its failure and transaction behavior can be tested directly.
 
 ## Start with the source
 
@@ -152,6 +164,6 @@ Use the workflows at the repository root for Java builds and releases. Workflows
 
 The [source provenance manifest](docs/migration/source-manifest.json) maps all 63 repositories to destination paths, original source commits, imported branches, and tags. Original main commit IDs remain ancestors of the monorepo. Historical refs use `legacy/<source-repository>/<original-ref>` so identical original release tags do not collide.
 
-Historical GitHub issues, pull requests, and release records retain their original source URLs. See [migration and compatibility](docs/migration/README.md) for import boundaries, cutover, and rollback.
+Original pull requests and release records retain their source URLs. [Issue transfer records](docs/migration/issue-transfers.json) identify issues moved to Jafly. See [migration and compatibility](docs/migration/README.md) for import boundaries, cutover, and rollback.
 
 Framework code is [Apache License 2.0](LICENSE). Official Jafly/Firefly artwork and the self-hosted Manrope font retain their separate [brand provenance and notices](docs/site/brand.md).

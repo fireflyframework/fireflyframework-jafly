@@ -1,8 +1,8 @@
 # Contributing to fireflyframework-agentic-bridge
 
 Thank you for your interest in contributing! This module follows the
-conventions used across the Firefly Framework — please skim
-[`fireflyframework-parent`](https://github.com/fireflyframework/fireflyframework-parent)
+conventions used across the Firefly Framework. Please skim
+[`fireflyframework-parent`](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/build/parent)
 for the project-wide setup, then read on for module-specific guidelines.
 
 ---
@@ -10,19 +10,16 @@ for the project-wide setup, then read on for module-specific guidelines.
 ## Development setup
 
 ```bash
-git clone https://github.com/fireflyframework/fireflyframework-agentic-bridge.git
-cd fireflyframework-agentic-bridge
-mvn -B install
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -B -pl :fireflyframework-agentic-bridge-core,:fireflyframework-agentic-bridge-autoconfigure,:fireflyframework-agentic-bridge-starter,:fireflyframework-agentic-bridge-samples -am install
 ```
 
-The build expects `fireflyframework-parent` and `fireflyframework-kernel`
-to be available in the local Maven repository (cloned as siblings is the
-recommended layout).
+The selected reactor builds its parent and kernel prerequisites from the same checkout.
 
 ## Code style
 
-- Java 21+ language level (Java 25 default; build with `-Pjava21` for
-  compatibility).
+- Use JDK 25 and the current parent compiler settings.
 - 4-space indentation, no tabs.
 - Final fields where possible; Lombok's `@Slf4j` for logger declarations
   is acceptable but not required.
@@ -39,7 +36,7 @@ recommended layout).
 Run the complete suite with:
 
 ```bash
-mvn -B test
+./mvnw -B -pl :fireflyframework-agentic-bridge-core,:fireflyframework-agentic-bridge-autoconfigure,:fireflyframework-agentic-bridge-starter,:fireflyframework-agentic-bridge-samples -am test
 ```
 
 ## Pull request checklist
@@ -53,7 +50,7 @@ mvn -B test
 ## Reporting bugs
 
 Please file issues at
-<https://github.com/fireflyframework/fireflyframework-agentic-bridge/issues>
+<https://github.com/fireflyframework/fireflyframework-jafly/issues>
 including:
 
 - Bridge version and Spring Boot version.

@@ -45,6 +45,8 @@ An extended onboarding flow might verify documents, wait for a review, and provi
 
 ## Quick start
 
+Follow [Coordinate an onboarding review](../guides/onboarding-coordination.md) for the complete tested extension to the onboarding service. The API fragments below illustrate individual contracts.
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Saga (annotations)

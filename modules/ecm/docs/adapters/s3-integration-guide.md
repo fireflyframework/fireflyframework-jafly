@@ -4,26 +4,17 @@ This guide provides step-by-step instructions for integrating the Amazon S3 adap
 
 ## Overview
 
-The S3 adapter provides document storage capabilities using Amazon S3 as the backend. It supports:
-
-- Document CRUD operations
-- Binary content storage and retrieval
-- Metadata management using S3 object metadata
-- Folder organization using S3 key prefixes
-- Document versioning using S3 versioning
-- Multipart uploads for large files
-- Server-side encryption
-- Multiple storage classes
+The shipped `S3DocumentContentAdapter` implements `DocumentContentPort`: store and retrieve bytes/streams, delete or inspect content, calculate checksums, and generate configured presigned URLs. The application supplies document metadata, folders, and access policy separately.
 
 ## Prerequisites
 
 Before integrating the S3 adapter, ensure you have:
 
-1. **AWS Account**: An active AWS account with S3 access
-2. **S3 Bucket**: A dedicated S3 bucket for document storage
-3. **IAM Permissions**: Appropriate IAM permissions for S3 operations
-4. **Java 21+**: The ECM library requires Java 21 or higher
-5. **Spring Boot 3.0+**: Compatible Spring Boot version
+1. AWS Account: An active AWS account with S3 access
+2. S3 Bucket: A dedicated S3 bucket for document storage
+3. IAM Permissions: Appropriate IAM permissions for S3 operations
+4. Java 25: The ECM library requires Java 25 or higher
+5. Spring Boot 4.1.1: Compatible Spring Boot version
 
 ## Step 1: Add Dependencies
 
@@ -34,15 +25,15 @@ Add the S3 adapter dependency to your `pom.xml`:
     <!-- Core ECM Library -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
-        <artifactId>fireflyframework-ecm-core</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>fireflyframework-ecm</artifactId>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
     
     <!-- S3 Adapter -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
-        <artifactId>fireflyframework-ecm-adapter-s3</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>fireflyframework-ecm-storage-aws</artifactId>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
@@ -204,50 +195,31 @@ Create an IAM policy with the following permissions:
 }
 ```
 
-## Step 6: Use in Your Application
+## Step 6: Use in your application
 
-### Basic Document Operations
+This API class needs the configured S3 content-port bean. The application assigns the document ID and authorizes the applicant before invoking it; storing bytes does not create an application-owned document record. Lombok setup is described in [Constructor injection](../../../../docs/site/maven.md#constructor-injection).
 
 ```java
-@Service
-public class DocumentService {
-    
-    @Autowired
-    private DocumentPort documentPort;
-    
-    @Autowired
-    private DocumentContentPort contentPort;
-    
-    public Mono<Document> uploadDocument(String name, byte[] content) {
-        Document document = Document.builder()
-            .name(name)
-            .mimeType("application/pdf")
-            .size((long) content.length)
-            .ownerId(UUID.randomUUID()) // ownerId is UUID, not Long
-            .status(DocumentStatus.ACTIVE)
-            .createdAt(Instant.now())
-            .build();
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.fireflyframework.ecm.port.document.DocumentContentPort;
+import reactor.core.publisher.Mono;
 
-        return documentPort.createDocument(document, content);
+@RequiredArgsConstructor
+public class ApplicantDocumentContent {
+    private final DocumentContentPort content;
+
+    public Mono<String> upload(UUID documentId, byte[] bytes) {
+        return content.storeContent(documentId, bytes, "application/pdf");
     }
-    
-    public Mono<byte[]> downloadDocument(UUID documentId) {
-        return contentPort.getContent(documentId);
+
+    public Mono<byte[]> download(UUID documentId) {
+        return content.getContent(documentId);
     }
 }
 ```
 
-### Streaming Operations
-
-```java
-public Flux<DataBuffer> streamDocument(UUID documentId) {
-    return contentPort.getContentStream(documentId);
-}
-
-public Mono<Void> uploadLargeDocument(UUID documentId, Flux<DataBuffer> content) {
-    return contentPort.storeContentStream(documentId, content);
-}
-```
+The port also exposes streaming operations. Use those with an upload-size policy and the provider configuration rather than loading an unbounded document into memory.
 
 ## Step 7: Testing
 
@@ -293,10 +265,10 @@ class S3AdapterTestcontainersTest {
 
 ### Common Issues
 
-1. **Access Denied**: Check IAM permissions and bucket policies
-2. **Bucket Not Found**: Verify bucket name and region configuration
-3. **Connection Timeout**: Adjust timeout settings or check network connectivity
-4. **Large File Upload Fails**: Enable multipart upload and adjust thresholds
+1. Access Denied: Check IAM permissions and bucket policies
+2. Bucket Not Found: Verify bucket name and region configuration
+3. Connection Timeout: Adjust timeout settings or check network connectivity
+4. Large File Upload Fails: Enable multipart upload and adjust thresholds
 
 ### Logging
 
@@ -309,42 +281,22 @@ logging:
     software.amazon.awssdk.services.s3: DEBUG
 ```
 
-## Quality Assurance & Testing
+## Test the configured adapter
 
-The S3 adapter maintains **100% test success rate** with comprehensive coverage:
-
-### Test Coverage
-- **21/21 tests passing** ✅
-- **Complete CRUD operations**: Document creation, retrieval, updates, deletion
-- **Content management**: Binary content upload, download, streaming
-- **Resilience patterns**: Circuit breaker and retry mechanism testing
-- **Error handling scenarios**: S3 exceptions, network failures, timeout handling
-
-### Testing Infrastructure
-- **Real resilience instances** for proper circuit breaker and retry testing
-- **Comprehensive S3 mocking** with proper response simulation
-- **Byte array validation** for content integrity verification
-- **Reactive stream testing** using StepVerifier for async operations
-- **Checksum verification** with correct SHA-1 hash validation
-
-### Recent Improvements
-- **Resilience Framework Integration**: Successfully resolved complex resilience4j reactive operator testing
-- **Mock Configuration**: Proper MockitoSettings for clean test execution
-- **Content Validation**: Accurate binary content comparison and checksum verification
-- **Error Simulation**: Comprehensive testing of S3 exception scenarios
+Use the [current test sources](../../../ecm-storage-aws/src/test) and the reports from the actual build. Mocked-client tests check their declared request/response cases; they do not establish live-provider acceptance or a permanent success rate. Configure and test credentials, account permissions, and provider failures separately.
 
 ## Best Practices
 
-1. **Use IAM Roles**: Avoid hardcoding access keys in production
-2. **Enable Versioning**: Protect against accidental deletions
-3. **Configure Encryption**: Use server-side encryption for sensitive data
-4. **Monitor Costs**: Set up CloudWatch alarms for S3 usage
-5. **Lifecycle Policies**: Configure automatic archiving for old documents
-6. **Cross-Region Replication**: Consider replication for disaster recovery
-7. **Resilience Configuration**: Properly configure circuit breaker and retry patterns
+1. Use IAM Roles: Avoid hardcoding access keys in production
+2. Enable Versioning: Protect against accidental deletions
+3. Configure Encryption: Use server-side encryption for sensitive data
+4. Monitor Costs: Set up CloudWatch alarms for S3 usage
+5. Lifecycle Policies: Configure automatic archiving for old documents
+6. Cross-Region Replication: Consider replication for disaster recovery
+7. Resilience Configuration: Properly configure circuit breaker and retry patterns
 
 ## Next Steps
 
 - [DocuSign Integration Guide](docusign-integration-guide.md)
 - [Configuration Reference](../configuration-reference.md)
-- [API Documentation](../api-reference.md)
+- [ECM API contracts](../api/README.md)

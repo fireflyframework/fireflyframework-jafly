@@ -1,6 +1,6 @@
 # Firefly Framework Rule Engine - Governance Guidelines
 
-**Team standards for rule complexity and feature usage**
+Team standards for rule complexity and feature usage
 
 *Helping organizations choose appropriate rule engine features for their context*
 
@@ -9,10 +9,10 @@
 ## Purpose of This Guide
 
 This guide helps teams establish standards for:
-- 🎯 **Feature Selection**: Which DSL features are appropriate for your team's skill level
-- 📏 **Complexity Management**: When to use simple vs. advanced patterns
-- 👥 **Team Coordination**: Ensuring consistent rule development practices
-- 🔄 **Maintenance Strategy**: Balancing functionality with long-term maintainability
+- 🎯 Feature Selection: Which DSL features are appropriate for your team's skill level
+- 📏 Complexity Management: When to use simple vs. advanced patterns
+- 👥 Team Coordination: Ensuring consistent rule development practices
+- 🔄 Maintenance Strategy: Balancing functionality with long-term maintainability
 
 ---
 
@@ -21,41 +21,41 @@ This guide helps teams establish standards for:
 Before choosing rule complexity, assess your team's readiness:
 
 ### 🟢 Beginner Team Profile
-**Characteristics:**
+Characteristics:
 - New to rule engines or business rules
 - Prefers simple, readable solutions
 - Values quick implementation over advanced features
 - Limited time for complex rule maintenance
 
-**Recommended Approach:**
+Recommended Approach:
 - Start with [Quick Start Guide](quick-start-guide.md)
 - Use only Basic patterns from [Common Patterns Guide](common-patterns-guide.md)
 - Avoid external API integrations initially
 - Focus on simple `when/then/else` syntax
 
 ### 🟡 Intermediate Team Profile
-**Characteristics:**
+Characteristics:
 - Some experience with rule engines
 - Comfortable with moderate complexity
 - Has dedicated time for rule maintenance
 - Needs multi-factor decision making
 
-**Recommended Approach:**
+Recommended Approach:
 - Use Basic and Intermediate patterns
 - Introduce sequential processing gradually
 - Start with simple API integrations
 - Mix simple and complex syntax as needed
 
 ### 🔴 Advanced Team Profile
-**Characteristics:**
+Characteristics:
 - Experienced with rule engines and complex systems
 - Has dedicated rule engine specialists
 - Requires sophisticated business logic
 - Comfortable with external system integration
 
-**Recommended Approach:**
+Recommended Approach:
 - Use all pattern complexity levels
-- Implement comprehensive error handling
+- Implement error handling
 - Leverage full DSL feature set
 - Design for high performance and resilience
 
@@ -76,7 +76,7 @@ These features should be used by teams at any maturity level:
 - Simple when/then/else logic
 ```
 
-**Example - Always Safe:**
+Example - Always Safe:
 ```yaml
 when:
   - creditScore at_least 650
@@ -99,7 +99,7 @@ These features require some experience and ongoing maintenance:
 - Conditional actions (if/then within actions)
 ```
 
-**Example - Requires Experience:**
+Example - Requires Experience:
 ```yaml
 rules:
   - name: "Stage 1"
@@ -124,7 +124,7 @@ These features should only be used by experienced teams:
 - External function calls
 ```
 
-**Example - Expert Level:**
+Example - Expert Level:
 ```yaml
 then:
   - run api_data as rest_get("https://api.example.com/data")
@@ -140,28 +140,28 @@ Use this matrix to choose appropriate rule complexity:
 
 | Business Logic Complexity | Team Experience | Recommended Pattern | Maintenance Effort |
 |---------------------------|------------------|-------------------|-------------------|
-| **Simple** (Yes/No decisions) | Any | 🟢 Basic | Low |
-| **Moderate** (Multi-factor) | Intermediate+ | 🟡 Intermediate | Medium |
-| **Complex** (Multi-stage) | Advanced | 🔴 Advanced | High |
-| **Integration** (External APIs) | Expert | 🔴 Advanced | Very High |
+| Simple (Yes/No decisions) | Any | 🟢 Basic | Low |
+| Moderate (Multi-factor) | Intermediate+ | 🟡 Intermediate | Medium |
+| Complex (Multi-stage) | Advanced | 🔴 Advanced | High |
+| Integration (External APIs) | Expert | 🔴 Advanced | Very High |
 
 ### Decision Questions
 
 Ask these questions to guide your choice:
 
-1. **"Can this be solved with simple if/then logic?"**
+1. "Can this be solved with simple if/then logic?"
    - Yes → Use Basic patterns
    - No → Continue to question 2
 
-2. **"Does this require multiple processing stages?"**
+2. "Does this require multiple processing stages?"
    - Yes → Consider Intermediate patterns
    - No → Stick with Basic patterns
 
-3. **"Do we need external data or complex error handling?"**
+3. "Do we need external data or complex error handling?"
    - Yes → Consider Advanced patterns (if team is ready)
    - No → Use Intermediate patterns
 
-4. **"Is our team comfortable maintaining complex rules?"**
+4. "Is our team comfortable maintaining complex rules?"
    - No → Step down one complexity level
    - Yes → Proceed with chosen complexity
 
@@ -183,10 +183,10 @@ name: "rule1"
 description: "checks stuff"
 ```
 
-**Recommended Format:**
-- **Name**: `BusinessArea_Purpose_Version` (e.g., `Lending_CreditCheck_v1.0`)
-- **Description**: Clear business purpose and key criteria
-- **Version**: Semantic versioning for tracking changes
+Recommended Format:
+- Name: `BusinessArea_Purpose_Version` (e.g., `Lending_CreditCheck_v1.0`)
+- Description: Clear business purpose and key criteria
+- Version: Semantic versioning for tracking changes
 
 ### Documentation Requirements
 
@@ -194,9 +194,9 @@ Set documentation standards based on complexity:
 
 | Complexity | Required Documentation |
 |------------|----------------------|
-| **🟢 Basic** | Name, description, business owner |
-| **🟡 Intermediate** | + Input/output examples, test cases |
-| **🔴 Advanced** | + Architecture diagrams, error handling docs |
+| 🟢 Basic | Name, description, business owner |
+| 🟡 Intermediate | + Input/output examples, test cases |
+| 🔴 Advanced | + Architecture diagrams, error handling docs |
 
 ### Code Review Standards
 
@@ -216,24 +216,24 @@ API Integration: Senior developer + architect review required
 
 ### Common Pitfalls by Complexity Level
 
-**🟢 Basic Pattern Risks:**
+🟢 Basic Pattern Risks:
 - Over-simplifying complex business logic
 - Hard-coding values that should be configurable
 - Missing edge cases in simple conditions
 
-**🟡 Intermediate Pattern Risks:**
+🟡 Intermediate Pattern Risks:
 - Creating overly complex rule chains
 - Poor error handling in multi-stage processing
 - Difficult-to-debug sequential dependencies
 
-**🔴 Advanced Pattern Risks:**
+🔴 Advanced Pattern Risks:
 - External API failures breaking rule execution
 - Performance issues with complex JSON operations
 - Security vulnerabilities in API integrations
 
 ### Mitigation Strategies
 
-**For All Complexity Levels:**
+For All Complexity Levels:
 ```yaml
 # Always include error handling
 else:
@@ -242,7 +242,7 @@ else:
   - call log with ["Error in rule: " + error_message, "ERROR"]
 ```
 
-**For Intermediate and Advanced:**
+For Intermediate and Advanced:
 
 Use the `circuit_breaker` *action* inside `then:` to short-circuit a rule when a
 downstream dependency or risk signal trips:
@@ -259,19 +259,19 @@ then:
 
 ### Growing Team Capabilities
 
-**Phase 1: Foundation (Months 1-3)**
+Phase 1: Foundation (Months 1-3)
 - Train team on Basic patterns
 - Implement simple rules only
 - Establish naming and documentation standards
 - Build confidence with successful deployments
 
-**Phase 2: Expansion (Months 4-8)**
+Phase 2: Expansion (Months 4-8)
 - Introduce Intermediate patterns gradually
 - Add multi-stage processing for complex scenarios
 - Implement comprehensive testing practices
 - Begin performance monitoring
 
-**Phase 3: Advanced (Months 9+)**
+Phase 3: Advanced (Months 9+)
 - Evaluate need for Advanced patterns
 - Implement API integrations if required
 - Add sophisticated error handling
@@ -281,11 +281,11 @@ then:
 
 When upgrading existing rules:
 
-1. **Assess Current Complexity**: Categorize existing rules
-2. **Plan Incremental Updates**: Don't rewrite everything at once
-3. **Maintain Backward Compatibility**: Keep existing interfaces working
-4. **Test Thoroughly**: Validate business logic hasn't changed
-5. **Document Changes**: Track what was modified and why
+1. Assess Current Complexity: Categorize existing rules
+2. Plan Incremental Updates: Don't rewrite everything at once
+3. Maintain Backward Compatibility: Keep existing interfaces working
+4. Test Thoroughly: Validate business logic hasn't changed
+5. Document Changes: Track what was modified and why
 
 ---
 
@@ -294,19 +294,19 @@ When upgrading existing rules:
 Track these metrics to ensure governance is working:
 
 ### Development Metrics
-- **Time to implement new rules** (should decrease over time)
-- **Rule complexity distribution** (should match team capability)
-- **Code review feedback volume** (should decrease as standards improve)
+- Time to implement new rules (should decrease over time)
+- Rule complexity distribution (should match team capability)
+- Code review feedback volume (should decrease as standards improve)
 
 ### Operational Metrics
-- **Rule execution success rate** (should be >99%)
-- **Performance degradation incidents** (should be minimal)
-- **Business logic errors** (should decrease over time)
+- Rule execution success rate (should be >99%)
+- Performance degradation incidents (should be minimal)
+- Business logic errors (should decrease over time)
 
 ### Team Metrics
-- **Developer confidence scores** (survey quarterly)
-- **Rule maintenance effort** (hours per rule per month)
-- **Knowledge sharing frequency** (team learning sessions)
+- Developer confidence scores (survey quarterly)
+- Rule maintenance effort (hours per rule per month)
+- Knowledge sharing frequency (team learning sessions)
 
 ---
 
@@ -328,10 +328,10 @@ Regularly review and adjust standards based on team growth and experience.
 
 ## Resources
 
-- **📚 Learning Path**: [Quick Start](quick-start-guide.md) → [Common Patterns](common-patterns-guide.md) → [Full Reference](yaml-dsl-reference.md)
-- **🎓 Hands-on Practice**: [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
-- **🏗️ Architecture**: [Architecture Guide](architecture.md)
-- **⚡ Performance**: [Performance Optimization](performance-optimization.md)
+- 📚 Learning Path: [Quick Start](quick-start-guide.md) → [Common Patterns](common-patterns-guide.md) → [Full Reference](yaml-dsl-reference.md)
+- 🎓 Hands-on Practice: [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
+- 🏗️ Architecture: [Architecture Guide](architecture.md)
+- ⚡ Performance: [Performance Optimization](performance-optimization.md)
 
 ---
 

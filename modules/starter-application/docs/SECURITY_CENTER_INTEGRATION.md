@@ -1,4 +1,6 @@
-# Security Center Integration - Complete Implementation
+# Security Center integration record (historical)
+
+This January 2025 implementation record describes the former Security Center integration. Current application context uses the validated SecurityContextPort boundary; use the current component guide for setup. [Current guide](../../../docs/site/modules/starter-application.md).
 
 **Status:** ✅ **FULLY INTEGRATED AND OPERATIONAL**
 
@@ -555,7 +557,7 @@ class TransactionControllerIntegrationTest {
     @Autowired
     private WebTestClient webClient;
     
-    @MockBean
+    @MockitoBean
     private FireflySessionManager sessionManager;
     
     @Test

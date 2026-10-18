@@ -1,8 +1,8 @@
-# Data Jobs — Complete Guide
+# Data Jobs. Complete Guide
 
-> **Complete guide for building data processing jobs with fireflyframework-starter-data**
+> Complete guide for building data processing jobs with fireflyframework-starter-data
 >
-> **Time**: 1-2 hours | **Prerequisites**: Java 21+, Maven 3.8+, Spring Boot 3.x, WebFlux
+> Time: 1-2 hours | Prerequisites: Java 25, Maven 3.8+, Spring Boot 4.1.1, WebFlux
 
 This is the complete, canonical guide for implementing Data Jobs with fireflyframework-starter-data. It consolidates and replaces all previous Data Jobs documents (step-by-step, lifecycle, sync jobs, multiple jobs example, SAGA integration, etc.).
 
@@ -41,33 +41,33 @@ If you need orchestrated workflows (async or quick sync operations) in your core
 
 ### The Concept
 
-**Data Jobs** are standardized, orchestrated workflows for data processing in core-data services. They implement the **Template Method Pattern** to provide a consistent framework for both synchronous and asynchronous data processing operations.
+Data Jobs are standardized, orchestrated workflows for data processing in core-data services. They implement the Template Method Pattern to provide a consistent framework for both synchronous and asynchronous data processing operations.
 
 ### Two Execution Models
 
 #### 1. Asynchronous Jobs (Multi-Stage, Long-Running)
 
-**Lifecycle**: START → CHECK → COLLECT → RESULT → STOP
+Lifecycle: START → CHECK → COLLECT → RESULT → STOP
 
-**Use Cases**:
+Use Cases:
 - ETL and batch processing (> 30 seconds)
 - Large dataset processing with external systems (DBs, files, APIs)
 - Coordinated multi-step business processes
 - Jobs that require polling and status checking
 
-**Example**: Import 1 million customer records from external CRM system
+Example: Import 1 million customer records from external CRM system
 
 #### 2. Synchronous Jobs (Single-Stage, Quick)
 
-**Lifecycle**: EXECUTE (returns immediately)
+Lifecycle: EXECUTE (returns immediately)
 
-**Use Cases**:
+Use Cases:
 - Quick validations (< 30 seconds)
 - Simple transformations or lookups
 - Real-time data enrichment
 - Immediate response operations
 
-**Example**: Validate customer data before saving
+Example: Validate customer data before saving
 
 ---
 
@@ -124,7 +124,7 @@ public class OrderImportJob {
 }
 ```
 
-**Problems**:
+Problems:
 - Every team reinvents the wheel
 - Inconsistent observability across jobs
 - Different error handling strategies
@@ -158,7 +158,7 @@ POST /run-analytics
 { "reportType": "sales" }
 ```
 
-**Problems**:
+Problems:
 - Every job has a different API
 - Clients need to know each job's specific interface
 - No common patterns for status checking, cancellation, etc.
@@ -169,12 +169,12 @@ Data Jobs solve this using two fundamental design patterns:
 
 #### 1. Template Method Pattern (Standardized Workflow)
 
-The **Template Method Pattern** defines the skeleton of an algorithm in a base class, letting subclasses override specific steps without changing the algorithm's structure.
+The Template Method Pattern defines the skeleton of an algorithm in a base class, letting subclasses override specific steps without changing the algorithm's structure.
 
-**In Data Jobs**:
-- **Template**: AbstractResilientDataJobService defines the workflow
-- **Steps**: You implement only the business logic (doStartJob, doCheckJob, etc.)
-- **Cross-Cutting**: Framework handles tracing, metrics, retry, circuit breaker, etc.
+In Data Jobs:
+- Template: AbstractResilientDataJobService defines the workflow
+- Steps: You implement only the business logic (doStartJob, doCheckJob, etc.)
+- Cross-Cutting: Framework handles tracing, metrics, retry, circuit breaker, etc.
 
 ```
 Template (AbstractResilientDataJobService):
@@ -205,15 +205,15 @@ Template (AbstractResilientDataJobService):
   protected abstract Mono<JobStageResponse> doStartJob(request);
 ```
 
-**Benefits**:
-- **Consistency**: All jobs follow the same pattern
-- **DRY**: Cross-cutting concerns implemented once
-- **Focus**: You only write business logic
-- **Evolution**: Framework improvements benefit all jobs
+Benefits:
+- Consistency: All jobs follow the same pattern
+- DRY: Cross-cutting concerns implemented once
+- Focus: You only write business logic
+- Evolution: Framework improvements benefit all jobs
 
 #### 2. Hexagonal Architecture (Ports and Adapters)
 
-The **Hexagonal Architecture** (aka Ports and Adapters) separates core business logic from external concerns.
+The Hexagonal Architecture (aka Ports and Adapters) separates core business logic from external concerns.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -266,10 +266,10 @@ The **Hexagonal Architecture** (aka Ports and Adapters) separates core business 
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Benefits**:
-- **Testability**: Core logic independent of external systems
-- **Flexibility**: Swap orchestrators without changing core logic
-- **Maintainability**: Clear separation of concerns
+Benefits:
+- Testability: Core logic independent of external systems
+- Flexibility: Swap orchestrators without changing core logic
+- Maintainability: Clear separation of concerns
 
 ---
 
@@ -277,11 +277,11 @@ The **Hexagonal Architecture** (aka Ports and Adapters) separates core business 
 
 ### Design Patterns in Action
 
-The architecture implements **three design patterns** working together:
+The architecture implements three design patterns working together:
 
-1. **Template Method Pattern** - Standardized workflow with customizable steps
-2. **Hexagonal Architecture** - Ports and adapters for clean separation
-3. **Decorator Pattern** - Cross-cutting concerns wrapped around business logic
+1. Template Method Pattern - Standardized workflow with customizable steps
+2. Hexagonal Architecture - Ports and adapters for clean separation
+3. Decorator Pattern - Cross-cutting concerns wrapped around business logic
 
 ### Key Components
 
@@ -295,27 +295,27 @@ The architecture implements **three design patterns** working together:
 
 #### Adapters (Implementations)
 
-**Input Adapters** (REST Controllers):
+Input Adapters (REST Controllers):
 - `AbstractDataJobController` - Async job REST API
 - `AbstractSyncDataJobController` - Sync job REST API
 
-**Core Adapters** (Service Layer):
+Core Adapters (Service Layer):
 - `AbstractResilientDataJobService` - Async job template with cross-cutting concerns
 - `AbstractResilientSyncDataJobService` - Sync job template with cross-cutting concerns
 
-**Output Adapters** (External Systems):
+Output Adapters (External Systems):
 - Your `JobOrchestrator` implementation (Airflow, Step Functions, etc.)
 
 #### Cross-Cutting Concerns (Automatically Applied)
 
 All jobs automatically get:
-- **Distributed Tracing** - Micrometer Observation integration
-- **Metrics** - Success/failure counts, execution time, error types
-- **Resiliency** - Circuit breaker, retry, rate limiting, bulkhead, timeout
-- **Audit Trail** - Persistence of job execution history
-- **Result Persistence** - Storage of job results
-- **Event Publishing** - Job lifecycle events (started, completed, failed)
-- **Structured Logging** - Comprehensive logging with context
+- Distributed Tracing - Micrometer Observation integration
+- Metrics - Success/failure counts, execution time, error types
+- Resiliency - Circuit breaker, retry, rate limiting, bulkhead, timeout
+- Audit Trail - Persistence of job execution history
+- Result Persistence - Storage of job results
+- Event Publishing - Job lifecycle events (started, completed, failed)
+- Structured Logging - Comprehensive logging with context
 
 ### Key Classes
 
@@ -336,21 +336,21 @@ All jobs automatically get:
 
 ### Overview
 
-Async jobs are designed for tasks that take longer than ~30 seconds and/or require orchestration with external systems. They follow a **state machine pattern** with well-defined stages.
+Async jobs are designed for tasks that take longer than ~30 seconds and/or require orchestration with external systems. They follow a state machine pattern with well-defined stages.
 
 ### The Five Stages
 
-#### 1. START — Initialize and Trigger
+#### 1. START. Initialize and Trigger
 
-**Purpose**: Initialize the job and trigger execution in the external orchestrator.
+Purpose: Initialize the job and trigger execution in the external orchestrator.
 
-**What happens**:
+What happens:
 - Generate execution ID
 - Validate input parameters
 - Submit job to orchestrator (Airflow, Step Functions, etc.)
 - Return execution ID to client
 
-**Implementation**:
+Implementation:
 ```java
 @Override
 protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
@@ -371,7 +371,7 @@ protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
 }
 ```
 
-**HTTP Request**:
+HTTP Request:
 ```http
 POST /api/v1/jobs/start
 {
@@ -381,7 +381,7 @@ POST /api/v1/jobs/start
 }
 ```
 
-**HTTP Response**:
+HTTP Response:
 ```json
 {
   "success": true,
@@ -391,16 +391,16 @@ POST /api/v1/jobs/start
 }
 ```
 
-#### 2. CHECK — Poll Status
+#### 2. CHECK. Poll Status
 
-**Purpose**: Check the current status of the running job.
+Purpose: Check the current status of the running job.
 
-**What happens**:
+What happens:
 - Query orchestrator for job status
 - Return current state (RUNNING, COMPLETED, FAILED, etc.)
 - Optionally return progress information
 
-**Implementation**:
+Implementation:
 ```java
 @Override
 protected Mono<JobStageResponse> doCheckJob(JobStageRequest request) {
@@ -417,12 +417,12 @@ protected Mono<JobStageResponse> doCheckJob(JobStageRequest request) {
 }
 ```
 
-**HTTP Request**:
+HTTP Request:
 ```http
 GET /api/v1/jobs/exec-abc-123/check
 ```
 
-**HTTP Response**:
+HTTP Response:
 ```json
 {
   "success": true,
@@ -435,16 +435,16 @@ GET /api/v1/jobs/exec-abc-123/check
 }
 ```
 
-#### 3. COLLECT — Gather Intermediate Results
+#### 3. COLLECT. Gather Intermediate Results
 
-**Purpose**: Collect intermediate or partial results while the job is still running.
+Purpose: Collect intermediate or partial results while the job is still running.
 
-**What happens**:
+What happens:
 - Retrieve partial results from orchestrator or data store
 - Useful for long-running jobs that produce incremental output
 - Optional stage (not all jobs need this)
 
-**Implementation**:
+Implementation:
 ```java
 @Override
 protected Mono<JobStageResponse> doCollectJobResults(JobStageRequest request) {
@@ -461,12 +461,12 @@ protected Mono<JobStageResponse> doCollectJobResults(JobStageRequest request) {
 }
 ```
 
-**HTTP Request**:
+HTTP Request:
 ```http
 GET /api/v1/jobs/exec-abc-123/collect
 ```
 
-**HTTP Response**:
+HTTP Response:
 ```json
 {
   "success": true,
@@ -479,16 +479,16 @@ GET /api/v1/jobs/exec-abc-123/collect
 }
 ```
 
-#### 4. RESULT — Retrieve Final Results
+#### 4. RESULT. Retrieve Final Results
 
-**Purpose**: Get the final results after job completion.
+Purpose: Get the final results after job completion.
 
-**What happens**:
+What happens:
 - Retrieve final output from orchestrator or data store
 - Optionally clean up temporary resources
 - Return complete results to client
 
-**Implementation**:
+Implementation:
 ```java
 @Override
 protected Mono<JobStageResponse> doGetJobResult(JobStageRequest request) {
@@ -521,12 +521,12 @@ protected Mono<JobStageResponse> doGetJobResult(JobStageRequest request) {
 }
 ```
 
-**HTTP Request**:
+HTTP Request:
 ```http
 GET /api/v1/jobs/exec-abc-123/result
 ```
 
-**HTTP Response**:
+HTTP Response:
 ```json
 {
   "success": true,
@@ -541,16 +541,16 @@ GET /api/v1/jobs/exec-abc-123/result
 }
 ```
 
-#### 5. STOP — Terminate/Cancel
+#### 5. STOP. Terminate/Cancel
 
-**Purpose**: Stop or cancel a running job.
+Purpose: Stop or cancel a running job.
 
-**What happens**:
+What happens:
 - Send cancellation request to orchestrator
 - Clean up resources
 - Return confirmation
 
-**Implementation**:
+Implementation:
 ```java
 @Override
 protected Mono<JobStageResponse> doStopJob(JobStageRequest request, String reason) {
@@ -566,12 +566,12 @@ protected Mono<JobStageResponse> doStopJob(JobStageRequest request, String reaso
 }
 ```
 
-**HTTP Request**:
+HTTP Request:
 ```http
 POST /api/v1/jobs/exec-abc-123/stop?reason=User%20requested%20cancellation
 ```
 
-**HTTP Response**:
+HTTP Response:
 ```json
 {
   "success": true,
@@ -632,7 +632,7 @@ processResults(resultResponse.getData());
 
 ### Cross-Cutting Concerns Applied to Each Stage
 
-The library automatically applies these concerns to **every stage**:
+The library automatically applies these concerns to every stage:
 
 ```
 Client Request
@@ -664,7 +664,7 @@ Client Request
 Response to Client
 ```
 
-**You only implement step 7** - the framework handles everything else!
+You only implement step 7 - the framework handles everything else!
 
 ---
 
@@ -678,7 +678,7 @@ Add `fireflyframework-starter-data` to your `pom.xml`:
 <dependency>
   <groupId>org.fireflyframework</groupId>
   <artifactId>fireflyframework-starter-data</artifactId>
-  <version>26.02.06</version>
+  <version>26.10.17-SNAPSHOT</version>
 </dependency>
 
 <!-- Spring Boot WebFlux (required for reactive support) -->
@@ -692,7 +692,7 @@ Add `fireflyframework-starter-data` to your `pom.xml`:
 
 Create a service that extends `AbstractResilientDataJobService` and implements the business logic for each stage:
 
-**Key Points**:
+Key Points:
 - Extend `AbstractResilientDataJobService` (gets all cross-cutting concerns automatically)
 - Inject required dependencies via constructor
 - Override only the `doXxx` methods you need (Template Method Pattern)
@@ -789,7 +789,7 @@ public class CustomerImportJobService extends AbstractResilientDataJobService {
 
 Create a controller that extends `AbstractDataJobController` to expose REST endpoints:
 
-**Key Points**:
+Key Points:
 - Extend `AbstractDataJobController` (gets all REST endpoints automatically)
 - Inject your `DataJobService` implementation
 - Add `@RestController` annotation
@@ -816,7 +816,7 @@ public class CustomerImportJobController extends AbstractDataJobController {
 }
 ```
 
-**Important**: The `@RequestMapping` defines the base path. The controller automatically adds these endpoints:
+Important: The `@RequestMapping` defines the base path. The controller automatically adds these endpoints:
 - `POST /api/v1/customer-import/start`
 - `GET /api/v1/customer-import/{executionId}/check`
 - `GET /api/v1/customer-import/{executionId}/collect`
@@ -885,7 +885,7 @@ curl http://localhost:8080/api/v1/customer-import/exec-abc-123/check
 curl http://localhost:8080/api/v1/customer-import/exec-abc-123/result
 ```
 
-That’s it! You now have a fully functional async data job with:
+That's it! You now have a fully functional async data job with:
 - Standardized REST API
 - Distributed tracing
 - Metrics collection
@@ -901,13 +901,13 @@ That’s it! You now have a fully functional async data job with:
 
 Use synchronous jobs for quick, single-step operations (< ~30 seconds) that return results immediately.
 
-**When to use sync jobs**:
+When to use sync jobs:
 - Quick validations (< 30 seconds)
 - Simple transformations
 - Real-time lookups
 - Immediate response required
 
-**When NOT to use sync jobs**:
+When NOT to use sync jobs:
 - Long-running operations (> 30 seconds)
 - Operations requiring polling
 - Multi-stage workflows
@@ -917,7 +917,7 @@ Use synchronous jobs for quick, single-step operations (< ~30 seconds) that retu
 
 Create a service that extends `AbstractResilientSyncDataJobService` and implements the `doExecute` method:
 
-**Key Points**:
+Key Points:
 - Extend `AbstractResilientSyncDataJobService` (gets all cross-cutting concerns automatically)
 - Inject required dependencies via constructor
 - Override only `doExecute` method (Template Method Pattern)
@@ -971,7 +971,7 @@ public class CustomerValidationJobService extends AbstractResilientSyncDataJobSe
 
 Create a controller that extends `AbstractSyncDataJobController` to expose the execute endpoint:
 
-**Key Points**:
+Key Points:
 - Extend `AbstractSyncDataJobController` (gets execute endpoint automatically)
 - Inject your `SyncDataJobService` implementation
 - Add `@RestController` annotation
@@ -998,7 +998,7 @@ public class CustomerValidationJobController extends AbstractSyncDataJobControll
 }
 ```
 
-**Important**: The controller automatically adds this endpoint:
+Important: The controller automatically adds this endpoint:
 - `POST /api/v1/customer-validation/execute`
 
 ### Step 3: Test Your Sync Job
@@ -1047,7 +1047,7 @@ When you extend `AbstractDataJobController`, you automatically get these endpoin
 | `GET` | `{base}/{executionId}/result` | Get final results | None | `JobStageResponse` with complete data |
 | `POST` | `{base}/{executionId}/stop` | Stop/cancel job | Query param: `reason` | `JobStageResponse` with confirmation |
 
-**Example**: If your controller has `@RequestMapping("/api/v1/customer-import")`, the endpoints are:
+Example: If your controller has `@RequestMapping("/api/v1/customer-import")`, the endpoints are:
 - `POST /api/v1/customer-import/start`
 - `GET /api/v1/customer-import/{executionId}/check`
 - `GET /api/v1/customer-import/{executionId}/collect`
@@ -1062,7 +1062,7 @@ When you extend `AbstractSyncDataJobController`, you automatically get this endp
 |--------|------|-------------|--------------|----------|
 | `POST` | `{base}/execute` | Execute job synchronously | `JobStageRequest` | `JobStageResponse` with immediate results |
 
-**Example**: If your controller has `@RequestMapping("/api/v1/customer-validation")`, the endpoint is:
+Example: If your controller has `@RequestMapping("/api/v1/customer-validation")`, the endpoint is:
 - `POST /api/v1/customer-validation/execute`
 
 ### Request/Response Models
@@ -1098,21 +1098,21 @@ When you extend `AbstractSyncDataJobController`, you automatically get this endp
 ### Cross-Cutting Concerns
 
 All endpoints automatically include:
-- **Distributed Tracing** - Every request gets a trace span
-- **Metrics** - Success/failure counts, execution time
-- **Structured Logging** - Request/response logging with context
-- **Error Handling** - Standardized error responses
-- **OpenAPI Documentation** - Swagger UI integration
+- Distributed Tracing - Every request gets a trace span
+- Metrics - Success/failure counts, execution time
+- Structured Logging - Request/response logging with context
+- Error Handling - Standardized error responses
+- OpenAPI Documentation - Swagger UI integration
 
 ### Important Notes
 
-**Controllers are NOT auto-registered**:
+Controllers are NOT auto-registered:
 - Unlike Data Enrichers, Data Job controllers are NOT automatically discovered
 - You MUST create concrete controller classes in your microservice
 - You MUST annotate them with `@RestController` and `@RequestMapping`
 - This is by design - jobs are domain-specific and should be explicitly defined
 
-**Why not auto-register?**
+Why not auto-register?
 - Data Jobs are domain-specific workflows (CustomerImport, OrderProcessing, etc.)
 - Each job needs its own REST endpoint path
 - Auto-registration would create naming conflicts
@@ -1126,7 +1126,7 @@ All endpoints automatically include:
 
 All job-related configuration is centralized in `JobOrchestrationProperties` with prefix `firefly.data.orchestration`.
 
-**Configuration Source**: `org.fireflyframework.data.config.JobOrchestrationProperties`
+Configuration Source: `org.fireflyframework.data.config.JobOrchestrationProperties`
 
 ### Core Properties
 
@@ -1370,18 +1370,18 @@ firefly:
 
 ### What is a Job Orchestrator?
 
-A **Job Orchestrator** is an external workflow engine that manages the execution of long-running, multi-step data processing jobs. It handles:
+A Job Orchestrator is an external workflow engine that manages the execution of long-running, multi-step data processing jobs. It handles:
 
-- **Workflow Definition**: Define job steps and dependencies
-- **Execution Management**: Start, stop, and monitor job executions
-- **State Management**: Track job state across steps
-- **Scheduling**: Trigger jobs on schedule or events
-- **Error Handling**: Retry failed steps, handle timeouts
-- **Scalability**: Distribute work across multiple workers
+- Workflow Definition: Define job steps and dependencies
+- Execution Management: Start, stop, and monitor job executions
+- State Management: Track job state across steps
+- Scheduling: Trigger jobs on schedule or events
+- Error Handling: Retry failed steps, handle timeouts
+- Scalability: Distribute work across multiple workers
 
 ### The JobOrchestrator Port
 
-The library defines a **port** (interface) for orchestrators:
+The library defines a port (interface) for orchestrators:
 
 ```java
 public interface JobOrchestrator {
@@ -1393,7 +1393,7 @@ public interface JobOrchestrator {
 }
 ```
 
-**Source**: `org.fireflyframework.data.orchestration.port.JobOrchestrator`
+Source: `org.fireflyframework.data.orchestration.port.JobOrchestrator`
 
 ### Supported Orchestrators
 
@@ -1401,9 +1401,9 @@ You can implement `JobOrchestrator` to integrate with any workflow engine:
 
 #### 1. AWS Step Functions
 
-**Best for**: Production workloads on AWS
+Best for: Production workloads on AWS
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1416,9 +1416,9 @@ firefly:
 
 #### 2. Apache Airflow
 
-**Best for**: Complex data pipelines, on-premise deployments
+Best for: Complex data pipelines, on-premise deployments
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1433,9 +1433,9 @@ firefly:
 
 #### 3. Custom Orchestrator
 
-**Best for**: Development, testing, or integration with proprietary systems
+Best for: Development, testing, or integration with proprietary systems
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1447,9 +1447,9 @@ firefly:
 
 The library automatically provides health checks for orchestrators via `JobOrchestratorHealthIndicator`.
 
-**Endpoint**: `GET /actuator/health/jobOrchestrator`
+Endpoint: `GET /actuator/health/jobOrchestrator`
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1468,10 +1468,10 @@ firefly:
 
 It is common to create several job services and controllers in a single microservice. This approach:
 
-- **Reuses Infrastructure**: All jobs share the same cross-cutting concerns
-- **Clear Responsibilities**: Each job has its own service and controller
-- **Simplified Deployment**: One microservice, multiple jobs
-- **Consistent Patterns**: All jobs follow the same structure
+- Reuses Infrastructure: All jobs share the same cross-cutting concerns
+- Clear Responsibilities: Each job has its own service and controller
+- Simplified Deployment: One microservice, multiple jobs
+- Consistent Patterns: All jobs follow the same structure
 
 ### Example Structure
 
@@ -1525,7 +1525,7 @@ public class CustomerImportJobController extends AbstractDataJobController {
 }
 ```
 
-**Endpoints**: `POST /api/v1/customer-import/start`, `GET /api/v1/customer-import/{executionId}/check`
+Endpoints: `POST /api/v1/customer-import/start`, `GET /api/v1/customer-import/{executionId}/check`
 
 #### Job 2: Customer Validation (Sync)
 
@@ -1553,19 +1553,19 @@ public class CustomerValidationJobController extends AbstractSyncDataJobControll
 }
 ```
 
-**Endpoints**: `POST /api/v1/customer-validation/execute`
+Endpoints: `POST /api/v1/customer-validation/execute`
 
 ### Benefits
 
 All jobs automatically get:
 - Distributed tracing
-- Metrics collection  
+- Metrics collection
 - Circuit breaker and retry
 - Audit trail
 - Event publishing
 - Standardized error handling
 
-**No code duplication** - all cross-cutting concerns are handled by the framework!
+No code duplication - all cross-cutting concerns are handled by the framework!
 
 
 ---
@@ -1646,20 +1646,20 @@ public class OrderProcessingSaga {
 
 The framework automatically persists:
 
-**Audit Trail** (via `JobAuditService`):
+Audit Trail (via `JobAuditService`):
 - Job start/stop times
 - Input parameters
 - Success/failure status
 - Error messages and stack traces (optional)
 - Retention: 90 days (configurable)
 
-**Execution Results** (via `JobExecutionResultService`):
+Execution Results (via `JobExecutionResultService`):
 - Raw output data
 - Transformed output data
 - Result caching (1 hour TTL, configurable)
 - Retention: 30 days (configurable)
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1680,7 +1680,7 @@ firefly:
 
 ### The Decorator Pattern in Action
 
-The framework uses the **Decorator Pattern** to wrap your business logic with cross-cutting concerns:
+The framework uses the Decorator Pattern to wrap your business logic with cross-cutting concerns:
 
 ```
 Your Business Logic (doStartJob)
@@ -1710,13 +1710,13 @@ Response
 
 #### 1. Distributed Tracing
 
-**Micrometer Observation** integration provides:
+Micrometer Observation integration provides:
 - Trace ID and Span ID for every request
 - Parent-child span relationships
 - Trace context propagation across services
 - Integration with Jaeger, Grafana Tempo, and other OpenTelemetry-compatible systems
 
-**Example Trace**:
+Example Trace:
 ```
 Trace ID: abc123
 ├─ Span: POST /api/v1/customer-import/start (200ms)
@@ -1727,7 +1727,7 @@ Trace ID: abc123
 │  │  └─ Span: publishJobCompleted (5ms)
 ```
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1740,14 +1740,14 @@ firefly:
 
 #### 2. Metrics
 
-**Micrometer Metrics** provides:
+Micrometer Metrics provides:
 - Success/failure counts per job type
 - Execution time histograms
 - Error type distribution
 - Circuit breaker state
 - Retry attempts
 
-**Example Metrics**:
+Example Metrics:
 ```
 firefly.data.job.start.count{job_type="CustomerImport",status="success"} = 1000
 firefly.data.job.start.count{job_type="CustomerImport",status="failure"} = 10
@@ -1755,7 +1755,7 @@ firefly.data.job.start.duration{job_type="CustomerImport",quantile="0.95"} = 2.5
 firefly.data.job.circuit_breaker.state{job_type="CustomerImport"} = CLOSED
 ```
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1767,13 +1767,13 @@ firefly:
 
 #### 3. Structured Logging
 
-**SLF4J** with structured context:
+SLF4J with structured context:
 - Request/response logging
 - Execution ID in every log
 - Job type and stage
 - Error details with context
 
-**Example Logs**:
+Example Logs:
 ```
 INFO  [executionId=exec-123, jobType=CustomerImport, stage=START] Starting job
 DEBUG [executionId=exec-123, jobType=CustomerImport, stage=START] Request: {datasetId=dataset-123}
@@ -1783,16 +1783,16 @@ DEBUG [executionId=exec-123, jobType=CustomerImport, stage=START] Response: {suc
 
 #### 4. Resiliency Decorators
 
-**Resilience4j** integration provides:
+Resilience4j integration provides:
 
 ##### Circuit Breaker
 
 Prevents cascading failures:
-- **Closed**: Normal operation
-- **Open**: Fast-fail after threshold
-- **Half-Open**: Test if service recovered
+- Closed: Normal operation
+- Open: Fast-fail after threshold
+- Half-Open: Test if service recovered
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1810,7 +1810,7 @@ Automatic retry on transient failures:
 - Configurable max attempts
 - Retry only on specific exceptions
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1827,7 +1827,7 @@ Prevent overwhelming external systems:
 - Limit requests per time period
 - Queue or reject excess requests
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1844,7 +1844,7 @@ Isolate resources:
 - Limit concurrent executions
 - Prevent resource exhaustion
 
-**Configuration**:
+Configuration:
 ```yaml
 firefly:
   data:
@@ -1856,9 +1856,9 @@ firefly:
 
 ### You Only Write Business Logic
 
-All of the above is **automatically applied** by `AbstractResilientDataJobService` and `AbstractResilientSyncDataJobService`.
+All of the above is automatically applied by `AbstractResilientDataJobService` and `AbstractResilientSyncDataJobService`.
 
-**You only implement**:
+You only implement:
 ```java
 @Override
 protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
@@ -1870,7 +1870,7 @@ protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
 }
 ```
 
-**The framework handles everything else!**
+The framework handles everything else!
 
 
 ---
@@ -1975,7 +1975,7 @@ class CustomerImportJobControllerTest {
     @Autowired
     private WebTestClient webTestClient;
     
-    @MockBean
+    @MockitoBean
     private CustomerImportJobService service;
     
     @Test
@@ -2068,12 +2068,12 @@ See the test sources in this repository for working examples:
 
 ### Testing Best Practices
 
-1. **Mock External Dependencies**: Always mock `JobOrchestrator`, databases, external APIs
-2. **Test Business Logic**: Focus on testing your `doXxx` methods
-3. **Test Error Handling**: Verify behavior when orchestrator fails, timeouts occur, etc.
-4. **Test Reactive Flows**: Use `StepVerifier` for reactive testing
-5. **Integration Tests**: Test full HTTP request/response cycle with `WebTestClient`
-6. **Don't Test Framework Code**: The framework's cross-cutting concerns are already tested
+1. Mock External Dependencies: Always mock `JobOrchestrator`, databases, external APIs
+2. Test Business Logic: Focus on testing your `doXxx` methods
+3. Test Error Handling: Verify behavior when orchestrator fails, timeouts occur, etc.
+4. Test Reactive Flows: Use `StepVerifier` for reactive testing
+5. Integration Tests: Test full HTTP request/response cycle with `WebTestClient`
+6. Don't Test Framework Code: The framework's cross-cutting concerns are already tested
 
 
 ---
@@ -2084,18 +2084,18 @@ See the test sources in this repository for working examples:
 
 | Problem | Possible Cause | Solution |
 |---------|---------------|----------|
-| **No beans of DataJobService/SyncDataJobService type found** | Service not picked up by component scanning | Ensure your `@Service` class is in a package scanned by Spring. Add `@ComponentScan` if needed. |
-| **Endpoints not exposed** | Controller not registered | Ensure controller is annotated with `@RestController` and `@RequestMapping`. Verify component scan covers the package. |
-| **404 Not Found on endpoints** | Wrong base path | Check `@RequestMapping` value on controller. Verify application context path. |
-| **Orchestrator timeouts** | Orchestrator slow or unreachable | Adjust `firefly.data.orchestration.default-timeout`. Verify orchestrator connectivity and credentials. |
-| **Circuit breaker always open** | Too many failures | Check `circuit-breaker-failure-rate-threshold`. Verify orchestrator health. Review error logs. |
-| **Missing metrics** | Micrometer not configured | Add `spring-boot-starter-actuator` dependency. Enable metrics in `application.yml`. |
-| **Missing traces** | Tracing not configured | Add Micrometer Tracing dependencies. Configure OpenTelemetry exporter (OTLP). |
-| **Job events not published** | Events disabled | Set `firefly.data.orchestration.publish-job-events: true`. Verify event publisher bean exists. |
-| **Audit data not persisted** | Persistence disabled | Set `firefly.data.orchestration.persistence.audit-enabled: true`. Verify database configuration. |
-| **Results not cached** | Caching disabled | Set `firefly.data.orchestration.persistence.enable-result-caching: true`. |
-| **Retry not working** | Retry disabled | Set `firefly.data.orchestration.resiliency.retry-enabled: true`. |
-| **Rate limiter rejecting requests** | Too many requests | Increase `rate-limiter-limit-for-period` or `rate-limiter-limit-refresh-period`. |
+| No beans of DataJobService/SyncDataJobService type found | Service not picked up by component scanning | Ensure your `@Service` class is in a package scanned by Spring. Add `@ComponentScan` if needed. |
+| Endpoints not exposed | Controller not registered | Ensure controller is annotated with `@RestController` and `@RequestMapping`. Verify component scan covers the package. |
+| 404 Not Found on endpoints | Wrong base path | Check `@RequestMapping` value on controller. Verify application context path. |
+| Orchestrator timeouts | Orchestrator slow or unreachable | Adjust `firefly.data.orchestration.default-timeout`. Verify orchestrator connectivity and credentials. |
+| Circuit breaker always open | Too many failures | Check `circuit-breaker-failure-rate-threshold`. Verify orchestrator health. Review error logs. |
+| Missing metrics | Micrometer not configured | Add `spring-boot-starter-actuator` dependency. Enable metrics in `application.yml`. |
+| Missing traces | Tracing not configured | Add Micrometer Tracing dependencies. Configure OpenTelemetry exporter (OTLP). |
+| Job events not published | Events disabled | Set `firefly.data.orchestration.publish-job-events: true`. Verify event publisher bean exists. |
+| Audit data not persisted | Persistence disabled | Set `firefly.data.orchestration.persistence.audit-enabled: true`. Verify database configuration. |
+| Results not cached | Caching disabled | Set `firefly.data.orchestration.persistence.enable-result-caching: true`. |
+| Retry not working | Retry disabled | Set `firefly.data.orchestration.resiliency.retry-enabled: true`. |
+| Rate limiter rejecting requests | Too many requests | Increase `rate-limiter-limit-for-period` or `rate-limiter-limit-refresh-period`. |
 
 ### Debugging Tips
 
@@ -2173,11 +2173,11 @@ public class CustomerDataServiceApplication implements CommandLineRunner {
 
 If you encounter issues not covered here:
 
-1. **Check Logs**: Enable DEBUG logging for `org.fireflyframework.data`
-2. **Review Configuration**: Verify all required properties are set
-3. **Check Dependencies**: Ensure all required dependencies are in `pom.xml`
-4. **Test Isolation**: Create a minimal test case to isolate the issue
-5. **Consult Documentation**: Review this guide and the source code
+1. Check Logs: Enable DEBUG logging for `org.fireflyframework.data`
+2. Review Configuration: Verify all required properties are set
+3. Check Dependencies: Ensure all required dependencies are in `pom.xml`
+4. Test Isolation: Create a minimal test case to isolate the issue
+5. Consult Documentation: Review this guide and the source code
 
 
 ---
@@ -2186,31 +2186,31 @@ If you encounter issues not covered here:
 
 ### General Questions
 
-**Q: Do I need to create controllers for Data Jobs?**
+Q: Do I need to create controllers for Data Jobs?
 
 A: Yes. Unlike Data Enrichers (which have auto-registered global controllers), Data Job controllers are NOT auto-registered. You must create concrete `@RestController` classes in your microservice that extend `AbstractDataJobController` or `AbstractSyncDataJobController`. This is by design because jobs are domain-specific and each needs its own REST endpoint path.
 
-**Q: Why aren't Data Job controllers auto-registered like Data Enrichers?**
+Q: Why aren't Data Job controllers auto-registered like Data Enrichers?
 
 A: Data Jobs are domain-specific workflows (CustomerImport, OrderProcessing, etc.) that need explicit REST endpoint paths. Auto-registration would create naming conflicts and reduce flexibility. Explicit controllers give you full control over API design.
 
-**Q: Can I run Data Jobs without an external orchestrator?**
+Q: Can I run Data Jobs without an external orchestrator?
 
 A: For sync jobs, yes - they execute immediately and don't need an orchestrator. For async jobs, you typically integrate with an orchestrator (AWS Step Functions, Airflow). For development/testing, you can create a simple custom orchestrator or mock implementation.
 
-**Q: Where do audit data and results go?**
+Q: Where do audit data and results go?
 
 A: If you enable persistence in `JobOrchestrationProperties`, the library's `JobAuditService` and `JobExecutionResultService` will store audit trail and execution results. You need to configure the underlying data store (database, cache, etc.).
 
-**Q: How do I choose between async and sync jobs?**
+Q: How do I choose between async and sync jobs?
 
-A: Use **async jobs** for:
+A: Use async jobs for:
 - Long-running operations (> 30 seconds)
 - Multi-step workflows
 - Operations requiring polling
 - External orchestration
 
-Use **sync jobs** for:
+Use sync jobs for:
 - Quick operations (< 30 seconds)
 - Immediate response required
 - Simple validations or transformations
@@ -2218,7 +2218,7 @@ Use **sync jobs** for:
 
 ### Configuration Questions
 
-**Q: What's the minimum configuration needed?**
+Q: What's the minimum configuration needed?
 
 A: For development:
 ```yaml
@@ -2230,11 +2230,11 @@ firefly:
       publish-job-events: false
 ```
 
-**Q: How do I configure multiple orchestrators?**
+Q: How do I configure multiple orchestrators?
 
 A: Set `orchestrator-type` to the primary orchestrator. For multiple orchestrators, create separate `JobOrchestrator` beans with `@ConditionalOnProperty` and route jobs based on job type.
 
-**Q: How do I disable specific resiliency features?**
+Q: How do I disable specific resiliency features?
 
 A: Set the corresponding `enabled` property to `false`:
 ```yaml
@@ -2250,13 +2250,13 @@ firefly:
 
 ### Implementation Questions
 
-**Q: Can I override the cross-cutting concerns?**
+Q: Can I override the cross-cutting concerns?
 
 A: The cross-cutting concerns are applied by `AbstractResilientDataJobService`. If you need custom behavior, you can:
 1. Extend `AbstractResilientDataJobService` and override specific methods
 2. Implement `DataJobService` directly (not recommended - you lose all framework benefits)
 
-**Q: How do I add custom metrics?**
+Q: How do I add custom metrics?
 
 A: Inject `JobMetricsService` and record custom metrics in your `doXxx` methods:
 ```java
@@ -2269,7 +2269,7 @@ protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
 }
 ```
 
-**Q: How do I add custom tracing spans?**
+Q: How do I add custom tracing spans?
 
 A: Inject `JobTracingService` and create custom spans:
 ```java
@@ -2281,13 +2281,13 @@ protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {
 }
 ```
 
-**Q: Can I use Data Jobs with Spring MVC (non-reactive)?**
+Q: Can I use Data Jobs with Spring MVC (non-reactive)?
 
 A: No. Data Jobs are built on Spring WebFlux and require reactive programming with `Mono`/`Flux`. If you need blocking/synchronous behavior, use sync jobs but still return `Mono`.
 
 ### Troubleshooting Questions
 
-**Q: Why are my endpoints returning 404?**
+Q: Why are my endpoints returning 404?
 
 A: Check:
 1. Controller has `@RestController` and `@RequestMapping`
@@ -2295,7 +2295,7 @@ A: Check:
 3. Application context path is correct
 4. Endpoint path matches your `@RequestMapping` + method path
 
-**Q: Why is the circuit breaker always open?**
+Q: Why is the circuit breaker always open?
 
 A: Check:
 1. `circuit-breaker-failure-rate-threshold` (default 50%)
@@ -2303,7 +2303,7 @@ A: Check:
 3. Orchestrator health
 4. `circuit-breaker-minimum-number-of-calls` (need enough calls to calculate rate)
 
-**Q: Why aren't events being published?**
+Q: Why aren't events being published?
 
 A: Check:
 1. `publish-job-events: true` in configuration
@@ -2313,23 +2313,23 @@ A: Check:
 
 ### Performance Questions
 
-**Q: How many concurrent jobs can I run?**
+Q: How many concurrent jobs can I run?
 
 A: Depends on:
 1. `bulkhead-max-concurrent-calls` (default 25)
 2. Orchestrator limits (e.g., AWS Step Functions: 100 concurrent executions)
 3. Your infrastructure capacity
 
-**Q: How do I optimize for high throughput?**
+Q: How do I optimize for high throughput?
 
-A: 
+A:
 1. Enable bulkhead: `bulkhead-enabled: true`
 2. Increase concurrent calls: `bulkhead-max-concurrent-calls: 100`
 3. Enable rate limiter: `rate-limiter-enabled: true`
 4. Tune circuit breaker thresholds
 5. Use result caching: `enable-result-caching: true`
 
-**Q: How do I reduce latency?**
+Q: How do I reduce latency?
 
 A:
 1. Disable unnecessary features (e.g., audit if not needed)
@@ -2339,7 +2339,7 @@ A:
 
 ### Migration Questions
 
-**Q: How do I migrate from custom job implementation to fireflyframework-starter-data?**
+Q: How do I migrate from custom job implementation to fireflyframework-starter-data?
 
 A:
 1. Create service extending `AbstractResilientDataJobService`
@@ -2349,7 +2349,6 @@ A:
 5. Configure `JobOrchestrationProperties`
 6. Test thoroughly
 
-**Q: Can I gradually migrate jobs?**
+Q: Can I gradually migrate jobs?
 
 A: Yes. You can run both old and new implementations side-by-side. Migrate one job at a time, test, then move to the next.
-

@@ -26,6 +26,8 @@ The service may call a document-verification partner during a later onboarding s
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 Auto-configuration provides a default `RestClientBuilder`, `CircuitBreakerManager`, and tuned `WebClient.Builder` as soon as the dependency is on the classpath. You can use the `ServiceClient` static factories directly, or define your own client beans.
@@ -33,6 +35,7 @@ Auto-configuration provides a default `RestClientBuilder`, `CircuitBreakerManage
 ### REST
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.client.RestClient;
 import org.fireflyframework.client.ServiceClient;
 import reactor.core.publisher.Mono;
@@ -54,13 +57,12 @@ public class ClientConfig {
 }
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
 
     private final RestClient paymentClient;
 
-    public PaymentService(RestClient paymentClient) {
-        this.paymentClient = paymentClient;
-    }
+
 
     // Fluent RequestBuilder: set body/params/headers, then execute()
     public Mono<PaymentResponse> charge(PaymentRequest request) {
@@ -125,7 +127,9 @@ The `firefly.service-client` namespace is bound by [ServiceClientProperties.java
 
 ## Continue the application
 
-Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration. ## Build and validation
+Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

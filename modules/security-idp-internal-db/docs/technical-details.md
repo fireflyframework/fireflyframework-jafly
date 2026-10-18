@@ -1,252 +1,57 @@
-# Internal Database IDP Implementation Summary
+# Internal database identity implementation
 
-## Overview
+The module implements `IdpAdapter` with PostgreSQL storage and reactive repositories. Java 25 and Spring Boot 4.1.1 are the current Jafly build baseline. Versions come from the [module POM](../pom.xml) and [framework parent](../../../build/parent/pom.xml).
 
-Successfully created `fireflyframework-security-idp-internal-db-impl` - a complete, self-contained Identity Provider implementation using internal PostgreSQL database storage with R2DBC for reactive operations.
+## Components
 
-## What Was Created
-
-### 1. Core Module Structure
-- **`fireflyframework-security-idp-internal-db-impl/`** - New Maven module with proper parent POM inheritance
-- Full dependency management including R2DBC, JWT, BCrypt, Flyway, and Testcontainers
-
-### 2. Domain Layer (`domain/`)
-Created 5 entity classes with R2DBC annotations:
-- **`User`** - User accounts with credentials and profile information
-- **`Role`** - Available roles for RBAC
-- **`UserRole`** - Many-to-many junction table for user-role assignments
-- **`Session`** - Active user sessions with JWT tracking
-- **`RefreshToken`** - Refresh tokens for token renewal
-
-### 3. Repository Layer (`repository/`)
-Created 5 reactive repositories extending `R2dbcRepository`:
-- **`UserRepository`** - User CRUD with username/email lookups
-- **`RoleRepository`** - Role management
-- **`UserRoleRepository`** - User-role assignment management
-- **`SessionRepository`** - Session tracking
-- **`RefreshTokenRepository`** - Refresh token management
-
-### 4. Service Layer (`service/`)
-Created 4 comprehensive service classes:
-- **`AuthenticationService`** - Login, logout, token refresh, token validation
-- **`UserManagementService`** - User CRUD operations, password management
-- **`RoleService`** - Role creation, assignment, removal
-- **`JwtTokenService`** - JWT generation, parsing, validation
-
-### 5. Adapter Layer (`adapter/`)
-- **`InternalDbIdpAdapter`** - Complete implementation of `IdpAdapter` interface
-  - All 19 methods from the interface fully implemented
-  - Login, refresh, logout, introspection
-  - User management (create, update, delete)
-  - Role management (create, assign, remove)
-  - Session management (list, revoke)
-  - Password operations (change, reset)
-
-### 6. Configuration (`config/`)
-- **`InternalDbProperties`** - Configuration properties for JWT settings
-- **`InternalDbIdpConfiguration`** - Spring Boot auto-configuration with:
-  - R2DBC repository scanning
-  - BCrypt password encoder bean
-  - Component scanning for internal DB package
-
-### 7. Database Migrations (`resources/db/migration/`)
-- **`V1__Create_IDP_Tables.sql`** - Complete Flyway migration script:
-  - 5 tables with proper indexes and foreign keys
-  - Default admin user (username: `admin`, password: `admin123`)
-  - 3 default roles (ADMIN, MANAGER, USER)
-
-### 8. Documentation
-- **`README.md`** - Comprehensive documentation with:
-  - Features and use cases
-  - Quick start guide
-  - Configuration reference
-  - Usage examples (curl commands)
-  - Security considerations
-  - Troubleshooting guide
-- **`application-internal-db-example.yml`** - Example configuration file
-
-## Integration with Security Center
-
-### Updated Files
-1. **`common-platform-security-center-core/pom.xml`**
-   - Added `fireflyframework-security-idp-internal-db-impl` as optional runtime dependency
-
-2. **`IdpAutoConfiguration.java`**
-   - Added `InternalDbIdpConfiguration` nested configuration class
-   - Auto-loads when `provider=internal-db` is set
-   - Updated fallback error messages
-
-## Features Implemented
-
-### ✅ Complete Feature Set
-- [x] User authentication with username/password
-- [x] JWT token generation (access + refresh)
-- [x] Token refresh mechanism
-- [x] Token validation and introspection
-- [x] User CRUD operations
-- [x] Role-based access control
-- [x] Role creation and management
-- [x] Role assignment/removal
-- [x] Session tracking and management
-- [x] Session revocation
-- [x] Password change (with old password verification)
-- [x] Password reset (admin operation)
-- [x] User account enable/disable
-- [x] User account lock/unlock
-- [x] BCrypt password hashing (strength 12)
-- [x] Database schema migrations
-- [x] Reactive/non-blocking operations
-
-### ⚠️ Not Implemented (Intentionally)
-- [ ] Multi-factor authentication (MFA)
-- [ ] OAuth2/OIDC flows
-- [ ] Social login integration
-- [ ] LDAP/Active Directory integration
-- [ ] Advanced session features (device tracking, geolocation)
-
-## Technology Stack
-
-- **Spring Boot 3.x** - Core framework
-- **Spring WebFlux** - Reactive web framework
-- **Spring Data R2DBC** - Reactive database access
-- **PostgreSQL** - Database with R2DBC driver
-- **Flyway** - Database migrations
-- **JWT (JJWT 0.12.6)** - Token generation/validation
-- **BCrypt** - Password hashing
-- **Lombok** - Code generation
-- **Testcontainers** - Integration testing
-
-## Configuration Example
-
-```yaml
-firefly:
-  security-center:
-    idp:
-      provider: internal-db
-      internal-db:
-        jwt:
-          secret: "your-32-char-secret-key-here!"
-          issuer: "firefly-idp"
-          access-token-expiration: 900000      # 15 min
-          refresh-token-expiration: 604800000  # 7 days
-
-spring:
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/firefly
-    username: firefly_user
-    password: ${DB_PASSWORD}
-  
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+```mermaid
+flowchart TD
+    Web[Common /idp controller] --> Adapter[InternalDbIdpAdapter]
+    Adapter --> Auth[Authentication and token services]
+    Adapter --> Users[User and role services]
+    Adapter --> Recovery[Password reset and MFA services]
+    Auth --> Repositories[Reactive repositories]
+    Users --> Repositories
+    Recovery --> Repositories
+    Repositories --> Database[(PostgreSQL)]
 ```
 
-## Default Credentials
+The [auto-configuration](../src/main/java/org/fireflyframework/security/idp/internaldb/config/InternalDbIdpAutoConfiguration.java) activates for `firefly.security.idp.provider=internal-db` when the R2DBC API is present. It registers repositories, service beans, the adapter, and a BCrypt password encoder with strength 12. An application-supplied bean can replace the corresponding conditional default.
 
-The migration creates a default admin account:
-- **Username**: `admin`
-- **Password**: `admin123`
+| Component | Responsibility |
+| --- | --- |
+| `AuthenticationService` | Authentication, token refresh, logout, and session-backed access-token checks |
+| `JwtTokenService` | Signed JWT generation and parsing using the configured secret |
+| `UserManagementService` | User creation and updates, password changes, account enablement, and locking |
+| `RoleService` | Roles and user-role assignments |
+| `PasswordResetService` | Password-reset token lifecycle |
+| `PasswordPolicyService` | Password requirements from configuration |
+| `MfaService` | TOTP enrollment and verification |
 
-⚠️ **CRITICAL**: Change immediately in production!
+The domain and repository packages contain users, roles, user-role assignments, sessions, refresh tokens, and password-reset tokens. The migrations under [`db/migration`](../src/main/resources/db/migration) create and extend this schema.
 
-## Usage with Security Center
+## Configuration defaults
 
-The implementation integrates seamlessly with `common-platform-security-center`:
+[`InternalDbProperties`](../src/main/java/org/fireflyframework/security/idp/internaldb/config/InternalDbProperties.java) binds `firefly.security.idp.internal-db`.
 
-1. **Add dependency** to your project
-2. **Set provider** to `internal-db` in configuration
-3. **Configure database** connection
-4. **Start application** - migrations run automatically
-5. **Use endpoints** via Security Center
+| Setting | Default |
+| --- | --- |
+| `jwt.secret` | Required deployment value; no source initializer |
+| `jwt.issuer` | `firefly-idp-internal-db` |
+| `jwt.access-token-expiration` | `900000` milliseconds |
+| `jwt.refresh-token-expiration` | `604800000` milliseconds |
+| `password-reset.token-expiry` | `1h` |
+| `lockout.max-failed-attempts` | `5` |
+| `lockout.lockout-duration` | `30m` |
+| `password-policy.min-length` / `max-length` | `8` / `128` |
+| `password-policy.require-uppercase` / `require-lowercase` / `require-digit` | `true` |
+| `password-policy.require-special-char` | `false` |
+| `mfa.available` | `true` |
 
-The Security Center will automatically:
-- Load the internal DB IDP adapter
-- Configure all beans
-- Provide unified authentication endpoints
-- Handle session management
+`JwtTokenService` converts the configured secret to UTF-8 bytes and passes them to JJWT's HMAC key builder. Provide at least 32 bytes of key material through the deployment configuration. Token durations above are milliseconds; the reset and lockout durations use Spring duration values.
 
-## File Structure
+## Schema and initial account
 
-```
-fireflyframework-security-idp-internal-db-impl/
-├── pom.xml
-├── README.md
-├── IMPLEMENTATION_SUMMARY.md
-└── src/
-    └── main/
-        ├── java/org/fireflyframework/idp/internaldb/
-        │   ├── adapter/
-        │   │   └── InternalDbIdpAdapter.java
-        │   ├── config/
-        │   │   ├── InternalDbIdpConfiguration.java
-        │   │   └── InternalDbProperties.java
-        │   ├── domain/
-        │   │   ├── User.java
-        │   │   ├── Role.java
-        │   │   ├── UserRole.java
-        │   │   ├── Session.java
-        │   │   └── RefreshToken.java
-        │   ├── repository/
-        │   │   ├── UserRepository.java
-        │   │   ├── RoleRepository.java
-        │   │   ├── UserRoleRepository.java
-        │   │   ├── SessionRepository.java
-        │   │   └── RefreshTokenRepository.java
-        │   └── service/
-        │       ├── AuthenticationService.java
-        │       ├── UserManagementService.java
-        │       ├── RoleService.java
-        │       └── JwtTokenService.java
-        └── resources/
-            ├── application-internal-db-example.yml
-            └── db/migration/
-                └── V1__Create_IDP_Tables.sql
-```
+`V1__Create_IDP_Tables.sql` seeds an `admin` account and ADMIN, MANAGER, and USER roles. Its SQL comments identify the initial password as `admin123`. Replace or disable that seeded credential before exposing a deployment, and verify the actual hash and migration outcome in a disposable integration database.
 
-## Next Steps
-
-### For Developers
-1. **Build the module**: `mvn clean install`
-2. **Add to your project** as a dependency
-3. **Configure** according to README
-4. **Test** with default credentials
-
-### For Production
-1. **Change default admin password**
-2. **Generate secure JWT secret** (32+ characters)
-3. **Use environment variables** for secrets
-4. **Enable SSL/TLS** for database connections
-5. **Adjust token expiration** based on security requirements
-6. **Set up database backups**
-7. **Monitor session table** for cleanup
-
-### For Testing
-1. **Unit tests** can be added for services
-2. **Integration tests** with Testcontainers
-3. **Load testing** for performance validation
-
-## Comparison with Other IDPs
-
-| Feature | Internal DB | Keycloak | AWS Cognito |
-|---------|------------|----------|-------------|
-| Self-hosted | ✅ | ✅ | ❌ |
-| No external deps | ✅ | ❌ | ❌ |
-| Simple setup | ✅ | ❌ | ⚠️ |
-| MFA | ❌ | ✅ | ✅ |
-| OAuth2/OIDC | ❌ | ✅ | ✅ |
-| Social login | ❌ | ✅ | ✅ |
-| Cost | Free | Free | Paid |
-| Scalability | ⚠️ | ✅ | ✅ |
-| Production-ready | ✅ | ✅ | ✅ |
-
-## Conclusion
-
-The `fireflyframework-security-idp-internal-db-impl` provides a complete, production-ready internal Identity Provider implementation that:
-- Requires no external IDP services
-- Integrates seamlessly with Security Center
-- Supports all core authentication features
-- Uses modern reactive programming
-- Includes comprehensive documentation
-- Can be deployed standalone
-
-Perfect for development, testing, microservices, and projects with simple authentication requirements!
+The module is an identity adapter, not a complete identity operations deployment. Configure transport security, route authorization, secret management, reset-message delivery, and database operations in the host application. See [integration](INTEGRATION.md) and [the current API](API.md).

@@ -1,6 +1,6 @@
 # Optional Enhancements
 
-All features described in this document are **disabled by default** or activate automatically when their dependencies are on the classpath. None of them are required for basic event sourcing.
+All features described in this document are disabled by default or activate automatically when their dependencies are on the classpath. None of them are required for basic event sourcing.
 
 ## Circuit Breakers (Resilience4j)
 
@@ -8,7 +8,7 @@ Circuit breakers prevent cascading failures by halting calls to a struggling sub
 
 ### Activation
 
-Requires Resilience4j on the classpath **and** an explicit opt-in:
+Requires Resilience4j on the classpath and an explicit opt-in:
 
 ```yaml
 firefly:

@@ -6,16 +6,16 @@ This library includes a comprehensive test suite covering all critical component
 
 ## Test Coverage Summary
 
-**Total Tests: 180**  
-**Success Rate: 100%**  
-**Coverage: Core components, business logic, resolvers, services, infrastructure, and integration**
+Total Tests: 180
+Success Rate: 100%
+Coverage: Core components, business logic, resolvers, services, infrastructure, and integration
 
 ### Test Suites
 
-#### 1. **AppContextTest** (12 tests)
+#### 1. AppContextTest (12 tests)
 Tests for the `AppContext` class - the core business context container.
 
-**What it validates:**
+What it validates:
 - ✅ Builder pattern works correctly
 - ✅ Role checking (hasRole, hasAnyRole, hasAllRoles)
 - ✅ Permission checking (hasPermission)
@@ -24,28 +24,28 @@ Tests for the `AppContext` class - the core business context container.
 - ✅ Immutability with withers and toBuilder
 - ✅ Null safety for all edge cases
 
-**Business value:** Ensures that authorization decisions are made correctly based on roles, permissions, and business context.
+Business value: Ensures that authorization decisions are made correctly based on roles, permissions, and business context.
 
 ---
 
-#### 2. **AppConfigTest** (8 tests)
+#### 2. AppConfigTest (8 tests)
 Tests for the `AppConfig` class - tenant configuration management.
 
-**What it validates:**
+What it validates:
 - ✅ Tenant configuration creation
 - ✅ Provider configuration management
 - ✅ Feature flag checking
 - ✅ Settings retrieval with defaults
 - ✅ Multi-tenant isolation
 
-**Business value:** Ensures that tenant-specific configurations, feature flags, and provider settings work correctly for multi-tenant applications.
+Business value: Ensures that tenant-specific configurations, feature flags, and provider settings work correctly for multi-tenant applications.
 
 ---
 
-#### 3. **ProviderConfigTest** (7 tests)
+#### 3. ProviderConfigTest (7 tests)
 Tests for the `AppConfig.ProviderConfig` class - provider-specific configuration.
 
-**What it validates:**
+What it validates:
 - ✅ Provider configuration builder
 - ✅ Property storage and retrieval
 - ✅ Type-safe property access
@@ -53,14 +53,14 @@ Tests for the `AppConfig.ProviderConfig` class - provider-specific configuration
 - ✅ Enabled/disabled state
 - ✅ Priority handling
 
-**Business value:** Ensures that third-party provider configurations (payment gateways, KYC providers, etc.) are managed correctly.
+Business value: Ensures that third-party provider configurations (payment gateways, KYC providers, etc.) are managed correctly.
 
 ---
 
-#### 4. **AppMetadataTest** (9 tests)
+#### 4. AppMetadataTest (9 tests)
 Tests for the `AppMetadata` class - application metadata and service catalog information.
 
-**What it validates:**
+What it validates:
 - ✅ Metadata creation from `@FireflyApplication` annotation data
 - ✅ Display name fallback logic
 - ✅ Production environment detection
@@ -70,14 +70,14 @@ Tests for the `AppMetadata` class - application metadata and service catalog inf
 - ✅ Critical service flagging
 - ✅ Service catalog information
 
-**Business value:** Enables service discovery, governance, monitoring, and documentation generation for microservices.
+Business value: Enables service discovery, governance, monitoring, and documentation generation for microservices.
 
 ---
 
-#### 5. **EndpointSecurityRegistryTest** (11 tests)
+#### 5. EndpointSecurityRegistryTest (11 tests)
 Tests for the `EndpointSecurityRegistry` class - explicit endpoint security configuration.
 
-**What it validates:**
+What it validates:
 - ✅ Endpoint registration with roles and permissions
 - ✅ HTTP method differentiation
 - ✅ Path parameter handling
@@ -86,14 +86,14 @@ Tests for the `EndpointSecurityRegistry` class - explicit endpoint security conf
 - ✅ Registry clearing and unregistration
 - ✅ Override existing registrations
 
-**Business value:** Ensures that programmatic security configuration works correctly, providing an alternative to annotation-based security for dynamic requirements.
+Business value: Ensures that programmatic security configuration works correctly, providing an alternative to annotation-based security for dynamic requirements.
 
 ---
 
-#### 6. **ApplicationExecutionContextTest** (11 tests)
+#### 6. ApplicationExecutionContextTest (11 tests)
 Tests for the `ApplicationExecutionContext` class - complete execution context aggregating all request information.
 
-**What it validates:**
+What it validates:
 - ✅ Builder pattern for creating execution context
 - ✅ Minimal context creation utility
 - ✅ Convenience getters for IDs (party, tenant, contract, product)
@@ -102,14 +102,14 @@ Tests for the `ApplicationExecutionContext` class - complete execution context a
 - ✅ Feature flag checking
 - ✅ Immutability with withers and toBuilder
 
-**Business value:** Ensures that the main context object flowing through the application contains all necessary information and provides convenient access methods.
+Business value: Ensures that the main context object flowing through the application contains all necessary information and provides convenient access methods.
 
 ---
 
-#### 7. **AppSecurityContextTest** (12 tests)
+#### 7. AppSecurityContextTest (12 tests)
 Tests for the `AppSecurityContext` class - security-specific context information.
 
-**What it validates:**
+What it validates:
 - ✅ Security context builder
 - ✅ Required roles and permissions tracking
 - ✅ Role/permission requirement checking
@@ -120,27 +120,27 @@ Tests for the `AppSecurityContext` class - security-specific context information
 - ✅ Security config source tracking (annotation, explicit, SecurityCenter)
 - ✅ Security evaluation results from SecurityCenter
 
-**Business value:** Ensures security decisions are properly tracked and auditable, with clear reasons for authorization failures.
+Business value: Ensures security decisions are properly tracked and auditable, with clear reasons for authorization failures.
 
 ---
 
-#### 8. **SecurityEvaluationResultTest** (4 tests)
+#### 8. SecurityEvaluationResultTest (4 tests)
 Tests for the `AppSecurityContext.SecurityEvaluationResult` nested class - detailed security evaluation results.
 
-**What it validates:**
+What it validates:
 - ✅ Evaluation result builder
 - ✅ Evaluation details storage
 - ✅ Denial with reason tracking
 - ✅ Immutability
 
-**Business value:** Enables detailed auditing and debugging of security decisions made by SecurityCenter.
+Business value: Enables detailed auditing and debugging of security decisions made by SecurityCenter.
 
 ---
 
-#### 9. **ApplicationLayerPropertiesTest** (10 tests)
+#### 9. ApplicationLayerPropertiesTest (10 tests)
 Tests for the `ApplicationLayerProperties` configuration class.
 
-**What it validates:**
+What it validates:
 - ✅ Default property values for security, context, and config
 - ✅ Security settings (enabled, use SecurityCenter, default roles, fail on missing)
 - ✅ Context caching settings (enabled, TTL, max size)
@@ -148,7 +148,7 @@ Tests for the `ApplicationLayerProperties` configuration class.
 - ✅ Custom property values
 - ✅ Property object replacement
 
-**Business value:** Ensures configuration properties work correctly and have sensible defaults for production use.
+Business value: Ensures configuration properties work correctly and have sensible defaults for production use.
 
 ---
 
@@ -176,10 +176,10 @@ mvn test -X
 
 ---
 
-#### 10. **AbstractSecurityConfigurationTest** (7 tests)
+#### 10. AbstractSecurityConfigurationTest (7 tests)
 Tests for the `AbstractSecurityConfiguration` abstract class - programmatic security configuration.
 
-**What it validates:**
+What it validates:
 - ✅ Builder pattern for security requirements
 - ✅ Role-based security configuration
 - ✅ Permission-based security configuration
@@ -187,51 +187,51 @@ Tests for the `AbstractSecurityConfiguration` abstract class - programmatic secu
 - ✅ RequireAll vs RequireAny logic
 - ✅ Conversion to AppSecurityContext
 
-**Business value:** Ensures programmatic security configuration can be easily set up for endpoints.
+Business value: Ensures programmatic security configuration can be easily set up for endpoints.
 
 ---
 
-#### 11. **AbstractContractControllerTest** (4 tests)
+#### 11. AbstractContractControllerTest (4 tests)
 Tests for the `AbstractContractController` abstract class - base controller for contract operations.
 
-**What it validates:**
+What it validates:
 - ✅ Contract ID extraction from path variables
 - ✅ Execution context building
 - ✅ Error handling for missing contract ID
 
-**Business value:** Ensures contract-based controllers have consistent context resolution.
+Business value: Ensures contract-based controllers have consistent context resolution.
 
 ---
 
-#### 12. **AbstractProductControllerTest** (4 tests)
+#### 12. AbstractProductControllerTest (4 tests)
 Tests for the `AbstractProductController` abstract class - base controller for product operations.
 
-**What it validates:**
+What it validates:
 - ✅ Product ID extraction from path variables
 - ✅ Execution context building
 - ✅ Error handling for missing product ID
 
-**Business value:** Ensures product-based controllers have consistent context resolution.
+Business value: Ensures product-based controllers have consistent context resolution.
 
 ---
 
-#### 13. **ApplicationLayerHealthIndicatorTest** (5 tests)
+#### 13. ApplicationLayerHealthIndicatorTest (5 tests)
 Tests for the `ApplicationLayerHealthIndicator` class - Spring Boot Actuator health indicator.
 
-**What it validates:**
+What it validates:
 - ✅ Health check returns UP status when healthy
 - ✅ Health details include layer information
 - ✅ Component availability reporting
 - ✅ Consistent health status across calls
 
-**Business value:** Enables monitoring and observability of application layer components.
+Business value: Enables monitoring and observability of application layer components.
 
 ---
 
-#### 14. **FireflyApplicationInfoContributorTest** (6 tests)
+#### 14. FireflyApplicationInfoContributorTest (6 tests)
 Tests for the `FireflyApplicationInfoContributor` class - exposes metadata via /actuator/info.
 
-**What it validates:**
+What it validates:
 - ✅ Complete metadata contribution
 - ✅ Minimal metadata with optional fields missing
 - ✅ Display name usage
@@ -239,14 +239,14 @@ Tests for the `FireflyApplicationInfoContributor` class - exposes metadata via /
 - ✅ Empty collection exclusion
 - ✅ Startup time inclusion
 
-**Business value:** Makes application metadata available for service discovery and monitoring dashboards.
+Business value: Makes application metadata available for service discovery and monitoring dashboards.
 
 ---
 
-#### 15. **AbstractContextResolverTest** (10 tests)
+#### 15. AbstractContextResolverTest (10 tests)
 Tests for the `AbstractContextResolver` abstract class - base context resolution logic.
 
-**What it validates:**
+What it validates:
 - ✅ Context resolution with all IDs
 - ✅ UUID extraction from attributes
 - ✅ UUID extraction from headers
@@ -256,14 +256,14 @@ Tests for the `AbstractContextResolver` abstract class - base context resolution
 - ✅ Permission resolution
 - ✅ Context enrichment
 
-**Business value:** Ensures context can be correctly extracted from requests for authorization decisions.
+Business value: Ensures context can be correctly extracted from requests for authorization decisions.
 
 ---
 
-#### 16. **AbstractConfigResolverTest** (10 tests)
+#### 16. AbstractConfigResolverTest (10 tests)
 Tests for the `AbstractConfigResolver` abstract class - tenant configuration resolution with caching.
 
-**What it validates:**
+What it validates:
 - ✅ First fetch from platform
 - ✅ Cached config on subsequent requests
 - ✅ Cache status checking
@@ -273,14 +273,14 @@ Tests for the `AbstractConfigResolver` abstract class - tenant configuration res
 - ✅ Multiple tenant handling
 - ✅ Fetch error handling
 
-**Business value:** Ensures tenant configurations are efficiently cached and can be refreshed when needed.
+Business value: Ensures tenant configurations are efficiently cached and can be refreshed when needed.
 
 ---
 
-#### 17. **AbstractSecurityAuthorizationServiceTest** (14 tests)
+#### 17. AbstractSecurityAuthorizationServiceTest (14 tests)
 Tests for the `AbstractSecurityAuthorizationService` abstract class - authorization logic.
 
-**What it validates:**
+What it validates:
 - ✅ Anonymous access authorization
 - ✅ Role-based authorization (present/missing)
 - ✅ Permission-based authorization (granted/denied)
@@ -290,14 +290,14 @@ Tests for the `AbstractSecurityAuthorizationService` abstract class - authorizat
 - ✅ Expression evaluation
 - ✅ SecurityCenter integration (placeholder)
 
-**Business value:** Ensures authorization decisions are made correctly based on roles, permissions, and SecurityCenter policies.
+Business value: Ensures authorization decisions are made correctly based on roles, permissions, and SecurityCenter policies.
 
 ---
 
-#### 18. **AbstractApplicationServiceTest** (11 tests)
+#### 18. AbstractApplicationServiceTest (11 tests)
 Tests for the `AbstractApplicationService` abstract class - base service layer functionality.
 
-**What it validates:**
+What it validates:
 - ✅ Execution context resolution
 - ✅ Context validation (contract/product requirements)
 - ✅ Role requirements enforcement
@@ -307,14 +307,14 @@ Tests for the `AbstractApplicationService` abstract class - base service layer f
 - ✅ Error handling for missing providers
 - ✅ Access denied for missing roles/permissions
 
-**Business value:** Ensures application services have consistent context management and authorization helpers.
+Business value: Ensures application services have consistent context management and authorization helpers.
 
 ---
 
-#### 19. **ApplicationMetadataProviderIntegrationTest** (16 tests)
+#### 19. ApplicationMetadataProviderIntegrationTest (16 tests)
 Integration tests for the `ApplicationMetadataProvider` class - Spring context integration.
 
-**What it validates:**
+What it validates:
 - ✅ @FireflyApplication annotation scanning
 - ✅ AppMetadata bean creation from annotation
 - ✅ Metadata extraction (name, domain, team, owners, etc.)
@@ -323,14 +323,14 @@ Integration tests for the `ApplicationMetadataProvider` class - Spring context i
 - ✅ Startup time and environment resolution
 - ✅ Display name fallback logic
 
-**Business value:** Ensures service metadata is automatically captured and available for discovery and monitoring.
+Business value: Ensures service metadata is automatically captured and available for discovery and monitoring.
 
 ---
 
-#### 20. **SecurityAspectIntegrationTest** (9 tests)
+#### 20. SecurityAspectIntegrationTest (9 tests)
 Integration tests for the `SecurityAspect` AOP component - @Secure annotation interception.
 
-**What it validates:**
+What it validates:
 - ✅ AOP interception of @Secure annotated methods
 - ✅ Authorization granted scenarios
 - ✅ Authorization denied with access exceptions
@@ -341,20 +341,20 @@ Integration tests for the `SecurityAspect` AOP component - @Secure annotation in
 - ✅ AppContext propagation to authorization service
 - ✅ Skipping security when no context provided
 
-**Business value:** Ensures AOP-based security enforcement works correctly at runtime with proper role/permission checking.
+Business value: Ensures AOP-based security enforcement works correctly at runtime with proper role/permission checking.
 
 ---
 
-#### 21. **ApplicationLayerBannerConfigTest** (5 tests)
+#### 21. ApplicationLayerBannerConfigTest (5 tests)
 Tests for the `ApplicationLayerBannerConfig` class - startup banner configuration.
 
-**What it validates:**
+What it validates:
 - ✅ Banner mode set to CONSOLE
 - ✅ Custom banner loading attempt
 - ✅ Graceful handling of missing banner.txt
 - ✅ ApplicationListener interface implementation
 
-**Business value:** Ensures startup banner displays library information correctly.
+Business value: Ensures startup banner displays library information correctly.
 
 ---
 
@@ -400,7 +400,7 @@ src/test/
 
 ## Key Business Scenarios Tested
 
-### 1. **Authorization Flow**
+### 1. Authorization Flow
 ```java
 // Tests validate this flow works correctly:
 AppContext context = resolveContext(request);
@@ -413,7 +413,7 @@ if (!context.hasPermission("TRANSFER_FUNDS")) {
 // Proceed with business logic
 ```
 
-### 2. **Multi-Tenant Configuration**
+### 2. Multi-Tenant Configuration
 ```java
 // Tests ensure tenant isolation works:
 AppConfig tenantAConfig = resolveConfig(tenantA);
@@ -421,7 +421,7 @@ AppConfig tenantBConfig = resolveConfig(tenantB);
 // Each tenant has isolated config
 ```
 
-### 3. **Provider Management**
+### 3. Provider Management
 ```java
 // Tests validate provider configuration:
 ProviderConfig kyc = config.getProvider("KYC_PROVIDER").orElseThrow();
@@ -429,7 +429,7 @@ String apiKey = kyc.getProperty("apiKey");
 // Provider is correctly configured per tenant
 ```
 
-### 4. **Service Catalog**
+### 4. Service Catalog
 ```java
 // Tests ensure metadata is available:
 AppMetadata metadata = applicationMetadataProvider.getMetadata();
@@ -438,7 +438,7 @@ Set<String> dependencies = metadata.getUsesServices();
 // Service catalog information is accurate
 ```
 
-### 5. **Dynamic Security**
+### 5. Dynamic Security
 ```java
 // Tests validate runtime security configuration:
 registry.registerEndpoint("/api/accounts", "POST", 
@@ -455,13 +455,13 @@ registry.registerEndpoint("/api/accounts", "POST",
 
 The following components now have complete integration tests:
 
-1. **ApplicationMetadataProvider** (16 tests) - ✅ Complete
+1. ApplicationMetadataProvider (16 tests) - ✅ Complete
    - @FireflyApplication annotation scanning
    - AppMetadata bean construction
    - Spring property extraction
    - Build info from properties
 
-2. **SecurityAspect** (9 tests) - ✅ Complete
+2. SecurityAspect (9 tests) - ✅ Complete
    - AOP interception of @Secure
    - Authorization with roles and permissions
    - Access denied scenarios
@@ -471,7 +471,7 @@ The following components now have complete integration tests:
 
 ### Pending (Future)
 
-3. **ApplicationLayerAutoConfiguration** - Requires specific auto-configuration testing
+3. ApplicationLayerAutoConfiguration - Requires specific auto-configuration testing
    - Bean registration validation
    - Component scanning verification
    - Property binding tests
@@ -482,14 +482,14 @@ The following components now have complete integration tests:
 
 | Metric | Value |
 |--------|-------|
-| **Total Test Cases** | 180 |
-| **Pass Rate** | 100% |
-| **Test Execution Time** | < 3s |
-| **Code Coverage (Overall)** | ~95%+ |
-| **Edge Cases Covered** | Null safety, empty collections, invalid inputs, cache scenarios, AOP interception |
-| **Assertions per Test** | 2-5 (focused tests) |
-| **Test Classes** | 21 |
-| **Lines of Test Code** | ~7000+ |
+| Total Test Cases | 180 |
+| Pass Rate | 100% |
+| Test Execution Time | < 3s |
+| Code Coverage (Overall) | ~95%+ |
+| Edge Cases Covered | Null safety, empty collections, invalid inputs, cache scenarios, AOP interception |
+| Assertions per Test | 2-5 (focused tests) |
+| Test Classes | 21 |
+| Lines of Test Code | ~7000+ |
 
 ---
 
@@ -497,7 +497,7 @@ The following components now have complete integration tests:
 
 When adding new features, follow these guidelines:
 
-### 1. **Unit Test Structure**
+### 1. Unit Test Structure
 ```java
 @DisplayName("Feature Description")
 class FeatureTest {
@@ -517,18 +517,18 @@ class FeatureTest {
 }
 ```
 
-### 2. **Test Naming Convention**
+### 2. Test Naming Convention
 - Use descriptive method names: `shouldCreateContextWithBuilder()`
 - Use `@DisplayName` for human-readable descriptions
 - Group related tests in nested classes if needed
 
-### 3. **Assertions**
+### 3. Assertions
 - Use JUnit 5 assertions
 - Prefer `assertThat()` for complex assertions
 - Test both positive and negative cases
 - Include null safety tests
 
-### 4. **Test Data**
+### 4. Test Data
 - Use builders for creating test objects
 - Use `UUID.randomUUID()` for unique IDs
 - Use realistic data that mirrors production scenarios
@@ -538,38 +538,38 @@ class FeatureTest {
 ## Continuous Integration
 
 Tests are automatically run on:
-- **Every commit** (pre-commit hook recommended)
-- **Pull requests** (required to pass before merge)
-- **Main branch** (continuous monitoring)
+- Every commit (pre-commit hook recommended)
+- Pull requests (required to pass before merge)
+- Main branch (continuous monitoring)
 
 ---
 
 ## Test Maintenance
 
-- **Review tests quarterly** to ensure they remain relevant
-- **Update tests** when features change
-- **Remove obsolete tests** to avoid confusion
-- **Refactor** when tests become too complex
+- Review tests quarterly to ensure they remain relevant
+- Update tests when features change
+- Remove obsolete tests to avoid confusion
+- Refactor when tests become too complex
 
 ---
 
 ## Summary
 
-This test suite validates that **lib-common-application** delivers on its core promises:
+This test suite validates that lib-common-application delivers on its core promises:
 
-1. ✅ **Context Management** - Business context is correctly captured and validated
-2. ✅ **Authorization** - Role and permission checking works reliably
-3. ✅ **Multi-Tenancy** - Tenant isolation and configuration management is solid
-4. ✅ **Provider Configuration** - Third-party integrations are properly configured
-5. ✅ **Service Metadata** - Service catalog information is accurate and available
-6. ✅ **Security Configuration** - Programmatic and annotation-based security works as expected
-7. ✅ **Context Resolution** - Request context extraction with caching
-8. ✅ **Config Resolution** - Tenant config fetching and caching
-9. ✅ **Authorization Services** - Complete authorization flow with roles and permissions
-10. ✅ **Application Services** - Base service layer with context and authorization helpers
-11. ✅ **Health & Monitoring** - Actuator integration for observability
-12. ✅ **Controllers** - Base controllers for consistent context handling
+1. ✅ Context Management - Business context is correctly captured and validated
+2. ✅ Authorization - Role and permission checking works reliably
+3. ✅ Multi-Tenancy - Tenant isolation and configuration management is solid
+4. ✅ Provider Configuration - Third-party integrations are properly configured
+5. ✅ Service Metadata - Service catalog information is accurate and available
+6. ✅ Security Configuration - Programmatic and annotation-based security works as expected
+7. ✅ Context Resolution - Request context extraction with caching
+8. ✅ Config Resolution - Tenant config fetching and caching
+9. ✅ Authorization Services - Complete authorization flow with roles and permissions
+10. ✅ Application Services - Base service layer with context and authorization helpers
+11. ✅ Health & Monitoring - Actuator integration for observability
+12. ✅ Controllers - Base controllers for consistent context handling
 
-**All 177 tests pass successfully** (incluyendo 22 integration tests), giving confidence that the library's business logic, resolvers, services, infrastructure components, and AOP integrations are correct and production-ready.
+All 177 tests pass successfully (incluyendo 22 integration tests), giving confidence that the library's business logic, resolvers, services, infrastructure components, and AOP integrations are correct and production-ready.
 
 For questions or issues, contact the Firefly Development Team.

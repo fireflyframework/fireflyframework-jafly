@@ -5,10 +5,10 @@ This document provides a comprehensive reference for all configuration propertie
 ## Important Note
 
 This reference covers configuration for:
-- **Core Library** (fireflyframework-ecm): Port interfaces and infrastructure
-- **Adapter Libraries** (separate repositories): Concrete implementations
+- Core Library (fireflyframework-ecm): Port interfaces and infrastructure
+- Adapter Libraries (separate repositories): Concrete implementations
 
-**To use adapter configurations, you must first add the adapter library as a dependency.**
+To use adapter configurations, you must first add the adapter library as a dependency.
 
 ## Table of Contents
 
@@ -51,13 +51,13 @@ The following configurations require their respective adapter libraries to be ad
 
 ## S3 Adapter Configuration
 
-**Requires dependency**: `fireflyframework-ecm-adapter-s3`
+Requires dependency: `fireflyframework-ecm-storage-aws`
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-ecm-adapter-s3</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>fireflyframework-ecm-storage-aws</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -101,7 +101,7 @@ Supported storage classes:
 
 ## Azure Blob Storage Adapter Configuration
 
-**Requires dependency**: `fireflyframework-ecm-adapter-azure-blob`
+Requires dependency: `fireflyframework-ecm-adapter-azure-blob`
 
 ```xml
 <dependency>
@@ -128,13 +128,13 @@ Supported storage classes:
 
 ## DocuSign Adapter Configuration
 
-**Requires dependency**: `fireflyframework-ecm-adapter-docusign`
+Requires dependency: `fireflyframework-ecm-esignature-docusign`
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-ecm-adapter-docusign</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -157,13 +157,13 @@ Supported storage classes:
 
 ## Adobe Sign Adapter Configuration
 
-**Requires dependency**: `fireflyframework-ecm-adapter-adobe-sign`
+Requires dependency: `fireflyframework-ecm-esignature-adobe-sign`
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-ecm-adapter-adobe-sign</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -179,13 +179,13 @@ Supported storage classes:
 | Property | Type | Default | Description | Environment Variable |
 |----------|------|---------|-------------|---------------------|
 | `firefly.ecm.adapter.adobe-sign.base-url` | String | `https://api.na1.adobesign.com` | Adobe Sign API base URL | `FIREFLY_ECM_ADAPTER_ADOBE_SIGN_BASE_URL` |
-- **Jersey Client** (`jersey-client:3.1.3`) - HTTP client implementation
-- **Jersey Media JSON** (`jersey-media-json-jackson:3.1.3`) - JSON processing
-- **Jersey HK2** (`jersey-hk2:3.1.3`) - Dependency injection
-- **Jersey Multipart** (`jersey-media-multipart:3.1.3`) - Multipart support
-- **Apache Oltu OAuth2** (`org.apache.oltu.oauth2.client:1.0.2`) - OAuth2 authentication
+- Jersey Client (`jersey-client:3.1.3`) - HTTP client implementation
+- Jersey Media JSON (`jersey-media-json-jackson:3.1.3`) - JSON processing
+- Jersey HK2 (`jersey-hk2:3.1.3`) - Dependency injection
+- Jersey Multipart (`jersey-media-multipart:3.1.3`) - Multipart support
+- Apache Oltu OAuth2 (`org.apache.oltu.oauth2.client:1.0.2`) - OAuth2 authentication
 
-> **Note**: All transitive dependencies are automatically managed. No additional configuration is required.
+> Note: All transitive dependencies are automatically managed. No additional configuration is required.
 
 ## Environment Variables
 
@@ -309,26 +309,13 @@ The library validates configuration properties at startup. Common validation rul
 - Boolean properties accept `true`/`false` values
 - Enum properties must match valid values
 
-## Testing and Quality Assurance
+## Test the configured adapter
 
-The Firefly ECM Library maintains **100% test success rate** across all adapter configurations:
-
-| **Module** | **Tests** | **Success Rate** | **Coverage** |
-|------------|-----------|------------------|--------------|
-| **S3 Adapter** | 21 | ✅ **100%** | All configuration scenarios |
-| **DocuSign Adapter** | 10 | ✅ **100%** | Complete workflow testing |
-| **TOTAL** | **31** | ✅ **100%** | **Production Ready** |
-
-### Recent Improvements
-
-- **Dependency Resolution**: All DocuSign SDK dependencies automatically managed
-- **Resilience Testing**: Comprehensive testing of circuit breaker and retry patterns
-- **Configuration Validation**: All property names and defaults verified against actual implementation
-- **Error Handling**: Robust testing of configuration validation and error scenarios
+Use the [current test sources](testing.md) and the reports from the actual build. Mocked-client tests check their declared request/response cases; they do not establish live-provider acceptance or a permanent success rate. Configure and test credentials, account permissions, and provider failures separately.
 
 ## Next Steps
 
 - [S3 Integration Guide](adapters/s3-integration-guide.md)
 - [DocuSign Integration Guide](adapters/docusign-integration-guide.md)
 - [Testing Guide](testing.md)
-- [API Reference](api-reference.md)
+- [ECM API contracts](api/README.md)

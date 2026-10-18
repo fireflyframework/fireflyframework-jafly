@@ -19,6 +19,14 @@ docs/migration/         Source history and migration evidence
 
 Each component directory contains its source, tests, resources, and licenses, with examples where the component supplies them. Start with its README or find the guide in the [module catalog](modules/index.md).
 
+## Branches and pull requests
+
+Use a short-lived feature or fix branch and open a pull request into `develop`. Both `develop` and `main` require the reactor verification and documentation checks. Resolve review conversations before merging. These branches reject deletion and force pushes.
+
+`develop` carries the next snapshot train. Promote a qualified train to `main` through a pull request. `main` supplies the published documentation and final release tags. Snapshot publication is an explicit workflow dispatch from either active branch; a final release uses an immutable `vYY.MM.PP` tag whose version matches the source POMs.
+
+Imported branches and tags live under `legacy/<source-repository>/...`. They are historical references, not development targets. Keep their original commits and namespaced names intact. When work from an original pull request is still relevant, create a new branch from `develop`, port the change, and link the original conversation.
+
 ## Verify before changing behavior
 
 Use JDK 25, the wrapper, Python, and Docker:
@@ -31,6 +39,8 @@ python3 scripts/release_tools.py check
 ```
 
 The Maven lifecycle runs the tests configured by each project. Check the project's Surefire/Failsafe includes, exclusions, and profiles before assuming a focused command covers every integration case.
+
+CI always reports its required verification check. Changes limited to Markdown or published site assets run structural and release-tool checks; source, resource, POM, and build-tool changes also run the complete Java build and standalone examples. Manual CI dispatch runs the full Java checks. A new prose update does not cancel a Java build already in progress.
 
 ## Work on a component
 

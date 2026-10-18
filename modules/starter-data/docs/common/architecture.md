@@ -16,20 +16,20 @@ This document provides a comprehensive overview of the `fireflyframework-starter
 
 ## Overview
 
-The `fireflyframework-starter-data` starter is built on **Hexagonal Architecture** (also known as Ports and Adapters pattern), which provides:
+The `fireflyframework-starter-data` starter is built on Hexagonal Architecture (also known as Ports and Adapters pattern), which provides:
 
-- **Clean separation** between business logic and infrastructure
-- **Pluggable adapters** for different orchestration platforms
-- **Testability** through dependency inversion
-- **Flexibility** to swap implementations without changing core logic
+- Clean separation between business logic and infrastructure
+- Pluggable adapters for different orchestration platforms
+- Testability through dependency inversion
+- Flexibility to swap implementations without changing core logic
 
 ### Architectural Principles
 
-1. **Dependency Inversion** - Core domain depends on abstractions, not implementations
-2. **Interface Segregation** - Small, focused interfaces for specific purposes
-3. **Single Responsibility** - Each component has one clear purpose
-4. **Open/Closed** - Open for extension, closed for modification
-5. **Reactive Programming** - Non-blocking, event-driven operations
+1. Dependency Inversion - Core domain depends on abstractions, not implementations
+2. Interface Segregation - Small, focused interfaces for specific purposes
+3. Single Responsibility - Each component has one clear purpose
+4. Open/Closed - Open for extension, closed for modification
+5. Reactive Programming - Non-blocking, event-driven operations
 
 ---
 
@@ -80,14 +80,14 @@ The `fireflyframework-starter-data` starter is built on **Hexagonal Architecture
 ### Port Types
 
 #### Inbound Ports (Driving)
-- **DataJobController** - REST API interface for external clients
+- DataJobController - REST API interface for external clients
 - Defines what the application can do
 - Implemented by adapters (controllers)
 
 #### Outbound Ports (Driven)
-- **JobOrchestrator** - Interface for workflow orchestration
-- **EventPublisher** - Interface for event publishing
-- **OrchestrationEventPublisher** - Interface for orchestration events
+- JobOrchestrator - Interface for workflow orchestration
+- EventPublisher - Interface for event publishing
+- OrchestrationEventPublisher - Interface for orchestration events
 - Defines what the application needs
 - Implemented by infrastructure adapters
 
@@ -108,7 +108,7 @@ config/
 └── OrchestrationAutoConfiguration  # Orchestration engine support
 ```
 
-**Key Features:**
+Key Features:
 - Conditional bean creation based on classpath and properties
 - Zero-configuration defaults with override capability
 - Spring Boot auto-configuration mechanism
@@ -149,7 +149,7 @@ public interface SyncDataJobController {
 }
 ```
 
-**Responsibilities:**
+Responsibilities:
 - Define REST API contract
 - OpenAPI/Swagger documentation
 - Request validation
@@ -178,7 +178,7 @@ public interface SyncDataJobService {
 }
 ```
 
-**Responsibilities:**
+Responsibilities:
 - Implement job lifecycle logic
 - Coordinate with orchestrator (async) or execute directly (sync)
 - Handle transformations via mappers
@@ -210,7 +210,7 @@ orchestration/
     └── JobExecutionStatus  # Status enum
 ```
 
-**Port Interface:**
+Port Interface:
 ```java
 public interface JobOrchestrator {
     Mono<JobExecution> startJob(JobExecutionRequest request);
@@ -221,32 +221,32 @@ public interface JobOrchestrator {
 }
 ```
 
-**Orchestrator Support:**
+Orchestrator Support:
 
 The library provides the `JobOrchestrator` port interface that can be implemented for any workflow orchestrator:
 
-1. **Apache Airflow** (Recommended)
+1. Apache Airflow (Recommended)
    - Open-source workflow orchestration platform
    - REST API integration
    - Flexible DAG-based workflows
    - Supports complex data pipelines
    - Configuration: `orchestrator-type: APACHE_AIRFLOW`
-   - **Note**: Adapter implementation required in your application
+   - Note: Adapter implementation required in your application
 
-2. **AWS Step Functions**
+2. AWS Step Functions
    - Serverless orchestration service
    - Native AWS integration
    - Visual workflow designer
    - Pay-per-use pricing
    - Configuration: `orchestrator-type: AWS_STEP_FUNCTIONS`
-   - **Note**: Adapter implementation required in your application
+   - Note: Adapter implementation required in your application
 
-3. **Custom Orchestrators**
+3. Custom Orchestrators
    - Implement the `JobOrchestrator` interface
    - Full control over orchestration logic
    - Integration with proprietary systems
 
-> **Important**: This library provides the port interface (`JobOrchestrator`) and configuration support. You must implement the adapter for your chosen orchestrator in your application. See the [Getting Started](getting-started.md) guide for implementation examples.
+> Important: This library provides the port interface (`JobOrchestrator`) and configuration support. You must implement the adapter for your chosen orchestrator in your application. See the [Getting Started](getting-started.md) guide for implementation examples.
 
 ### 6. Mapper Layer
 
@@ -258,7 +258,7 @@ mapper/
 └── JobResultMapperRegistry # Auto-discovery registry
 ```
 
-**Generic Interface:**
+Generic Interface:
 ```java
 public interface JobResultMapper<S, T> {
     T mapToTarget(S source);
@@ -385,7 +385,7 @@ cost/
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Integration Points:**
+Integration Points:
 - Job lifecycle events published to EDA
 - Orchestration step events bridged to EDA
 - Configurable topics and routing
@@ -416,9 +416,9 @@ cost/
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Separation:**
-- **Commands** - Modify state (START, STOP)
-- **Queries** - Read state (CHECK, COLLECT, RESULT)
+Separation:
+- Commands - Modify state (START, STOP)
+- Queries - Read state (CHECK, COLLECT, RESULT)
 - Enables independent scaling of read/write operations
 
 ### Integration with Orchestration Engine
@@ -546,63 +546,63 @@ cost/
 
 ### 1. Port/Adapter (Hexagonal Architecture)
 
-**Purpose:** Decouple business logic from infrastructure
+Purpose: Decouple business logic from infrastructure
 
-**Implementation:**
+Implementation:
 - `JobOrchestrator` is a port (interface) provided by this library
 - Adapters for Apache Airflow, AWS Step Functions, or custom orchestrators must be implemented in your application
 - Easy to add custom adapters for other orchestrators
 
 ### 2. Strategy Pattern
 
-**Purpose:** Pluggable orchestrator implementations
+Purpose: Pluggable orchestrator implementations
 
-**Implementation:**
+Implementation:
 - Different orchestrator strategies (Apache Airflow, AWS Step Functions, Custom)
 - Selected via configuration property
 - Runtime strategy selection
 
 ### 3. Registry Pattern
 
-**Purpose:** Manage and discover mappers
+Purpose: Manage and discover mappers
 
-**Implementation:**
+Implementation:
 - `JobResultMapperRegistry` auto-discovers all mappers
 - Type-safe lookup by target class
 - Reflection-based generic type extraction
 
 ### 4. Builder Pattern
 
-**Purpose:** Fluent API for complex objects
+Purpose: Fluent API for complex objects
 
-**Implementation:**
+Implementation:
 - All request/response models use Lombok `@Builder`
 - Readable, maintainable code
 - Immutable objects
 
 ### 5. Template Method Pattern
 
-**Purpose:** Define algorithm skeleton
+Purpose: Define algorithm skeleton
 
-**Implementation:**
+Implementation:
 - Job lifecycle stages define the template
 - Implementations fill in specific steps
 - Consistent flow across all services
 
 ### 6. Bridge Pattern
 
-**Purpose:** Decouple abstraction from implementation
+Purpose: Decouple abstraction from implementation
 
-**Implementation:**
+Implementation:
 - `EventGateway` bridges orchestration events to EDA
 - Allows independent evolution of both sides
 - Transparent integration
 
 ### 7. Chain of Responsibility Pattern
 
-**Purpose:** Enrichment fallback chains
+Purpose: Enrichment fallback chains
 
-**Implementation:**
+Implementation:
 - `@EnricherFallback` annotation defines fallback provider
 - `FallbackEnrichmentExecutor` traverses the chain recursively
 - Configurable strategy (on-error, on-empty, or both)
@@ -610,9 +610,9 @@ cost/
 
 ### 8. Pipe and Filter Pattern
 
-**Purpose:** Data transformation pipelines
+Purpose: Data transformation pipelines
 
-**Implementation:**
+Implementation:
 - `DataTransformer<S, T>` functional interface
 - `TransformationChain` composes transformers via `then()`
 - Each transformer is a filter that transforms data independently
@@ -620,9 +620,9 @@ cost/
 
 ### 9. Observer Pattern (Event-Driven Quality)
 
-**Purpose:** Quality gate event publishing
+Purpose: Quality gate event publishing
 
-**Implementation:**
+Implementation:
 - `DataQualityEngine` publishes `DataQualityEvent` on evaluation
 - `InMemoryLineageTracker` publishes `LineageEvent` on record
 - Spring's `ApplicationEventPublisher` for decoupled notifications
@@ -676,22 +676,21 @@ Client          Controller      Service         Orchestrator    Mapper          
 
 The `fireflyframework-starter-data` architecture provides:
 
-- **Clean Architecture** - Hexagonal design with clear boundaries
-- **Flexibility** - Pluggable adapters for different platforms
-- **Dual Job Types** - Asynchronous (multi-stage) and Synchronous (single-stage) jobs
-- **Testability** - Dependency inversion enables easy mocking
-- **Scalability** - Reactive programming and CQRS support
-- **Observability** - Built-in event publishing and tracing
-- **Reliability** - SAGA pattern for distributed transactions
-- **Data Quality** - Rule-based validation with configurable strategies
-- **Data Lineage** - Provenance tracking for all data operations
-- **Transformation Pipelines** - Composable post-enrichment processing
-- **Fallback Chains** - Automatic provider failover
-- **GenAI Bridge** - Integration with fireflyframework-genai
+- Clean Architecture - Hexagonal design with clear boundaries
+- Flexibility - Pluggable adapters for different platforms
+- Dual Job Types - Asynchronous (multi-stage) and Synchronous (single-stage) jobs
+- Testability - Dependency inversion enables easy mocking
+- Scalability - Reactive programming and CQRS support
+- Observability - Built-in event publishing and tracing
+- Reliability - SAGA pattern for distributed transactions
+- Data Quality - Rule-based validation with configurable strategies
+- Data Lineage - Provenance tracking for all data operations
+- Transformation Pipelines - Composable post-enrichment processing
+- Fallback Chains - Automatic provider failover
+- GenAI Bridge - Integration with fireflyframework-genai
 
 For more details, see:
 - [Job Lifecycle](../data-jobs/guide.md#job-lifecycle-async) - Detailed stage documentation for async jobs
 - [Synchronous Jobs](../data-jobs/guide.md#quick-start-sync) - Complete guide for synchronous jobs
 - [Configuration](configuration.md) - Configuration options
 - [Examples](examples.md) - Real-world usage patterns
-

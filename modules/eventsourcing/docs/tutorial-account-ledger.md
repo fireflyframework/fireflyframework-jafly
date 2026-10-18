@@ -15,7 +15,7 @@ An account ledger that tracks financial transactions for bank accounts. The ledg
 
 ## Prerequisites
 
-Complete the [Quick Start](quick-start.md) guide first. You should have a Spring Boot 3.x project with R2DBC, Flyway, and the `fireflyframework-eventsourcing` dependency configured.
+Complete the [Quick Start](quick-start.md) guide first. You should have a Spring Boot 4.1.1 project with R2DBC, Flyway, and the `fireflyframework-eventsourcing` dependency configured.
 
 ## Step 1: Define Domain Events
 
@@ -119,8 +119,8 @@ All events share metadata infrastructure from `AbstractDomainEvent`: `aggregateI
 
 The `AccountLedger` aggregate extends `AggregateRoot` and contains two types of methods:
 
-1. **Command methods** -- validate business rules and call `applyChange(event)`.
-2. **Event handler methods** -- named `on`, accept a single event parameter, and update internal state. They can be `private`.
+1. Command methods -- validate business rules and call `applyChange(event)`.
+2. Event handler methods -- named `on`, accept a single event parameter, and update internal state. They can be `private`.
 
 ```java
 @Getter

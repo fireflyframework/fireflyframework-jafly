@@ -1,6 +1,6 @@
 # Configuration Reference
 
-**Complete configuration guide for fireflyframework-cqrs**
+Complete configuration guide for fireflyframework-cqrs
 
 ## 📋 Quick Reference
 
@@ -64,7 +64,7 @@ firefly:
     enabled: true                       # Master switch for CQRS framework
 ```
 
-**Environment Variable**: `FIREFLY_CQRS_ENABLED`
+Environment Variable: `FIREFLY_CQRS_ENABLED`
 
 ## 📤 Command Configuration
 
@@ -79,7 +79,7 @@ firefly:
       tracing-enabled: true             # Enable distributed tracing
 ```
 
-**Environment Variables**:
+Environment Variables:
 - `FIREFLY_CQRS_COMMAND_TIMEOUT`
 - `FIREFLY_CQRS_COMMAND_METRICS_ENABLED`
 - `FIREFLY_CQRS_COMMAND_TRACING_ENABLED`
@@ -118,7 +118,7 @@ firefly:
       tracing-enabled: true             # Enable distributed tracing
 ```
 
-**Environment Variables**:
+Environment Variables:
 - `FIREFLY_CQRS_QUERY_TIMEOUT`
 - `FIREFLY_CQRS_QUERY_CACHING_ENABLED`
 - `FIREFLY_CQRS_QUERY_CACHE_TTL`
@@ -196,7 +196,7 @@ spring:
           min-idle: 2                   # Minimum idle connections
 ```
 
-**Environment Variables**:
+Environment Variables:
 - `FIREFLY_CQRS_QUERY_CACHE_REDIS_HOST`
 - `FIREFLY_CQRS_QUERY_CACHE_REDIS_PORT`
 - `FIREFLY_CQRS_QUERY_CACHE_REDIS_PASSWORD`
@@ -218,7 +218,7 @@ firefly:
         timeout-ms: 5000                # Custom authorization timeout
 ```
 
-**Environment Variables**:
+Environment Variables:
 - `FIREFLY_CQRS_AUTHORIZATION_ENABLED`
 - `FIREFLY_CQRS_AUTHORIZATION_CUSTOM_ENABLED`
 - `FIREFLY_CQRS_AUTHORIZATION_CUSTOM_TIMEOUT_MS`
@@ -296,7 +296,7 @@ GET /actuator/cqrs/handlers
 GET /actuator/cqrs/health
 ```
 
-**Example Response Structure:**
+Example Response Structure:
 ```json
 {
   "framework": {
@@ -377,7 +377,7 @@ The `CommandMetricsService` automatically registers these metrics:
 
 #### Metric Tags
 - `command.type` - Command class simple name
-- `query.type` - Query class simple name  
+- `query.type` - Query class simple name
 - `result` - Success/failure/hit/miss classification
 - `error.type` - Exception class simple name for failures
 
@@ -415,7 +415,7 @@ management:
 
 Health check includes:
 - Number of registered command handlers
-- Number of registered query handlers  
+- Number of registered query handlers
 - Cache hit ratio (if caching enabled)
 - Authorization system status
 
@@ -561,4 +561,4 @@ firefly:
 
 ---
 
-*Next: [Advanced Features](ADVANCED_FEATURES.md) - Explore caching strategies, metrics, and more*
+*Next: [CQRS configuration and optional bridges](../../../docs/site/modules/cqrs.md#configuration-and-wiring) - Explore caching strategies, metrics, and more*

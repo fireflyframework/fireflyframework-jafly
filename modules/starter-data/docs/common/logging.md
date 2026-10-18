@@ -1,6 +1,6 @@
 # Logging Guide
 
-This document describes the comprehensive logging capabilities built into the Firefly Common Data Library.
+This document describes the logging capabilities built into the Firefly Common Data Library.
 
 ## Overview
 
@@ -10,16 +10,16 @@ The library provides structured logging for all job lifecycle phases (START, CHE
 
 The library uses the following logging levels:
 
-- **INFO**: Normal operational messages (job start, completion, status)
-- **WARN**: Warning conditions (job failures, degraded performance)
-- **ERROR**: Error conditions (exceptions, failures)
-- **DEBUG**: Detailed diagnostic information (full request/response payloads)
+- INFO: Normal operational messages (job start, completion, status)
+- WARN: Warning conditions (job failures, degraded performance)
+- ERROR: Error conditions (exceptions, failures)
+- DEBUG: Detailed diagnostic information (full request/response payloads)
 
 ## Service Layer Logging
 
 ### AbstractResilientDataJobService
 
-The `AbstractResilientDataJobService` provides comprehensive logging for all job operations:
+The `AbstractResilientDataJobService` provides logging for all job operations:
 
 ```java
 @Service
@@ -50,49 +50,49 @@ public class MyDataJobService extends AbstractResilientDataJobService {
 
 For each job stage, the following information is logged:
 
-**On Stage Start (INFO level):**
+On Stage Start (INFO level):
 ```
 Starting START stage - executionId: exec-123, parameters: [param1, param2]
 ```
 
-**On Stage Start (DEBUG level):**
+On Stage Start (DEBUG level):
 ```
 Full request details for START stage - executionId: exec-123, request: JobStageRequest(...)
 ```
 
-**On Subscription (DEBUG level):**
+On Subscription (DEBUG level):
 ```
 Subscribed to START stage operation for execution exec-123
 ```
 
-**On Success (INFO level):**
+On Success (INFO level):
 ```
 Successfully completed START stage - executionId: exec-123, duration: 1234ms, status: RUNNING
 ```
 
-**On Success (DEBUG level):**
+On Success (DEBUG level):
 ```
 Response details for START stage - executionId: exec-123, data keys: [jobId, startTime], message: Job started successfully
 ```
 
-**On Success with Failure Response (WARN level):**
+On Success with Failure Response (WARN level):
 ```
 Completed START stage with failure - executionId: exec-123, duration: 1234ms, status: FAILED, message: Validation error
 ```
 
-**On Error (ERROR level):**
+On Error (ERROR level):
 ```
 Failed START stage - executionId: exec-123, duration: 1234ms, errorType: RuntimeException, errorMessage: Connection timeout
 ```
 
-**On Error (DEBUG level):**
+On Error (DEBUG level):
 ```
 Full error details for START stage - executionId: exec-123
 java.lang.RuntimeException: Connection timeout
     at ...
 ```
 
-**On Error Resume (WARN level):**
+On Error Resume (WARN level):
 ```
 Returning failure response for START stage - executionId: exec-123, error: Connection timeout
 ```
@@ -117,7 +117,7 @@ public class MyDataJobController extends AbstractDataJobController {
 
 ### Logged Information
 
-**On Request Received (INFO level):**
+On Request Received (INFO level):
 ```
 Received START job request - parameters: [param1, param2]
 Received CHECK job request - executionId: exec-123, requestId: req-456
@@ -125,12 +125,12 @@ Received COLLECT job results request - executionId: exec-123, requestId: req-456
 Received GET job result request - executionId: exec-123, requestId: req-456
 ```
 
-**On Request Received (DEBUG level):**
+On Request Received (DEBUG level):
 ```
 Full START job request: JobStageRequest(stage=START, executionId=null, parameters={...})
 ```
 
-**On Success Response (INFO level):**
+On Success Response (INFO level):
 ```
 START job completed successfully - executionId: exec-123, status: RUNNING
 CHECK job completed successfully - executionId: exec-123, status: RUNNING
@@ -138,19 +138,19 @@ COLLECT job results completed successfully - executionId: exec-123, status: COMP
 GET job result completed successfully - executionId: exec-123, status: COMPLETED, dataKeys: [finalResult]
 ```
 
-**On Failure Response (WARN level):**
+On Failure Response (WARN level):
 ```
 START job completed with failure - executionId: exec-123, status: FAILED, message: Validation error
 ```
 
-**On Error (ERROR level):**
+On Error (ERROR level):
 ```
 START job failed with error: Connection timeout
 java.lang.RuntimeException: Connection timeout
     at ...
 ```
 
-**On Response (DEBUG level):**
+On Response (DEBUG level):
 ```
 Full START job response: JobStageResponse(stage=START, executionId=exec-123, success=true, ...)
 Full CHECK job response for executionId exec-123: JobStageResponse(...)
@@ -300,33 +300,33 @@ public class MyDataJobService extends AbstractResilientDataJobService {
 
 ## Best Practices
 
-1. **Use Appropriate Log Levels**
+1. Use Appropriate Log Levels
    - INFO: Normal operations, job lifecycle events
    - WARN: Recoverable errors, degraded performance
    - ERROR: Unrecoverable errors, exceptions
    - DEBUG: Detailed diagnostic information (disable in production)
 
-2. **Include Context**
+2. Include Context
    - Always include `executionId` in log messages
    - Include `requestId` for request tracing
    - Include `stage` to identify the job phase
 
-3. **Avoid Logging Sensitive Data**
+3. Avoid Logging Sensitive Data
    - Don't log passwords, tokens, or PII
    - Use DEBUG level for full request/response payloads
    - Sanitize data before logging
 
-4. **Use Structured Logging**
+4. Use Structured Logging
    - Use JSON format for production
    - Include consistent fields across all logs
    - Use MDC for contextual information
 
-5. **Monitor Log Volume**
+5. Monitor Log Volume
    - Use appropriate log levels to control volume
    - Implement log rotation and retention policies
    - Consider sampling for high-volume operations
 
-6. **Integrate with Observability**
+6. Integrate with Observability
    - Correlate logs with traces using `executionId`
    - Use log aggregation tools (ELK, Splunk, Datadog)
    - Set up alerts for ERROR level logs
@@ -361,4 +361,3 @@ public class MyDataJobService extends AbstractResilientDataJobService {
 - [Observability Guide](observability.md) - Distributed tracing and metrics
 - [Testing Guide](testing.md) - Testing with logging
 - [Configuration Guide](configuration.md) - Application configuration
-

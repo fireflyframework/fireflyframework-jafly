@@ -1,6 +1,6 @@
 # Observability & Monitoring Guide
 
-This guide covers the comprehensive observability and monitoring features of the Firefly Common Client Library, including metrics, tracing, health checks, and logging.
+This guide covers the observability and monitoring features of the Firefly Common Client Library, including metrics, tracing, health checks, and logging.
 
 ## Table of Contents
 
@@ -18,15 +18,15 @@ This guide covers the comprehensive observability and monitoring features of the
 
 ## Overview
 
-The library provides enterprise-grade observability features out of the box:
+The library provides observability features with its default configuration:
 
 | Feature | Technology | Description |
 |---------|-----------|-------------|
-| **Metrics** | Micrometer | Request counts, durations, error rates, circuit breaker states |
-| **Tracing** | OpenTelemetry/Zipkin | Distributed tracing across microservices |
-| **Health Checks** | Spring Boot Actuator | Service health monitoring and diagnostics |
-| **Logging** | SLF4J/Logback | Structured logging with correlation IDs |
-| **Performance** | Custom Collectors | Throughput, latency percentiles, cache metrics |
+| Metrics | Micrometer | Request counts, durations, error rates, circuit breaker states |
+| Tracing | OpenTelemetry/Zipkin | Distributed tracing across microservices |
+| Health Checks | Spring Boot Actuator | Service health monitoring and diagnostics |
+| Logging | SLF4J/Logback | Structured logging with correlation IDs |
+| Performance | Custom Collectors | Throughput, latency percentiles, cache metrics |
 
 ---
 
@@ -325,7 +325,7 @@ public class CustomServiceHealthCheck {
 
 ### Advanced Logging Interceptor
 
-The library provides a comprehensive logging interceptor with configurable detail levels.
+The library provides a logging interceptor with configurable detail levels.
 
 #### Configuration
 
@@ -631,6 +631,5 @@ histogram_quantile(0.95,
 - [REST Client Guide](REST_CLIENT.md)
 - [gRPC Client Guide](GRPC_CLIENT.md)
 - [SOAP Client Guide](SOAP_CLIENT.md)
-- [Circuit Breaker Guide](CIRCUIT_BREAKER.md)
+- [Client resilience configuration](../../../docs/site/modules/client.md#configuration-and-wiring)
 - [Integration Testing Guide](INTEGRATION_TESTING.md)
-

@@ -2,10 +2,10 @@
 
 # Part VI: Configuration
 
-**Contents:**
-- [§38 Configuration Properties](#38-configuration-properties)
-- [§39 Auto-Configuration Chain](#39-auto-configuration-chain)
-- [§40 Spring Boot Integration](#40-spring-boot-integration)
+Contents:
+- [§38 Configuration Properties](#46-configuration-properties)
+- [§39 Auto-Configuration Chain](#47-auto-configuration-chain)
+- [§40 Spring Boot Integration](#48-spring-boot-integration)
 
 ## 46. Configuration Properties
 
@@ -83,7 +83,7 @@ All properties are prefixed with `firefly.orchestration`.
 |----------|------|---------|-------------|
 | `firefly.orchestration.saga.compensation-error-handler` | `String` | `default` | Named handler: `default`, `fail-fast`, `log-and-continue`, `retry`, `robust` |
 
-### Example: Production Configuration
+### Example configuration for a deployment
 
 ```yaml
 firefly:
@@ -150,7 +150,7 @@ The module's auto-configurations load in a specific order to ensure dependencies
 | `ArgumentResolver` | `ArgumentResolver` | `@ConditionalOnMissingBean` |
 | `StepInvoker` | `StepInvoker` | `@ConditionalOnMissingBean` |
 | `OrchestrationLoggerEvents` | `OrchestrationLoggerEvents` | `@ConditionalOnMissingBean` |
-| `OrchestrationEvents` | `CompositeOrchestrationEvents` | `@Primary` — wraps all event delegates |
+| `OrchestrationEvents` | `CompositeOrchestrationEvents` | `@Primary`: wraps all event delegates |
 | `ExecutionPersistenceProvider` | `InMemoryPersistenceProvider` | `@ConditionalOnMissingBean` (fallback) |
 | `DeadLetterStore` | `InMemoryDeadLetterStore` | `@ConditionalOnMissingBean` |
 | `DeadLetterService` | `DeadLetterService` | DLQ enabled (default: `true`) |
@@ -219,13 +219,13 @@ Each enabled pattern creates its registry, orchestrator, and engine:
 
 Additional composition beans registered during Phase 3:
 
-- `CompositionValidator` — validates saga composition structures
-- `CompositionVisualizationService` — DOT/Mermaid graph generation
-- `CompositionTemplateRegistry` — reusable composition templates
+- `CompositionValidator`: validates saga composition structures
+- `CompositionVisualizationService`: DOT/Mermaid graph generation
+- `CompositionTemplateRegistry`: reusable composition templates
 
 ### Overriding Beans
 
-All beans use `@ConditionalOnMissingBean`, so you can replace any of them by defining your own:
+Many infrastructure beans use `@ConditionalOnMissingBean`. Check the relevant auto-configuration before replacing a default. The following application-supplied providers are extension points:
 
 ```java
 @Configuration
@@ -312,8 +312,8 @@ firefly:
 
 When `health.enabled=true` and Spring Boot Actuator is on the classpath, the `OrchestrationHealthIndicator` is registered automatically. It reports:
 
-- `UP` — persistence is healthy
-- `DOWN` — persistence health check failed
+- `UP`: persistence is healthy
+- `DOWN`: persistence health check failed
 
 Visible at `/actuator/health` with details under `orchestration`.
 

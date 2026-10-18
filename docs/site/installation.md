@@ -18,14 +18,22 @@ The tutorial uses `26.10.17-SNAPSHOT`, which you can install from source. Before
 ```sh
 java -version
 ./mvnw -version
-docker info
 ```
 
 The Maven wrapper validates its downloaded distribution with the SHA-256 pinned in `.mvn/wrapper/maven-wrapper.properties`. A system Maven installation is optional. If `JAVA_HOME` is set, make sure it points to JDK 25.
 
 ## Install from source
 
+For the [first onboarding service](getting-started.md), install CQRS and its prerequisites:
+
 ```sh
+./mvnw -B -ntp -pl :fireflyframework-cqrs -am install
+```
+
+These seven projects run their configured tests without a database, broker, or Docker engine. To install every framework module, including the independent BOM and provider adapters, start Docker and run:
+
+```sh
+docker info
 ./mvnw -B -ntp clean install
 ```
 

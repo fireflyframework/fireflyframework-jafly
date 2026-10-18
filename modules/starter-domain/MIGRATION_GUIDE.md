@@ -1,4 +1,6 @@
-# Migration Guide: fireflyframework-starter-domain v2.0
+# Domain starter migration notes (historical)
+
+These notes retain the earlier domain-starter extraction and dependency changes. Use the current component guide for the present dependency bundle and setup. [Current guide](../../docs/site/modules/starter-domain.md).
 
 ## Overview
 
@@ -520,9 +522,9 @@ After running automated scripts, complete these manual steps:
 If you encounter any issues during migration:
 
 1. Check the [fireflyframework-starter-domain README](README.md)
-2. Check the [fireflyframework-cqrs README](../fireflyframework-cqrs/README.md)
-3. Check the [fireflyframework-eda README](../fireflyframework-eda/README.md)
-4. Check the [fireflyframework-orchestration README](../fireflyframework-orchestration/README.md)
+2. Check the [fireflyframework-cqrs README](../cqrs/README.md)
+3. Check the [fireflyframework-eda README](../eda/README.md)
+4. Check the [fireflyframework-orchestration README](../orchestration/README.md)
 5. Contact the Firefly Platform Team
 
 ## What's in fireflyframework-starter-domain v2.0

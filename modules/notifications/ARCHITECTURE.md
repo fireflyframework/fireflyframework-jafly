@@ -13,16 +13,16 @@
 
 ## Introduction
 
-The `fireflyframework-notifications` library implements **Hexagonal Architecture** (also known as Ports and Adapters pattern) to provide a clean, maintainable, and testable notification system. This architectural style was introduced by Alistair Cockburn and focuses on separating the core business logic from external dependencies.
+The `fireflyframework-notifications` library implements Hexagonal Architecture (also known as Ports and Adapters pattern) to provide a clean, maintainable, and testable notification system. This architectural style was introduced by Alistair Cockburn and focuses on separating the core business logic from external dependencies.
 
 ### Why Hexagonal Architecture?
 
 Traditional layered architectures often suffer from tight coupling between business logic and infrastructure. Hexagonal architecture solves this by:
 
-- **Isolating the domain**: Business rules don't depend on frameworks or external services
-- **Enabling testability**: Core logic can be tested without real infrastructure
-- **Facilitating change**: Swap providers (e.g., SendGrid → Resend) without touching business logic
-- **Enforcing boundaries**: Clear contracts between layers through interfaces (ports)
+- Isolating the domain: Business rules don't depend on frameworks or external services
+- Enabling testability: Core logic can be tested without real infrastructure
+- Facilitating change: Swap providers (e.g., SendGrid → Resend) without touching business logic
+- Enforcing boundaries: Clear contracts between layers through interfaces (ports)
 
 ## Architecture Overview
 
@@ -124,7 +124,7 @@ public class EmailServiceImpl implements EmailService {
 Each notification type has its own port interface with a single responsibility:
 
 - `EmailProvider` - Email delivery contract
-- `SMSProvider` - SMS delivery contract  
+- `SMSProvider` - SMS delivery contract
 - `PushProvider` - Push notification contract
 
 ### 3. Adapter Isolation
@@ -145,14 +145,14 @@ All communication between layers uses immutable DTOs:
 
 ### Domain Layer (Ports)
 
-**Location**: `fireflyframework-notifications-core/src/main/java/.../interfaces`
+Location: `fireflyframework-notifications-core/src/main/java/.../interfaces`
 
-**Responsibilities**:
+Responsibilities:
 - Define contracts for notification delivery (port interfaces)
 - Define data structures (DTOs)
 - No business logic, no infrastructure code
 
-**Key Interfaces**:
+Key Interfaces:
 
 ```java
 public interface EmailProvider {
@@ -168,7 +168,7 @@ public interface PushProvider {
 }
 ```
 
-**Characteristics**:
+Characteristics:
 - Pure interfaces with no implementation
 - Technology-agnostic
 - Stable contracts that rarely change
@@ -176,15 +176,15 @@ public interface PushProvider {
 
 ### Application Layer (Services)
 
-**Location**: `fireflyframework-notifications-core/src/main/java/.../core/services`
+Location: `fireflyframework-notifications-core/src/main/java/.../core/services`
 
-**Responsibilities**:
+Responsibilities:
 - Orchestrate notification delivery
 - Implement business rules and validation
 - Error handling and logging
 - Depend only on port interfaces
 
-**Implementation Pattern**:
+Implementation Pattern:
 
 ```java
 @Service
@@ -201,7 +201,7 @@ public class EmailServiceImpl implements EmailService {
 }
 ```
 
-**Key Points**:
+Key Points:
 - Services are Spring-managed beans (`@Service`)
 - Inject port interfaces via constructor or field injection
 - Spring automatically wires the concrete adapter implementation
@@ -209,15 +209,15 @@ public class EmailServiceImpl implements EmailService {
 
 ### Infrastructure Layer (Adapters)
 
-**Location**: Separate Maven modules (`fireflyframework-notifications-*`)
+Location: Separate Maven modules (`fireflyframework-notifications-*`)
 
-**Responsibilities**:
+Responsibilities:
 - Implement port interfaces
 - Handle provider-specific API calls
 - Manage authentication and configuration
 - Transform DTOs to provider-specific formats
 
-**Adapter Structure** (using SendGrid as example):
+Adapter Structure (using SendGrid as example):
 
 ```
 fireflyframework-notifications-sendgrid/
@@ -232,7 +232,7 @@ fireflyframework-notifications-sendgrid/
         └── SendGridProperties.java           # Configuration properties
 ```
 
-**Adapter Implementation Example**:
+Adapter Implementation Example:
 
 ```java
 @Component  // Spring bean
@@ -288,7 +288,7 @@ fireflyframework-notifications-firebase (Adapter)
 
 ### Key Insight
 
-The **core never imports adapters**. Adapters import the core and implement its interfaces. This is the dependency inversion that makes the architecture "hexagonal."
+The core never imports adapters. Adapters import the core and implement its interfaces. This is the dependency inversion that makes the architecture "hexagonal."
 
 ## Adding New Providers
 
@@ -490,12 +490,12 @@ EmailRequestDTO request = EmailRequestDTO.builder()
 
 | Benefit | Description |
 |---------|-------------|
-| **Testability** | Mock port interfaces to test services without real providers |
-| **Flexibility** | Swap providers by changing Maven dependencies and configuration |
-| **Maintainability** | Clear boundaries make code easier to understand and modify |
-| **Scalability** | Add new providers without modifying existing code (Open/Closed Principle) |
-| **Independence** | Core business logic has zero knowledge of infrastructure details |
-| **Reusability** | Core and adapters can be reused across multiple projects |
+| Testability | Mock port interfaces to test services without real providers |
+| Flexibility | Swap providers by changing Maven dependencies and configuration |
+| Maintainability | Clear boundaries make code easier to understand and modify |
+| Scalability | Add new providers without modifying existing code (Open/Closed Principle) |
+| Independence | Core business logic has zero knowledge of infrastructure details |
+| Reusability | Core and adapters can be reused across multiple projects |
 
 ## References
 

@@ -6,7 +6,7 @@ Event sourcing is an architectural pattern where state changes are captured as a
 
 The current state of any entity is derived by replaying its event history from the beginning (or from a snapshot).
 
-**Example: A bank account**
+Example: A bank account
 
 Traditional CRUD stores a single row:
 
@@ -64,10 +64,10 @@ public class MoneyDepositedEvent extends AbstractDomainEvent {
 
 An aggregate is a cluster of domain objects treated as a single unit for data changes. In event sourcing, the aggregate:
 
-1. **Receives commands** (method calls with business intent)
-2. **Validates business rules** (throws exceptions if rules are violated)
-3. **Produces events** (calls `applyChange(event)`)
-4. **Updates its own state** from events (via `on(SomeEvent)` handler methods)
+1. Receives commands (method calls with business intent)
+2. Validates business rules (throws exceptions if rules are violated)
+3. Produces events (calls `applyChange(event)`)
+4. Updates its own state from events (via `on(SomeEvent)` handler methods)
 
 The aggregate never modifies its state directly -- all state changes go through events.
 
@@ -96,16 +96,16 @@ public class Account extends AggregateRoot {
 
 The event store is the persistence layer that stores events and provides retrieval capabilities. It guarantees:
 
-- **Atomicity** -- all events from a single command are saved together or not at all
-- **Ordering** -- events within an aggregate are ordered by version
-- **Global ordering** -- all events across all aggregates have a global sequence number
-- **Optimistic concurrency** -- concurrent writes to the same aggregate are detected via version checking
+- Atomicity -- all events from a single command are saved together or not at all
+- Ordering -- events within an aggregate are ordered by version
+- Global ordering -- all events across all aggregates have a global sequence number
+- Optimistic concurrency -- concurrent writes to the same aggregate are detected via version checking
 
 In this library, the `EventStore` interface provides reactive methods backed by R2DBC.
 
 ### Projections (Read Models)
 
-Since the event store is optimized for writes (append-only), reads require a different strategy. A **projection** listens to events and builds a read model optimized for queries.
+Since the event store is optimized for writes (append-only), reads require a different strategy. A projection listens to events and builds a read model optimized for queries.
 
 For example, the event store might contain thousands of `MoneyDeposited` and `MoneyWithdrawn` events. A projection builds a single `account_balance` row that can be queried instantly.
 
@@ -113,7 +113,7 @@ Projections are eventually consistent -- they update asynchronously after events
 
 ### Snapshots
 
-For aggregates with many events, replaying the entire history on every load becomes slow. A **snapshot** captures the aggregate state at a specific version so that only events after the snapshot need to be replayed.
+For aggregates with many events, replaying the entire history on every load becomes slow. A snapshot captures the aggregate state at a specific version so that only events after the snapshot need to be replayed.
 
 ```
 Without snapshot: replay 10,000 events (slow)
@@ -124,21 +124,21 @@ With snapshot at version 9,900: load snapshot + replay 100 events (fast)
 
 Event sourcing is a good fit when:
 
-- **Audit trails are required** -- financial systems, healthcare, compliance
-- **You need temporal queries** -- "what was the state at time T?"
-- **Business events are the natural model** -- transaction ledgers, order processing
-- **You need reliable integration** -- events drive downstream systems
-- **Complex business rules benefit from replaying history** -- fraud detection, analytics
+- Audit trails are required -- financial systems, healthcare, compliance
+- You need temporal queries -- "what was the state at time T?"
+- Business events are the natural model -- transaction ledgers, order processing
+- You need reliable integration -- events drive downstream systems
+- Complex business rules benefit from replaying history -- fraud detection, analytics
 
 ## When NOT to Use Event Sourcing
 
 Event sourcing adds complexity. Avoid it when:
 
-- **Simple CRUD is sufficient** -- user profiles, settings, basic content management
-- **You need ad-hoc queries across entities** -- event sourcing optimizes for single-aggregate reads; cross-aggregate queries require projections
-- **The team is unfamiliar with the pattern** -- the learning curve is real
-- **Storage cost is a primary concern** -- event sourcing stores more data than CRUD
-- **Events are not a natural model** -- if your domain is purely about current state without meaningful history
+- Simple CRUD is sufficient -- user profiles, settings, basic content management
+- You need ad-hoc queries across entities -- event sourcing optimizes for single-aggregate reads; cross-aggregate queries require projections
+- The team is unfamiliar with the pattern -- the learning curve is real
+- Storage cost is a primary concern -- event sourcing stores more data than CRUD
+- Events are not a natural model -- if your domain is purely about current state without meaningful history
 
 ## Next Steps
 

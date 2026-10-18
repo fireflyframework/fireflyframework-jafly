@@ -22,6 +22,8 @@ Define command/query messages and their handlers, then invoke the appropriate bu
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The runnable example is a customer onboarding service. `POST /applications` submits an applicant's name and email through `CommandBus`; `GET /applications/{id}` reads the saved application through `QueryBus`.
 
 Use the [first-service tutorial](../../docs/site/getting-started.md) for the complete Maven project, main class, run commands, and HTTP tests. The classes here belong to that project. Its repository is an in-memory map that loses data on restart, and its query disables caching. Authentication, outbound events, and a database are later integration choices.
@@ -61,18 +63,18 @@ public record SubmitApplication(String commandId, @NotBlank String applicantName
 ```java
 package com.example.jafly;
 
+import lombok.RequiredArgsConstructor;
 import java.util.UUID;
 import org.fireflyframework.cqrs.annotations.CommandHandlerComponent;
 import org.fireflyframework.cqrs.command.CommandHandler;
 import reactor.core.publisher.Mono;
 
 @CommandHandlerComponent
+@RequiredArgsConstructor
 public class SubmitApplicationHandler extends CommandHandler<SubmitApplication, OnboardingApplication> {
     private final InMemoryApplicationRepository repository;
 
-    public SubmitApplicationHandler(InMemoryApplicationRepository repository) {
-        this.repository = repository;
-    }
+
 
     @Override
     protected Mono<OnboardingApplication> doHandle(SubmitApplication command) {
@@ -120,17 +122,17 @@ public record FindApplication(String queryId, @NotNull UUID applicationId) imple
 ```java
 package com.example.jafly;
 
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.cqrs.annotations.QueryHandlerComponent;
 import org.fireflyframework.cqrs.query.QueryHandler;
 import reactor.core.publisher.Mono;
 
 @QueryHandlerComponent(cacheable = false)
+@RequiredArgsConstructor
 public class FindApplicationHandler extends QueryHandler<FindApplication, OnboardingApplication> {
     private final InMemoryApplicationRepository repository;
 
-    public FindApplicationHandler(InMemoryApplicationRepository repository) {
-        this.repository = repository;
-    }
+
 
     @Override
     protected Mono<OnboardingApplication> doHandle(FindApplication query) {
@@ -188,6 +190,7 @@ public class InMemoryApplicationRepository {
 ```java
 package com.example.jafly;
 
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -206,14 +209,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/applications")
+@RequiredArgsConstructor
 public class ApplicationsController {
     private final CommandBus commandBus;
     private final QueryBus queryBus;
 
-    public ApplicationsController(CommandBus commandBus, QueryBus queryBus) {
-        this.commandBus = commandBus;
-        this.queryBus = queryBus;
-    }
+
 
     @PostMapping
     public Mono<ResponseEntity<OnboardingApplication>> submit(@Valid @RequestBody ApplicationRequest request) {

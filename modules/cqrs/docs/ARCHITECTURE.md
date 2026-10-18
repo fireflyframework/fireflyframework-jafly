@@ -1,4 +1,6 @@
-# CQRS Framework Architecture
+# CQRS architecture (historical)
+
+This retained architecture includes the earlier cache auto-configuration and context sketches. Use the [current CQRS guide](../../../docs/site/modules/cqrs.md) for the shipped bus, cache bridge, validation, and authorization contracts.
 
 **Deep dive into the architectural patterns, components, and design decisions of fireflyframework-cqrs**
 
@@ -462,7 +464,6 @@ The framework automatically collects these Micrometer metrics:
 - **Error categorization** with exception type tagging
 - **Validation phase tracking** for debugging
 - **No-op mode** when MeterRegistry is not available
-```
 
 ### Health Indicators
 
@@ -650,4 +651,4 @@ This architecture provides a solid foundation for enterprise CQRS applications w
 
 ---
 
-*Next: [Core Components](CORE_COMPONENTS.md) - Detailed interface and class documentation*
+*Next: [Public API contracts](../../../docs/site/modules/cqrs.md#public-api-and-extension-points) - Detailed interface and class documentation*

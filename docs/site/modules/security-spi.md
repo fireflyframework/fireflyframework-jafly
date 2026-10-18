@@ -30,6 +30,8 @@ Connect the onboarding service's policy, relationship, revocation, key, or secre
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 You implement these ports in an adapter module and let the platform's auto-configuration discover your bean. A minimal `PolicyDecisionPort` adapter, fail-closed by contract:
@@ -37,6 +39,7 @@ You implement these ports in an adapter module and let the platform's auto-confi
 ```java
 package com.example.security;
 
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
@@ -46,13 +49,12 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
 
     private final OpaClient opa; // your engine binding
 
-    public OpaPolicyDecisionAdapter(OpaClient opa) {
-        this.opa = opa;
-    }
+
 
     @Override
     public Mono<Decision> authorize(SecurityPrincipal principal, String action,
@@ -68,18 +70,17 @@ public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
 Conversely, the core engine consumes the ports. It never sees your adapter type, only the interface:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.spi.TokenValidationPort;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 
+@RequiredArgsConstructor
 public class AuthorizationFilter {
 
     private final TokenValidationPort tokenValidation;
     private final PolicyDecisionPort policy;
 
-    public AuthorizationFilter(TokenValidationPort tokenValidation, PolicyDecisionPort policy) {
-        this.tokenValidation = tokenValidation;
-        this.policy = policy;
-    }
+
 
     public Mono<Decision> authorize(BearerToken token, String action, String resource) {
         return tokenValidation.validate(token)                          // → SecurityPrincipal (or TokenValidationException)

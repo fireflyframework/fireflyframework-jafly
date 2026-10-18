@@ -1,18 +1,18 @@
 # Callback System - Executive Summary
 
-> **Complete overview of the Firefly Callback Management System implementation status**
+> Complete overview of the Firefly Callback Management System implementation status
 
 ## ✅ System Status
 
-The Firefly Callback Management System is **fully implemented and working flawlessly**. All components are integrated, tested, and documented.
+The Firefly Callback Management System is fully implemented and working flawlessly. All components are integrated, tested, and documented.
 
 ## 🎯 Implemented Components
 
 ### 1. ✅ Domain Authorization
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Features**:
+Features:
 - ✅ Authorized domain whitelist
 - ✅ Domain verification (manual or automatic)
 - ✅ Allowed paths control (`allowedPaths`)
@@ -23,7 +23,7 @@ The Firefly Callback Management System is **fully implemented and working flawle
 - ✅ Statistics tracking (total callbacks, failures)
 - ✅ Multi-tenant support
 
-**Security Validations**:
+Security Validations:
 ```java
 ✓ Domain must exist in authorized_domains
 ✓ active = true
@@ -33,7 +33,7 @@ The Firefly Callback Management System is **fully implemented and working flawle
 ✓ HTTPS required (if requireHttps = true)
 ```
 
-**Endpoints**:
+Endpoints:
 - `POST /api/v1/authorized-domains/filter` - Filter domains
 - `POST /api/v1/authorized-domains` - Create domain
 - `PUT /api/v1/authorized-domains/{id}` - Update domain
@@ -42,9 +42,9 @@ The Firefly Callback Management System is **fully implemented and working flawle
 
 ### 2. ✅ Callback Configurations
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Features**:
+Features:
 - ✅ Event type subscription with wildcards (`customer.*`)
 - ✅ Custom HTTP headers (`customHeaders`)
 - ✅ Extra metadata/parameters (`metadata`)
@@ -56,7 +56,7 @@ The Firefly Callback Management System is **fully implemented and working flawle
 - ✅ Multi-tenant support
 - ✅ HTTP methods: POST, PUT, PATCH
 
-**Key Fields**:
+Key Fields:
 ```java
 CallbackConfiguration {
     // Basic
@@ -87,7 +87,7 @@ CallbackConfiguration {
 }
 ```
 
-**Endpoints**:
+Endpoints:
 - `POST /api/v1/callback-configurations/filter` - Filter configurations
 - `POST /api/v1/callback-configurations` - Create configuration
 - `GET /api/v1/callback-configurations/{id}` - Get by ID
@@ -96,9 +96,9 @@ CallbackConfiguration {
 
 ### 3. ✅ Custom Headers
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Implementation**:
+Implementation:
 ```java
 // In CallbackConfiguration
 Map<String, String> customHeaders;
@@ -110,7 +110,7 @@ custom_headers TEXT  // JSON: {"X-API-Key": "value", "Authorization": "Bearer ..
 @Mapping(source = "customHeaders", target = "customHeaders", qualifiedByName = "jsonToMapString")
 ```
 
-**Usage in Dispatcher**:
+Usage in Dispatcher:
 ```java
 // Standard headers
 headers.put("Content-Type", "application/json");
@@ -129,7 +129,7 @@ if (signatureEnabled) {
 }
 ```
 
-**Use Cases**:
+Use Cases:
 - Authentication: API keys, OAuth tokens
 - Identification: Client IDs, correlation IDs
 - Routing: Headers for load balancers
@@ -137,9 +137,9 @@ if (signatureEnabled) {
 
 ### 4. ✅ Metadata / Extra Parameters
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Implementation**:
+Implementation:
 ```java
 // In CallbackConfiguration
 Map<String, Object> metadata;
@@ -151,7 +151,7 @@ metadata TEXT  // JSON: {"key": "value", "nested": {"field": 123}}
 @Mapping(source = "metadata", target = "metadata", qualifiedByName = "jsonToMapObject")
 ```
 
-**Difference from customHeaders**:
+Difference from customHeaders:
 | Aspect | customHeaders | metadata |
 |---------|---------------|----------|
 | Sent in HTTP | ✅ Yes | ❌ No |
@@ -159,7 +159,7 @@ metadata TEXT  // JSON: {"key": "value", "nested": {"field": 123}}
 | Primary use | Authentication, routing | Configuration, documentation |
 | Visible to receiver | ✅ Yes | ❌ No |
 
-**Use Cases**:
+Use Cases:
 - Internal integration configuration
 - Callback documentation
 - Data for searches and reports
@@ -168,11 +168,11 @@ metadata TEXT  // JSON: {"key": "value", "nested": {"field": 123}}
 
 ### 5. ✅ HMAC Signature
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Algorithm**: HMAC-SHA256
+Algorithm: HMAC-SHA256
 
-**Implementation**:
+Implementation:
 ```java
 private String generateHmacSignature(String payload, String secret) {
     Mac mac = Mac.getInstance("HmacSHA256");
@@ -184,7 +184,7 @@ private String generateHmacSignature(String payload, String secret) {
 }
 ```
 
-**Configuration**:
+Configuration:
 ```json
 {
   "signatureEnabled": true,
@@ -193,12 +193,12 @@ private String generateHmacSignature(String payload, String secret) {
 }
 ```
 
-**Header Sent**:
+Header Sent:
 ```
 X-Firefly-Signature: base64(HMAC-SHA256(payload, secret))
 ```
 
-**Verification in Receiver** (Python example):
+Verification in Receiver (Python example):
 ```python
 import hmac, hashlib, base64
 
@@ -211,9 +211,9 @@ def verify_signature(payload, signature, secret):
 
 ### 6. ✅ Retries and Circuit Breaker
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Retry Strategy**:
+Retry Strategy:
 ```java
 // Exponential backoff
 maxRetries = 3
@@ -227,14 +227,14 @@ Attempt 3: 2000ms (2s)
 Attempt 4: 4000ms (4s)
 ```
 
-**Retry Conditions**:
+Retry Conditions:
 - ✅ 5xx errors (500, 502, 503, 504)
 - ✅ Timeout (408)
 - ✅ Rate Limit (429)
 - ✅ Network errors (connection refused, timeout)
 - ❌ Does NOT retry 4xx (except 408, 429)
 
-**Circuit Breaker** (Resilience4j):
+Circuit Breaker (Resilience4j):
 ```yaml
 failure-rate-threshold: 50          # Opens if >50% fail
 slow-call-rate-threshold: 50        # Opens if >50% are slow
@@ -244,16 +244,16 @@ minimum-number-of-calls: 10         # Minimum 10 calls
 wait-duration-in-open-state-ms: 60000  # Wait 60s before HALF_OPEN
 ```
 
-**States**:
+States:
 - `CLOSED`: Normal operation
 - `OPEN`: Too many failures, requests not sent
 - `HALF_OPEN`: Testing if endpoint recovered
 
 ### 7. ✅ Execution Tracking
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Complete Record**:
+Complete Record:
 ```java
 CallbackExecution {
     UUID configurationId;             // Configuration ID
@@ -271,7 +271,7 @@ CallbackExecution {
 }
 ```
 
-**Query Endpoints**:
+Query Endpoints:
 - `POST /api/v1/callback-executions/filter` - Advanced filtering
 - `GET /api/v1/callback-executions` - List all
 - `GET /api/v1/callback-executions/{id}` - By ID
@@ -281,9 +281,9 @@ CallbackExecution {
 
 ### 8. ✅ Dynamic Event Subscriptions
 
-**Status**: Fully implemented and tested
+Status: Fully implemented and tested
 
-**Features**:
+Features:
 - ✅ Dynamic subscription to Kafka topics
 - ✅ No application restart needed
 - ✅ Support for multiple messaging systems (extensible)
@@ -291,7 +291,7 @@ CallbackExecution {
 - ✅ Configurable consumer groups
 - ✅ Message processing statistics
 
-**Endpoints**:
+Endpoints:
 - `POST /api/v1/event-subscriptions/filter` - Filter subscriptions
 - `POST /api/v1/event-subscriptions` - Create subscription
 - `GET /api/v1/event-subscriptions/{id}` - Get by ID
@@ -332,13 +332,13 @@ CallbackExecution {
 
 ## 📊 Tests
 
-**Status**: ✅ All tests passing
+Status: ✅ All tests passing
 
 ```bash
 Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-**Coverage**:
+Coverage:
 - ✅ Unit tests: CallbackDispatcherImpl, Mappers
 - ✅ Integration tests: End-to-end flow
 - ✅ HMAC signature tests
@@ -349,7 +349,7 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 
 ## 📚 Documentation
 
-**Status**: ✅ Fully documented
+Status: ✅ Fully documented
 
 | Document | Status | Description |
 |-----------|--------|-------------|
@@ -357,8 +357,8 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 | [ARCHITECTURE.md](ARCHITECTURE.md) | ✅ | Detailed architecture |
 | [QUICKSTART_GUIDE.md](QUICKSTART_GUIDE.md) | ✅ | Quick start guide |
 | [TESTING_GUIDE.md](TESTING_GUIDE.md) | ✅ | Testing guide |
-| [CALLBACK_SYSTEM_REFERENCE.md](CALLBACK_SYSTEM_REFERENCE.md) | ✅ **NEW** | Complete system reference |
-| [CALLBACK_EXAMPLES.md](CALLBACK_EXAMPLES.md) | ✅ **NEW** | Practical examples |
+| [CALLBACK_SYSTEM_REFERENCE.md](CALLBACK_SYSTEM_REFERENCE.md) | ✅ NEW | Complete system reference |
+| [CALLBACK_EXAMPLES.md](CALLBACK_EXAMPLES.md) | ✅ NEW | Practical examples |
 
 ## 🎯 Supported Use Cases
 
@@ -386,7 +386,7 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 
 ## 🔒 Security
 
-**Status**: ✅ Complete security implementation
+Status: ✅ Complete security implementation
 
 - ✅ Authorized domain whitelist
 - ✅ Domain verification
@@ -400,7 +400,7 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 
 ## 🚀 Performance
 
-**Status**: ✅ Optimized reactive architecture
+Status: ✅ Optimized reactive architecture
 
 - ✅ Non-blocking I/O (Spring WebFlux)
 - ✅ Reactive database access (R2DBC)
@@ -412,7 +412,7 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 
 ## 📈 Observability
 
-**Status**: ✅ Complete monitoring
+Status: ✅ Complete monitoring
 
 - ✅ Prometheus metrics
 - ✅ Spring Boot Actuator
@@ -453,20 +453,19 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 
 ## 🎉 Conclusion
 
-The Firefly Callback Management System is **100% implemented, tested, and documented**. All components work flawlessly:
+The Firefly Callback Management System is 100% implemented, tested, and documented. All components work flawlessly:
 
-✅ **Authorized domains** with complete security validation
-✅ **Custom headers** for authentication and routing
-✅ **Metadata** for extra parameters and configuration
-✅ **HMAC signature** for cryptographic verification
-✅ **Smart retries** with exponential backoff
-✅ **Circuit breaker** for protection
-✅ **Complete tracking** of executions
-✅ **Comprehensive documentation** with practical examples
+✅ Authorized domains with complete security validation
+✅ Custom headers for authentication and routing
+✅ Metadata for extra parameters and configuration
+✅ HMAC signature for cryptographic verification
+✅ Smart retries with exponential backoff
+✅ Circuit breaker for protection
+✅ Complete tracking of executions
+✅ Comprehensive documentation with practical examples
 
-The system is production-ready and supports all enterprise use cases.
+The system is and supports all enterprise use cases.
 
 ---
 
-**© 2025 Firefly Software Foundation. All rights reserved.**
-
+© 2025 Firefly Software Foundation. All rights reserved.

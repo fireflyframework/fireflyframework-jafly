@@ -1,20 +1,20 @@
 # Azure Blob Storage Integration Guide
 
-> **✅ IMPLEMENTATION STATUS: COMPLETE**
+> ✅ IMPLEMENTATION STATUS: COMPLETE
 >
-> This guide describes the Azure Blob Storage integration for the Firefly ECM Library. The Azure Blob adapter is **fully implemented** and provides enterprise-grade document storage capabilities.
+> This guide describes the Azure Blob Storage integration for the Firefly ECM Library. The Azure Blob adapter is fully implemented and provides document storage capabilities.
 >
-> **Available Adapters:**
-> - ✅ **S3 Adapter** - Fully implemented and tested
-> - ✅ **Azure Blob Adapter** - Fully implemented with comprehensive features
-> - ✅ **DocuSign Adapter** - Fully implemented and tested
-> - ✅ **Adobe Sign Adapter** - Fully implemented with complete eSignature support
+> Available Adapters:
+> - ✅ S3 Adapter - Fully implemented and tested
+> - ✅ Azure Blob Adapter - Fully implemented with comprehensive features
+> - ✅ DocuSign Adapter - Fully implemented and tested
+> - ✅ Adobe Sign Adapter - Fully implemented with complete eSignature support
 >
-> **Planned Adapters:**
-> - 🚧 **Alfresco Adapter** - Design planned
-> - 🚧 **MinIO Adapter** - Design planned
+> Planned Adapters:
+> - 🚧 Alfresco Adapter - Design planned
+> - 🚧 MinIO Adapter - Design planned
 
-This guide demonstrates how to integrate Azure Blob Storage as a document storage backend for the Firefly ECM Library. Azure Blob Storage provides enterprise-grade cloud storage with global availability, strong consistency, and advanced security features.
+This guide demonstrates how to integrate Azure Blob Storage as a document storage backend for the Firefly ECM Library. Azure Blob Storage provides cloud storage with global availability, strong consistency, and advanced security features.
 
 ## Table of Contents
 
@@ -32,12 +32,12 @@ This guide demonstrates how to integrate Azure Blob Storage as a document storag
 
 Before starting, ensure you have:
 
-- **Azure Account** with Blob Storage access
-- **Java 21+** installed and configured
-- **Spring Boot 3.0+** knowledge
-- **Maven 3.6+** or **Gradle 7.0+**
-- **Firefly ECM Library** understanding
-- **Azure CLI** (optional but recommended)
+- Azure Account with Blob Storage access
+- Java 25 installed and configured
+- Spring Boot 4.1.1 knowledge
+- Maven 3.6+ or Gradle 7.0+
+- Firefly ECM Library understanding
+- Azure CLI (optional but recommended)
 
 ## 2. Project Setup
 
@@ -51,7 +51,7 @@ Add the required dependencies to your `pom.xml`:
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm</artifactId>
-        <version>1.0.0</version>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
     
     <!-- Azure Blob Storage SDK -->
@@ -90,43 +90,43 @@ Add the required dependencies to your `pom.xml`:
 
 ### 3.1 Create Azure Storage Account
 
-**Step 1: Create Storage Account via Azure Portal**
+Step 1: Create Storage Account via Azure Portal
 
-1. **Sign in to Azure Portal**:
+1. Sign in to Azure Portal:
    - Go to [portal.azure.com](https://portal.azure.com)
    - Sign in with your Azure account
 
-2. **Create Storage Account**:
+2. Create Storage Account:
    - Click "Create a resource" → "Storage" → "Storage account"
    - Fill in the details:
-     - **Subscription**: Select your subscription
-     - **Resource Group**: Create new or select existing
-     - **Storage Account Name**: `fireflyecmstorage` (must be globally unique)
-     - **Region**: Choose your preferred region
-     - **Performance**: Standard (or Premium for high performance)
-     - **Redundancy**: LRS (or GRS for geo-redundancy)
+     - Subscription: Select your subscription
+     - Resource Group: Create new or select existing
+     - Storage Account Name: `fireflyecmstorage` (must be globally unique)
+     - Region: Choose your preferred region
+     - Performance: Standard (or Premium for high performance)
+     - Redundancy: LRS (or GRS for geo-redundancy)
 
-3. **Configure Advanced Settings**:
-   - **Security**: Enable "Require secure transfer"
-   - **Access tier**: Hot (for frequently accessed data)
-   - **Blob public access**: Disabled (for security)
+3. Configure Advanced Settings:
+   - Security: Enable "Require secure transfer"
+   - Access tier: Hot (for frequently accessed data)
+   - Blob public access: Disabled (for security)
 
-**Step 2: Create Blob Container**
+Step 2: Create Blob Container
 
-1. **Navigate to Storage Account**:
+1. Navigate to Storage Account:
    - Go to your storage account → "Containers"
    - Click "Add container"
 
-2. **Container Settings**:
-   - **Name**: `firefly-ecm-documents`
-   - **Public access level**: Private (no anonymous access)
+2. Container Settings:
+   - Name: `firefly-ecm-documents`
+   - Public access level: Private (no anonymous access)
    - Click "Create"
 
 ### 3.2 Configure Authentication
 
-**Option A: Connection String (Development)**
+Option A: Connection String (Development)
 
-1. **Get Connection String**:
+1. Get Connection String:
    - In your storage account → "Access keys"
    - Copy the connection string from key1 or key2
 
@@ -135,20 +135,20 @@ Add the required dependencies to your `pom.xml`:
 AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=fireflyecmstorage;AccountKey=your-account-key;EndpointSuffix=core.windows.net"
 ```
 
-**Option B: Managed Identity (Production)**
+Option B: Managed Identity (Production)
 
 For production deployments on Azure:
 
-1. **Enable System Managed Identity**:
+1. Enable System Managed Identity:
    - On your Azure resource (VM, App Service, etc.)
    - Go to "Identity" → "System assigned" → "On"
 
-2. **Grant Storage Permissions**:
+2. Grant Storage Permissions:
    - Go to Storage Account → "Access Control (IAM)"
    - Add role assignment:
-     - **Role**: "Storage Blob Data Contributor"
-     - **Assign access to**: "Managed Identity"
-     - **Select**: Your application's managed identity
+     - Role: "Storage Blob Data Contributor"
+     - Assign access to: "Managed Identity"
+     - Select: Your application's managed identity
 
 ## 4. Application Configuration
 
@@ -327,29 +327,29 @@ public class AzureConfiguration {
 }
 ```
 
-> **Note**: This guide provides the foundation for Azure Blob Storage integration. The complete adapter implementation would follow the same patterns as the S3 adapter, implementing the DocumentPort and DocumentContentPort interfaces using Azure Blob Storage APIs instead of S3 APIs.
+> Note: This guide provides the foundation for Azure Blob Storage integration. The complete adapter implementation would follow the same patterns as the S3 adapter, implementing the DocumentPort and DocumentContentPort interfaces using Azure Blob Storage APIs instead of S3 APIs.
 
 ## 6. Implementation Notes
 
 The Azure Blob Storage adapter implementation would include:
 
-- **AzureBlobDocumentAdapter**: Implementing DocumentPort interface
-- **AzureBlobContentAdapter**: Implementing DocumentContentPort interface  
-- **Blob metadata management**: Using Azure blob metadata for document properties
-- **Container organization**: Using blob prefixes for folder structure
-- **Versioning support**: Leveraging Azure blob versioning features
-- **Access tier management**: Optimizing costs with Hot/Cool/Archive tiers
+- AzureBlobDocumentAdapter: Implementing DocumentPort interface
+- AzureBlobContentAdapter: Implementing DocumentContentPort interface
+- Blob metadata management: Using Azure blob metadata for document properties
+- Container organization: Using blob prefixes for folder structure
+- Versioning support: Leveraging Azure blob versioning features
+- Access tier management: Optimizing costs with Hot/Cool/Archive tiers
 
 ## 7. Key Differences from S3
 
 When implementing the Azure adapter, consider these Azure-specific features:
 
-- **Access Tiers**: Hot, Cool, and Archive for cost optimization
-- **Blob Types**: Block blobs for documents, append blobs for logs
-- **Metadata**: Azure blob metadata vs S3 object metadata
-- **Authentication**: Managed Identity vs IAM roles
-- **Versioning**: Azure blob versioning vs S3 versioning
-- **Soft Delete**: Azure soft delete vs S3 lifecycle policies
+- Access Tiers: Hot, Cool, and Archive for cost optimization
+- Blob Types: Block blobs for documents, append blobs for logs
+- Metadata: Azure blob metadata vs S3 object metadata
+- Authentication: Managed Identity vs IAM roles
+- Versioning: Azure blob versioning vs S3 versioning
+- Soft Delete: Azure soft delete vs S3 lifecycle policies
 
 ## 8. Production Considerations
 
@@ -376,7 +376,7 @@ When implementing the Azure adapter, consider these Azure-specific features:
 To complete the Azure Blob Storage integration:
 
 1. Implement the full adapter classes following the S3 adapter pattern
-2. Add comprehensive error handling for Azure-specific exceptions
+2. Add error handling for Azure-specific exceptions
 3. Implement Azure-specific features like access tiers and soft delete
 4. Create integration tests with Azure Storage Emulator
 5. Add monitoring and alerting for Azure storage operations

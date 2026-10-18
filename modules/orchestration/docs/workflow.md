@@ -2,7 +2,7 @@
 
 # Part II: Workflow Pattern
 
-**Contents:**
+Contents:
 - [§4 Workflow Annotation Reference](#4-workflow-annotation-reference)
 - [§5 Workflow Tutorial](#5-workflow-tutorial)
 - [§6 Workflow Lifecycle Management](#6-workflow-lifecycle-management)
@@ -19,7 +19,7 @@
 
 Marks a class as a workflow definition. Applied to a Spring-managed bean.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME`
+Target: `ElementType.TYPE` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -39,7 +39,7 @@ Marks a class as a workflow definition. Applied to a Spring-managed bean.
 
 Marks a method as a workflow step. The method must return `Mono<T>`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -51,7 +51,7 @@ Marks a method as a workflow step. The method must return `Mono<T>`.
 | `timeoutMs` | `long` | `0` | Step timeout in milliseconds (`0` = inherit from workflow) |
 | `maxRetries` | `int` | `0` | Max retry attempts (`0` = inherit from workflow) |
 | `retryDelayMs` | `long` | `1000` | Retry delay in milliseconds |
-| `condition` | `String` | `""` | SpEL expression — step is skipped if it evaluates to `false` |
+| `condition` | `String` | `""` | SpEL expression: step is skipped if it evaluates to `false` |
 | `async` | `boolean` | `false` | Execute on bounded-elastic scheduler |
 | `compensatable` | `boolean` | `false` | Whether this step supports compensation |
 | `compensationMethod` | `String` | `""` | Name of the compensation method on the same bean |
@@ -60,7 +60,7 @@ Marks a method as a workflow step. The method must return `Mono<T>`.
 
 Marks a workflow step as waiting for an external signal before proceeding. The step pauses execution until a signal with the matching name is delivered via `SignalService.signal()`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -71,7 +71,7 @@ Marks a workflow step as waiting for an external signal before proceeding. The s
 
 Marks a workflow step as a timer-based delayed execution. The step fires after the specified delay.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -82,7 +82,7 @@ Marks a workflow step as a timer-based delayed execution. The step fires after t
 
 Callback invoked when specific workflow steps complete successfully.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -94,7 +94,7 @@ Callback invoked when specific workflow steps complete successfully.
 
 Callback invoked when the workflow completes successfully.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -105,7 +105,7 @@ Callback invoked when the workflow completes successfully.
 
 Callback invoked when the workflow fails.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -117,9 +117,9 @@ Callback invoked when the workflow fails.
 
 ### @ScheduledWorkflow
 
-Schedules automatic execution of a workflow on a cron, fixed-rate, or fixed-delay basis. This annotation is `@Repeatable` — you can apply multiple schedules to the same workflow.
+Schedules automatic execution of a workflow on a cron, fixed-rate, or fixed-delay basis. This annotation is `@Repeatable`: you can apply multiple schedules to the same workflow.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME` | **Repeatable:** Yes (container: `@ScheduledWorkflows`)
+Target: `ElementType.TYPE` | Retention: `RUNTIME` | Repeatable: Yes (container: `@ScheduledWorkflows`)
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -136,14 +136,14 @@ Schedules automatic execution of a workflow on a cron, fixed-rate, or fixed-dela
 
 Marks a workflow step as waiting for ALL specified signals AND ALL specified timers before proceeding. The step suspends execution until every listed signal has been received and every listed timer has fired.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `signals` | `WaitForSignal[]` | `{}` | Signals that must ALL be received before the step proceeds |
 | `timers` | `WaitForTimer[]` | `{}` | Timers that must ALL fire before the step proceeds |
 
-**Example — step that waits for multiple approvals and a cooldown timer:**
+Example: step that waits for multiple approvals and a cooldown timer:
 
 ```java
 @WorkflowStep(id = "finalReview", dependsOn = "validate")
@@ -166,14 +166,14 @@ public Mono<String> finalReview(@Input Map<String, Object> input) {
 
 Marks a workflow step as waiting for ANY of the specified signals or timers before proceeding. The step resumes execution as soon as the first signal is received or the first timer fires (ANY / race semantics).
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `signals` | `WaitForSignal[]` | `{}` | Signals — step resumes on the first one received |
-| `timers` | `WaitForTimer[]` | `{}` | Timers — step resumes on the first one that fires |
+| `signals` | `WaitForSignal[]` | `{}` | Signals: step resumes on the first one received |
+| `timers` | `WaitForTimer[]` | `{}` | Timers: step resumes on the first one that fires |
 
-**Example — race between a human approval and a timeout timer:**
+Example: race between a human approval and a timeout timer:
 
 ```java
 @WorkflowStep(id = "awaitOrTimeout", dependsOn = "validate")
@@ -195,13 +195,13 @@ public Mono<String> awaitOrTimeout(@Input Map<String, Object> input) {
 
 Marks a method as a compensation handler for a named workflow step. When a workflow failure triggers compensation, this method is invoked to undo the work performed by the step identified by `compensates()`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `compensates` | `String` | *(required)* | The step ID that this compensation method reverses |
 
-**Example — compensation handler for a payment charge step:**
+Example: compensation handler for a payment charge step:
 
 ```java
 @Workflow(name = "OrderWorkflow")
@@ -227,13 +227,13 @@ The `@CompensationStep` annotation is an alternative to setting `compensationMet
 
 Marks a method as a read-only query handler for a workflow instance. Query handlers provide read-only access to workflow state without modifying it. The query name identifies which query this method handles, and query methods are discovered by `WorkflowRegistry` during scanning.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `value` | `String` | *(required)* | The query name this method handles |
 
-**Example — defining and executing a custom query:**
+Example: defining and executing a custom query:
 
 ```java
 @Workflow(name = "OrderWorkflow")
@@ -271,7 +271,7 @@ public class OrderInspectionService {
 
 ## 5. Workflow Tutorial
 
-A **Workflow** is a directed acyclic graph (DAG) of steps. Steps declare their dependencies via `dependsOn`, and the engine executes them in topological order — steps in the same layer run in parallel.
+A **Workflow** is a directed acyclic graph (DAG) of steps. Steps declare their dependencies via `dependsOn`, and the engine executes them in topological order: steps in the same layer run in parallel.
 
 ```
               +----------+
@@ -292,19 +292,13 @@ A **Workflow** is a directed acyclic graph (DAG) of steps. Steps declare their d
 ```java
 @Workflow(name = "OrderProcessing", version = "1.0",
           description = "Processes a customer order end-to-end")
+@RequiredArgsConstructor
 public class OrderProcessingWorkflow {
 
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
     private final ShippingService shippingService;
 
-    public OrderProcessingWorkflow(InventoryService inventoryService,
-                                    PaymentService paymentService,
-                                    ShippingService shippingService) {
-        this.inventoryService = inventoryService;
-        this.paymentService = paymentService;
-        this.shippingService = shippingService;
-    }
 
     @WorkflowStep(id = "validate", name = "Validate Order",
                   timeoutMs = 5000)
@@ -349,9 +343,9 @@ public class OrderProcessingWorkflow {
 
 Key points in this example:
 
-- `"validate"` runs first (no `dependsOn`) — it forms Layer 0
-- `"charge"` and `"reserve"` both depend on `"validate"` — they form Layer 1 and execute **in parallel**
-- `"ship"` depends on both `"charge"` and `"reserve"` — it waits for both to complete (Layer 2)
+- `"validate"` runs first (no `dependsOn`): it forms Layer 0
+- `"charge"` and `"reserve"` both depend on `"validate"`: they form Layer 1 and execute **in parallel**
+- `"ship"` depends on both `"charge"` and `"reserve"`: it waits for both to complete (Layer 2)
 - `@FromStep` injects the result of a previously completed step
 - `@OnWorkflowComplete` and `@OnWorkflowError` handle lifecycle events
 
@@ -438,20 +432,20 @@ workflowEngine.suspendWorkflow(correlationId)
     .subscribe(state -> log.info("Suspended: {}", state.status()));
 ```
 
-**Method signatures:**
+Method signatures:
 - `Mono<ExecutionState> suspendWorkflow(String correlationId, String reason)`
 - `Mono<ExecutionState> suspendWorkflow(String correlationId)`
 
 ### Resume
 
-Resumes a suspended workflow. Already-completed steps are skipped — execution picks up from where it left off.
+Resumes a suspended workflow. Already-completed steps are skipped: execution picks up from where it left off.
 
 ```java
 workflowEngine.resumeWorkflow(correlationId)
     .subscribe(state -> log.info("Resumed and completed: {}", state.status()));
 ```
 
-**Method signature:** `Mono<ExecutionState> resumeWorkflow(String correlationId)`
+Method signature: `Mono<ExecutionState> resumeWorkflow(String correlationId)`
 
 ### Cancel
 
@@ -462,7 +456,7 @@ workflowEngine.cancelWorkflow(correlationId)
     .subscribe(state -> log.info("Cancelled: {}", state.status()));
 ```
 
-**Method signature:** `Mono<ExecutionState> cancelWorkflow(String correlationId)`
+Method signature: `Mono<ExecutionState> cancelWorkflow(String correlationId)`
 
 ### Querying State
 
@@ -481,7 +475,7 @@ workflowEngine.findByStatus(ExecutionStatus.RUNNING)
 
 ## 7. Signals and Timers
 
-Workflows uniquely support **signal gates** and **timer delays** — mechanisms that pause step execution until an external event occurs or a duration elapses.
+Workflow steps can wait for a named signal or a timer. `SignalService` keeps its mailbox and waiters in memory; `TimerService` keeps pending timers in memory and uses Reactor delays. Persisting execution snapshots does not preserve these live waits across a process restart.
 
 ### Signals
 
@@ -610,7 +604,7 @@ public class ApprovalWorkflow {
 
 ## 8. Workflow Builder DSL
 
-For cases where annotation scanning is not practical — dynamically composed workflows, testing, or runtime configuration — use the programmatic `WorkflowBuilder`.
+For cases where annotation scanning is not practical: dynamically composed workflows, testing, or runtime configuration: use the programmatic `WorkflowBuilder`.
 
 ### WorkflowBuilder Methods
 
@@ -791,7 +785,7 @@ public Mono<List<String>> spawnChildren(
 
 As an alternative to programmatic `ChildWorkflowService` usage, you can declaratively mark a step as a child-workflow invocation with the `@ChildWorkflow` annotation.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -799,7 +793,7 @@ As an alternative to programmatic `ChildWorkflowService` usage, you can declarat
 | `waitForCompletion` | `boolean` | `true` | Whether the parent step blocks until the child completes |
 | `timeoutMs` | `long` | `0` | Timeout in milliseconds (`0` = no timeout) |
 
-**Annotation-based usage:**
+Annotation-based usage:
 
 ```java
 @WorkflowStep(id = "processRegion", dependsOn = "validate")
@@ -811,7 +805,7 @@ public Mono<String> processRegion(@Input Map<String, Object> input) {
 }
 ```
 
-**Programmatic usage with ChildWorkflowService:**
+Programmatic usage with ChildWorkflowService:
 
 ```java
 @WorkflowStep(id = "spawnChildren", dependsOn = "validate")
@@ -834,7 +828,7 @@ Use `@ChildWorkflow` for simple single-child invocations. Use `ChildWorkflowServ
 ### Parent-Child Correlation
 
 - When a parent is cancelled, `cancelChildren()` is called automatically to cancel all children.
-- Child results are independent — the parent step receives the `ChildWorkflowResult` which contains the child's correlation ID.
+- Child results are independent: the parent step receives the `ChildWorkflowResult` which contains the child's correlation ID.
 - Each child runs as a fully independent workflow with its own `ExecutionState`.
 
 ---
@@ -882,14 +876,14 @@ public class OrderWorkflowService {
 ### SearchAttributeProjection
 
 `SearchAttributeProjection` is the in-memory read model that powers `WorkflowSearchService`. It maintains:
-- **Forward index:** `correlationId → attribute key → value`
-- **Inverted index:** `attribute key → value → set of correlationIds`
+- Forward index: `correlationId → attribute key → value`
+- Inverted index: `attribute key → value → set of correlationIds`
 
 Both indexes use `ConcurrentHashMap` for thread safety.
 
 ### WorkflowQueryService
 
-`WorkflowQueryService` provides read-only queries against running or completed workflow instances. All methods return `Mono<Optional<T>>` — the `Optional` is empty if the correlation ID is not found.
+`WorkflowQueryService` provides read-only queries against running or completed workflow instances. State lookup methods return `Mono<Optional<T>>`; an empty `Optional` means the correlation ID was not found. Check each method signature for custom-query results.
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|

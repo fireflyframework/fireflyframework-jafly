@@ -30,6 +30,8 @@ If onboarding includes a signed agreement, use the Adobe Sign adapter for the co
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (see [Installation](#add-the-component)).
@@ -54,19 +56,19 @@ firefly:
 3. Inject the port and use it. Your code depends on the framework SPI, not on Adobe Sign:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class ContractService {
 
     private final SignatureEnvelopePort envelopes; // AdobeSignSignatureEnvelopeAdapter injected by auto-config
 
-    public ContractService(SignatureEnvelopePort envelopes) {
-        this.envelopes = envelopes;
-    }
+
 
     public Mono<SignatureEnvelope> startSigning(SignatureEnvelope envelope) {
         return envelopes.createEnvelope(envelope)        // creates the Adobe Sign agreement

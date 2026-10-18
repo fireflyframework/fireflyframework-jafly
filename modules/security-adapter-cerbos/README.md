@@ -54,7 +54,9 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 ## Continue the application
 
-Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration. ## Build and validation
+Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

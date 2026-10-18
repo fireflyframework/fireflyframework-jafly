@@ -2,21 +2,21 @@
 
 # Part VII: Recipes & Production
 
-**Contents:**
-- [§41 Recipe: Composing Patterns](#41-recipe-composing-patterns)
-- [§42 Recipe: Testing Orchestrations](#42-recipe-testing-orchestrations)
-- [§43 Recipe: Error Handling](#43-recipe-error-handling)
-- [§44 Recipe: Event-Driven Architecture](#44-recipe-event-driven-architecture)
-- [§45 Production Checklist](#45-production-checklist)
-- [§46 Resilience Patterns](#46-resilience-patterns)
-- [§47 Continue-as-New](#47-continue-as-new)
-- [§48 FAQ & Troubleshooting](#48-faq--troubleshooting)
-- [§49 Recipe: Validation & Reporting](#49-recipe-validation--reporting)
-- [§50 Recipe: Event Sourcing](#50-recipe-event-sourcing)
+Contents:
+- [§41 Recipe: Composing Patterns](#49-recipe-composing-patterns)
+- [§42 Recipe: Testing Orchestrations](#50-recipe-testing-orchestrations)
+- [§43 Recipe: Error Handling](#51-recipe-error-handling)
+- [§44 Recipe: Event-Driven Architecture](#52-recipe-event-driven-architecture)
+- [§45 Production Checklist](#53-production-checklist)
+- [§46 Resilience Patterns](#54-resilience-patterns)
+- [§47 Continue-as-New](#55-continue-as-new)
+- [§48 FAQ & Troubleshooting](#56-faq--troubleshooting)
+- [§49 Recipe: Validation & Reporting](#57-recipe-validation--reporting)
+- [§50 Recipe: Event Sourcing](#58-recipe-event-sourcing)
 
 ## 49. Recipe: Composing Patterns
 
-You can compose patterns by chaining them — a saga step can trigger a TCC, a workflow step can start a saga, or you can share context across multiple executions.
+You can compose patterns by chaining them: a saga step can trigger a TCC, a workflow step can start a saga, or you can share context across multiple executions.
 
 ### Sequential Composition
 
@@ -76,7 +76,7 @@ public class OrderSaga {
 public class PaymentTcc { ... }
 ```
 
-When `OrderSaga.validate` completes, it publishes `PaymentRequested`, which automatically triggers `PaymentTcc` via the `EventGateway`.
+On completion, `OrderSaga.validate` passes `PaymentRequested` to the configured `OrchestrationEventPublisher`. Your publisher/consumer integration must call `EventGateway.routeEvent` to trigger `PaymentTcc`. The default publisher is a no-op.
 
 ### Saga Composition
 
@@ -105,18 +105,18 @@ SagaComposition composition = SagaCompositionBuilder.composition("order-fulfillm
         .build();
 ```
 
-Sagas in the same DAG layer (no dependency between them) run in parallel. In this example, `shipping` and `notification` both depend on `payment` so they execute in parallel once `payment` completes. Setting `optional(true)` on `shipping` means its failure does not fail the composition — useful for best-effort side effects like delivery tracking. Data flows use `DataMapping` to pipe result fields from one saga into the inputs of another.
+Sagas in the same DAG layer (no dependency between them) run in parallel. In this example, `shipping` and `notification` both depend on `payment` so they execute in parallel once `payment` completes. Setting `optional(true)` on `shipping` means its failure does not fail the composition: useful for best-effort side effects like delivery tracking. Data flows use `DataMapping` to pipe result fields from one saga into the inputs of another.
 
 Key classes:
 
-- `SagaComposition` — the composed graph of sagas
-- `SagaCompositionBuilder` — fluent builder for constructing compositions
-- `CompositionContext` — shared context across all sagas in a composition
-- `CompositionDataFlowManager` — manages `DataMapping` pipelines between sagas
-- `CompositionCompensationManager` — coordinates compensation across composed sagas
-- `CompositionValidator` — validates the composition graph (cycles, missing refs)
-- `CompositionVisualizationService` — generates DOT and Mermaid graph output
-- `CompositionTemplateRegistry` — stores reusable composition templates
+- `SagaComposition`: the composed graph of sagas
+- `SagaCompositionBuilder`: fluent builder for constructing compositions
+- `CompositionContext`: shared context across all sagas in a composition
+- `CompositionDataFlowManager`: manages `DataMapping` pipelines between sagas
+- `CompositionCompensationManager`: coordinates compensation across composed sagas
+- `CompositionValidator`: validates the composition graph (cycles, missing refs)
+- `CompositionVisualizationService`: generates DOT and Mermaid graph output
+- `CompositionTemplateRegistry`: stores reusable composition templates
 
 ### TCC Composition
 
@@ -143,15 +143,15 @@ In this example, `reserve-inventory` and `charge-payment` have no dependencies o
 
 Key classes:
 
-- `TccComposition` — the composed graph of TCC transactions
-- `TccCompositionBuilder` — fluent builder for constructing TCC compositions
-- `TccCompositor` — executes the TCC composition layer by layer
-- `TccCompositionResult` — result of the composed TCC execution
-- `TccCompositionContext` — shared context across all TCCs in a composition
-- `TccCompositionCompensationManager` — compensates confirmed TCCs on failure
-- `TccCompositionDataFlowManager` — manages data mappings between TCCs
-- `TccCompositionValidator` — validates the TCC composition graph
-- `TccCompositionVisualizationService` — generates DOT and Mermaid graph output
+- `TccComposition`: the composed graph of TCC transactions
+- `TccCompositionBuilder`: fluent builder for constructing TCC compositions
+- `TccCompositor`: executes the TCC composition layer by layer
+- `TccCompositionResult`: result of the composed TCC execution
+- `TccCompositionContext`: shared context across all TCCs in a composition
+- `TccCompositionCompensationManager`: compensates confirmed TCCs on failure
+- `TccCompositionDataFlowManager`: manages data mappings between TCCs
+- `TccCompositionValidator`: validates the TCC composition graph
+- `TccCompositionVisualizationService`: generates DOT and Mermaid graph output
 
 ### Composition Templates
 
@@ -201,7 +201,7 @@ void debitAccount_succeeds() {
 
 ### Integration Testing with Builder DSL
 
-The builder DSL is ideal for integration tests — no annotation scanning, full control:
+Use the builder DSL when a test needs to assemble a definition directly. Use a Spring-context test when registration and dependency injection are part of the behavior under test:
 
 ```java
 @Test
@@ -480,7 +480,7 @@ External Event → EventGateway → SagaEngine.execute()
 
 ### Persistence
 
-- [ ] Switch from `in-memory` to `redis` or another durable provider
+- [ ] Choose execution-state storage and test its restart behavior. Signals, timer subscriptions, and the default dead-letter store remain in memory unless the application supplies additional infrastructure.
 - [ ] Configure `retention-period` and `cleanup-interval`
 - [ ] Test persistence failover behavior
 - [ ] Set `key-ttl` for Redis to prevent unbounded key growth
@@ -536,7 +536,7 @@ External Event → EventGateway → SagaEngine.execute()
 
 When `firefly.orchestration.resilience.enabled=true` and `CircuitBreakerRegistry` is on the classpath, the `ResilienceDecorator` bean is created automatically.
 
-**Condition:**
+Condition:
 
 ```yaml
 firefly:
@@ -545,7 +545,7 @@ firefly:
       enabled: true
 ```
 
-**Classpath:** `io.github.resilience4j:resilience4j-circuitbreaker`
+Classpath: `io.github.resilience4j:resilience4j-circuitbreaker`
 
 The `ResilienceDecorator` wraps step execution with circuit breaker patterns. It is primarily used by the `CIRCUIT_BREAKER` compensation policy for saga compensations.
 
@@ -638,8 +638,8 @@ public Mono<String> checkRenewal(ExecutionContext ctx) {
 ### ContinueAsNewResult
 
 Contains:
-- `newCorrelationId` — the correlation ID of the new execution
-- `oldCorrelationId` — the correlation ID of the completed execution
+- `newCorrelationId`: the correlation ID of the new execution
+- `oldCorrelationId`: the correlation ID of the completed execution
 
 ---
 
@@ -647,14 +647,14 @@ Contains:
 
 ### "My compensation didn't run"
 
-**Check:** Does the `@SagaStep` have `compensate = "methodName"` set? The compensation method must:
+Check: Does the `@SagaStep` have `compensate = "methodName"` set? The compensation method must:
 - Be on the same bean (or use `@CompensationSagaStep` for external beans)
 - Be accessible (public or package-private)
 - Return `Mono<Void>` or `Mono<?>`
 
 ### "Steps run sequentially instead of in parallel"
 
-**Check:** Steps only run in parallel if they're in the same DAG layer. Steps in the same layer have **no dependency on each other**. If `charge` depends on `validate` and `reserve` depends on `validate`, then `charge` and `reserve` are in the same layer and run in parallel.
+Check: Steps only run in parallel if they're in the same DAG layer. Steps in the same layer have **no dependency on each other**. If `charge` depends on `validate` and `reserve` depends on `validate`, then `charge` and `reserve` are in the same layer and run in parallel.
 
 ```java
 // Parallel: both depend only on "validate"
@@ -668,7 +668,7 @@ Contains:
 
 ### "Events not publishing"
 
-**Check:**
+Check:
 1. Is `publishEvents = true` on the `@Workflow`? (or `@StepEvent` on the saga step?)
 2. Is there a custom `OrchestrationEventPublisher` bean? The default is `NoOpEventPublisher`.
 3. Is the `EventGateway` initialized? Check startup logs for `[event-gateway] Scan complete`.
@@ -679,14 +679,14 @@ Contains:
 
 ### "Workflow doesn't resume after suspend"
 
-**Check:**
+Check:
 1. Is the workflow in `SUSPENDED` state? Use `workflowEngine.findByCorrelationId(corrId)`.
 2. Are you calling `resumeWorkflow(correlationId)`?
 3. Resume is rejected if the workflow is in a terminal state (`COMPLETED`, `FAILED`, `CANCELLED`).
 
 ### "Scheduled saga doesn't fire"
 
-**Check:**
+Check:
 1. Is `@ScheduledSaga(enabled = true)` set? (default is `true`)
 2. Is the `OrchestrationScheduler` bean present? (auto-configured by default)
 3. Is the cron expression valid? Use 6-field format: `second minute hour day month weekday`
@@ -694,7 +694,7 @@ Contains:
 
 ### "Idempotency key not preventing duplicates"
 
-**Check:** Idempotency keys are scoped to a single execution. They prevent duplicate step invocation **within the same execution** (e.g., on retry). They do not prevent duplicate executions across separate `sagaEngine.execute()` calls.
+Check: Idempotency keys are scoped to a single execution. They prevent duplicate step invocation **within the same execution** (e.g., on retry). They do not prevent duplicate executions across separate `sagaEngine.execute()` calls.
 
 ### "TopologyValidationException: Cycle detected"
 
@@ -734,7 +734,7 @@ Helper methods: `isTerminal()`, `isActive()`, `isSuccessful()`
 
 ### Validating Orchestration Definitions
 
-Use `OrchestrationValidator` to validate saga, TCC, and workflow definitions before execution. Validation catches configuration errors early — duplicate step IDs, missing compensations, cycle detection, and more.
+Use `OrchestrationValidator` to validate saga, TCC, and workflow definitions before execution. Validation catches configuration errors early: duplicate step IDs, missing compensations, cycle detection, and more.
 
 ```java
 OrchestrationValidator validator = new OrchestrationValidator();
@@ -784,9 +784,9 @@ stepReport.latency();   // Duration
 
 Execution reporting works the same across all patterns:
 
-- **Saga:** `sagaResult.report()`
-- **TCC:** `tccResult.report()`
-- **Workflow:** `executionState.report()`
+- Saga: `sagaResult.report()`
+- TCC: `tccResult.report()`
+- Workflow: `executionState.report()`
 
 ---
 
@@ -844,9 +844,9 @@ firefly:
       provider: event-sourced
 ```
 
-**Important notes:**
+Important notes:
 
-- Events are immutable — `cleanup()` is a no-op in event-sourced mode.
+- Events are immutable: `cleanup()` is a no-op in event-sourced mode.
 - `findInFlight()` and `findStale()` are not efficiently supported in event-sourced mode. Use the projection queries instead.
 
 ---

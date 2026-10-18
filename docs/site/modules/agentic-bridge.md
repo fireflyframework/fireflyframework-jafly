@@ -57,6 +57,8 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Spring Boot
@@ -72,14 +74,16 @@ firefly:
 ```
 
 ```java
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class SummariserService {
 
     private final AgenticClient agentic;
 
-    public SummariserService(AgenticClient agentic) {
-        this.agentic = agentic;
-    }
+
 
     public Mono<String> summarise(String document) {
         return agentic.invoke("summariser", AgentRequest.of(document))
@@ -115,8 +119,8 @@ Use Java 25. From the repository root, build this component with its required de
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-agentic-bridge -am verify
-./mvnw -pl :fireflyframework-agentic-bridge -am install
+./mvnw -pl :fireflyframework-agentic-bridge,:fireflyframework-agentic-bridge-autoconfigure,:fireflyframework-agentic-bridge-core,:fireflyframework-agentic-bridge-samples,:fireflyframework-agentic-bridge-starter -am verify
+./mvnw -pl :fireflyframework-agentic-bridge,:fireflyframework-agentic-bridge-autoconfigure,:fireflyframework-agentic-bridge-core,:fireflyframework-agentic-bridge-samples,:fireflyframework-agentic-bridge-starter -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

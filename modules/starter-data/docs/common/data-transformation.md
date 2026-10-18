@@ -27,8 +27,8 @@ This document provides a comprehensive guide to the data transformation framewor
 
 The data transformation framework provides a composable, reactive pipeline for reshaping data as it flows through the system. It is designed around two core abstractions:
 
-- **DataTransformer** -- a functional interface representing a single transformation step
-- **TransformationChain** -- a composable chain that threads transformers sequentially, piping the output of each step into the input of the next
+- DataTransformer -- a functional interface representing a single transformation step
+- TransformationChain -- a composable chain that threads transformers sequentially, piping the output of each step into the input of the next
 
 Transformers operate on arbitrary types and are fully reactive, returning `Mono<T>` results. This makes them suitable for both synchronous field mapping and asynchronous operations (e.g., looking up a reference value from an external service).
 
@@ -56,7 +56,7 @@ Transformers operate on arbitrary types and are fully reactive, returning `Mono<
 └────────────────────────────────────────────────────────┘
 ```
 
-**Key classes:**
+Key classes:
 
 | Class | Package | Role |
 |---|---|---|
@@ -80,7 +80,7 @@ public interface DataTransformer<S, T> {
 }
 ```
 
-**Type parameters:**
+Type parameters:
 
 - `S` -- the source (input) type
 - `T` -- the target (output) type
@@ -175,10 +175,10 @@ chain.execute(inputMap, context)
 
 ### Key Behaviors
 
-- **Empty chain:** If no transformers are added, `execute()` returns the source value unchanged.
-- **Sequential execution:** Transformers are applied in the order they are added via `then()`.
-- **Reactive threading:** Each step is connected via `flatMap`, allowing async transformers.
-- **Size inspection:** Call `chain.size()` to get the number of transformers in the chain.
+- Empty chain: If no transformers are added, `execute()` returns the source value unchanged.
+- Sequential execution: Transformers are applied in the order they are added via `then()`.
+- Reactive threading: Each step is connected via `flatMap`, allowing async transformers.
+- Size inspection: Call `chain.size()` to get the number of transformers in the chain.
 
 ```java
 TransformationChain<String, String> empty = TransformationChain.create();
@@ -209,7 +209,7 @@ Map<String, String> mappings = Map.of(
 FieldMappingTransformer transformer = new FieldMappingTransformer(mappings);
 ```
 
-**Example:**
+Example:
 
 ```java
 Map<String, Object> input = new LinkedHashMap<>();
@@ -222,7 +222,7 @@ transformer.transform(input, context).subscribe(result -> {
 });
 ```
 
-**Behavior details:**
+Behavior details:
 - The original source map is not mutated; a new `LinkedHashMap` is created
 - Renamed keys replace their source keys (the old key is removed)
 - Non-mapped keys are retained as-is
@@ -238,7 +238,7 @@ ComputedFieldTransformer transformer = new ComputedFieldTransformer(
 );
 ```
 
-**Example:**
+Example:
 
 ```java
 Map<String, Object> input = Map.of("firstName", "Jane", "lastName", "Doe");
@@ -248,7 +248,7 @@ transformer.transform(input, context).subscribe(result -> {
 });
 ```
 
-**Behavior details:**
+Behavior details:
 - The computation function receives an unmodifiable view of the source map
 - The result is stored in a new `LinkedHashMap` to avoid mutating the source
 - The computation can return any value type (stored as `Object`)
@@ -382,7 +382,7 @@ public class NormalizationConfig {
 }
 ```
 
-**Using the chain:**
+Using the chain:
 
 ```java
 @Service
@@ -434,26 +434,26 @@ public class EnrichAndTransformPipeline {
 }
 ```
 
-This pattern creates a three-stage pipeline: **Enrich -> Transform -> Validate**.
+This pattern creates a three-stage pipeline: Enrich -> Transform -> Validate.
 
 ---
 
 ## Best Practices
 
-1. **Prefer immutability.** Always create a new map in your transformer rather than mutating the source. Both built-in transformers follow this pattern using `new LinkedHashMap<>(source)`.
+1. Prefer immutability. Always create a new map in your transformer rather than mutating the source. Both built-in transformers follow this pattern using `new LinkedHashMap<>(source)`.
 
-2. **Keep transformers single-purpose.** Each transformer should do one thing: rename fields, compute a value, trim strings, etc. Compose multiple small transformers via `TransformationChain.then()`.
+2. Keep transformers single-purpose. Each transformer should do one thing: rename fields, compute a value, trim strings, etc. Compose multiple small transformers via `TransformationChain.then()`.
 
-3. **Use TransformContext for cross-cutting concerns.** Pass request IDs, tenant IDs, and pipeline metadata through the context rather than embedding them in the data. Transformers can read the context to make conditional decisions.
+3. Use TransformContext for cross-cutting concerns. Pass request IDs, tenant IDs, and pipeline metadata through the context rather than embedding them in the data. Transformers can read the context to make conditional decisions.
 
-4. **Order matters in chains.** Transformers execute in the order they are added. Place field renames before computed fields so the computation functions can reference the canonical field names.
+4. Order matters in chains. Transformers execute in the order they are added. Place field renames before computed fields so the computation functions can reference the canonical field names.
 
-5. **Leverage the functional interface.** For one-off transformations, use lambda expressions instead of creating a dedicated class. Save classes for transformers that need constructor parameters or complex state.
+5. Leverage the functional interface. For one-off transformations, use lambda expressions instead of creating a dedicated class. Save classes for transformers that need constructor parameters or complex state.
 
-6. **Handle nulls gracefully.** Transformers should account for missing fields. Check for null values before operating on map entries to avoid `NullPointerException` in the reactive pipeline.
+6. Handle nulls gracefully. Transformers should account for missing fields. Check for null values before operating on map entries to avoid `NullPointerException` in the reactive pipeline.
 
-7. **Test chains in isolation.** Since `TransformationChain.execute()` returns a `Mono`, you can test chains with `StepVerifier` from Project Reactor's test module.
+7. Test chains in isolation. Since `TransformationChain.execute()` returns a `Mono`, you can test chains with `StepVerifier` from Project Reactor's test module.
 
-8. **Combine with quality gates.** Apply a `DataQualityEngine` evaluation after a transformation chain to catch any data issues introduced during transformation.
+8. Combine with quality gates. Apply a `DataQualityEngine` evaluation after a transformation chain to catch any data issues introduced during transformation.
 
-> **See also:** [Data Quality](data-quality.md) | [Data Lineage](data-lineage.md) | [GenAI Bridge](genai-bridge.md)
+> See also: [Data Quality](data-quality.md) | [Data Lineage](data-lineage.md) | [GenAI Bridge](genai-bridge.md)

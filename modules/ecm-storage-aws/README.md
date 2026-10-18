@@ -26,6 +26,8 @@ Store an applicant's supporting document in Amazon S3 through the ECM content po
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (see above) and select the S3 backend with a single property:
@@ -47,6 +49,7 @@ That is all that is required. `S3AdapterAutoConfiguration` builds the `S3Client`
 2. Inject and use the port from your services (program against the SPI, not the S3 type):
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.ecm.port.document.DocumentContentPort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -54,13 +57,12 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentContentPort content;
 
-    public DocumentService(DocumentContentPort content) {
-        this.content = content;
-    }
+
 
     public Mono<String> upload(UUID documentId, byte[] bytes) {
         // returns the S3 object key where the content was stored
@@ -108,7 +110,9 @@ The `firefly.ecm.adapter.s3` namespace is bound by [S3AdapterProperties.java](ht
 
 ## Continue the application
 
-Use the [Enterprise Content Management guide](../../docs/site/modules/ecm.md) for the next part of this integration. ## Build and validation
+Use the [Enterprise Content Management guide](../../docs/site/modules/ecm.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

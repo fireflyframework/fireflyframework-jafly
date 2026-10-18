@@ -127,15 +127,17 @@ This POM has no runtime configuration namespace. Configure the selected child li
 
 ## Continue the application
 
-Use the [Plugin API guide](../../docs/site/modules/plugin-api.md) for the next part of this integration. ## Build and validation
+Use the [Plugin API guide](../../docs/site/modules/plugin-api.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-plugins -am verify
-./mvnw -pl :fireflyframework-plugins -am install
+./mvnw -pl :fireflyframework-plugins,:plugin-api,:plugin-core -am verify
+./mvnw -pl :fireflyframework-plugins,:plugin-api,:plugin-core -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

@@ -1,12 +1,12 @@
 # CQRS Integration with Event Sourcing Architecture
 
-**A comprehensive guide for integrating fireflyframework-cqrs with Event Sourcing patterns in the Firefly ecosystem**
+A comprehensive guide for integrating fireflyframework-cqrs with Event Sourcing patterns in the Firefly ecosystem
 
 ---
 
 ## 🎯 Introduction
 
-This document provides detailed guidance on how to effectively integrate **Command Query Responsibility Segregation (CQRS)** patterns with **Event Sourcing** architecture using Firefly's enterprise libraries. The combination of these patterns creates a powerful foundation for building scalable, auditable, and maintainable systems.
+This document provides detailed guidance on how to effectively integrate Command Query Responsibility Segregation (CQRS) patterns with Event Sourcing architecture using Firefly's enterprise libraries. The combination of these patterns creates a powerful foundation for building scalable, auditable, and maintainable systems.
 
 ---
 
@@ -16,13 +16,13 @@ This document provides detailed guidance on how to effectively integrate **Comma
 
 Event Sourcing and CQRS are complementary architectural patterns that solve different but related challenges:
 
-**Event Sourcing Benefits:**
+Event Sourcing Benefits:
 - Complete audit trail of all changes
 - Ability to replay events and reconstruct state
 - Natural support for temporal queries
 - Debugging and compliance capabilities
 
-**CQRS Benefits:**
+CQRS Benefits:
 - Clear separation between write and read operations
 - Independent scaling of command and query sides
 - Optimized read models for specific use cases
@@ -103,14 +103,14 @@ Event Sourcing and CQRS are complementary architectural patterns that solve diff
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 
 <!-- Caching Support -->
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 
 <!-- R2DBC Driver for PostgreSQL -->
@@ -2046,36 +2046,36 @@ public class TransactionProjectionHandler {
 
 ### Command Side Best Practices
 
-1. **Keep Commands Simple**: Commands should represent clear business intentions
-2. **Validate Early**: Use both annotation-based and custom validation
-3. **Authorization at Command Level**: Implement business rules in `authorize()` method
-4. **Idempotent Operations**: Design commands to be safely retryable
-5. **Event-First Design**: Let business operations generate events naturally
+1. Keep Commands Simple: Commands should represent clear business intentions
+2. Validate Early: Use both annotation-based and custom validation
+3. Authorization at Command Level: Implement business rules in `authorize()` method
+4. Idempotent Operations: Design commands to be safely retryable
+5. Event-First Design: Let business operations generate events naturally
 
 ### Query Side Best Practices
 
-1. **Optimize for Read Patterns**: Design projections for specific query needs
-2. **Cache Aggressively**: Use intelligent caching with proper invalidation
-3. **Separate Read Models**: Use different models for different views
-4. **Async Projections**: Update read models asynchronously from events
-5. **Pagination**: Always paginate large result sets
+1. Optimize for Read Patterns: Design projections for specific query needs
+2. Cache Aggressively: Use intelligent caching with proper invalidation
+3. Separate Read Models: Use different models for different views
+4. Async Projections: Update read models asynchronously from events
+5. Pagination: Always paginate large result sets
 
 ### Integration Best Practices
 
-1. **ExecutionContext Everywhere**: Propagate context for traceability
-2. **Comprehensive Monitoring**: Use both CQRS and Event Sourcing metrics
-3. **Error Boundaries**: Handle errors at appropriate architectural boundaries
-4. **Graceful Degradation**: Provide fallbacks when projections are unavailable
-5. **Testing Strategy**: Test both command and query sides independently
+1. ExecutionContext Everywhere: Propagate context for traceability
+2. Comprehensive Monitoring: Use both CQRS and Event Sourcing metrics
+3. Error Boundaries: Handle errors at appropriate architectural boundaries
+4. Graceful Degradation: Provide fallbacks when projections are unavailable
+5. Testing Strategy: Test both command and query sides independently
 
 ---
 
 ## 📚 Additional Resources
 
-- **[CQRS Framework Documentation](../README.md)** - Complete CQRS library reference
-- **[Event Sourcing Library Documentation](../../fireflyframework-eda/docs/)** - Event Sourcing implementation details
-- **[Domain Events Integration](../../fireflyframework-starter-domain/docs/)** - Multi-messaging event publishing
-- **[Cache Configuration Guide](../../fireflyframework-cache/docs/)** - Advanced caching strategies
+- [CQRS Framework Documentation](../README.md) - Complete CQRS library reference
+- [Event Sourcing Library Documentation](../../eda/docs) - Event Sourcing implementation details
+- [Domain Events Integration](../../../docs/site/modules/starter-domain.md) - Multi-messaging event publishing
+- [Cache Configuration Guide](../../cache/docs) - Advanced caching strategies
 
 ---
 

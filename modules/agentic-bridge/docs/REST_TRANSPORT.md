@@ -91,8 +91,8 @@ result.
 
 Every request carries:
 
-- `User-Agent` — defaults to `fireflyframework-agentic-bridge`.
-- `X-Request-ID` — fresh UUID per call (also surfaced in the exception
+- `User-Agent`. defaults to `fireflyframework-agentic-bridge`.
+- `X-Request-ID`. fresh UUID per call (also surfaced in the exception
   context for log correlation).
 - The headers contributed by the configured `AuthStrategy`.
 - `traceparent` / `tracestate` (W3C Trace Context) when an OpenTelemetry

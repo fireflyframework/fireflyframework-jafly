@@ -1,6 +1,6 @@
 # B2B Credit Scoring Platform
 
-**A Complete Step-by-Step Tutorial for Building Enterprise Credit Assessment Rules**
+A Complete Step-by-Step Tutorial for Building Enterprise Credit Assessment Rules
 
 *This tutorial uses only real, implemented features from the Firefly Framework Rule Engine codebase*
 
@@ -10,13 +10,13 @@
 
 In this comprehensive tutorial, you'll learn to build a complete B2B credit scoring platform using the Firefly Framework Rule Engine's YAML DSL. We'll create a sophisticated system that evaluates business loan applications by analyzing multiple data sources including:
 
-- **Credit Bureau Data** - Business credit scores and payment history
-- **Bank Transaction Analysis** - Cash flow patterns and financial stability  
-- **Tax Information** - Revenue verification and tax compliance
-- **Business Profile** - Industry risk, years in business, ownership structure
-- **Loan Application Details** - Requested amount, purpose, collateral
+- Credit Bureau Data - Business credit scores and payment history
+- Bank Transaction Analysis - Cash flow patterns and financial stability
+- Tax Information - Revenue verification and tax compliance
+- Business Profile - Industry risk, years in business, ownership structure
+- Loan Application Details - Requested amount, purpose, collateral
 
-**Important Note**: All data comes from input variables that have been pre-fetched by your application system. The rule engine focuses on evaluation logic, not data collection.
+Important Note: All data comes from input variables that have been pre-fetched by your application system. The rule engine focuses on evaluation logic, not data collection.
 
 ## 📚 What You'll Learn
 
@@ -27,7 +27,7 @@ By the end of this tutorial, you'll understand:
 - Using constants for configurable business parameters
 - Creating multi-stage evaluation workflows that mirror real-world processes
 - Handling data validation and error scenarios gracefully
-- Best practices for enterprise-grade rule development
+- Best practices for rule development
 
 ---
 
@@ -83,17 +83,17 @@ output:
 
 The Firefly Framework Rule Engine uses specific naming patterns to automatically determine variable sources:
 
-- **`camelCase`** (e.g., `businessId`, `annualRevenue`) - Input variables from API requests
-- **`UPPER_CASE_WITH_UNDERSCORES`** (e.g., `MIN_CREDIT_SCORE`) - System constants from database
-- **`snake_case`** (e.g., `credit_score`, `risk_level`) - Computed variables created during execution
+- `camelCase` (e.g., `businessId`, `annualRevenue`) - Input variables from API requests
+- `UPPER_CASE_WITH_UNDERSCORES` (e.g., `MIN_CREDIT_SCORE`) - System constants from database
+- `snake_case` (e.g., `credit_score`, `risk_level`) - Computed variables created during execution
 
 ### Rule Execution Flow
 
-1. **Input Validation** - Check that required inputs are present and valid
-2. **Constant Resolution** - Load business parameters from database
-3. **Condition Evaluation** - Evaluate `when` conditions or rule conditions
-4. **Action Execution** - Execute `then` or `else` actions based on conditions
-5. **Output Generation** - Return computed variables as defined in `output` section
+1. Input Validation - Check that required inputs are present and valid
+2. Constant Resolution - Load business parameters from database
+3. Condition Evaluation - Evaluate `when` conditions or rule conditions
+4. Action Execution - Execute `then` or `else` actions based on conditions
+5. Output Generation - Return computed variables as defined in `output` section
 
 ---
 
@@ -165,13 +165,13 @@ inputs:
 
 ### Input Data Sources Explained
 
-**Application Data**: Basic business information and loan details provided directly by the applicant.
+Application Data: Basic business information and loan details provided directly by the applicant.
 
-**Credit Bureau Data**: Information from business credit reporting agencies like Dun & Bradstreet, Experian Business, or Equifax Business.
+Credit Bureau Data: Information from business credit reporting agencies like Dun & Bradstreet, Experian Business, or Equifax Business.
 
-**Banking Data**: Transaction analysis and account behavior data from the business's primary bank account.
+Banking Data: Transaction analysis and account behavior data from the business's primary bank account.
 
-**Tax Data**: Verified financial information from business tax returns, providing the most reliable revenue and expense data.
+Tax Data: Verified financial information from business tax returns, providing the most reliable revenue and expense data.
 
 This comprehensive input structure ensures we have all the data needed for a thorough credit assessment without making external API calls from within the rule itself.
 
@@ -225,11 +225,11 @@ constants:
 
 ### Why Use Constants?
 
-1. **Configurability** - Business rules can be adjusted without code changes
-2. **Consistency** - Same thresholds used across all rules
-3. **Auditability** - Changes to business parameters are tracked
-4. **Testing** - Easy to test different scenarios by adjusting constants
-5. **Compliance** - Regulatory requirements can be easily updated
+1. Configurability - Business rules can be adjusted without code changes
+2. Consistency - Same thresholds used across all rules
+3. Auditability - Changes to business parameters are tracked
+4. Testing - Easy to test different scenarios by adjusting constants
+5. Compliance - Regulatory requirements can be easily updated
 
 ---
 
@@ -504,36 +504,36 @@ output:
 
 This comprehensive multi-stage workflow demonstrates several key concepts:
 
-### 🔍 **Stage 1: Data Validation and Preparation**
-- **Data validation** using validation operators like `is_positive`, `is_credit_score`, `is_not_empty`
-- **Complex boolean logic** combining multiple conditions with `AND`/`OR`
-- **Mathematical calculations** for data quality assessment (revenue variance, deposit variance)
-- **Variable assignment** using `set` and `calculate` actions
-- **Conditional logic** with `if`/`then` statements
+### 🔍 Stage 1: Data Validation and Preparation
+- Data validation using validation operators like `is_positive`, `is_credit_score`, `is_not_empty`
+- Complex boolean logic combining multiple conditions with `AND`/`OR`
+- Mathematical calculations for data quality assessment (revenue variance, deposit variance)
+- Variable assignment using `set` and `calculate` actions
+- Conditional logic with `if`/`then` statements
 
-### 📊 **Stage 2: Financial Analysis and Ratio Calculations**
-- **Financial ratio calculations** including debt-to-income, profit margin, cash flow coverage
-- **Risk scoring** with revenue stability and cash flow stability scores
-- **Loan-specific metrics** like debt service coverage and estimated payments
-- **Bounds checking** using `min()` and `max()` functions
+### 📊 Stage 2: Financial Analysis and Ratio Calculations
+- Financial ratio calculations including debt-to-income, profit margin, cash flow coverage
+- Risk scoring with revenue stability and cash flow stability scores
+- Loan-specific metrics like debt service coverage and estimated payments
+- Bounds checking using `min()` and `max()` functions
 
-### 🏢 **Stage 3: Business Profile and Industry Risk Assessment**
-- **Industry risk assessment** using NAICS codes and risk multipliers
-- **Business maturity scoring** based on years in business and owner experience
-- **Credit profile evaluation** incorporating payment history and public records
-- **String operations** using `starts_with` for industry code classification
+### 🏢 Stage 3: Business Profile and Industry Risk Assessment
+- Industry risk assessment using NAICS codes and risk multipliers
+- Business maturity scoring based on years in business and owner experience
+- Credit profile evaluation incorporating payment history and public records
+- String operations using `starts_with` for industry code classification
 
-### 🎯 **Stage 4: Credit Assessment and Scoring**
-- **Weighted scoring algorithm** combining multiple components
-- **Industry risk adjustments** and penalty applications
-- **Score normalization** ensuring values stay within valid bounds (300-850)
-- **Complex mathematical expressions** with proper parentheses usage
+### 🎯 Stage 4: Credit Assessment and Scoring
+- Weighted scoring algorithm combining multiple components
+- Industry risk adjustments and penalty applications
+- Score normalization ensuring values stay within valid bounds (300-850)
+- Complex mathematical expressions with proper parentheses usage
 
-### ✅ **Stage 5: Final Decision and Risk Classification**
-- **Risk level determination** based on final credit score
-- **Approval logic** checking multiple requirement categories
-- **Interest rate calculation** based on risk level
-- **Comprehensive output generation** with decision factors and summaries
+### ✅ Stage 5: Final Decision and Risk Classification
+- Risk level determination based on final credit score
+- Approval logic checking multiple requirement categories
+- Interest rate calculation based on risk level
+- Comprehensive output generation with decision factors and summaries
 
 ---
 
@@ -541,7 +541,7 @@ This comprehensive multi-stage workflow demonstrates several key concepts:
 
 Our B2B credit scoring rule demonstrates many advanced features of the Firefly Framework Rule Engine:
 
-### ✅ **Data Validation**
+### ✅ Data Validation
 ```yaml
 # Comprehensive input validation
 when:
@@ -551,13 +551,13 @@ when:
   - verifiedAnnualRevenue is_positive
 ```
 
-**Key Points:**
+Key Points:
 - Use specific validation operators for different data types
 - `is_credit_score` validates scores are in 300-850 range
 - `is_positive` ensures numeric values are greater than zero
 - `is_not_empty` checks for non-empty strings
 
-### 🧮 **Mathematical Calculations**
+### 🧮 Mathematical Calculations
 ```yaml
 # Complex financial calculations
 - calculate debt_to_income_ratio as monthlyDebtPayments / monthly_revenue_verified
@@ -565,25 +565,25 @@ when:
 - calculate weighted_score as (creditScore * 0.6) + (incomeScore * 0.4)
 ```
 
-**Key Points:**
+Key Points:
 - Standard arithmetic operators: `+`, `-`, `*`, `/`, `%`, `**`
 - Parentheses for operation precedence
 - Built-in functions like `max()`, `min()`, `abs()`
 - Bounds checking to keep values in valid ranges
 
-### 🔄 **Conditional Logic**
+### 🔄 Conditional Logic
 ```yaml
 # Multi-condition decision making
 - if final_credit_score at_least EXCELLENT_CREDIT_THRESHOLD then set risk_level to "LOW"
 - if meets_credit_requirements AND meets_financial_requirements then set approval_status to "APPROVED"
 ```
 
-**Key Points:**
+Key Points:
 - Use comparison operators like `at_least`, `greater_than`, `equals`
 - Combine conditions with `AND`, `OR`, `NOT`
 - Constants (UPPER_CASE) are automatically resolved from database
 
-### 🏗️ **Complex Boolean Expressions**
+### 🏗️ Complex Boolean Expressions
 ```yaml
 # Multi-factor validation
 - set has_complete_financial_data to (
@@ -594,7 +594,7 @@ when:
   )
 ```
 
-**Key Points:**
+Key Points:
 - Parentheses group complex boolean expressions
 - Multi-line expressions for readability
 - Boolean results can be stored in variables
@@ -645,7 +645,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
 }
 ```
 
-**Expected Output:**
+Expected Output:
 ```json
 {
   "approval_status": "APPROVED",
@@ -663,9 +663,9 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
 
 ## 💡 Step 8: Best Practices and Tips
 
-### 🏗️ **Rule Structure Best Practices**
+### 🏗️ Rule Structure Best Practices
 
-1. **Use Sequential Rules for Complex Workflows**
+1. Use Sequential Rules for Complex Workflows
    ```yaml
    # ✅ Good: Break complex logic into stages
    rules:
@@ -678,7 +678,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    # ❌ Avoid: Single massive rule with all logic
    ```
 
-2. **Meaningful Variable Names**
+2. Meaningful Variable Names
    ```yaml
    # ✅ Good: Descriptive names
    - calculate debt_to_income_ratio as monthlyDebt / monthlyIncome
@@ -689,7 +689,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - set flag1 to true
    ```
 
-3. **Use Constants for Business Parameters**
+3. Use Constants for Business Parameters
    ```yaml
    # ✅ Good: Configurable business rules
    - if creditScore at_least MIN_CREDIT_SCORE then set eligible to true
@@ -698,9 +698,9 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - if creditScore at_least 650 then set eligible to true
    ```
 
-### 🔍 **Data Validation Best Practices**
+### 🔍 Data Validation Best Practices
 
-1. **Validate Early and Often**
+1. Validate Early and Often
    ```yaml
    # ✅ Good: Validate inputs before processing
    when:
@@ -709,7 +709,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
      - businessCreditScore is_credit_score
    ```
 
-2. **Handle Missing Data Gracefully**
+2. Handle Missing Data Gracefully
    ```yaml
    # ✅ Good: Check existence before using
    - if exists collateralValue then calculate loan_to_value as requestedAmount / collateralValue
@@ -718,7 +718,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - calculate loan_to_value as requestedAmount / collateralValue
    ```
 
-3. **Use Appropriate Validation Operators**
+3. Use Appropriate Validation Operators
    ```yaml
    # ✅ Good: Use specific validators
    - ownerCreditScore is_credit_score
@@ -726,9 +726,9 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - taxId is_ssn
    ```
 
-### 🧮 **Mathematical Calculations Best Practices**
+### 🧮 Mathematical Calculations Best Practices
 
-1. **Use Parentheses for Clarity**
+1. Use Parentheses for Clarity
    ```yaml
    # ✅ Good: Clear operation order
    - calculate weighted_score as (creditScore * 0.6) + (incomeScore * 0.4)
@@ -737,7 +737,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - calculate weighted_score as creditScore * 0.6 + incomeScore * 0.4
    ```
 
-2. **Protect Against Division by Zero**
+2. Protect Against Division by Zero
    ```yaml
    # ✅ Good: Check denominator
    - if monthlyIncome greater_than 0 then calculate dti as monthlyDebt / monthlyIncome
@@ -746,7 +746,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - calculate dti as monthlyDebt / monthlyIncome
    ```
 
-3. **Use Bounds Checking**
+3. Use Bounds Checking
    ```yaml
    # ✅ Good: Keep values in valid ranges
    - run final_score as max(300, min(850, calculated_score))
@@ -756,9 +756,9 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
 
 ## 🚨 Step 9: Common Issues and Troubleshooting
 
-### ❌ **Common Syntax Errors**
+### ❌ Common Syntax Errors
 
-1. **Missing Quotes in String Comparisons**
+1. Missing Quotes in String Comparisons
    ```yaml
    # ❌ Wrong: Missing quotes
    - if approval_status equals APPROVED then...
@@ -767,7 +767,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - if approval_status equals "APPROVED" then...
    ```
 
-2. **Incorrect Variable Naming**
+2. Incorrect Variable Naming
    ```yaml
    # ❌ Wrong: Using $ prefix (old syntax)
    - calculate ratio as $monthlyDebt / $monthlyIncome
@@ -776,7 +776,7 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - calculate ratio as monthlyDebt / monthlyIncome
    ```
 
-3. **Missing Action Keywords**
+3. Missing Action Keywords
    ```yaml
    # ❌ Wrong: Missing 'set' keyword
    - approval_status to "APPROVED"
@@ -785,15 +785,15 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
    - set approval_status to "APPROVED"
    ```
 
-### 🔧 **Runtime Issues**
+### 🔧 Runtime Issues
 
-1. **Type Conversion Issues**
+1. Type Conversion Issues
    ```yaml
    # ✅ Good: Validate data types
    - if creditScore is_number then calculate adjusted_score as creditScore * 1.1
    ```
 
-2. **Null Value Handling**
+2. Null Value Handling
    ```yaml
    # ✅ Good: Check for null values
    - if collateralValue is_not_null then calculate loan_to_value as requestedAmount / collateralValue
@@ -803,15 +803,15 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
 
 ## 🎓 Step 10: Next Steps and Advanced Features
 
-### 🚀 **Advanced Features to Explore**
+### 🚀 Advanced Features to Explore
 
-1. **Circuit Breaker Pattern**
+1. Circuit Breaker Pattern
    ```yaml
    # Stop execution on critical errors
    - if critical_error_detected then circuit_breaker "Critical validation failed"
    ```
 
-2. **Complex Conditional Syntax**
+2. Complex Conditional Syntax
    ```yaml
    conditions:
      if:
@@ -823,36 +823,36 @@ To test this rule, you would send a POST request to the rule evaluation endpoint
          - set: {variable: "approval_status", value: "APPROVED"}
    ```
 
-3. **List Operations**
+3. List Operations
    ```yaml
    # Working with arrays and lists
    - append "HIGH_RISK" to risk_factors
    - remove "TEMPORARY" from account_flags
    ```
 
-### 📚 **Additional Resources**
+### 📚 Additional Resources
 
-- **[YAML DSL Reference](yaml-dsl-reference.md)** - Complete syntax reference
-- **[Architecture Documentation](architecture.md)** - Technical implementation details
-- **API Documentation** - Available at `/swagger-ui.html` when running the service
+- [YAML DSL Reference](yaml-dsl-reference.md) - Complete syntax reference
+- [Architecture Documentation](architecture.md) - Technical implementation details
+- API Documentation - Available at `/swagger-ui.html` when running the service
 
-### 🎯 **Practice Exercises**
+### 🎯 Practice Exercises
 
-1. **Modify the scoring weights** in constants and observe how it affects decisions
-2. **Add new industry risk categories** with different multipliers
-3. **Implement seasonal adjustments** for businesses with seasonal revenue patterns
-4. **Add fraud detection rules** using transaction pattern analysis
-5. **Create approval workflows** with multiple approval levels based on loan amounts
+1. Modify the scoring weights in constants and observe how it affects decisions
+2. Add new industry risk categories with different multipliers
+3. Implement seasonal adjustments for businesses with seasonal revenue patterns
+4. Add fraud detection rules using transaction pattern analysis
+5. Create approval workflows with multiple approval levels based on loan amounts
 
-### 🔄 **Extending the Rule**
+### 🔄 Extending the Rule
 
 Consider these enhancements for production use:
 
-- **Geographic risk factors** based on business location
-- **Economic indicators** integration for market conditions
-- **Peer comparison** against industry benchmarks
-- **Regulatory compliance** checks for specific loan types
-- **Dynamic pricing** based on market conditions
+- Geographic risk factors based on business location
+- Economic indicators integration for market conditions
+- Peer comparison against industry benchmarks
+- Regulatory compliance checks for specific loan types
+- Dynamic pricing based on market conditions
 
 ---
 
@@ -860,46 +860,46 @@ Consider these enhancements for production use:
 
 Congratulations! You've built a comprehensive B2B credit scoring platform using the Firefly Framework Rule Engine. This tutorial covered:
 
-✅ **Rule structure and organization** with proper naming conventions
-✅ **Multi-stage evaluation workflows** that mirror real-world processes
-✅ **Comprehensive input data handling** from multiple sources
-✅ **Complex mathematical calculations** with proper bounds checking
-✅ **Conditional logic and decision trees** with boolean expressions
-✅ **Data validation and error handling** using validation operators
-✅ **Best practices and troubleshooting** for enterprise development
+✅ Rule structure and organization with proper naming conventions
+✅ Multi-stage evaluation workflows that mirror real-world processes
+✅ Comprehensive input data handling from multiple sources
+✅ Complex mathematical calculations with proper bounds checking
+✅ Conditional logic and decision trees with boolean expressions
+✅ Data validation and error handling using validation operators
+✅ Best practices and troubleshooting for enterprise development
 
-### 🎯 **Key Achievements**
+### 🎯 Key Achievements
 
-Your rule demonstrates enterprise-grade credit assessment capabilities including:
-- **Multi-source data integration** (credit bureaus, banks, tax services)
-- **Sophisticated risk scoring algorithms** with weighted components
-- **Industry-specific risk adjustments** using NAICS codes
-- **Comprehensive financial ratio analysis** with stability scoring
-- **Automated decision making** with detailed audit trails
+Your rule demonstrates credit assessment capabilities including:
+- Multi-source data integration (credit bureaus, banks, tax services)
+- Sophisticated risk scoring algorithms with weighted components
+- Industry-specific risk adjustments using NAICS codes
+- Comprehensive financial ratio analysis with stability scoring
+- Automated decision making with detailed audit trails
 
-### 🚀 **Production Readiness**
+### 🚀 Production Readiness
 
 The Firefly Framework Rule Engine's YAML DSL makes it possible to implement complex business logic that would traditionally require extensive custom code, while maintaining:
-- **Readability** for business users and analysts
-- **Maintainability** through structured rule organization
-- **Configurability** via database-stored constants
-- **Auditability** with comprehensive output tracking
-- **Performance** through AST-based evaluation
+- Readability for business users and analysts
+- Maintainability through structured rule organization
+- Configurability via database-stored constants
+- Auditability with comprehensive output tracking
+- Performance through AST-based evaluation
 
-### 🎉 **Ready to Deploy**
+### 🎉 Ready to Deploy
 
 Your B2B credit scoring rule is now ready for production use! Deploy it using:
-- **Rule Definition API** to store and version your rule
-- **Rule Evaluation API** to process loan applications in real-time
-- **Validation API** to ensure rule syntax and semantic correctness
+- Rule Definition API to store and version your rule
+- Rule Evaluation API to process loan applications in real-time
+- Validation API to ensure rule syntax and semantic correctness
 
-**Start processing loan applications with confidence using your new enterprise-grade credit scoring system!**
+Start processing loan applications with confidence using your new credit scoring system!
 
 ---
 
 ## ⚠️ Educational Use Disclaimer
 
-**This tutorial is for educational purposes only and not intended for production credit decisions.**
+This tutorial is for educational purposes only and not intended for production credit decisions.
 
 The credit scoring model presented here uses simplified calculations and arbitrary thresholds that do not reflect industry-standard methodologies. Production credit systems require:
 
@@ -911,4 +911,4 @@ The credit scoring model presented here uses simplified calculations and arbitra
 
 Organizations implementing actual credit assessment systems should consult qualified financial risk professionals, regulatory compliance experts, and legal counsel specializing in enterprise applications.
 
-**The authors disclaim liability for any damages arising from use of this educational material.**
+The authors disclaim liability for any damages arising from use of this educational material.

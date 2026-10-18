@@ -1,6 +1,6 @@
 # Common Documentation
 
-This section contains documentation that applies to **both Data Jobs and Data Enrichers** - shared concepts, architecture, configuration, and utilities.
+This section contains documentation that applies to both Data Jobs and Data Enrichers - shared concepts, architecture, configuration, and utilities.
 
 ## What's in Common Documentation?
 
@@ -19,7 +19,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Architecture & Design
 
-**[Architecture Overview](architecture.md)** - Deep dive into the library's architecture
+[Architecture Overview](architecture.md) - Deep dive into the library's architecture
 - Hexagonal architecture (Ports and Adapters)
 - Core components
 - Integration architecture
@@ -27,7 +27,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - Design patterns
 - Component interactions
 
-**Topics covered**:
+Topics covered:
 - Dependency inversion and interface segregation
 - Pluggable adapters for different platforms
 - Reactive programming with Project Reactor
@@ -39,7 +39,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Configuration
 
-**[Configuration Reference](configuration.md)** - Comprehensive configuration guide
+[Configuration Reference](configuration.md) - Comprehensive configuration guide
 - Application properties
 - Environment-specific configuration (dev, staging, prod)
 - Orchestrator configuration
@@ -50,7 +50,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - Observability configuration
 - Resiliency configuration
 
-**Topics covered**:
+Topics covered:
 - YAML configuration examples
 - Property reference
 - Environment profiles
@@ -62,14 +62,14 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Observability
 
-**[Observability Guide](observability.md)** - Monitoring and tracing
+[Observability Guide](observability.md) - Monitoring and tracing
 - Distributed tracing with Micrometer and OpenTelemetry
 - Metrics collection
 - Health checks
 - Custom metrics
 - Integration with monitoring systems (Prometheus, Grafana, Jaeger, Grafana Tempo)
 
-**Topics covered**:
+Topics covered:
 - Automatic tracing for all operations
 - Custom trace spans
 - Metrics for jobs and enrichments
@@ -81,7 +81,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Resiliency
 
-**[Resiliency Patterns](resiliency.md)** - Building resilient applications
+[Resiliency Patterns](resiliency.md) - Building resilient applications
 - Circuit Breaker pattern
 - Retry logic with exponential backoff
 - Rate limiting
@@ -89,7 +89,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - Timeout configuration
 - Fallback strategies
 
-**Topics covered**:
+Topics covered:
 - Resilience4j integration
 - Automatic resiliency for jobs and enrichments
 - Configuration examples
@@ -100,14 +100,14 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Logging
 
-**[Logging Guide](logging.md)** - Comprehensive logging
+[Logging Guide](logging.md) - Comprehensive logging
 - Structured JSON logging
 - Log levels and configuration
 - Contextual logging
 - Log aggregation
 - Best practices
 
-**Topics covered**:
+Topics covered:
 - Automatic logging for all operations
 - Request/response logging
 - Error logging with stack traces
@@ -118,7 +118,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Testing
 
-**[Testing Guide](testing.md)** - Testing strategies and examples
+[Testing Guide](testing.md) - Testing strategies and examples
 - Unit testing
 - Integration testing
 - Testing reactive code with StepVerifier
@@ -126,7 +126,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - Test configuration
 - Best practices
 
-**Topics covered**:
+Topics covered:
 - Testing data jobs
 - Testing data enrichers
 - Testing custom operations
@@ -138,7 +138,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Data Transformation
 
-**[MapStruct Mappers](mappers.md)** - Guide to result transformation
+[MapStruct Mappers](mappers.md) - Guide to result transformation
 - MapStruct basics
 - Mapping provider responses to DTOs
 - Custom mapping logic
@@ -146,7 +146,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - Nested object mapping
 - Best practices
 
-**Topics covered**:
+Topics covered:
 - Setting up MapStruct
 - Creating mappers
 - Field mapping
@@ -157,13 +157,13 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### API Reference
 
-**[API Reference](api-reference.md)** - Complete API documentation
+[API Reference](api-reference.md) - Complete API documentation
 - REST endpoints
 - Request/response formats
 - Error codes
 - OpenAPI/Swagger documentation
 
-**Topics covered**:
+Topics covered:
 - Data job endpoints
 - Data enrichment endpoints
 - Discovery endpoints
@@ -174,7 +174,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### Examples
 
-**[Examples](examples.md)** - Real-world usage patterns
+[Examples](examples.md) - Real-world usage patterns
 - Basic job execution
 - Polling patterns
 - Error handling
@@ -182,7 +182,7 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - SAGA integration
 - Advanced scenarios
 
-**Topics covered**:
+Topics covered:
 - Complete working examples
 - Best practices
 - Common patterns
@@ -194,36 +194,36 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 
 ### I want to...
 
-**Understand the architecture**
+Understand the architecture
 → See [Architecture Overview](architecture.md)
 
-**Configure my application**
+Configure my application
 → See [Configuration Reference](configuration.md)
 
-**Add distributed tracing**
+Add distributed tracing
 → See [Observability Guide](observability.md)
 
-**Implement retry and circuit breaker**
+Implement retry and circuit breaker
 → See [Resiliency Patterns](resiliency.md)
 
-**Set up structured logging**
+Set up structured logging
 → See [Logging Guide](logging.md)
 
-**Write tests for my code**
+Write tests for my code
 → See [Testing Guide](testing.md)
 
-**Transform data with MapStruct**
+Transform data with MapStruct
 → See [MapStruct Mappers](mappers.md)
 
-**See complete examples**
+See complete examples
 → See [Examples](examples.md)
 
 ---
 
 ## Related Documentation
 
-- **[Data Jobs — Complete Guide](../data-jobs/guide.md)** - For orchestrated workflows
-- **[Data Enrichers](../data-enrichers/README.md)** - For third-party provider integration
+- [Data Jobs. Complete Guide](../data-jobs/guide.md) - For orchestrated workflows
+- [Data Enrichers](../data-enrichers/README.md) - For third-party provider integration
 
 ---
 
@@ -250,4 +250,3 @@ These topics are relevant whether you're building data jobs, data enrichers, or 
 - [api-reference.md](api-reference.md) - Complete API documentation
 - [examples.md](examples.md) - Real-world usage patterns
 - [persistence.md](persistence.md) - Data persistence and audit trail
-

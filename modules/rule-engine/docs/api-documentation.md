@@ -1,6 +1,6 @@
 # Firefly Framework Rule Engine - API Documentation
 
-**Complete REST API Reference for the Firefly Framework Rule Engine**
+Complete REST API Reference for the Firefly Framework Rule Engine
 
 *Based on actual controller implementations and DTOs*
 
@@ -8,13 +8,13 @@
 
 ## 📚 Documentation Navigation
 
-**New to the API?** Check out our layered documentation:
+New to the API? Check out our layered documentation:
 
-- **🚀 [Quick Start Guide](quick-start-guide.md)** - Learn the basics in 15 minutes
-- **🎯 [Common Patterns Guide](common-patterns-guide.md)** - Real-world usage examples
-- **🏛️ [Governance Guidelines](governance-guidelines.md)** - Team standards and best practices
-- **📖 [YAML DSL Reference](yaml-dsl-reference.md)** - Complete syntax documentation
-- **📋 This API Reference** - Complete REST API documentation (you are here)
+- 🚀 [Quick Start Guide](quick-start-guide.md) - Learn the basics in 15 minutes
+- 🎯 [Common Patterns Guide](common-patterns-guide.md) - Real-world usage examples
+- 🏛️ [Governance Guidelines](governance-guidelines.md) - Team standards and best practices
+- 📖 [YAML DSL Reference](yaml-dsl-reference.md) - Complete syntax documentation
+- 📋 This API Reference - Complete REST API documentation (you are here)
 
 ---
 
@@ -70,7 +70,7 @@ http://localhost:8080/v3/api-docs
 
 The API currently operates without authentication. All endpoints are publicly accessible.
 
-> **Note**: In production environments, implement appropriate authentication and authorization mechanisms.
+> Note: In production environments, implement appropriate authentication and authorization mechanisms.
 
 ## Error Handling
 
@@ -133,11 +133,11 @@ For validation errors (422), the response includes detailed field-level errors:
 
 The Rules Evaluation API provides endpoints for evaluating YAML DSL rules against input data. It supports:
 
-- **Direct evaluation** with base64-encoded YAML content
-- **Plain YAML evaluation** with unencoded YAML content
-- **Stored rule evaluation** by rule code
-- **Batch evaluation** for processing multiple rules concurrently
-- Real-time rule execution with comprehensive error handling
+- Direct evaluation with base64-encoded YAML content
+- Plain YAML evaluation with unencoded YAML content
+- Stored rule evaluation by rule code
+- Batch evaluation for processing multiple rules concurrently
+- Real-time rule execution with error handling
 - Support for all naming conventions and variable types
 - Comprehensive audit trail for all evaluations
 
@@ -147,15 +147,15 @@ The API enforces strict naming conventions:
 
 | Variable Type | Format | Example | Source |
 |---------------|--------|---------|---------|
-| **Input Variables** | `camelCase` | `creditScore`, `annualIncome` | From API request `inputData` |
-| **System Constants** | `UPPER_CASE_WITH_UNDERSCORES` | `MIN_CREDIT_SCORE` | From database constants |
-| **Computed Variables** | `snake_case` | `debt_ratio`, `is_eligible` | Created during rule execution |
+| Input Variables | `camelCase` | `creditScore`, `annualIncome` | From API request `inputData` |
+| System Constants | `UPPER_CASE_WITH_UNDERSCORES` | `MIN_CREDIT_SCORE` | From database constants |
+| Computed Variables | `snake_case` | `debt_ratio`, `is_eligible` | Created during rule execution |
 
 ### Evaluate Rules (Base64)
 
 Evaluate a base64-encoded YAML rules definition against provided input data.
 
-**Endpoint:** `POST /api/v1/rules/evaluate/direct`
+Endpoint: `POST /api/v1/rules/evaluate/direct`
 
 #### Request Schema
 
@@ -258,7 +258,7 @@ curl -X POST http://localhost:8080/api/v1/rules/evaluate/direct \
 
 Evaluate a plain (non-base64) YAML rules definition against provided input data.
 
-**Endpoint:** `POST /api/v1/rules/evaluate/plain`
+Endpoint: `POST /api/v1/rules/evaluate/plain`
 
 #### Request Schema
 
@@ -309,7 +309,7 @@ Same as the base64 evaluation response.
 
 Evaluate a stored rule definition by its code against provided input data.
 
-**Endpoint:** `POST /api/v1/rules/evaluate/by-code`
+Endpoint: `POST /api/v1/rules/evaluate/by-code`
 
 #### Request Schema
 
@@ -349,7 +349,7 @@ Same as the standard rule evaluation response.
 
 Process multiple rule evaluations concurrently in a single request.
 
-**Endpoint:** `POST /api/v1/rules/batch/evaluate`
+Endpoint: `POST /api/v1/rules/batch/evaluate`
 
 #### Request Schema
 
@@ -472,7 +472,7 @@ The Rule Definitions API allows you to store, manage, and evaluate YAML DSL rule
 
 Store a new YAML DSL rule definition in the database.
 
-**Endpoint:** `POST /api/v1/rules/definitions`
+Endpoint: `POST /api/v1/rules/definitions`
 
 #### Request Schema
 
@@ -552,7 +552,7 @@ curl -X POST http://localhost:8080/api/v1/rules/definitions \
 
 Update an existing rule definition.
 
-**Endpoint:** `PUT /api/v1/rules/definitions/{id}`
+Endpoint: `PUT /api/v1/rules/definitions/{id}`
 
 #### Path Parameters
 
@@ -578,7 +578,7 @@ Same as Create Rule Definition.
 
 Retrieve a specific rule definition by its UUID.
 
-**Endpoint:** `GET /api/v1/rules/definitions/{id}`
+Endpoint: `GET /api/v1/rules/definitions/{id}`
 
 #### Path Parameters
 
@@ -602,7 +602,7 @@ Same as Create Rule Definition response.
 
 Retrieve a rule definition by its unique code.
 
-**Endpoint:** `GET /api/v1/rules/definitions/by-code/{code}`
+Endpoint: `GET /api/v1/rules/definitions/by-code/{code}`
 
 #### Path Parameters
 
@@ -626,7 +626,7 @@ Same as Create Rule Definition response.
 
 Delete a rule definition by ID.
 
-**Endpoint:** `DELETE /api/v1/rules/definitions/{id}`
+Endpoint: `DELETE /api/v1/rules/definitions/{id}`
 
 #### Path Parameters
 
@@ -636,8 +636,8 @@ Delete a rule definition by ID.
 
 #### Response
 
-- **Status:** `204 No Content`
-- **Body:** Empty
+- Status: `204 No Content`
+- Body: Empty
 
 #### HTTP Status Codes
 
@@ -651,7 +651,7 @@ Delete a rule definition by ID.
 
 Retrieve rule definitions with filtering and pagination.
 
-**Endpoint:** `POST /api/v1/rules/definitions/filter`
+Endpoint: `POST /api/v1/rules/definitions/filter`
 
 #### Request Schema
 
@@ -735,7 +735,7 @@ Retrieve rule definitions with filtering and pagination.
 
 Validate YAML DSL content without storing it.
 
-**Endpoint:** `POST /api/v1/rules/definitions/validate`
+Endpoint: `POST /api/v1/rules/definitions/validate`
 
 #### Request
 
@@ -785,7 +785,7 @@ The Validation API provides comprehensive YAML DSL validation capabilities with 
 
 Comprehensive validation of YAML DSL content with detailed feedback.
 
-**Endpoint:** `POST /api/v1/validation/yaml`
+Endpoint: `POST /api/v1/validation/yaml`
 
 #### Request Schema
 
@@ -876,7 +876,7 @@ The Constants API allows management of system constants used in rule expressions
 
 Retrieve constants with filtering and pagination.
 
-**Endpoint:** `POST /api/v1/constants/filter`
+Endpoint: `POST /api/v1/constants/filter`
 
 #### Request Schema
 
@@ -936,7 +936,7 @@ Retrieve constants with filtering and pagination.
 
 Create a new system constant.
 
-**Endpoint:** `POST /api/v1/constants`
+Endpoint: `POST /api/v1/constants`
 
 #### Request Schema
 
@@ -982,7 +982,7 @@ Create a new system constant.
 
 Update an existing constant.
 
-**Endpoint:** `PUT /api/v1/constants/{constantId}`
+Endpoint: `PUT /api/v1/constants/{constantId}`
 
 #### Path Parameters
 
@@ -998,18 +998,18 @@ Same as Create Constant.
 
 Delete a constant by ID.
 
-**Endpoint:** `DELETE /api/v1/constants/{constantId}`
+Endpoint: `DELETE /api/v1/constants/{constantId}`
 
 #### Response
 
-- **Status:** `204 No Content`
-- **Body:** Empty
+- Status: `204 No Content`
+- Body: Empty
 
 ### Get Constant by ID
 
 Retrieve a specific constant by its ID.
 
-**Endpoint:** `GET /api/v1/constants/{constantId}`
+Endpoint: `GET /api/v1/constants/{constantId}`
 
 #### Response Schema
 
@@ -1019,7 +1019,7 @@ Same as Create Constant response.
 
 Retrieve a constant by its unique code.
 
-**Endpoint:** `GET /api/v1/constants/code/{code}`
+Endpoint: `GET /api/v1/constants/code/{code}`
 
 #### Path Parameters
 
@@ -1039,7 +1039,7 @@ The Audit Trail API provides comprehensive tracking and querying capabilities fo
 
 Retrieve audit trail records with filtering and pagination.
 
-**Endpoint:** `POST /api/v1/audit-trail/filter`
+Endpoint: `POST /api/v1/audit-trail/filter`
 
 #### Request Schema
 
@@ -1141,7 +1141,7 @@ Retrieve audit trail records with filtering and pagination.
 
 Check the health status of the application.
 
-**Endpoint:** `GET /actuator/health`
+Endpoint: `GET /actuator/health`
 
 #### Response Schema
 
@@ -1176,7 +1176,7 @@ Check the health status of the application.
 
 Get application information.
 
-**Endpoint:** `GET /actuator/info`
+Endpoint: `GET /actuator/info`
 
 #### Response Schema
 
@@ -1201,7 +1201,7 @@ Get application information.
 
 Get application metrics (Prometheus format).
 
-**Endpoint:** `GET /actuator/prometheus`
+Endpoint: `GET /actuator/prometheus`
 
 #### Response
 

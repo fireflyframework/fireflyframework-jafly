@@ -17,9 +17,9 @@ This document provides comprehensive documentation for the EDA library's annotat
 
 The Firefly EDA library provides three main annotations for declarative event-driven programming:
 
-1. **`@EventPublisher`** - Publish events from method parameters (before/after execution)
-2. **`@PublishResult`** - Automatically publish method return values as events
-3. **`@EventListener`** - Subscribe to and handle events from messaging systems
+1. `@EventPublisher` - Publish events from method parameters (before/after execution)
+2. `@PublishResult` - Automatically publish method return values as events
+3. `@EventListener` - Subscribe to and handle events from messaging systems
 
 These annotations support:
 - Multiple messaging platforms (Kafka, RabbitMQ, Spring Events, NOOP)
@@ -372,28 +372,27 @@ The library supports multiple messaging platforms:
 
 ## Best Practices
 
-1. **Use Specific Event Types**: Define clear, hierarchical event types (e.g., `user.created`, `order.shipped`)
+1. Use Specific Event Types: Define clear, hierarchical event types (e.g., `user.created`, `order.shipped`)
 
-2. **Leverage SpEL for Dynamic Configuration**: Use SpEL expressions for dynamic destinations and conditions
+2. Leverage SpEL for Dynamic Configuration: Use SpEL expressions for dynamic destinations and conditions
 
-3. **Choose Appropriate Error Strategies**: Match error handling to business requirements
+3. Choose Appropriate Error Strategies: Match error handling to business requirements
 
-4. **Use Manual Acknowledgment for Critical Events**: Disable `autoAck` for events requiring guaranteed processing
+4. Use Manual Acknowledgment for Critical Events: Disable `autoAck` for events requiring guaranteed processing
 
-5. **Set Reasonable Timeouts**: Configure timeouts to prevent hanging operations
+5. Set Reasonable Timeouts: Configure timeouts to prevent hanging operations
 
-6. **Use Priority for Ordering**: Set listener priorities when order matters
+6. Use Priority for Ordering: Set listener priorities when order matters
 
-7. **Combine Annotations Wisely**: Use `@EventPublisher` and `@PublishResult` together for command/event patterns
+7. Combine Annotations Wisely: Use `@EventPublisher` and `@PublishResult` together for command/event patterns
 
-8. **Test Thoroughly**: Write integration tests for all event flows
+8. Test Thoroughly: Write integration tests for all event flows
 
 ## Examples
 
-See the [examples directory](../examples) for complete working examples of:
+See the [EDA examples](EXAMPLES.md) for complete working examples of:
 - CQRS with event sourcing
 - Saga patterns
 - Event-driven microservices
 - Multi-platform event routing
 - Error handling and retry strategies
-

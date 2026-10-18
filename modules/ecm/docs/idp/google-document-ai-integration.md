@@ -1,5 +1,7 @@
 # Google Document AI Integration Guide
 
+This guide is an implementation blueprint for a custom document-processing adapter. Jafly supplies the processing ports but no adapter artifact for this provider. Implement and wire the required [processing contracts](../api/README.md#ports) before using provider configuration in an application.
+
 ## Overview
 
 This guide provides step-by-step instructions for integrating Google Document AI with the Firefly OpenCore Platform ECM library. Google Document AI is a platform that uses machine learning to extract, classify, and understand documents.
@@ -8,8 +10,8 @@ This guide provides step-by-step instructions for integrating Google Document AI
 
 - Google Cloud Platform (GCP) account with billing enabled
 - Google Cloud CLI (gcloud) installed and configured
-- Java 21 or higher
-- Spring Boot 3.x application
+- Java 25 or higher
+- Spring Boot 4.1.1 application
 
 ## Step 1: Google Cloud Setup
 
@@ -181,7 +183,7 @@ export GOOGLE_APPLICATION_CREDENTIALS_JSON='{"type":"service_account",...}'
 
 ## Step 4: Adapter Implementation
 
-**Note: The Google Document AI adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.**
+Note: The Google Document AI adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.
 
 Here's how you would implement the Google Document AI adapter for all four IDP port interfaces:
 
@@ -427,13 +429,13 @@ public class GoogleDocumentAiHealthIndicator implements HealthIndicator {
 ### 6.3 Common Issues and Solutions
 
 #### Issue: "Permission denied" Error
-**Solution**: Verify service account permissions and API enablement.
+Solution: Verify service account permissions and API enablement.
 
 #### Issue: "Processor not found" Error
-**Solution**: Check processor IDs and ensure they exist in the correct location.
+Solution: Check processor IDs and ensure they exist in the correct location.
 
 #### Issue: "Quota exceeded" Error
-**Solution**: Monitor API usage and request quota increases if needed.
+Solution: Monitor API usage and request quota increases if needed.
 
 ## Step 7: Advanced Features
 

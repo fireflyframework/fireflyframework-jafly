@@ -30,11 +30,14 @@ The onboarding HTTP boundary needs consistent error responses and carefully chos
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 Add the dependency and the web layer is wired automatically. Throw the framework's semantic exceptions from your reactive controllers and the `GlobalExceptionHandler` converts them to standardized RFC 7807 responses:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.web.error.exceptions.ResourceNotFoundException;
 import org.fireflyframework.web.error.exceptions.ConflictException;
 import org.springframework.web.bind.annotation.*;
@@ -42,13 +45,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+
 
     @GetMapping("/{id}")
     public Mono<Order> findById(@PathVariable String id) {

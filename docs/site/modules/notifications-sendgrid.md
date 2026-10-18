@@ -30,6 +30,8 @@ SendGrid can deliver application confirmations through the email provider port. 
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependencies (core + this adapter):
@@ -74,19 +76,20 @@ class EmailNotificationsConfiguration {
 Inject `EmailService` after the configuration and provider have been loaded:
 
 ```java
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.notifications.core.services.email.v1.EmailService;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailRequestDTO;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailResponseDTO;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class WelcomeMailer {
 
     private final EmailService emailService;
 
-    public WelcomeMailer(EmailService emailService) {
-        this.emailService = emailService;
-    }
+
 
     public Mono<EmailResponseDTO> sendWelcome(String to) {
         EmailRequestDTO request = new EmailRequestDTO();

@@ -105,10 +105,10 @@ Event handler resolution (in the private `applyEvent` method):
 
 Implements `EventStore` using Spring R2DBC `DatabaseClient`. Key behaviors:
 
-- **appendEvents**: Wraps the operation in `TransactionalOperator.transactional()`. First checks concurrency by comparing `expectedVersion` with the current max `aggregate_version`. Then inserts events using a SQL INSERT that excludes `global_sequence` (the DB assigns it via `BIGSERIAL`). If an `EventOutboxService` is present (`@Autowired(required = false)`), saves events to the outbox in the same transaction.
-- **loadEventStream**: Queries events ordered by `aggregate_version ASC` and maps rows to `StoredEventEnvelope` objects.
-- **getAggregateVersion**: Returns `COALESCE(MAX(aggregate_version), -1)` -- returns `-1` for non-existent aggregates.
-- **streamAllEvents**: Streams events ordered by `global_sequence ASC`.
+- appendEvents: Wraps the operation in `TransactionalOperator.transactional()`. First checks concurrency by comparing `expectedVersion` with the current max `aggregate_version`. Then inserts events using a SQL INSERT that excludes `global_sequence` (the DB assigns it via `BIGSERIAL`). If an `EventOutboxService` is present (`@Autowired(required = false)`), saves events to the outbox in the same transaction.
+- loadEventStream: Queries events ordered by `aggregate_version ASC` and maps rows to `StoredEventEnvelope` objects.
+- getAggregateVersion: Returns `COALESCE(MAX(aggregate_version), -1)` -- returns `-1` for non-existent aggregates.
+- streamAllEvents: Streams events ordered by `global_sequence ASC`.
 
 JSON data is bound as `String` (TEXT columns), not as JSONB. This makes the store database-agnostic.
 
@@ -182,9 +182,9 @@ The library has 9 auto-configuration classes. They are loaded via Spring Boot's 
 | 6 | `EventSourcingHealthAutoConfiguration` | `@ConditionalOnClass(HealthIndicator)` | `EventStoreHealthIndicator`, `OutboxHealthIndicator`, `SnapshotStoreHealthIndicator`, `ProjectionHealthIndicator` |
 | 7 | `EventSourcingMetricsAutoConfiguration` | `@ConditionalOnClass(MeterRegistry)` | `EventStoreMetrics` |
 | 8 | `EventSourcingProjectionAutoConfiguration` | `@ConditionalOnClass(ProjectionService, MeterRegistry)` | `ProjectionHealthIndicator` |
-| 9 | `CircuitBreakerAutoConfiguration` | `@ConditionalOnClass(CircuitBreaker)`, `firefly.eventsourcing.resilience.circuit-breaker.enabled=true` (default: **false**) | `eventStoreCircuitBreaker`, `outboxCircuitBreaker`, `projectionCircuitBreaker` |
+| 9 | `CircuitBreakerAutoConfiguration` | `@ConditionalOnClass(CircuitBreaker)`, `firefly.eventsourcing.resilience.circuit-breaker.enabled=true` (default: false) | `eventStoreCircuitBreaker`, `outboxCircuitBreaker`, `projectionCircuitBreaker` |
 
-Additionally, `MultiTenancyAutoConfiguration` loads when `firefly.eventsourcing.multitenancy.enabled=true` (default: **false**).
+Additionally, `MultiTenancyAutoConfiguration` loads when `firefly.eventsourcing.multitenancy.enabled=true` (default: false).
 
 ## Event Persistence Flow
 

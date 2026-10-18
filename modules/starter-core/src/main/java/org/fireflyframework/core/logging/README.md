@@ -5,26 +5,26 @@ The Firefly Common Core logging utilities provide advanced structured logging ca
 ## Features
 
 ### Structured Logging
-- **JSON Output**: Structured log messages in JSON format
-- **Logstash Integration**: Compatible with Logstash for log aggregation
-- **Custom Fields**: Add arbitrary key-value pairs to log entries
-- **Fluent Builder API**: Easy-to-use builder pattern for log construction
+- JSON Output: Structured log messages in JSON format
+- Logstash Integration: Compatible with Logstash for log aggregation
+- Custom Fields: Add arbitrary key-value pairs to log entries
+- Fluent Builder API: Easy-to-use builder pattern for log construction
 
 ### MDC Support
-- **Request Tracing**: Automatic correlation ID, request ID, and user ID tracking
-- **Context Preservation**: Thread-safe context management across async operations
-- **Scoped Operations**: Execute operations within specific MDC contexts
+- Request Tracing: Automatic correlation ID, request ID, and user ID tracking
+- Context Preservation: Thread-safe context management across async operations
+- Scoped Operations: Execute operations within specific MDC contexts
 
 ### Performance Optimization
-- **JSON Validation Caching**: Cache JSON validation results for improved performance
-- **Recursive Processing Limits**: Prevent stack overflow with configurable depth limits
-- **Concurrent Data Structures**: Thread-safe operations with high concurrency
-- **Metrics Collection**: Performance metrics and cache statistics
+- JSON Validation Caching: Cache JSON validation results for improved performance
+- Recursive Processing Limits: Prevent stack overflow with configurable depth limits
+- Concurrent Data Structures: Thread-safe operations with high concurrency
+- Metrics Collection: Performance metrics and cache statistics
 
 ### Actuator Integration
-- **Health Endpoints**: Logging system health indicators
-- **Metrics Endpoints**: Logging performance and usage metrics
-- **Configuration Management**: Runtime configuration updates
+- Health Endpoints: Logging system health indicators
+- Metrics Endpoints: Logging performance and usage metrics
+- Configuration Management: Runtime configuration updates
 
 ## Core Components
 
@@ -234,13 +234,13 @@ public class PaymentService {
 
 ## Best Practices
 
-1. **Use Structured Logging**: Always prefer structured logs over plain text messages
-2. **Include Context**: Use MDC for request correlation and tracing
-3. **Performance Awareness**: Monitor cache hit rates and adjust configuration as needed
-4. **Consistent Field Names**: Use consistent field naming conventions across services
-5. **Sensitive Data**: Never log sensitive information (passwords, tokens, PII)
-6. **Log Levels**: Use appropriate log levels (ERROR for exceptions, INFO for business events, DEBUG for debugging)
-7. **Exception Handling**: Always include stack traces with error logs
+1. Use Structured Logging: Always prefer structured logs over plain text messages
+2. Include Context: Use MDC for request correlation and tracing
+3. Performance Awareness: Monitor cache hit rates and adjust configuration as needed
+4. Consistent Field Names: Use consistent field naming conventions across services
+5. Sensitive Data: Never log sensitive information (passwords, tokens, PII)
+6. Log Levels: Use appropriate log levels (ERROR for exceptions, INFO for business events, DEBUG for debugging)
+7. Exception Handling: Always include stack traces with error logs
 
 ## Monitoring and Observability
 

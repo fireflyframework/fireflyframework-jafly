@@ -21,32 +21,32 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 
 ### Prerequisites
 
-- **Java 21** or higher
-- **Maven 3.8+**
-- **Docker** (for integration tests)
-- **Git**
+- Java 25 or higher
+- Maven 3.8+
+- Docker (for integration tests)
+- Git
 
 ### Development Setup
 
-1. **Clone the repository**
+1. Clone the repository
    ```bash
    git clone https://github.org/fireflyframework-oss/fireflyframework-eda.git
    cd fireflyframework-eda
    ```
 
-2. **Build the project**
+2. Build the project
    ```bash
-   mvn clean compile
+   ./mvnw -pl :fireflyframework-eda -am compile
    ```
 
-3. **Run tests**
+3. Run tests
    ```bash
-   mvn test
+   ./mvnw -pl :fireflyframework-eda -am test
    ```
 
-4. **Run integration tests**
+4. Run integration tests
    ```bash
-   mvn verify
+   ./mvnw -pl :fireflyframework-eda -am verify
    ```
 
 ## Contributing Guidelines
@@ -55,19 +55,19 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 
 We welcome the following types of contributions:
 
-- **Bug fixes**: Fix issues in existing functionality
-- **Feature enhancements**: Improve existing features
-- **New features**: Add new capabilities
-- **Documentation**: Improve or add documentation
-- **Tests**: Add or improve test coverage
-- **Performance improvements**: Optimize existing code
+- Bug fixes: Fix issues in existing functionality
+- Feature enhancements: Improve existing features
+- New features: Add new capabilities
+- Documentation: Improve or add documentation
+- Tests: Add or improve test coverage
+- Performance improvements: Optimize existing code
 
 ### Before You Start
 
-1. **Check existing issues**: Look for existing issues or discussions
-2. **Create an issue**: For new features or significant changes, create an issue first
-3. **Discuss the approach**: Get feedback on your proposed solution
-4. **Fork the repository**: Create your own fork to work on
+1. Check existing issues: Look for existing issues or discussions
+2. Create an issue: For new features or significant changes, create an issue first
+3. Discuss the approach: Get feedback on your proposed solution
+4. Fork the repository: Create your own fork to work on
 
 ### Branch Naming
 
@@ -90,33 +90,33 @@ Examples:
 
 The project includes several types of tests:
 
-1. **Unit Tests**: Test individual components in isolation
-2. **Integration Tests**: Test component interactions
-3. **Contract Tests**: Test API contracts
-4. **Performance Tests**: Test performance characteristics
+1. Unit Tests: Test individual components in isolation
+2. Integration Tests: Test component interactions
+3. Contract Tests: Test API contracts
+4. Performance Tests: Test performance characteristics
 
 ### Running Tests
 
 ```bash
 # Run all tests
-mvn test
+./mvnw -pl :fireflyframework-eda -am test
 
 # Run specific test class
-mvn test -Dtest=EventPublisherFactoryTest
+./mvnw -pl :fireflyframework-eda -am test -Dtest=EventPublisherFactoryTest
 
 # Run tests with specific profile
-mvn test -Pintegration-tests
+./mvnw -pl :fireflyframework-eda -am test -Pintegration-tests
 
 # Run tests with coverage
-mvn test jacoco:report
+./mvnw -pl :fireflyframework-eda -am test jacoco:report
 ```
 
 ### Test Requirements
 
-- **All new code must have tests**: Aim for 80%+ coverage
-- **Integration tests for new features**: Test real-world scenarios
-- **Test edge cases**: Include error conditions and boundary cases
-- **Use TestContainers**: For external dependencies (Kafka, RabbitMQ)
+- All new code must have tests: Aim for 80%+ coverage
+- Integration tests for new features: Test real-world scenarios
+- Test edge cases: Include error conditions and boundary cases
+- Use TestContainers: For external dependencies (Kafka, RabbitMQ)
 
 ### Test Structure
 
@@ -139,11 +139,11 @@ void shouldDoSomethingWhenConditionIsMet() {
 
 ### Java Code Style
 
-- **Follow Google Java Style Guide**: Use consistent formatting
-- **Use meaningful names**: Classes, methods, and variables should be descriptive
-- **Keep methods small**: Aim for single responsibility
-- **Use Lombok**: Reduce boilerplate with `@Data`, `@RequiredArgsConstructor`, etc.
-- **Add JavaDoc**: Document public APIs
+- Follow Google Java Style Guide: Use consistent formatting
+- Use meaningful names: Classes, methods, and variables should be descriptive
+- Keep methods small: Aim for single responsibility
+- Use Lombok: Reduce boilerplate with `@Data`, `@RequiredArgsConstructor`, etc.
+- Add JavaDoc: Document public APIs
 
 ### Example Code Style
 
@@ -167,18 +167,18 @@ public Mono<Void> publish(Object event, String destination) {
 
 ### Configuration
 
-- **Use validation annotations**: `@NotNull`, `@Valid`, etc.
-- **Provide sensible defaults**: Make configuration optional where possible
-- **Document properties**: Include descriptions and examples
+- Use validation annotations: `@NotNull`, `@Valid`, etc.
+- Provide sensible defaults: Make configuration optional where possible
+- Document properties: Include descriptions and examples
 
 ## Pull Request Process
 
 ### Before Submitting
 
-1. **Ensure tests pass**: All tests must pass
-2. **Update documentation**: Update relevant documentation
-3. **Add changelog entry**: Document your changes
-4. **Rebase on main**: Ensure your branch is up to date
+1. Ensure tests pass: All tests must pass
+2. Update documentation: Update relevant documentation
+3. Add changelog entry: Document your changes
+4. Rebase on main: Ensure your branch is up to date
 
 ### Pull Request Template
 
@@ -206,38 +206,38 @@ Brief description of the changes
 
 ### Review Process
 
-1. **Automated checks**: CI/CD pipeline runs automatically
-2. **Code review**: At least one maintainer reviews the code
-3. **Testing**: Reviewers may test the changes
-4. **Approval**: Changes must be approved before merging
+1. Automated checks: CI/CD pipeline runs automatically
+2. Code review: At least one maintainer reviews the code
+3. Testing: Reviewers may test the changes
+4. Approval: Changes must be approved before merging
 
 ## Architecture Guidelines
 
 ### Design Principles
 
-- **Reactive Programming**: Use Project Reactor (Mono/Flux)
-- **Hexagonal Architecture**: Separate core logic from infrastructure
-- **Dependency Injection**: Use Spring's IoC container
-- **Configuration**: Externalize all configuration
-- **Observability**: Include metrics, health checks, and tracing
+- Reactive Programming: Use Project Reactor (Mono/Flux)
+- Hexagonal Architecture: Separate core logic from infrastructure
+- Dependency Injection: Use Spring's IoC container
+- Configuration: Externalize all configuration
+- Observability: Include metrics, health checks, and tracing
 
 ### Adding New Publishers
 
-1. **Implement EventPublisher interface**
-2. **Add configuration properties**
-3. **Create auto-configuration class**
-4. **Add health indicator**
-5. **Include comprehensive tests**
-6. **Update documentation**
+1. Implement EventPublisher interface
+2. Add configuration properties
+3. Create auto-configuration class
+4. Add health indicator
+5. Include comprehensive tests
+6. Update documentation
 
 ### Adding New Consumers
 
-1. **Implement EventConsumer interface**
-2. **Add configuration properties**
-3. **Handle lifecycle management**
-4. **Include error handling**
-5. **Add health monitoring**
-6. **Create integration tests**
+1. Implement EventConsumer interface
+2. Add configuration properties
+3. Handle lifecycle management
+4. Include error handling
+5. Add health monitoring
+6. Create integration tests
 
 ## Release Process
 
@@ -245,38 +245,38 @@ Brief description of the changes
 
 We follow [Semantic Versioning](https://semver.org/):
 
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
+- MAJOR: Breaking changes
+- MINOR: New features (backward compatible)
+- PATCH: Bug fixes (backward compatible)
 
 ### Release Steps
 
-1. **Update version**: Update `pom.xml` version
-2. **Update changelog**: Document all changes
-3. **Create release branch**: `release/vX.Y.Z`
-4. **Final testing**: Run full test suite
-5. **Create tag**: Tag the release commit
-6. **Deploy artifacts**: Deploy to Maven Central
-7. **Update documentation**: Update version references
+1. Update version: Update `pom.xml` version
+2. Update changelog: Document all changes
+3. Create release branch: `release/vX.Y.Z`
+4. Final testing: Run full test suite
+5. Create tag: Tag the release commit
+6. Deploy artifacts: Deploy to Maven Central
+7. Update documentation: Update version references
 
 ## Getting Help
 
 ### Communication Channels
 
-- **GitHub Issues**: For bugs and feature requests
-- **GitHub Discussions**: For questions and general discussion
-- **Documentation**: Check existing documentation first
+- GitHub Issues: For bugs and feature requests
+- GitHub Discussions: For questions and general discussion
+- Documentation: Check existing documentation first
 
 ### Maintainers
 
 Current maintainers:
-- **Core Team**: @firefly-maintainers
+- Core Team: @firefly-maintainers
 
 ### Response Times
 
-- **Bug reports**: 1-2 business days
-- **Feature requests**: 3-5 business days
-- **Pull requests**: 2-3 business days
+- Bug reports: 1-2 business days
+- Feature requests: 3-5 business days
+- Pull requests: 2-3 business days
 
 ## License
 
@@ -285,8 +285,8 @@ By contributing to this project, you agree that your contributions will be licen
 ## Recognition
 
 Contributors are recognized in:
-- **CHANGELOG.md**: For each release
-- **README.md**: Major contributors
-- **GitHub contributors page**: Automatic recognition
+- CHANGELOG.md: For each release
+- README.md: Major contributors
+- GitHub contributors page: Automatic recognition
 
 Thank you for contributing to the Firefly EDA Library!

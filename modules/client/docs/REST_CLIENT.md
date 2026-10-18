@@ -303,18 +303,18 @@ Mono<String> email = client.get("/users/{id}", DynamicJsonResponse.class)
     .map(user -> user.getString("email"));
 ```
 
-**When to use DynamicJsonResponse**:
+When to use DynamicJsonResponse:
 - ✅ Rapid prototyping without creating DTOs
 - ✅ Working with third-party APIs with complex/changing schemas
 - ✅ Only need to access a few fields from a large response
 - ✅ Exploring unknown API structures
 
-**When NOT to use**:
+When NOT to use:
 - ❌ Production code with well-defined schemas (use DTOs)
 - ❌ When type safety is critical
 - ❌ Performance-critical paths (DTOs are more efficient)
 
-**Available methods**:
+Available methods:
 ```java
 DynamicJsonResponse response = ...;
 
@@ -356,7 +356,7 @@ Integer age = obj.getInt("age");
 Object dynamicInstance = response.toDynamicClass("User");
 ```
 
-**Complete example**:
+Complete example:
 ```java
 @Service
 public class GitHubService {
@@ -538,9 +538,9 @@ public Mono<User> createUser(CreateUserRequest request) {
 
 ### Connection Refused
 
-**Problem**: `Connection refused` error
+Problem: `Connection refused` error
 
-**Solution**:
+Solution:
 - Verify the `baseUrl` is correct
 - Ensure the service is running
 - Check network connectivity
@@ -548,9 +548,9 @@ public Mono<User> createUser(CreateUserRequest request) {
 
 ### Timeout Errors
 
-**Problem**: Requests timing out
+Problem: Requests timing out
 
-**Solution**:
+Solution:
 ```java
 // Increase timeout
 RestClient client = ServiceClient.rest("slow-service")
@@ -561,9 +561,9 @@ RestClient client = ServiceClient.rest("slow-service")
 
 ### SSL/TLS Errors
 
-**Problem**: SSL handshake failures
+Problem: SSL handshake failures
 
-**Solution**:
+Solution:
 ```yaml
 # In application.yml
 firefly:
@@ -576,9 +576,9 @@ firefly:
 
 ### Circuit Breaker Opening
 
-**Problem**: Circuit breaker opens frequently
+Problem: Circuit breaker opens frequently
 
-**Solution**:
+Solution:
 ```yaml
 firefly:
   service-client:
@@ -589,9 +589,9 @@ firefly:
 
 ### JSON Parsing Errors
 
-**Problem**: Cannot deserialize response
+Problem: Cannot deserialize response
 
-**Solution**:
+Solution:
 - Verify response type matches expected class
 - Check JSON structure
 - Use `TypeReference` for generic types
@@ -608,19 +608,19 @@ firefly:
 
 ## What's Included
 
-✅ **HTTP Verbs**: GET, POST, PUT, DELETE, PATCH  
-✅ **Path Parameters**: Dynamic URL segments  
-✅ **Query Parameters**: URL query strings  
-✅ **Headers**: Default and per-request headers  
-✅ **Request Bodies**: JSON, XML, or custom formats  
-✅ **Response Types**: POJOs, Lists, Maps, generics  
-✅ **Streaming**: Server-Sent Events support  
-✅ **Circuit Breaker**: Automatic failure detection  
-✅ **Health Checks**: Service availability monitoring  
-✅ **Timeouts**: Configurable request timeouts  
-✅ **Connection Pooling**: Efficient resource usage  
-✅ **Compression**: Automatic gzip support  
-✅ **Reactive**: Non-blocking Mono/Flux responses  
+✅ HTTP Verbs: GET, POST, PUT, DELETE, PATCH
+✅ Path Parameters: Dynamic URL segments
+✅ Query Parameters: URL query strings
+✅ Headers: Default and per-request headers
+✅ Request Bodies: JSON, XML, or custom formats
+✅ Response Types: POJOs, Lists, Maps, generics
+✅ Streaming: Server-Sent Events support
+✅ Circuit Breaker: Automatic failure detection
+✅ Health Checks: Service availability monitoring
+✅ Timeouts: Configurable request timeouts
+✅ Connection Pooling: Efficient resource usage
+✅ Compression: Automatic gzip support
+✅ Reactive: Non-blocking Mono/Flux responses
 
 ## What's NOT Included (But We Provide Helpers!)
 
@@ -628,7 +628,7 @@ The REST client focuses on standard HTTP operations. For specialized use cases, 
 
 ### 🔌 WebSocket Support
 
-✅ **Helper Available**: `WebSocketClientHelper`
+✅ Helper Available: `WebSocketClientHelper`
 
 ```java
 import org.fireflyframework.client.websocket.WebSocketClientHelper;
@@ -639,15 +639,15 @@ wsHelper.receiveMessages(message -> {
 }).subscribe();
 ```
 
-**When to use**: Real-time bidirectional communication, live updates, chat applications.
+When to use: Real-time bidirectional communication, live updates, chat applications.
 
-📖 **[Complete WebSocket Guide →](WEBSOCKET_HELPER.md)**
+📖 [Complete WebSocket Guide →](WEBSOCKET_HELPER.md)
 
 ---
 
 ### 📁 File Uploads
 
-✅ **Helper Available**: `MultipartUploadHelper`
+✅ Helper Available: `MultipartUploadHelper`
 
 ```java
 import org.fireflyframework.client.multipart.MultipartUploadHelper;
@@ -661,15 +661,15 @@ Mono<UploadResponse> response = uploader.uploadFile(
 );
 ```
 
-**When to use**: File uploads, document management, image uploads.
+When to use: File uploads, document management, image uploads.
 
-📖 **[Complete File Upload Guide →](MULTIPART_HELPER.md)**
+📖 [Complete File Upload Guide →](MULTIPART_HELPER.md)
 
 ---
 
 ### 🔐 OAuth2 Authentication
 
-✅ **Helper Available**: `OAuth2ClientHelper`
+✅ Helper Available: `OAuth2ClientHelper`
 
 ```java
 import org.fireflyframework.client.oauth2.OAuth2ClientHelper;
@@ -688,17 +688,17 @@ oauth2.getClientCredentialsToken().flatMap(token ->
 ).subscribe();
 ```
 
-**When to use**: OAuth2 client credentials, password grant, token refresh.
+When to use: OAuth2 client credentials, password grant, token refresh.
 
-**For production**: Use Spring Security OAuth2 Client for full OAuth2/OIDC support.
+For production: Use Spring Security OAuth2 Client for full OAuth2/OIDC support.
 
-📖 **[Complete OAuth2 Guide →](OAUTH2_HELPER.md)**
+📖 [Complete OAuth2 Guide →](OAUTH2_HELPER.md)
 
 ---
 
 ### 🔍 GraphQL
 
-✅ **Helper Available**: `GraphQLClientHelper`
+✅ Helper Available: `GraphQLClientHelper`
 
 ```java
 import org.fireflyframework.client.graphql.GraphQLClientHelper;
@@ -718,26 +718,25 @@ String query = """
 Mono<User> user = graphql.query(query, Map.of("id", "123"), "user", User.class);
 ```
 
-**When to use**: GraphQL APIs, flexible data fetching.
+When to use: GraphQL APIs, flexible data fetching.
 
-**For production**: Consider Spring for GraphQL or Netflix DGS Framework for complex GraphQL needs.
+For production: Consider Spring for GraphQL or Netflix DGS Framework for complex GraphQL needs.
 
-📖 **[Complete GraphQL Guide →](GRAPHQL_CLIENT.md)**
+📖 [Complete GraphQL Guide →](GRAPHQL_CLIENT.md)
 
 ---
 
-**Next Steps**:
+Next Steps:
 
-**Core Clients**:
+Core Clients:
 - [gRPC Client Guide](GRPC_CLIENT.md)
 - [SOAP Client Guide](SOAP_CLIENT.md)
 
-**Helper Utilities**:
+Helper Utilities:
 - [GraphQL Client Guide](GRAPHQL_CLIENT.md)
 - [WebSocket Helper Guide](WEBSOCKET_HELPER.md)
 - [OAuth2 Helper Guide](OAUTH2_HELPER.md)
 - [File Upload Helper Guide](MULTIPART_HELPER.md)
 
-**Configuration**:
+Configuration:
 - [Configuration Reference](CONFIGURATION.md)
-

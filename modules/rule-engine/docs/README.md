@@ -1,6 +1,6 @@
 # Firefly Framework Rule Engine Documentation
 
-**Complete documentation for the Firefly Framework Rule Engine - part of the Firefly Framework**
+Complete documentation for the Firefly Framework Rule Engine - part of the Firefly Framework
 
 *Apache 2.0 Licensed | Production-Ready | AST-Based YAML DSL*
 
@@ -14,11 +14,11 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 
 | Your Goal | Start Here | Time Required |
 |-----------|------------|---------------|
-| **Learn the basics** | [Quick Start Guide](quick-start-guide.md) | 15 minutes |
-| **See real examples** | [Common Patterns Guide](common-patterns-guide.md) | 30 minutes |
-| **Set team standards** | [Governance Guidelines](governance-guidelines.md) | 20 minutes |
-| **Complete reference** | [YAML DSL Reference](yaml-dsl-reference.md) | Reference |
-| **API integration** | [API Documentation](api-documentation.md) | Reference |
+| Learn the basics | [Quick Start Guide](quick-start-guide.md) | 15 minutes |
+| See real examples | [Common Patterns Guide](common-patterns-guide.md) | 30 minutes |
+| Set team standards | [Governance Guidelines](governance-guidelines.md) | 20 minutes |
+| Complete reference | [YAML DSL Reference](yaml-dsl-reference.md) | Reference |
+| API integration | [API Documentation](api-documentation.md) | Reference |
 
 ---
 
@@ -35,16 +35,16 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 - Common beginner examples
 - When to use simple vs. complex syntax
 
-**Best for**: New users, proof of concepts, quick prototypes
+Best for: New users, proof of concepts, quick prototypes
 
 #### [Common Patterns Guide](common-patterns-guide.md)
 *Real-world examples organized by complexity*
 
-- **🟢 Basic Patterns**: Simple approval logic, data validation
-- **🟡 Intermediate Patterns**: Multi-factor scoring, sequential processing
-- **🔴 Advanced Patterns**: API integration, complex workflows
+- 🟢 Basic Patterns: Simple approval logic, data validation
+- 🟡 Intermediate Patterns: Multi-factor scoring, sequential processing
+- 🔴 Advanced Patterns: API integration, complex workflows
 
-**Best for**: Finding the right approach for your use case
+Best for: Finding the right approach for your use case
 
 ### 🏛️ Team Management
 
@@ -57,7 +57,7 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 - Risk assessment framework
 - Organizational standards templates
 
-**Best for**: Technical leads, architects, team coordination
+Best for: Technical leads, architects, team coordination
 
 ### 📚 Complete References
 
@@ -70,7 +70,7 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 - Reserved keywords
 - Complete examples
 
-**Best for**: Comprehensive syntax lookup, advanced features
+Best for: Comprehensive syntax lookup, advanced features
 
 #### [API Documentation](api-documentation.md)
 *Complete REST API reference*
@@ -82,7 +82,7 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 - Audit trail API
 - Batch processing
 
-**Best for**: API integration, system architecture
+Best for: API integration, system architecture
 
 ---
 
@@ -105,9 +105,9 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 
 | Experience Level | Recommended Reading Order |
 |------------------|---------------------------|
-| **New to Rule Engines** | Quick Start → Common Patterns (Basic) → Governance Guidelines |
-| **Some Experience** | Common Patterns → Governance Guidelines → YAML DSL Reference |
-| **Advanced Users** | Governance Guidelines → YAML DSL Reference → API Documentation |
+| New to Rule Engines | Quick Start → Common Patterns (Basic) → Governance Guidelines |
+| Some Experience | Common Patterns → Governance Guidelines → YAML DSL Reference |
+| Advanced Users | Governance Guidelines → YAML DSL Reference → API Documentation |
 
 ---
 
@@ -115,23 +115,23 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 
 ### Rule Engine Core Features
 
-- **AST-Based Parser**: Strongly-typed Abstract Syntax Tree parsing
-- **YAML DSL**: Human-readable domain-specific language
-- **Variable Types**: Strict naming conventions (camelCase, snake_case, UPPER_CASE)
-- **REST API**: Comprehensive evaluation and management endpoints
-- **Audit Trail**: Complete operation tracking and logging
-- **Batch Processing**: Concurrent rule evaluation capabilities
-- **Circuit Breaker**: Resilience patterns for external service calls
+- AST-Based Parser: Strongly-typed Abstract Syntax Tree parsing
+- YAML DSL: Human-readable domain-specific language
+- Variable Types: Strict naming conventions (camelCase, snake_case, UPPER_CASE)
+- REST API: Comprehensive evaluation and management endpoints
+- Audit Trail: Complete operation tracking and logging
+- Batch Processing: Concurrent rule evaluation capabilities
+- Circuit Breaker: Resilience patterns for external service calls
 
 ### Supported Operations
 
 | Category | Examples |
 |----------|----------|
-| **Comparisons** | `at_least`, `greater_than`, `equals`, `between`, `in_list` |
-| **Actions** | `set`, `calculate`, `append`, `prepend`, `remove` |
-| **Functions** | `json_get`, `rest_get`, `max`, `min`, `format_date` |
-| **Validation** | `is_email`, `is_phone`, `is_credit_score`, `exists` |
-| **Logic** | `and`, `or`, `not`, `if/then` conditions |
+| Comparisons | `at_least`, `greater_than`, `equals`, `between`, `in_list` |
+| Actions | `set`, `calculate`, `append`, `prepend`, `remove` |
+| Functions | `json_get`, `rest_get`, `max`, `min`, `format_date` |
+| Validation | `is_email`, `is_phone`, `is_credit_score`, `exists` |
+| Logic | `and`, `or`, `not`, `if/then` conditions |
 
 ---
 
@@ -163,9 +163,9 @@ This documentation provides comprehensive guidance for using the Firefly Framewo
 All documentation is generated from and validated against the actual codebase implementation. Examples are tested and verified to work with the current system.
 
 ### Naming Conventions
-- **Input Variables**: `camelCase` (from API requests)
-- **System Constants**: `UPPER_CASE_WITH_UNDERSCORES` (from database)
-- **Computed Variables**: `snake_case` (created during execution)
+- Input Variables: `camelCase` (from API requests)
+- System Constants: `UPPER_CASE_WITH_UNDERSCORES` (from database)
+- Computed Variables: `snake_case` (created during execution)
 
 ### Syntax Standards
 - All examples use actual implemented operators (`at_least` not `>=`)
@@ -176,9 +176,9 @@ All documentation is generated from and validated against the actual codebase im
 
 ## 🔗 External Resources
 
-- **GitHub Repository**: [fireflyframework/fireflyframework-rule-engine](https://github.com/fireflyframework/fireflyframework-rule-engine)
-- **License**: Apache 2.0
-- **Firefly Platform**: [Firefly Framework](https://firefly.software)
+- GitHub Repository: [fireflyframework/fireflyframework-rule-engine](https://github.com/fireflyframework/fireflyframework-rule-engine)
+- License: Apache 2.0
+- Firefly Platform: [Firefly Framework](https://firefly.software)
 
 ---
 

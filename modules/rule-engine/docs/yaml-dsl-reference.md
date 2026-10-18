@@ -1,6 +1,6 @@
 # Firefly Framework Rule Engine DSL Syntax Guide
 
-**Comprehensive Reference for the Firefly Framework Rule Engine YAML Domain Specific Language**
+Comprehensive Reference for the Firefly Framework Rule Engine YAML Domain Specific Language
 
 *Based on actual AST-based parser implementation analysis*
 
@@ -8,12 +8,12 @@
 
 ## 📚 Documentation Navigation
 
-**New to the Rule Engine?** Start with our layered documentation approach:
+New to the Rule Engine? Start with our layered documentation approach:
 
-- **🚀 [Quick Start Guide](quick-start-guide.md)** - Get started in 15 minutes with essential syntax
-- **🎯 [Common Patterns Guide](common-patterns-guide.md)** - Real-world examples organized by complexity
-- **🏛️ [Governance Guidelines](governance-guidelines.md)** - Team standards and feature selection guidance
-- **📖 This Reference** - Complete syntax documentation (you are here)
+- 🚀 [Quick Start Guide](quick-start-guide.md) - Get started in 15 minutes with essential syntax
+- 🎯 [Common Patterns Guide](common-patterns-guide.md) - Real-world examples organized by complexity
+- 🏛️ [Governance Guidelines](governance-guidelines.md) - Team standards and feature selection guidance
+- 📖 This Reference - Complete syntax documentation (you are here)
 
 ---
 
@@ -35,31 +35,31 @@
 
 ## Introduction
 
-The Firefly Framework Rule Engine uses a powerful YAML-based Domain Specific Language (DSL) that is parsed using an Abstract Syntax Tree (AST) approach. This guide documents the **actual implementation** based on comprehensive codebase analysis, ensuring accuracy and completeness.
+The Firefly Framework Rule Engine uses a powerful YAML-based Domain Specific Language (DSL) that is parsed using an Abstract Syntax Tree (AST) approach. This guide documents the actual implementation based on comprehensive codebase analysis, ensuring accuracy and completeness.
 
-> **💡 First Time Here?** This is a comprehensive reference. For a gentler introduction, start with the [Quick Start Guide](quick-start-guide.md) or browse [Common Patterns](common-patterns-guide.md) for real-world examples.
+> 💡 First Time Here? This is a comprehensive reference. For a gentler introduction, start with the [Quick Start Guide](quick-start-guide.md) or browse [Common Patterns](common-patterns-guide.md) for real-world examples.
 
 ### Key Principles
 
-- **AST-Based Parsing**: All syntax is parsed into strongly-typed AST nodes
-- **Expression-Driven**: Actions and conditions support complex expressions
-- **Type-Safe**: Variables have strict naming conventions for automatic type resolution
-- **Extensible**: Support for REST API calls, JSON manipulation, and custom functions
+- AST-Based Parsing: All syntax is parsed into strongly-typed AST nodes
+- Expression-Driven: Actions and conditions support complex expressions
+- Type-Safe: Variables have strict naming conventions for automatic type resolution
+- Extensible: Support for REST API calls, JSON manipulation, and custom functions
 
 ### How to Use This Reference
 
-- **🔍 Find Specific Syntax**: Use the table of contents or search for keywords
-- **📋 Copy Examples**: All complete-rule code examples in this file are parsed by the `DocExamplesValidationTest` at every build -- if you see one fail in your fork, the doc is out of sync with the implementation.
-- **🎯 Choose Complexity**: See [Governance Guidelines](governance-guidelines.md) for feature selection advice
-- **🚀 Get Started**: Try examples from [Quick Start Guide](quick-start-guide.md) first
+- 🔍 Find Specific Syntax: Use the table of contents or search for keywords
+- 📋 Copy Examples: All complete-rule code examples in this file are parsed by the `DocExamplesValidationTest` at every build -- if you see one fail in your fork, the doc is out of sync with the implementation.
+- 🎯 Choose Complexity: See [Governance Guidelines](governance-guidelines.md) for feature selection advice
+- 🚀 Get Started: Try examples from [Quick Start Guide](quick-start-guide.md) first
 
 ### Mental Model -- What This Engine Is (and Isn't)
 
-**What it is.** A stateless **expression-evaluation engine** over a single input map.
+What it is. A stateless expression-evaluation engine over a single input map.
 You hand it a parsed YAML rule and a `Map<String, Object>` of inputs; it returns a
 result with computed outputs, a condition outcome, and timing/audit metadata.
 
-**What it is NOT.** This is not Drools-style rule-based reasoning. There is no
+What it is NOT. This is not Drools-style rule-based reasoning. There is no
 working memory, no fact base, no inference, no rule-chaining triggered by data
 changes. Each evaluation is an independent function call.
 
@@ -70,22 +70,22 @@ changes. Each evaluation is an independent function call.
 | Constants from DB (auto-detected by `UPPER_CASE`) | ✅                                                            |
 | `forEach` / `while` / `do-while` loops  | ✅                                                                     |
 | Sub-rules (`rules:` block) with shared state across rules in one eval | ✅                            |
-| **Sub-rule priority** (drools-style salience via `priority: N`) | ✅                                          |
+| Sub-rule priority (drools-style salience via `priority: N`) | ✅                                          |
 | Inline conditional expression (`if_else(cond, then, else)`) | ✅                                          |
-| **Decision tables (DMN-style)** -- `decision_table:` block with FIRST / COLLECT / ANY / UNIQUE hit policies | ✅ |
-| **Rule composition** -- `invoke_rule(code, ...)` evaluates a stored rule and returns its outputs | ✅ |
-| **Per-rule timeout** -- `timeout: 5s` declarative budget enforced via Reactor `Mono.timeout()` | ✅ |
-| **Input defaults** -- declare `default:` per input; caller-omitted values are filled in | ✅ |
+| Decision tables (DMN-style) -- `decision_table:` block with FIRST / COLLECT / ANY / UNIQUE hit policies | ✅ |
+| Rule composition -- `invoke_rule(code, ...)` evaluates a stored rule and returns its outputs | ✅ |
+| Per-rule timeout -- `timeout: 5s` declarative budget enforced via Reactor `Mono.timeout()` | ✅ |
+| Input defaults -- declare `default:` per input; caller-omitted values are filled in | ✅ |
 | Custom function registry (Spring `@Component`)             | ✅                                          |
 | REST / JSON path built-ins              | ✅                                                                     |
 | Circuit breaker action (early termination) | ✅                                                                  |
-| **Rule chaining across separate evaluations** -- output of one eval automatically firing another | ❌ |
-| **Persistent working memory / fact base** like Drools `KIE` | ❌                                              |
-| **Inference / forward-chaining** -- deriving new facts that fire more rules | ❌                              |
-| **Backward chaining** (goal-driven reasoning)                                                  | ❌                              |
-| **Cross-input joins** -- finding pairs/groups of inputs that satisfy a constraint | ❌                          |
-| **Short-circuit evaluation in function calls** -- `if_else(cond, X, Y)` evaluates *both* branches | ❌  |
-| **Truth maintenance** / retraction       | ❌ -- variables are write-once-per-eval and never retracted          |
+| Rule chaining across separate evaluations -- output of one eval automatically firing another | ❌ |
+| Persistent working memory / fact base like Drools `KIE` | ❌                                              |
+| Inference / forward-chaining -- deriving new facts that fire more rules | ❌                              |
+| Backward chaining (goal-driven reasoning)                                                  | ❌                              |
+| Cross-input joins -- finding pairs/groups of inputs that satisfy a constraint | ❌                          |
+| Short-circuit evaluation in function calls -- `if_else(cond, X, Y)` evaluates *both* branches | ❌  |
+| Truth maintenance / retraction       | ❌ -- variables are write-once-per-eval and never retracted          |
 
 If you need any of the "❌" capabilities, this engine is the wrong tool. For those
 use cases consider Drools / OpenL Tablets / DMN engines. For everything else --
@@ -160,7 +160,7 @@ Caller-supplied values always override declared defaults. This makes rules safer
 
 ### Logic Sections (Choose One)
 
-**Simple Syntax:**
+Simple Syntax:
 <!-- doc-test:skip (schema sketch; placeholder values, not parseable on its own) -->
 ```yaml
 when: [conditions]                  # Simple condition list
@@ -168,7 +168,7 @@ then: [actions]                     # Actions when true
 else: [actions]                     # Actions when false (optional)
 ```
 
-**Complex Syntax:**
+Complex Syntax:
 <!-- doc-test:skip (schema sketch; placeholder values, not parseable on its own) -->
 ```yaml
 conditions:                         # Structured condition blocks
@@ -177,7 +177,7 @@ conditions:                         # Structured condition blocks
   else: {action_structure}
 ```
 
-**Multiple Rules:**
+Multiple Rules:
 <!-- doc-test:skip (schema sketch; placeholder values, not parseable on its own) -->
 ```yaml
 rules:                             # Array of sub-rules
@@ -193,7 +193,7 @@ rules:                             # Array of sub-rules
 
 Sub-rule priority is drools-style salience: higher `priority:` evaluates first; ties preserve YAML declaration order via a stable sort. Omitted priorities default to 0.
 
-**Decision Table (DMN-style):**
+Decision Table (DMN-style):
 <!-- doc-test:skip (schema sketch; placeholder values, not parseable on its own) -->
 ```yaml
 decision_table:
@@ -218,7 +218,7 @@ The DSL uses specific reserved keywords that have special meaning in the parser.
 ### Synonyms and Canonical Forms
 
 Several keywords have multiple accepted spellings -- a deliberate flexibility so the
-DSL reads naturally in different contexts. The **canonical** form is the one we
+DSL reads naturally in different contexts. The canonical form is the one we
 recommend in new code; aliases remain accepted for compatibility. All synonyms below
 are matched case-insensitively where indicated.
 
@@ -278,7 +278,7 @@ inside a rule for readability:
 | `inputs`  | `input`        | The parser merges both into the same model field; prefer `inputs`     |
 | `outputs` | `output`       | Same                                                                   |
 
-> **Removed in 26.05.08:** the top-level `circuit_breaker:` *configuration block* (with
+> Removed in 26.05.08: the top-level `circuit_breaker:` *configuration block* (with
 > `enabled`, `failure_threshold`, `timeout_duration`, `recovery_timeout` sub-keys) was
 > parsed but never enforced at runtime. The action-form `circuit_breaker "MESSAGE"`
 > (described in [Action Syntax](#action-syntax)) is the only circuit-breaker surface
@@ -292,18 +292,18 @@ inside a rule for readability:
 
 | Section | Keywords | Required | Purpose | Example |
 |---------|----------|----------|---------|---------|
-| **Rule Metadata** | `name` | ✅ | Human-readable rule identifier | `name: "Credit Assessment"` |
+| Rule Metadata | `name` | ✅ | Human-readable rule identifier | `name: "Credit Assessment"` |
 | | `description` | ✅ | Rule purpose and behavior | `description: "Evaluates credit applications"` |
 | | `version` | ❌ | Version tracking | `version: "1.0.0"` |
-| **Data Definitions** | `inputs` | ✅ | Runtime input variables | `inputs: [creditScore, annualIncome]` |
+| Data Definitions | `inputs` | ✅ | Runtime input variables | `inputs: [creditScore, annualIncome]` |
 | | `output` | ✅ | Output variable mapping | `output: {approval_status: text}` |
 | | `constants` | ❌ | System constants with defaults | `constants: [{code: MIN_SCORE, defaultValue: 650}]` |
-| **Logic Structure** | `when` | ❌* | Simple condition syntax | `when: [creditScore >= 650]` |
+| Logic Structure | `when` | ❌* | Simple condition syntax | `when: [creditScore >= 650]` |
 | | `then` | ❌* | Actions when conditions true | `then: [set status to "APPROVED"]` |
 | | `else` | ❌ | Actions when conditions false | `else: [set status to "DECLINED"]` |
 | | `conditions` | ❌* | Complex condition blocks | `conditions: {if: {...}, then: {...}}` |
 | | `rules` | ❌* | Multiple sequential rules | `rules: [{name: "Rule 1", when: [...]}]` |
-| **Advanced Features** | `metadata` | ❌ | Additional metadata | `metadata: {tags: ["credit"], author: "Team"}` |
+| Advanced Features | `metadata` | ❌ | Additional metadata | `metadata: {tags: ["credit"], author: "Team"}` |
 
 *One of `when`/`then`, `conditions`, or `rules` is required for logic definition.
 
@@ -340,12 +340,12 @@ inside a rule for readability:
 
 | Category | Keywords | Purpose | Syntax | Example |
 |----------|----------|---------|--------|---------|
-| **Logical Operators** | `and`, `AND` | Logical AND | `condition1 AND condition2` | `creditScore >= 650 AND annualIncome > 50000` |
+| Logical Operators | `and`, `AND` | Logical AND | `condition1 AND condition2` | `creditScore >= 650 AND annualIncome > 50000` |
 | | `or`, `OR` | Logical OR | `condition1 OR condition2` | `creditScore >= 750 OR hasCollateral == true` |
 | | `not`, `NOT` | Logical NOT | `NOT condition` | `NOT (accountStatus == "SUSPENDED")` |
-| **Conditional Structure** | `if` | Condition definition | `if: condition` | `if: {and: [condition1, condition2]}` |
+| Conditional Structure | `if` | Condition definition | `if: condition` | `if: {and: [condition1, condition2]}` |
 | | `compare` | Comparison block | `compare: {left, operator, right}` | `compare: {left: age, operator: ">=", right: 18}` |
-| **Helper Keywords** | `left`, `right` | Comparison operands | In compare blocks | `left: creditScore, right: 650` |
+| Helper Keywords | `left`, `right` | Comparison operands | In compare blocks | `left: creditScore, right: 650` |
 | | `operator` | Comparison operator | In compare blocks | `operator: "greater_than"` |
 | | `actions` | Action list | In complex syntax | `actions: [{set: {...}}]` |
 | | `variable`, `value` | Set action params | In complex syntax | `variable: "status", value: "APPROVED"` |
@@ -357,26 +357,26 @@ inside a rule for readability:
 
 | Category | Operator | Aliases | Purpose | Example |
 |----------|----------|---------|---------|---------|
-| **Equality** | `==` | `equals` | Equality check | `status equals "ACTIVE"` |
+| Equality | `==` | `equals` | Equality check | `status equals "ACTIVE"` |
 | | `!=` | `not_equals` | Inequality check | `type not_equals "SUSPENDED"` |
-| **Numeric** | `>` | `greater_than` | Greater than | `creditScore greater_than 700` |
+| Numeric | `>` | `greater_than` | Greater than | `creditScore greater_than 700` |
 | | `<` | `less_than` | Less than | `age less_than 65` |
 | | `>=` | `at_least`, `greater_than_or_equal` | Greater or equal | `income at_least 50000` |
 | | `<=` | `at_most`, `less_than_or_equal` | Less or equal | `debt_ratio at_most 0.4` |
-| **Range** | `between` | - | Range inclusion | `age between 18 and 65` |
+| Range | `between` | - | Range inclusion | `age between 18 and 65` |
 | | `not_between` | - | Range exclusion | `score not_between 0 and 100` |
-| **String** | `contains` | - | String contains | `name contains "Smith"` |
+| String | `contains` | - | String contains | `name contains "Smith"` |
 | | `not_contains` | - | String not contains | `email not_contains "temp"` |
 | | `starts_with` | - | String prefix | `phone starts_with "+1"` |
 | | `ends_with` | - | String suffix | `email ends_with ".com"` |
 | | `matches` | - | Regex match | `ssn matches "^\\d{3}-\\d{2}-\\d{4}$"` |
 | | `not_matches` | - | Regex not match | `phone not_matches "^\\+1"` |
-| **Length** | `length_equals` | - | Length-of-string equality | `code length_equals 4` |
+| Length | `length_equals` | - | Length-of-string equality | `code length_equals 4` |
 | | `length_greater_than` | - | Length-of-string `>` | `password length_greater_than 7` |
 | | `length_less_than` | - | Length-of-string `<` | `nickname length_less_than 20` |
-| **List** | `in_list` | `in` | List membership | `status in_list ["ACTIVE", "PENDING"]` |
+| List | `in_list` | `in` | List membership | `status in_list ["ACTIVE", "PENDING"]` |
 | | `not_in_list` | `not_in` | List non-membership | `type not_in_list ["SUSPENDED", "CLOSED"]` |
-| **Existence** | `exists` | - | Variable existence | `exists guarantorInfo` |
+| Existence | `exists` | - | Variable existence | `exists guarantorInfo` |
 | | `is_null` | - | Null check | `is_null previousLoan` |
 | | `is_not_null` | - | Not null check | `is_not_null collateralValue` |
 
@@ -387,35 +387,35 @@ inside a rule for readability:
 
 | Category | Operator | Purpose | Syntax | Example |
 |----------|----------|---------|--------|---------|
-| **Existence Checks** | `exists` | Check if variable exists | `exists variable` | `exists guarantorInfo` |
+| Existence Checks | `exists` | Check if variable exists | `exists variable` | `exists guarantorInfo` |
 | | `is_null` | Check if value is null | `variable is_null` | `previousLoan is_null` |
 | | `is_not_null` | Check if value is not null | `variable is_not_null` | `collateralValue is_not_null` |
-| **Type Checking** | `is_number` | Check if value is number | `variable is_number` | `creditScore is_number` |
+| Type Checking | `is_number` | Check if value is number | `variable is_number` | `creditScore is_number` |
 | | `is_string` | Check if value is string | `variable is_string` | `customerName is_string` |
 | | `is_boolean` | Check if value is boolean | `variable is_boolean` | `hasCollateral is_boolean` |
 | | `is_list` | Check if value is list/array | `variable is_list` | `riskFactors is_list` |
-| **Basic Content** | `is_empty` | Check if value is empty | `variable is_empty` | `customerName is_empty` |
+| Basic Content | `is_empty` | Check if value is empty | `variable is_empty` | `customerName is_empty` |
 | | `is_not_empty` | Check if value is not empty | `variable is_not_empty` | `email is_not_empty` |
 | | `is_numeric` | Check if string is numeric | `variable is_numeric` | `inputValue is_numeric` |
 | | `is_not_numeric` | Check if string is not numeric | `variable is_not_numeric` | `customerName is_not_numeric` |
-| **Format Validation** | `is_email` | Validate email format | `variable is_email` | `contactEmail is_email` |
+| Format Validation | `is_email` | Validate email format | `variable is_email` | `contactEmail is_email` |
 | | `is_phone` | Validate phone number format | `variable is_phone` | `phoneNumber is_phone` |
 | | `is_date` | Validate date format | `variable is_date` | `birthDate is_date` |
-| **Numeric Properties** | `is_positive` | Check if number > 0 | `variable is_positive` | `loanAmount is_positive` |
+| Numeric Properties | `is_positive` | Check if number > 0 | `variable is_positive` | `loanAmount is_positive` |
 | | `is_negative` | Check if number < 0 | `variable is_negative` | `accountBalance is_negative` |
 | | `is_zero` | Check if number equals 0 | `variable is_zero` | `outstandingDebt is_zero` |
-| **Financial Formats** | `is_percentage` | Validate percentage format | `variable is_percentage` | `interestRate is_percentage` |
+| Financial Formats | `is_percentage` | Validate percentage format | `variable is_percentage` | `interestRate is_percentage` |
 | | `is_currency` | Validate currency format | `variable is_currency` | `monthlyIncome is_currency` |
 | | `is_credit_score` | Validate credit score range (300-850) | `variable is_credit_score` | `creditScore is_credit_score` |
 | | `is_ssn` | Validate SSN format (XXX-XX-XXXX) | `variable is_ssn` | `socialSecurityNumber is_ssn` |
 | | `is_account_number` | Validate bank account number | `variable is_account_number` | `bankAccount is_account_number` |
 | | `is_routing_number` | Validate bank routing number | `variable is_routing_number` | `routingNumber is_routing_number` |
-| **Date Properties** | `is_business_day` | Check if date is business day | `variable is_business_day` | `applicationDate is_business_day` |
+| Date Properties | `is_business_day` | Check if date is business day | `variable is_business_day` | `applicationDate is_business_day` |
 | | `is_weekend` | Check if date is weekend | `variable is_weekend` | `submissionDate is_weekend` |
 | | `age_at_least` | Check minimum age requirement | `variable age_at_least value` | `customerAge age_at_least 18` |
 | | `age_less_than` | Check maximum age requirement | `variable age_less_than value` | `applicantAge age_less_than 65` |
 
-**Usage Examples:**
+Usage Examples:
 ```yaml
 when:
   # Existence and null checks
@@ -449,7 +449,7 @@ when:
   - (monthlyIncome is_positive AND annualIncome is_positive)
 ```
 
-**Validation Operators in Expressions**
+Validation Operators in Expressions
 
 Validation operators can be used in any expression context, not just `when:` clauses:
 
@@ -468,7 +468,7 @@ then:
   - calculate data_quality_score as name_score + email_score + phone_score + ssn_score
 ```
 
-> **Note:** The engine does not have a C-style ternary `? :` operator; use the
+> Note: The engine does not have a C-style ternary `? :` operator; use the
 > `if_else(condition, then_value, else_value)` built-in function instead. Both arguments
 > are evaluated eagerly (no short-circuit).
 
@@ -479,28 +479,28 @@ then:
 
 | Category | Operator/Keyword | Symbol | Purpose | Syntax | Example |
 |----------|------------------|--------|---------|--------|---------|
-| **Basic Arithmetic** | `+` | `+` | Addition | `expression + expression` | `principal + interest` |
+| Basic Arithmetic | `+` | `+` | Addition | `expression + expression` | `principal + interest` |
 | | `-` | `-` | Subtraction | `expression - expression` | `income - expenses` |
 | | `*` | `*` | Multiplication | `expression * expression` | `rate * amount` |
 | | `/` | `/` | Division | `expression / expression` | `monthlyDebt / annualIncome` |
 | | `%` | `%` | Modulo (remainder) | `expression % expression` | `amount % 100` |
 | | `**` | `**` | Power/Exponentiation | `base ** exponent` | `(1 + rate) ** years` |
-| **Arithmetic Actions** | `add` | - | Add value to variable | `add VALUE to VARIABLE` | `add 10 to base_score` |
+| Arithmetic Actions | `add` | - | Add value to variable | `add VALUE to VARIABLE` | `add 10 to base_score` |
 | | `subtract` | - | Subtract value from variable | `subtract VALUE from VARIABLE` | `subtract penalty from total_score` |
 | | `multiply` | - | Multiply target variable by factor | `multiply VALUE by VARIABLE` | `multiply 1.5 by risk_factor` |
 | | `divide` | - | Divide target variable by divisor | `divide VALUE by VARIABLE` | `divide 2 by monthly_payment` |
-| **Helper Keywords** | `to` | - | Assignment target | `set VARIABLE to VALUE` | `set approval_status to "APPROVED"` |
+| Helper Keywords | `to` | - | Assignment target | `set VARIABLE to VALUE` | `set approval_status to "APPROVED"` |
 | | `as` | - | Calculation target | `calculate VARIABLE as EXPRESSION` | `calculate debt_ratio as monthlyDebt / annualIncome` |
 | | `with` | - | Function parameters | `call FUNCTION with [args]` | `call log with ["Message", "INFO"]` |
 | | `from` | - | Subtraction source | `subtract VALUE from VARIABLE` | `subtract penalty from total_score` |
 | | `by` | - | Factor for multiply/divide | `multiply VALUE by VARIABLE` | `multiply 1.5 by risk_factor` |
 | | `and` | - | Range separator | `VALUE between MIN and MAX` | `age between 18 and 65` |
 
-> **Grammar peculiarity for `multiply` / `divide`:** the value comes *first*, then the variable.
+> Grammar peculiarity for `multiply` / `divide`: the value comes *first*, then the variable.
 > All four arithmetic actions follow the same shape: `<keyword> <value-expression> <preposition> <target-variable>`.
 > Read `multiply 1.5 by risk_factor` as "apply ×1.5 to `risk_factor`".
 
-**Arithmetic Expression Examples:**
+Arithmetic Expression Examples:
 <!-- doc-test:skip (illustrative `then:` fragment, not a complete rule) -->
 ```yaml
 then:
@@ -522,14 +522,14 @@ then:
   - calculate weighted_score as (creditScore * 0.6) + (incomeScore * 0.4)
 ```
 
-**Operator Precedence (highest to lowest):**
+Operator Precedence (highest to lowest):
 1. `**` (Power/Exponentiation)
 2. `*`, `/`, `%` (Multiplication, Division, Modulo)
 3. `+`, `-` (Addition, Subtraction)
 4. Comparison operators (`>`, `<`, `>=`, `<=`, `==`, `!=`)
 5. Logical operators (`AND`, `OR`, `NOT`)
 
-**Parentheses** can be used to override precedence:
+Parentheses can be used to override precedence:
 ```yaml
 - calculate result as (a + b) * (c - d)
 - calculate complex as ((x * y) + z) / (a - b)
@@ -542,9 +542,9 @@ then:
 ## Variable Types and Naming
 
 ### 1. Input Variables (camelCase)
-**Source**: API request `inputData` parameter  
-**Naming**: `camelCase` (e.g., `creditScore`, `annualIncome`)  
-**Purpose**: Dynamic runtime values
+Source: API request `inputData` parameter
+Naming: `camelCase` (e.g., `creditScore`, `annualIncome`)
+Purpose: Dynamic runtime values
 
 ```yaml
 inputs:
@@ -554,9 +554,9 @@ inputs:
 ```
 
 ### 2. System Constants (UPPER_CASE_WITH_UNDERSCORES)
-**Source**: Database constants table  
-**Naming**: `UPPER_CASE_WITH_UNDERSCORES` (e.g., `MIN_CREDIT_SCORE`)  
-**Purpose**: Configuration values, business parameters
+Source: Database constants table
+Naming: `UPPER_CASE_WITH_UNDERSCORES` (e.g., `MIN_CREDIT_SCORE`)
+Purpose: Configuration values, business parameters
 
 ```yaml
 when:
@@ -565,9 +565,9 @@ when:
 ```
 
 ### 3. Computed Variables (snake_case)
-**Source**: Created during rule execution  
-**Naming**: `snake_case` (e.g., `debt_ratio`, `final_score`)  
-**Purpose**: Intermediate calculations, results
+Source: Created during rule execution
+Naming: `snake_case` (e.g., `debt_ratio`, `final_score`)
+Purpose: Intermediate calculations, results
 
 ```yaml
 then:
@@ -581,9 +581,9 @@ then:
 
 ### The `set` Operation
 
-**Purpose**: Assign values to computed variables
+Purpose: Assign values to computed variables
 
-**Syntax**: `set variable_name to value`
+Syntax: `set variable_name to value`
 
 ```yaml
 then:
@@ -595,11 +595,11 @@ then:
 
 ### The `calculate` Operation
 
-**Purpose**: Evaluate expressions and store results
+Purpose: Evaluate expressions and store results
 
-**Syntax**: `calculate variable_name as expression`
+Syntax: `calculate variable_name as expression`
 
-**Key Insight**: `calculate` is NOT limited to mathematical operations. It can evaluate:
+Key Insight: `calculate` is NOT limited to mathematical operations. It can evaluate:
 - Mathematical expressions
 - Function calls (including REST API calls)
 - JSON path operations
@@ -630,9 +630,9 @@ then:
 
 ### The `when` Conditions
 
-**Purpose**: Define conditions for rule execution
+Purpose: Define conditions for rule execution
 
-**Syntax**: List of condition strings
+Syntax: List of condition strings
 
 ```yaml
 when:
@@ -644,7 +644,7 @@ when:
 
 ### The `rules` Structure
 
-**Purpose**: Define multiple sub-rules with sequential execution
+Purpose: Define multiple sub-rules with sequential execution
 
 ```yaml
 rules:
@@ -707,12 +707,12 @@ rules:
 
 The rule engine provides two commands for computed values:
 
-**`calculate`** - For mathematical operations only:
+`calculate` - For mathematical operations only:
 - Arithmetic expressions (`+`, `-`, `*`, `/`, `%`, `**`)
 - Mathematical calculations with numbers
 - Expressions that produce numeric results
 
-**`run`** - For function invocations and external operations:
+`run` - For function invocations and external operations:
 - Function calls (e.g., `max()`, `min()`, `abs()`, `format_currency()`)
 - REST API calls (e.g., `rest_get()`, `rest_post()`)
 - JSON operations (e.g., `json_get()`, `json_exists()`)
@@ -775,7 +775,7 @@ The rule engine supports three types of loops: `forEach` for iterating over list
 
 The `forEach` action allows you to iterate over lists and perform actions on each element.
 
-**Basic Syntax:**
+Basic Syntax:
 ```yaml
 # Simple iteration
 - forEach item in items: set total to total + item
@@ -787,7 +787,7 @@ The `forEach` action allows you to iterate over lists and perform actions on eac
 - forEach num in numbers: set temp to num * 2; calculate total as total + temp
 ```
 
-**Common Use Cases:**
+Common Use Cases:
 
 ```yaml
 # Sum all values in a list
@@ -815,7 +815,7 @@ The `forEach` action allows you to iterate over lists and perform actions on eac
 - forEach num in numbers: if num % 2 equals 0 then calculate evenSum as evenSum + num
 ```
 
-**Advanced Examples:**
+Advanced Examples:
 
 ```yaml
 # Multi-step processing in forEach
@@ -835,7 +835,7 @@ The `forEach` action allows you to iterate over lists and perform actions on eac
 - forEach value, position in values: calculate weightedSum as weightedSum + (value * position)
 ```
 
-**Important Notes:**
+Important Notes:
 - The iteration variable (e.g., `item`) is available only within the forEach body
 - The index variable (if specified) starts at 0
 - Multiple actions must be separated by semicolons (`;`)
@@ -844,9 +844,9 @@ The `forEach` action allows you to iterate over lists and perform actions on eac
 
 #### while Loop
 
-The `while` action executes actions repeatedly as long as a condition is true. The condition is checked **before** each iteration.
+The `while` action executes actions repeatedly as long as a condition is true. The condition is checked before each iteration.
 
-**Basic Syntax:**
+Basic Syntax:
 ```yaml
 # Simple while loop
 - while counter less_than 10: add 1 to counter
@@ -858,7 +858,7 @@ The `while` action executes actions repeatedly as long as a condition is true. T
 - while counter less_than maxValue and total less_than 100: calculate total as total + counter; add 1 to counter
 ```
 
-**Common Use Cases:**
+Common Use Cases:
 
 ```yaml
 # Count to a target value
@@ -881,8 +881,8 @@ The `while` action executes actions repeatedly as long as a condition is true. T
 - while count less_than 10: set next to fibonacci[count - 1] + fibonacci[count - 2]; append next to fibonacci; add 1 to count
 ```
 
-**Important Notes:**
-- The condition is evaluated **before** each iteration
+Important Notes:
+- The condition is evaluated before each iteration
 - If the condition is false initially, the loop body never executes
 - Maximum iterations limit: 1000 (prevents infinite loops)
 - Multiple actions must be separated by semicolons (`;`)
@@ -890,9 +890,9 @@ The `while` action executes actions repeatedly as long as a condition is true. T
 
 #### do-while Loop
 
-The `do-while` action executes actions at least once, then repeats as long as a condition is true. The condition is checked **after** each iteration.
+The `do-while` action executes actions at least once, then repeats as long as a condition is true. The condition is checked after each iteration.
 
-**Basic Syntax:**
+Basic Syntax:
 ```yaml
 # Simple do-while loop
 - do: add 1 to counter while counter less_than 10
@@ -904,7 +904,7 @@ The `do-while` action executes actions at least once, then repeats as long as a 
 - do: set temp to value * 2; add temp to total while total less_than 100
 ```
 
-**Common Use Cases:**
+Common Use Cases:
 
 ```yaml
 # Execute at least once, then check condition
@@ -925,9 +925,9 @@ The `do-while` action executes actions at least once, then repeats as long as a 
 - do: append current to values; multiply current by 2 while current less_than 100
 ```
 
-**Important Notes:**
-- The loop body **always executes at least once**, even if the condition is initially false
-- The condition is evaluated **after** each iteration
+Important Notes:
+- The loop body always executes at least once, even if the condition is initially false
+- The condition is evaluated after each iteration
 - Maximum iterations limit: 1000 (prevents infinite loops)
 - Multiple actions must be separated by semicolons (`;`)
 - Useful when you need guaranteed first execution before checking the condition
@@ -940,7 +940,7 @@ The `do-while` action executes actions at least once, then repeats as long as a 
 | `while` | Before each iteration | 0 (if condition is false) | You need to check condition before executing |
 | `do-while` | After each iteration | 1 (always executes once) | You need guaranteed first execution |
 
-**Example Comparison:**
+Example Comparison:
 
 ```yaml
 # forEach - iterates over existing list
@@ -1220,7 +1220,7 @@ conditions:
 - run within_window as is_in_range(score, 600, 850)       # function form of `between`
 ```
 
-> **Important:** Function calls and REST/JSON expressions are only legal in `run` actions and in
+> Important: Function calls and REST/JSON expressions are only legal in `run` actions and in
 > expression contexts (function arguments, conditions, output mappings). The `calculate` action
 > is restricted to pure mathematical expressions (`+ - * / % **`) on numeric inputs --
 > attempting to use a function call inside `calculate` raises a clean validation error.
@@ -1243,7 +1243,7 @@ conditions:
 - run delete_result as rest_delete("https://api.example.com/records/" + record_id)
 ```
 
-> **REST error contract:** On HTTP failure (non-2xx, network error, DNS, timeout), the REST
+> REST error contract: On HTTP failure (non-2xx, network error, DNS, timeout), the REST
 > functions return a structured map: `{success: false, error: true, message: "<details>"}`.
 > Rules can branch on `response.success` to handle errors gracefully. This is intentional
 > "chain-friendly" behaviour and is the only place in the engine where a failure does not
@@ -1408,7 +1408,7 @@ conditions:
 ### Higher-Order List Functions (by named function)
 
 The DSL has no inline-lambda syntax; `filter` / `map` / `reduce` / `find` take the
-predicate or transformer as a **string function name**. The named function is resolved
+predicate or transformer as a string function name. The named function is resolved
 through the same lookup the evaluator uses for any function call --
 [`CustomFunctionRegistry`](#custom-functions-extension-point) first, then the built-in
 catalogue -- so both engine built-ins and user-registered Spring beans work
@@ -1429,7 +1429,7 @@ identically.
 - run first_negative as find(balances, "is_negative_value")
 ```
 
-> **Tip:** Register a one-arg `RuleFunction` from Java to act as the predicate /
+> Tip: Register a one-arg `RuleFunction` from Java to act as the predicate /
 > transformer. For numeric predicates the engine already has `is_positive`,
 > `is_negative`, `is_zero`, `is_email`, `is_phone`, etc. -- those are reachable by
 > name too.
@@ -1534,7 +1534,7 @@ Supported levels (case-insensitive): `TRACE`, `DEBUG`, `INFO` (default), `WARN`,
 
 ### Rule Composition -- the `invoke_rule` Function
 
-`invoke_rule(code, ...)` evaluates another stored rule by code and returns its output map. Inputs are passed as **alternating "key", value pairs** trailing the rule code -- this avoids the YAML/JSON `{}` flow-mapping ambiguity that bites authors who try to write inline maps in action lines.
+`invoke_rule(code, ...)` evaluates another stored rule by code and returns its output map. Inputs are passed as alternating "key", value pairs trailing the rule code -- this avoids the YAML/JSON `{}` flow-mapping ambiguity that bites authors who try to write inline maps in action lines.
 
 ```yaml
 then:
@@ -1585,7 +1585,7 @@ then:
   - run is_clean as fraud_score(applicantId) less_than 50
 ```
 
-**Resolution order:** Custom functions are checked **before** the built-in catalog -- if you
+Resolution order: Custom functions are checked before the built-in catalog -- if you
 register a function with the same name as a built-in (e.g., `max`), your function wins.
 Names are matched case-insensitively. The same registered function is reachable from both
 expression contexts (`run` / `calculate` arg / condition) and action contexts (`call`).
@@ -1597,7 +1597,7 @@ expression contexts (`run` / `calculate` arg / condition) and action contexts (`
 ### Circuit Breaker -- the `circuit_breaker` Action
 
 The DSL has no top-level `circuit_breaker:` config block. Resilience and early
-termination are expressed as an **action** inside a rule's `then:` block:
+termination are expressed as an action inside a rule's `then:` block:
 
 <!-- doc-test:skip (illustrative `then:` fragment, not a complete rule) -->
 ```yaml
@@ -1652,7 +1652,7 @@ output:
   rate: rate
 ```
 
-**Hit policies** -- how the engine picks which rows contribute:
+Hit policies -- how the engine picks which rows contribute:
 
 | Policy   | Behavior                                                                            |
 |----------|-------------------------------------------------------------------------------------|
@@ -1661,7 +1661,7 @@ output:
 | `UNIQUE` | Exactly one row must match. Multiple matches -> rule fails with a clean diagnostic. |
 | `COLLECT`| Each output column is collected into a list of values from every matching row.      |
 
-**Output values**: numbers, booleans, lists, and maps pass through unchanged. Strings are taken as literals by default. Prefix a string with `=` to mark it as a DSL expression evaluated against the current context:
+Output values: numbers, booleans, lists, and maps pass through unchanged. Strings are taken as literals by default. Prefix a string with `=` to mark it as a DSL expression evaluated against the current context:
 
 <!-- doc-test:skip -->
 ```yaml
@@ -1978,10 +1978,10 @@ output:
 
 This example exercises:
 
-- **Validation operators in `set ... to (...)` expressions** (`is_email`, `is_phone`, `is_credit_score`, `is_positive`, `is_not_null`, `is_not_empty`)
-- **Multi-line boolean composition** with `and`/`or` (lower-case keywords are canonical; `AND`/`OR` are accepted as case-insensitive aliases)
-- **`if_else(condition, then, else)`** as the inline-ternary replacement -- the DSL does **not** support C-style `? :`
-- **Sub-rules with shared state** -- variables set in earlier rules are visible to later ones
+- Validation operators in `set ... to (...)` expressions (`is_email`, `is_phone`, `is_credit_score`, `is_positive`, `is_not_null`, `is_not_empty`)
+- Multi-line boolean composition with `and`/`or` (lower-case keywords are canonical; `AND`/`OR` are accepted as case-insensitive aliases)
+- `if_else(condition, then, else)` as the inline-ternary replacement -- the DSL does not support C-style `? :`
+- Sub-rules with shared state -- variables set in earlier rules are visible to later ones
 
 ```yaml
 name: "B2B Credit Scoring with Enhanced Validation"
@@ -2063,42 +2063,42 @@ output:
 ## Implementation Notes
 
 ### Parser Architecture
-- **AST-Based**: All syntax is parsed into strongly-typed Abstract Syntax Tree nodes
-- **Expression-Driven**: Actions and conditions support complex nested expressions
-- **Type-Safe**: Automatic type inference and validation during parsing
-- **Error Handling**: Comprehensive error reporting with source location information
+- AST-Based: All syntax is parsed into strongly-typed Abstract Syntax Tree nodes
+- Expression-Driven: Actions and conditions support complex nested expressions
+- Type-Safe: Automatic type inference and validation during parsing
+- Error Handling: Comprehensive error reporting with source location information
 
 ### Recent Parser Enhancements (v2.1.0+)
-- **Validation Operators in Expressions**: Validation operators like `is_positive`, `is_email`, `is_phone`, etc. can now be used in complex expressions, not just simple conditions
-- **Complex Boolean Expressions**: Multi-line boolean expressions with AND/OR operators and parentheses are fully supported in both conditions and expressions
-- **Enhanced ExpressionParser**: The ExpressionParser now supports validation operators as unary operations, enabling natural syntax like `(email is_email AND phone is_phone)`
-- **Unified Operator Support**: Both ConditionParser and ExpressionParser now support the same set of validation operators for consistent syntax across the DSL
-- **BETWEEN Operator Improvements**: Fixed parsing issues with `BETWEEN` operator to properly handle `value between min and max` syntax
-- **Age Operators in Expressions**: `age_at_least` and `age_less_than` operators now work correctly in both conditions and expressions
+- Validation Operators in Expressions: Validation operators like `is_positive`, `is_email`, `is_phone`, etc. can now be used in complex expressions, not just simple conditions
+- Complex Boolean Expressions: Multi-line boolean expressions with AND/OR operators and parentheses are fully supported in both conditions and expressions
+- Enhanced ExpressionParser: The ExpressionParser now supports validation operators as unary operations, enabling natural syntax like `(email is_email AND phone is_phone)`
+- Unified Operator Support: Both ConditionParser and ExpressionParser now support the same set of validation operators for consistent syntax across the DSL
+- BETWEEN Operator Improvements: Fixed parsing issues with `BETWEEN` operator to properly handle `value between min and max` syntax
+- Age Operators in Expressions: `age_at_least` and `age_less_than` operators now work correctly in both conditions and expressions
 
 ### Performance Considerations
-- **AST Caching**: Parsed rule models are cached for improved performance
-- **Lazy Evaluation**: Expressions are evaluated only when needed
-- **Connection Pooling**: R2DBC connection pools are optimized for high-load scenarios
-- **Batch Operations**: Support for bulk rule evaluation capabilities
+- AST Caching: Parsed rule models are cached for improved performance
+- Lazy Evaluation: Expressions are evaluated only when needed
+- Connection Pooling: R2DBC connection pools are optimized for high-load scenarios
+- Batch Operations: Support for bulk rule evaluation capabilities
 
 ### Validation and Error Handling
-- **Syntax Validation**: Complete DSL syntax validation during rule definition
-- **Runtime Validation**: Type checking and constraint validation during execution
-- **Circuit Breaker**: Built-in resilience patterns for external service calls
-- **Audit Trail**: Comprehensive logging of all rule operations and decisions
+- Syntax Validation: Complete DSL syntax validation during rule definition
+- Runtime Validation: Type checking and constraint validation during execution
+- Circuit Breaker: Built-in resilience patterns for external service calls
+- Audit Trail: Comprehensive logging of all rule operations and decisions
 
 ---
 
 ## Recent Updates
 
 ### Version 2.1.0 - Enhanced Expression Support
-- **Validation Operators in Expressions**: All validation operators (`is_positive`, `is_email`, `is_phone`, `is_credit_score`, etc.) can now be used in complex expressions
-- **Multi-line Boolean Expressions**: Support for complex boolean expressions with AND/OR operators and parentheses in both conditions and expressions
-- **Enhanced Parser Architecture**: ExpressionParser now supports validation operators as unary operations for consistent syntax
-- **BETWEEN Operator Fixes**: Resolved parsing conflicts where ExpressionParser was consuming AND tokens needed by BETWEEN operator
-- **Age Operator Support**: Added proper support for `age_at_least` and `age_less_than` operators in both expression and condition contexts
-- **Real-world Testing**: Validated with comprehensive B2B credit scoring scenarios including multi-stage evaluation workflows
+- Validation Operators in Expressions: All validation operators (`is_positive`, `is_email`, `is_phone`, `is_credit_score`, etc.) can now be used in complex expressions
+- Multi-line Boolean Expressions: Support for complex boolean expressions with AND/OR operators and parentheses in both conditions and expressions
+- Enhanced Parser Architecture: ExpressionParser now supports validation operators as unary operations for consistent syntax
+- BETWEEN Operator Fixes: Resolved parsing conflicts where ExpressionParser was consuming AND tokens needed by BETWEEN operator
+- Age Operator Support: Added proper support for `age_at_least` and `age_less_than` operators in both expression and condition contexts
+- Real-world Testing: Validated with comprehensive B2B credit scoring scenarios including multi-stage evaluation workflows
 
 ### Syntax Examples Added
 - Complex boolean expressions with validation operators in `set` actions
@@ -2108,11 +2108,11 @@ output:
 
 ### Version 26.05 - Fail-Loud Error Contract & New Primitives
 
-- **New primitives:** `coalesce(...)`, `if_else(cond, then, else)`, `is_in_range(value, low, high)`.
-- **New built-ins:** `calculate_age(birth[, asOf])`, `format_date(date[, pattern])`, `validate_email(value)`, `validate_phone(value)` (function-call form complements existing `is_email`/`is_phone` operators).
-- **Extension point:** `CustomFunctionRegistry` Spring bean lets applications register their own `RuleFunction` implementations callable from rules.
-- **Error contract:** the engine now fails loud by design rather than silently swallowing errors. See the table below.
-- **Sub-rule action parity:** sub-rules under `rules:` now accept the same map-shaped actions as the top level (e.g., YAML-collapsed `- forEach x in xs: ...`).
+- New primitives: `coalesce(...)`, `if_else(cond, then, else)`, `is_in_range(value, low, high)`.
+- New built-ins: `calculate_age(birth[, asOf])`, `format_date(date[, pattern])`, `validate_email(value)`, `validate_phone(value)` (function-call form complements existing `is_email`/`is_phone` operators).
+- Extension point: `CustomFunctionRegistry` Spring bean lets applications register their own `RuleFunction` implementations callable from rules.
+- Error contract: the engine now fails loud by design rather than silently swallowing errors. See the table below.
+- Sub-rule action parity: sub-rules under `rules:` now accept the same map-shaped actions as the top level (e.g., YAML-collapsed `- forEach x in xs: ...`).
 
 #### Error Behavior Reference
 
@@ -2138,14 +2138,13 @@ output:
 
 Ready to put this knowledge into practice?
 
-1. **🚀 Start Simple**: Try examples from [Quick Start Guide](quick-start-guide.md)
-2. **🎯 Find Patterns**: Browse [Common Patterns Guide](common-patterns-guide.md) for your use case
-3. **🏛️ Set Standards**: Review [Governance Guidelines](governance-guidelines.md) for team practices
-4. **💡 Practice**: Work through [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
-5. **🏗️ Understand Architecture**: Read [Architecture Guide](architecture.md)
-6. **⚡ Optimize**: Check [Performance Optimization](performance-optimization.md)
+1. 🚀 Start Simple: Try examples from [Quick Start Guide](quick-start-guide.md)
+2. 🎯 Find Patterns: Browse [Common Patterns Guide](common-patterns-guide.md) for your use case
+3. 🏛️ Set Standards: Review [Governance Guidelines](governance-guidelines.md) for team practices
+4. 💡 Practice: Work through [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
+5. 🏗️ Understand Architecture: Read [Architecture Guide](architecture.md)
+6. ⚡ Optimize: Check [Performance Optimization](performance-optimization.md)
 
 ---
 
 *This guide is based on comprehensive analysis of the actual Firefly Framework Rule Engine AST-based parser implementation. All syntax examples and features documented here are verified against the codebase implementation and tested with real-world scenarios.*
-

@@ -1,4 +1,6 @@
-# Verification Summary - fireflyframework-plugins
+# Plugin verification record (historical)
+
+This retained report records verification of the earlier plugin build and artifact names. Use the current component guide for current compiler requirements and build commands. [Current guide](../../docs/site/modules/plugins.md).
 
 ## ✅ Project Status: FULLY IMPLEMENTED AND TESTED
 

@@ -30,6 +30,8 @@ Use this adapter when the onboarding host supplies a JCache CacheManager. The ap
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Provide a JSR-107 `CacheManager` bean. The adapter does not create one for you. It consumes the one your application exposes:
@@ -59,14 +61,16 @@ firefly:
 3. Use the Firefly cache API as usual. It is now served by your JCache provider:
 
 ```java
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
     private final FireflyCacheManager cache; // from fireflyframework-cache
 
-    public ProductService(FireflyCacheManager cache) {
-        this.cache = cache;
-    }
+
 
     public Mono<Product> findById(String id) {
         return cache.get("products", id, Product.class)

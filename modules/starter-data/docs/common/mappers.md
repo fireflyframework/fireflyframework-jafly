@@ -22,15 +22,15 @@ Complete guide to result transformation using MapStruct in `fireflyframework-sta
 
 ## Overview
 
-The `fireflyframework-starter-data` starter uses **MapStruct** for transforming raw job results into typed DTOs during the **RESULT stage**.
+The `fireflyframework-starter-data` starter uses MapStruct for transforming raw job results into typed DTOs during the RESULT stage.
 
 ### Why MapStruct?
 
-**Type-safe** - Compile-time validation  
-**Performance** - No reflection, pure Java code  
-**Maintainable** - Clear mapping definitions  
-**Flexible** - Custom transformations supported  
-**IDE-friendly** - Auto-completion and refactoring  
+Type-safe - Compile-time validation
+Performance - No reflection, pure Java code
+Maintainable - Clear mapping definitions
+Flexible - Custom transformations supported
+IDE-friendly - Auto-completion and refactoring
 
 ### Transformation Flow
 
@@ -107,8 +107,8 @@ public interface JobResultMapper<S, T> {
 
 ### Generic Types
 
-- **S (Source)** - Usually `Map<String, Object>` for raw job output
-- **T (Target)** - Your business DTO class
+- S (Source) - Usually `Map<String, Object>` for raw job output
+- T (Target) - Your business DTO class
 
 ---
 
@@ -147,10 +147,10 @@ public class JobResultMapperRegistry {
 
 ### How It Works
 
-1. **Auto-Discovery** - Spring scans for all `JobResultMapper` beans
-2. **Type Extraction** - Uses reflection to extract generic type parameters
-3. **Registration** - Indexes mappers by target DTO class
-4. **Lookup** - Provides type-safe mapper retrieval
+1. Auto-Discovery - Spring scans for all `JobResultMapper` beans
+2. Type Extraction - Uses reflection to extract generic type parameters
+3. Registration - Indexes mappers by target DTO class
+4. Lookup - Provides type-safe mapper retrieval
 
 ---
 
@@ -158,7 +158,7 @@ public class JobResultMapperRegistry {
 
 ### Basic Mapper
 
-**Step 1: Define Your DTO**
+Step 1: Define Your DTO
 
 ```java
 package com.example.dto;
@@ -177,7 +177,7 @@ public class CustomerDTO {
 }
 ```
 
-**Step 2: Create MapStruct Mapper**
+Step 2: Create MapStruct Mapper
 
 ```java
 package com.example.mapper;
@@ -207,7 +207,7 @@ public interface CustomerDataMapper extends JobResultMapper<Map<String, Object>,
 }
 ```
 
-**Step 3: Add MapStruct Dependency**
+Step 3: Add MapStruct Dependency
 
 ```xml
 <dependency>
@@ -245,7 +245,7 @@ public interface CustomerDataMapper extends JobResultMapper<Map<String, Object>,
 </build>
 ```
 
-**Step 4: Use in Service**
+Step 4: Use in Service
 
 ```java
 @Service
@@ -458,7 +458,7 @@ public interface ProductDataMapper extends JobResultMapper<Map<String, Object>, 
 
 ### 1. Use Explicit Mappings
 
-**Bad** - Relies on field name matching:
+Bad - Relies on field name matching:
 ```java
 @Mapper(componentModel = "spring")
 public interface BadMapper extends JobResultMapper<Map<String, Object>, CustomerDTO> {
@@ -466,7 +466,7 @@ public interface BadMapper extends JobResultMapper<Map<String, Object>, Customer
 }
 ```
 
-**Good** - Explicit field mappings:
+Good - Explicit field mappings:
 ```java
 @Mapper(componentModel = "spring")
 public interface GoodMapper extends JobResultMapper<Map<String, Object>, CustomerDTO> {
@@ -545,25 +545,25 @@ public interface OrderDataMapper extends JobResultMapper<Map<String, Object>, Or
 
 ### Common Issues
 
-**Issue 1: Mapper Not Found**
+Issue 1: Mapper Not Found
 
 ```
 Error: No mapper found for target type: CustomerDTO
 ```
 
-**Solution:**
+Solution:
 - Ensure mapper implements `JobResultMapper`
 - Verify `@Mapper(componentModel = "spring")` annotation
 - Check that `getTargetType()` returns correct class
 - Rebuild project to generate MapStruct implementation
 
-**Issue 2: ClassCastException**
+Issue 2: ClassCastException
 
 ```
 Error: java.lang.ClassCastException: java.lang.String cannot be cast to java.lang.Integer
 ```
 
-**Solution:**
+Solution:
 ```java
 @Named("safeParseInt")
 default Integer safeParseInt(Object value) {
@@ -581,13 +581,13 @@ default Integer safeParseInt(Object value) {
 }
 ```
 
-**Issue 3: Null Pointer Exception**
+Issue 3: Null Pointer Exception
 
 ```
 Error: NullPointerException in mapper
 ```
 
-**Solution:**
+Solution:
 ```java
 @Mapper(componentModel = "spring", 
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
@@ -596,9 +596,9 @@ public interface SafeMapper extends JobResultMapper<Map<String, Object>, Custome
 }
 ```
 
-**Issue 4: MapStruct Not Generating Code**
+Issue 4: MapStruct Not Generating Code
 
-**Solution:**
+Solution:
 1. Check annotation processor configuration in `pom.xml`
 2. Ensure MapStruct version compatibility
 3. Clean and rebuild: `mvn clean compile`
@@ -667,4 +667,3 @@ class CustomerDataMapperTest {
 - [Examples](examples.md) - Complete mapper examples
 - [API Reference](api-reference.md) - Mapper API documentation
 - [MapStruct Documentation](https://mapstruct.org/) - Official MapStruct docs
-

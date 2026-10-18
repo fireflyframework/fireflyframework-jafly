@@ -1,6 +1,6 @@
 # Callback System - Complete Reference
 
-> **Comprehensive documentation of the Firefly Callback Management System**
+> Comprehensive documentation of the Firefly Callback Management System
 
 ## Table of Contents
 
@@ -22,21 +22,21 @@ The Firefly Callback Management System is a complete and robust platform for sen
 
 ### Key Features
 
-✅ **Domain Authorization**: Granular control over which domains can receive callbacks
-✅ **Custom Headers**: Full support for custom HTTP headers
-✅ **Extra Parameters (Metadata)**: Flexible storage for additional data
-✅ **HMAC Signature**: Cryptographic verification of callback authenticity
-✅ **Smart Retries**: Exponential backoff with per-callback configuration
-✅ **Circuit Breaker**: Protection against repeatedly failing endpoints
-✅ **Complete Tracking**: Audit trail of all callback executions
-✅ **Multi-tenant**: Support for multiple organizations/tenants
-✅ **Reactive**: Non-blocking architecture with Spring WebFlux
+✅ Domain Authorization: Granular control over which domains can receive callbacks
+✅ Custom Headers: Full support for custom HTTP headers
+✅ Extra Parameters (Metadata): Flexible storage for additional data
+✅ HMAC Signature: Cryptographic verification of callback authenticity
+✅ Smart Retries: Exponential backoff with per-callback configuration
+✅ Circuit Breaker: Protection against repeatedly failing endpoints
+✅ Complete Tracking: Audit trail of all callback executions
+✅ Multi-tenant: Support for multiple organizations/tenants
+✅ Reactive: Non-blocking architecture with Spring WebFlux
 
 ## System Components
 
 ### 1. Authorized Domains
 
-Authorized domains are the first line of defense in the system. **No callback can be sent to a domain that is not authorized and verified**.
+Authorized domains are the first line of defense in the system. No callback can be sent to a domain that is not authorized and verified.
 
 #### Main Fields
 
@@ -62,11 +62,11 @@ AuthorizedDomain {
 
 The system automatically validates:
 
-1. **Active domain**: `active = true`
-2. **Verified domain**: `verified = true`
-3. **Not expired**: `expiresAt` is null or future
-4. **Allowed path**: If `allowedPaths` is configured, path must match
-5. **HTTPS required**: If `requireHttps = true`, URL must use HTTPS
+1. Active domain: `active = true`
+2. Verified domain: `verified = true`
+3. Not expired: `expiresAt` is null or future
+4. Allowed path: If `allowedPaths` is configured, path must match
+5. HTTPS required: If `requireHttps = true`, URL must use HTTPS
 
 #### Creation Example
 
@@ -86,7 +86,7 @@ POST /api/v1/authorized-domains
 
 ### 2. Callback Configurations
 
-Callback configurations define **how** and **when** webhooks are sent.
+Callback configurations define how and when webhooks are sent.
 
 #### Main Fields
 
@@ -294,12 +294,12 @@ X-Firefly-Signature: base64(HMAC-SHA256(payload, secret))
 
 ### Custom Headers (customHeaders)
 
-Custom headers are sent in **every HTTP request**. They are ideal for:
+Custom headers are sent in every HTTP request. They are ideal for:
 
-- **Authentication**: API keys, tokens
-- **Identification**: Client IDs, correlation IDs
-- **Routing**: Headers for load balancers or proxies
-- **Metadata**: Additional request information
+- Authentication: API keys, tokens
+- Identification: Client IDs, correlation IDs
+- Routing: Headers for load balancers or proxies
+- Metadata: Additional request information
 
 #### Usage Example
 
@@ -317,12 +317,12 @@ Custom headers are sent in **every HTTP request**. They are ideal for:
 
 ### Metadata (Extra Parameters)
 
-Metadata is stored in the configuration but **NOT sent in the HTTP request**. It's useful for:
+Metadata is stored in the configuration but NOT sent in the HTTP request. It's useful for:
 
-- **Internal configuration**: Integration parameters
-- **Documentation**: Information about the callback
-- **Filtering**: Data for searches and reports
-- **Extensibility**: Custom fields without schema changes
+- Internal configuration: Integration parameters
+- Documentation: Information about the callback
+- Filtering: Data for searches and reports
+- Extensibility: Custom fields without schema changes
 
 #### Usage Example
 
@@ -346,10 +346,10 @@ Metadata is stored in the configuration but **NOT sent in the HTTP request**. It
 
 | Aspect | customHeaders | metadata |
 |---------|---------------|----------|
-| **Sent in HTTP** | ✅ Yes | ❌ No |
-| **Data type** | Map<String, String> | Map<String, Object> |
-| **Primary use** | Authentication, routing | Configuration, documentation |
-| **Visible to receiver** | ✅ Yes | ❌ No |
+| Sent in HTTP | ✅ Yes | ❌ No |
+| Data type | Map<String, String> | Map<String, Object> |
+| Primary use | Authentication, routing | Configuration, documentation |
+| Visible to receiver | ✅ Yes | ❌ No |
 
 ## HMAC Signature
 
@@ -423,7 +423,7 @@ else:
 
 ### Retry Strategy
 
-The system implements **exponential backoff** with flexible configuration:
+The system implements exponential backoff with flexible configuration:
 
 ```java
 // Configuration
@@ -442,16 +442,16 @@ Attempt 4: Wait 4000ms (4s)
 
 Automatic retry in these cases:
 
-- **5xx errors**: 500, 502, 503, 504 (server errors)
-- **Timeout**: 408 Request Timeout
-- **Rate Limit**: 429 Too Many Requests
-- **Network errors**: Connection refused, timeout, etc.
+- 5xx errors: 500, 502, 503, 504 (server errors)
+- Timeout: 408 Request Timeout
+- Rate Limit: 429 Too Many Requests
+- Network errors: Connection refused, timeout, etc.
 
-**Does NOT retry** in these cases:
+Does NOT retry in these cases:
 
-- **4xx errors** (except 408 and 429): 400, 401, 403, 404, etc.
-- **Domain authorization errors**
-- **Configuration errors**
+- 4xx errors (except 408 and 429): 400, 401, 403, 404, etc.
+- Domain authorization errors
+- Configuration errors
 
 ### Circuit Breaker
 
@@ -507,9 +507,9 @@ POST /api/v1/callback-executions/filter
 
 ### Execution States
 
-- **SUCCESS**: Successful callback (2xx response)
-- **FAILED_RETRYING**: Failed but will retry
-- **FAILED_PERMANENT**: Permanently failed (exhausted retries)
+- SUCCESS: Successful callback (2xx response)
+- FAILED_RETRYING: Failed but will retry
+- FAILED_PERMANENT: Permanently failed (exhausted retries)
 
 ## Practical Examples
 
@@ -525,36 +525,35 @@ See the `docs/CALLBACK_EXAMPLES.md` file for complete examples of:
 
 ### 1. Security
 
-✅ **Always enable HMAC** for production callbacks
-✅ **Use HTTPS** for all endpoints
-✅ **Configure allowedPaths** to limit routes
-✅ **Rotate secrets** periodically
-✅ **Monitor authorization failures**
+✅ Always enable HMAC for production callbacks
+✅ Use HTTPS for all endpoints
+✅ Configure allowedPaths to limit routes
+✅ Rotate secrets periodically
+✅ Monitor authorization failures
 
 ### 2. Reliability
 
-✅ **Configure appropriate retries** (3-5 attempts)
-✅ **Use reasonable timeouts** (30s default)
-✅ **Implement idempotency** in receiver
-✅ **Monitor circuit breakers**
-✅ **Review failed executions** regularly
+✅ Configure appropriate retries (3-5 attempts)
+✅ Use reasonable timeouts (30s default)
+✅ Implement idempotency in receiver
+✅ Monitor circuit breakers
+✅ Review failed executions regularly
 
 ### 3. Performance
 
-✅ **Use custom headers** instead of metadata for data the receiver needs
-✅ **Configure appropriate rate limits**
-✅ **Optimize receiver endpoint** to respond quickly
-✅ **Use event filters** to reduce unnecessary callbacks
+✅ Use custom headers instead of metadata for data the receiver needs
+✅ Configure appropriate rate limits
+✅ Optimize receiver endpoint to respond quickly
+✅ Use event filters to reduce unnecessary callbacks
 
 ### 4. Maintenance
 
-✅ **Document the purpose** of each configuration
-✅ **Use descriptive names**
-✅ **Keep metadata up to date**
-✅ **Clean up inactive configurations**
-✅ **Monitor callback metrics**
+✅ Document the purpose of each configuration
+✅ Use descriptive names
+✅ Keep metadata up to date
+✅ Clean up inactive configurations
+✅ Monitor callback metrics
 
 ---
 
-**© 2025 Firefly Software Foundation. All rights reserved.**
-
+© 2025 Firefly Software Foundation. All rights reserved.

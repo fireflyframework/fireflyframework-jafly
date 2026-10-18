@@ -260,5 +260,5 @@ firefly:
 | `EventSourcingHealthAutoConfiguration` | Spring Actuator `HealthIndicator` on classpath, `firefly.eventsourcing.performance.health-checks-enabled=true` (default) |
 | `EventSourcingMetricsAutoConfiguration` | Micrometer `MeterRegistry` on classpath, `firefly.eventsourcing.performance.metrics-enabled=true` (default) |
 | `EventSourcingProjectionAutoConfiguration` | `ProjectionService` and `MeterRegistry` on classpath |
-| `CircuitBreakerAutoConfiguration` | Resilience4j `CircuitBreaker` on classpath, `firefly.eventsourcing.resilience.circuit-breaker.enabled=true` (default: **false**) |
-| `MultiTenancyAutoConfiguration` | `firefly.eventsourcing.multitenancy.enabled=true` (default: **false**) |
+| `CircuitBreakerAutoConfiguration` | Resilience4j `CircuitBreaker` on classpath, `firefly.eventsourcing.resilience.circuit-breaker.enabled=true` (default: false) |
+| `MultiTenancyAutoConfiguration` | `firefly.eventsourcing.multitenancy.enabled=true` (default: false) |

@@ -6,29 +6,29 @@ This document provides a comprehensive reference for all configuration options a
 
 ## ⚠️ CRITICAL - Hexagonal Architecture Configuration Principle
 
-**This library follows hexagonal architecture (ports and adapters) principles.**
+This library follows hexagonal architecture (ports and adapters) principles.
 
 ### Configuration Namespace Rules
 
-✅ **ALWAYS use `firefly.eda.*` properties exclusively**
+✅ ALWAYS use `firefly.eda.*` properties exclusively
 
-❌ **NEVER use Spring-specific properties:**
-- `spring.kafka.*` - Will be **IGNORED**
-- `spring.rabbitmq.*` - Will be **IGNORED**
-- `spring.amqp.*` - Will be **IGNORED**
+❌ NEVER use Spring-specific properties:
+- `spring.kafka.*` - Will be IGNORED
+- `spring.rabbitmq.*` - Will be IGNORED
+- `spring.amqp.*` - Will be IGNORED
 
 ### Why This Matters
 
-The library provides **complete abstraction** from messaging platform implementations. All provider-specific configurations are managed internally by the library's auto-configuration classes. This ensures:
+The library provides complete abstraction from messaging platform implementations. All provider-specific configurations are managed internally by the library's auto-configuration classes. This ensures:
 
-1. **Portability**: Switch between Kafka, RabbitMQ, or other providers without changing application code
-2. **Consistency**: Unified configuration structure across all messaging platforms
-3. **Maintainability**: Single source of truth for all EDA-related configuration
-4. **Testability**: Easy to mock and test without provider-specific dependencies
+1. Portability: Switch between Kafka, RabbitMQ, or other providers without changing application code
+2. Consistency: Unified configuration structure across all messaging platforms
+3. Maintainability: Single source of truth for all EDA-related configuration
+4. Testability: Easy to mock and test without provider-specific dependencies
 
 ### Correct Configuration Examples
 
-✅ **Correct - Kafka:**
+✅ Correct - Kafka:
 ```yaml
 firefly:
   eda:
@@ -38,14 +38,14 @@ firefly:
           bootstrap-servers: localhost:9092
 ```
 
-❌ **Incorrect - Will be IGNORED:**
+❌ Incorrect - Will be IGNORED:
 ```yaml
 spring:
   kafka:
     bootstrap-servers: localhost:9092  # ❌ IGNORED!
 ```
 
-✅ **Correct - RabbitMQ:**
+✅ Correct - RabbitMQ:
 ```yaml
 firefly:
   eda:
@@ -56,7 +56,7 @@ firefly:
           port: 5672
 ```
 
-❌ **Incorrect - Will be IGNORED:**
+❌ Incorrect - Will be IGNORED:
 ```yaml
 spring:
   rabbitmq:
@@ -266,7 +266,7 @@ firefly:
 
 ### Kafka Consumer
 
-The Kafka consumer supports **dynamic topic subscription** from `@EventListener` annotations. If you have `@EventListener` methods with `consumerType=KAFKA` or `consumerType=AUTO`, the consumer will automatically subscribe to those topics. If no annotations are found, it falls back to the configured topics.
+The Kafka consumer supports dynamic topic subscription from `@EventListener` annotations. If you have `@EventListener` methods with `consumerType=KAFKA` or `consumerType=AUTO`, the consumer will automatically subscribe to those topics. If no annotations are found, it falls back to the configured topics.
 
 ```yaml
 firefly:
@@ -295,11 +295,11 @@ firefly:
 | `value-deserializer` | string | `StringDeserializer` | Kafka value deserializer class |
 | `properties` | map | `{}` | Additional Kafka consumer properties |
 
-**Note**: The Kafka consumer will automatically discover topics from `@EventListener` annotations at startup. Wildcard patterns like `*` are converted to `.*` for regex compatibility.
+Note: The Kafka consumer will automatically discover topics from `@EventListener` annotations at startup. Wildcard patterns like `*` are converted to `.*` for regex compatibility.
 
 ### RabbitMQ Consumer
 
-Unlike Kafka, RabbitMQ consumers subscribe to **specific, pre-declared queues** configured in application properties. The `@EventListener` destinations for RabbitMQ are in the format `"exchange/routing-key"` and are used for message routing and filtering after consumption, not for queue subscription.
+Unlike Kafka, RabbitMQ consumers subscribe to specific, pre-declared queues configured in application properties. The `@EventListener` destinations for RabbitMQ are in the format `"exchange/routing-key"` and are used for message routing and filtering after consumption, not for queue subscription.
 
 ```yaml
 firefly:
@@ -329,13 +329,13 @@ firefly:
 | `username` | string | `"guest"` | RabbitMQ username |
 | `password` | string | `"guest"` | RabbitMQ password |
 | `virtual-host` | string | `"/"` | RabbitMQ virtual host |
-| `queues` | string | `"events-queue"` | **Required**: Specific queue names to consume (comma-separated, no wildcards) |
+| `queues` | string | `"events-queue"` | Required: Specific queue names to consume (comma-separated, no wildcards) |
 | `concurrent-consumers` | int | `1` | Number of concurrent consumers |
 | `max-concurrent-consumers` | int | `5` | Maximum concurrent consumers |
 | `prefetch-count` | int | `10` | Message prefetch count |
 | `properties` | map | `{}` | Additional RabbitMQ consumer properties |
 
-**Important**: RabbitMQ queues must be pre-declared and configured here. The `@EventListener` destinations are used for filtering messages after they are consumed from these queues, not for determining which queues to subscribe to.
+Important: RabbitMQ queues must be pre-declared and configured here. The `@EventListener` destinations are used for filtering messages after they are consumed from these queues, not for determining which queues to subscribe to.
 
 ### PostgreSQL Consumer
 
@@ -380,7 +380,7 @@ firefly:
 | `max-pool-size` | int | `5` | Connection pool size for outbox queries; LISTEN uses one connection on top of this budget |
 | `properties` | map | `{}` | Additional R2DBC PostgreSQL startup options |
 
-**How acknowledgement works**: On successful dispatch, the row is updated to `status='PROCESSED', processed_at=NOW()`. On failure, `attempts` is incremented and `error_message` is recorded; once `attempts >= max-attempts`, the row moves to `status='DEAD_LETTER'`. Use the outbox table directly to inspect, reset, or requeue events.
+How acknowledgement works: On successful dispatch, the row is updated to `status='PROCESSED', processed_at=NOW()`. On failure, `attempts` is incremented and `error_message` is recorded; once `attempts >= max-attempts`, the row moves to `status='DEAD_LETTER'`. Use the outbox table directly to inspect, reset, or requeue events.
 
 ### Application Event Consumer
 
@@ -396,7 +396,7 @@ firefly:
 |----------|------|---------|-------------|
 | `enabled` | boolean | `true` | Whether Application Event consumer is enabled |
 
-**Note:** Application Event consumer listens to Spring's internal event bus. It's enabled by default when the global consumer is enabled.
+Note: Application Event consumer listens to Spring's internal event bus. It's enabled by default when the global consumer is enabled.
 
 ### NOOP Consumer
 
@@ -412,7 +412,7 @@ firefly:
 |----------|------|---------|-------------|
 | `enabled` | boolean | `false` | Whether NOOP consumer is enabled |
 
-**Note:** NOOP consumer is useful for testing scenarios where message consumption should be disabled.
+Note: NOOP consumer is useful for testing scenarios where message consumption should be disabled.
 
 ## Resilience Configuration
 
@@ -615,9 +615,9 @@ FIREFLY_EDA_RESILIENCE_CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD=30
 
 The library includes comprehensive validation for all configuration properties:
 
-- **Required fields**: Some properties like `default-publisher-type` cannot be null
-- **Size constraints**: Connection IDs are limited to 100 characters
-- **Range validation**: Concurrency must be between 1 and 100
-- **Format validation**: Durations must be valid ISO-8601 format
+- Required fields: Some properties like `default-publisher-type` cannot be null
+- Size constraints: Connection IDs are limited to 100 characters
+- Range validation: Concurrency must be between 1 and 100
+- Format validation: Durations must be valid ISO-8601 format
 
 Invalid configurations will cause the application to fail startup with detailed error messages.

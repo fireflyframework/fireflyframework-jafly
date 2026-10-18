@@ -1,6 +1,6 @@
 # Testing Guide
 
-> **Comprehensive testing strategies and examples for the Firefly Framework Callbacks Library**
+> Comprehensive testing strategies and examples for the Firefly Framework Callbacks Library
 
 ## Table of Contents
 
@@ -18,22 +18,22 @@
 
 The Firefly Framework Callbacks Library uses a comprehensive testing strategy with three levels of tests:
 
-1. **Unit Tests**: Test individual components in isolation
-2. **Integration Tests**: Test component interactions with real dependencies (using Testcontainers)
-3. **End-to-End Tests**: Test complete workflows from Kafka to HTTP callbacks
+1. Unit Tests: Test individual components in isolation
+2. Integration Tests: Test component interactions with real dependencies (using Testcontainers)
+3. End-to-End Tests: Test complete workflows from Kafka to HTTP callbacks
 
 ### Testing Stack
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **Test Framework** | JUnit 5 | Test execution and assertions |
-| **Reactive Testing** | Reactor Test (StepVerifier) | Testing reactive streams |
-| **Mocking** | Mockito | Mocking dependencies |
-| **Containers** | Testcontainers | Docker-based integration testing |
-| **HTTP Mocking** | WireMock | Mocking external HTTP services |
-| **Database** | PostgreSQL (Testcontainers) | Real database for integration tests |
-| **Messaging** | Kafka (Testcontainers) | Real Kafka for integration tests |
-| **Coverage** | JaCoCo | Code coverage reporting |
+| Test Framework | JUnit 5 | Test execution and assertions |
+| Reactive Testing | Reactor Test (StepVerifier) | Testing reactive streams |
+| Mocking | Mockito | Mocking dependencies |
+| Containers | Testcontainers | Docker-based integration testing |
+| HTTP Mocking | WireMock | Mocking external HTTP services |
+| Database | PostgreSQL (Testcontainers) | Real database for integration tests |
+| Messaging | Kafka (Testcontainers) | Real Kafka for integration tests |
+| Coverage | JaCoCo | Code coverage reporting |
 
 ## Testing Strategy
 
@@ -56,7 +56,7 @@ The Firefly Framework Callbacks Library uses a comprehensive testing strategy wi
 
 ### What to Test at Each Level
 
-**Unit Tests**:
+Unit Tests:
 - Service layer business logic
 - MapStruct mappers
 - Filter utilities
@@ -64,7 +64,7 @@ The Firefly Framework Callbacks Library uses a comprehensive testing strategy wi
 - Domain extraction logic
 - Retry condition evaluation
 
-**Integration Tests**:
+Integration Tests:
 - Repository queries with real PostgreSQL
 - R2DBC entity mapping
 - Database transactions
@@ -72,7 +72,7 @@ The Firefly Framework Callbacks Library uses a comprehensive testing strategy wi
 - Kafka message consumption
 - HTTP client interactions
 
-**End-to-End Tests**:
+End-to-End Tests:
 - Complete event flow: Kafka → Processing → HTTP Callback → Database
 - Circuit breaker behavior
 - Retry logic with exponential backoff
@@ -143,7 +143,7 @@ Unit tests focus on testing individual components in isolation using mocks.
 
 ### Example: Service Layer Test
 
-**File**: `CallbackConfigurationServiceTest.java`
+File: `CallbackConfigurationServiceTest.java`
 
 ```java
 @ExtendWith(MockitoExtension.class)
@@ -235,7 +235,7 @@ class CallbackConfigurationServiceTest {
 
 ### Example: Mapper Test
 
-**File**: `CallbackConfigurationMapperTest.java`
+File: `CallbackConfigurationMapperTest.java`
 
 ```java
 @SpringBootTest
@@ -293,7 +293,7 @@ class CallbackConfigurationMapperTest {
 
 ### Example: Utility Test
 
-**File**: `FilterUtilsTest.java`
+File: `FilterUtilsTest.java`
 
 ```java
 class FilterUtilsTest {
@@ -342,7 +342,7 @@ Integration tests use Testcontainers to run real PostgreSQL and Kafka instances 
 
 ### Setup: Base Integration Test Class
 
-**File**: `BaseIntegrationTest.java`
+File: `BaseIntegrationTest.java`
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -378,7 +378,7 @@ public abstract class BaseIntegrationTest {
 
 ### Example: Repository Integration Test
 
-**File**: `CallbackConfigurationRepositoryIntegrationTest.java`
+File: `CallbackConfigurationRepositoryIntegrationTest.java`
 
 ```java
 class CallbackConfigurationRepositoryIntegrationTest extends BaseIntegrationTest {
@@ -448,7 +448,7 @@ class CallbackConfigurationRepositoryIntegrationTest extends BaseIntegrationTest
 
 ### Example: Service Integration Test
 
-**File**: `CallbackConfigurationServiceIntegrationTest.java`
+File: `CallbackConfigurationServiceIntegrationTest.java`
 
 ```java
 class CallbackConfigurationServiceIntegrationTest extends BaseIntegrationTest {
@@ -533,7 +533,7 @@ End-to-end tests verify the complete flow from Kafka event to HTTP callback.
 
 ### Example: Complete E2E Test
 
-**File**: `CallbackManagementEndToEndTest.java`
+File: `CallbackManagementEndToEndTest.java`
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -874,25 +874,25 @@ void test1() { }
 
 ### Issue: Testcontainers not starting
 
-**Error**: `Could not find a valid Docker environment`
+Error: `Could not find a valid Docker environment`
 
-**Solution**: Ensure Docker is running
+Solution: Ensure Docker is running
 ```bash
 docker ps
 ```
 
 ---
 
-**Error**: `Port 5432 already in use`
+Error: `Port 5432 already in use`
 
-**Solution**: Stop local PostgreSQL or use different port
+Solution: Stop local PostgreSQL or use different port
 ```bash
 brew services stop postgresql
 ```
 
 ### Issue: Tests timing out
 
-**Solution**: Increase timeout
+Solution: Increase timeout
 ```java
 @Test
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
@@ -901,12 +901,12 @@ void testLongRunningOperation() { }
 
 ### Issue: Flaky tests
 
-**Causes**:
+Causes:
 - Race conditions in async code
 - Insufficient wait times
 - Shared state between tests
 
-**Solutions**:
+Solutions:
 ```java
 // Use StepVerifier with timeout
 StepVerifier.create(mono)
@@ -921,14 +921,14 @@ await().atMost(5, SECONDS)
 
 ---
 
-**For more information, see:**
+For more information, see:
 - [Architecture Documentation](ARCHITECTURE.md)
 - [Quickstart Guide](QUICKSTART_GUIDE.md)
 - [Main README](../README.md)
 
 ---
 
-**© 2025 Firefly Software Foundation. All rights reserved.**
+© 2025 Firefly Software Foundation. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -941,4 +941,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-

@@ -18,12 +18,12 @@ If you find a bug or have a feature request:
 
 ### Submitting Changes
 
-1. **Fork the repository** and create your branch from `main`
-2. **Make your changes** following the code style guidelines
-3. **Add tests** for any new functionality
-4. **Update documentation** if you're changing functionality
-5. **Ensure all tests pass**: `mvn test`
-6. **Submit a pull request** with a clear description of changes
+1. Fork the repository and create your branch from `main`
+2. Make your changes following the code style guidelines
+3. Add tests for any new functionality
+4. Update documentation if you're changing functionality
+5. Ensure all tests pass: `mvn test`
+6. Submit a pull request with a clear description of changes
 
 ## Development Setup
 
@@ -118,12 +118,12 @@ void shouldAuthenticateUserWithValidCredentials() {
 ### Pull Request Description
 
 Include:
-- **Summary**: What does this PR do?
-- **Motivation**: Why is this change needed?
-- **Changes**: List of changes made
-- **Testing**: How was this tested?
-- **Screenshots**: If applicable
-- **Breaking Changes**: Any breaking changes?
+- Summary: What does this PR do?
+- Motivation: Why is this change needed?
+- Changes: List of changes made
+- Testing: How was this tested?
+- Screenshots: If applicable
+- Breaking Changes: Any breaking changes?
 
 ## Commit Message Guidelines
 
@@ -178,7 +178,7 @@ mvn test -Dtest=UserManagementServiceTest
 
 ### Reporting Security Issues
 
-**DO NOT** create public issues for security vulnerabilities.
+DO NOT create public issues for security vulnerabilities.
 
 Instead, email security concerns to: security@firefly-platform.com
 

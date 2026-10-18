@@ -24,10 +24,10 @@ This document describes the resiliency patterns implemented in fireflyframework-
 
 The library provides built-in resiliency patterns to handle failures gracefully and prevent cascading failures:
 
-- **Circuit Breaker**: Prevents calls to failing services
-- **Retry**: Automatically retries failed operations
-- **Rate Limiter**: Controls the rate of requests
-- **Bulkhead**: Limits concurrent calls to prevent resource exhaustion
+- Circuit Breaker: Prevents calls to failing services
+- Retry: Automatically retries failed operations
+- Rate Limiter: Controls the rate of requests
+- Bulkhead: Limits concurrent calls to prevent resource exhaustion
 
 All patterns are implemented using Resilience4j and integrate seamlessly with reactive programming (Project Reactor).
 
@@ -37,9 +37,9 @@ All patterns are implemented using Resilience4j and integrate seamlessly with re
 
 The circuit breaker monitors the failure rate of operations and transitions between three states:
 
-1. **CLOSED**: Normal operation, requests pass through
-2. **OPEN**: Too many failures detected, requests are rejected immediately
-3. **HALF_OPEN**: Testing if the service has recovered
+1. CLOSED: Normal operation, requests pass through
+2. OPEN: Too many failures detected, requests are rejected immediately
+3. HALF_OPEN: Testing if the service has recovered
 
 ### State Transitions
 
@@ -120,8 +120,8 @@ firefly:
 
 ### Retry Strategy
 
-- **Fixed Delay**: Waits a fixed duration between retries
-- **Exponential Backoff**: Can be configured by customizing the Retry bean
+- Fixed Delay: Waits a fixed duration between retries
+- Exponential Backoff: Can be configured by customizing the Retry bean
 
 ### Example
 
@@ -477,20 +477,20 @@ resilience4j_bulkhead_available_concurrent_calls{name="jobOrchestrator"}
 
 ## Best Practices
 
-1. **Start with Circuit Breaker and Retry**: These provide the most value for most use cases
-2. **Tune Thresholds**: Adjust failure rate and slow call thresholds based on your SLAs
-3. **Monitor State Transitions**: Alert on circuit breaker opening
-4. **Use Rate Limiter Sparingly**: Only enable when you need to protect against overload
-5. **Test Failure Scenarios**: Verify resiliency patterns work as expected
-6. **Combine with Timeouts**: Set appropriate timeouts on orchestrator operations
-7. **Log Pattern Events**: Enable logging for circuit breaker and retry events
-8. **Consider Fallbacks**: Implement fallback logic for critical operations
+1. Start with Circuit Breaker and Retry: These provide the most value for most use cases
+2. Tune Thresholds: Adjust failure rate and slow call thresholds based on your SLAs
+3. Monitor State Transitions: Alert on circuit breaker opening
+4. Use Rate Limiter Sparingly: Only enable when you need to protect against overload
+5. Test Failure Scenarios: Verify resiliency patterns work as expected
+6. Combine with Timeouts: Set appropriate timeouts on orchestrator operations
+7. Log Pattern Events: Enable logging for circuit breaker and retry events
+8. Consider Fallbacks: Implement fallback logic for critical operations
 
 ## Per-Provider Resilience
 
 ### Overview
 
-In addition to the global resilience configuration, you can configure **independent resilience patterns per enrichment provider**. This allows fine-tuning circuit breaker thresholds, retry counts, and rate limits based on each provider's SLA and reliability characteristics.
+In addition to the global resilience configuration, you can configure independent resilience patterns per enrichment provider. This allows fine-tuning circuit breaker thresholds, retry counts, and rate limits based on each provider's SLA and reliability characteristics.
 
 ### How It Works
 
@@ -523,11 +523,11 @@ firefly:
 
 Provider-specific resilience patterns are applied in the following order:
 
-1. **Bulkhead** (outermost) — limits concurrent calls
-2. **Rate Limiter** — controls request rate
-3. **Circuit Breaker** — prevents calls to failing provider
-4. **Retry** — retries on transient failures
-5. **Timeout** (innermost) — enforces maximum wait time
+1. Bulkhead (outermost). Limits concurrent calls
+2. Rate Limiter. Controls request rate
+3. Circuit Breaker. Prevents calls to failing provider
+4. Retry. Retries on transient failures
+5. Timeout (innermost). Enforces maximum wait time
 
 ### Programmatic Usage
 
@@ -547,8 +547,7 @@ public class SmartEnrichmentService {
 
 ### When to Use Per-Provider Resilience
 
-- **Different SLAs**: Provider A responds in <500ms, Provider B in <5s — different timeout settings
-- **Different reliability**: Provider A has 99.9% uptime, Provider B has 95% — different circuit breaker thresholds
-- **Rate-limited APIs**: Provider A allows 100 req/s, Provider B allows 10 req/s — different rate limits
-- **Cost-sensitive providers**: Expensive providers need tighter bulkhead limits
-
+- Different SLAs: Provider A responds in <500ms, Provider B in <5s. different timeout settings
+- Different reliability: Provider A has 99.9% uptime, Provider B has 95%. different circuit breaker thresholds
+- Rate-limited APIs: Provider A allows 100 req/s, Provider B allows 10 req/s. different rate limits
+- Cost-sensitive providers: Expensive providers need tighter bulkhead limits

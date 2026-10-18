@@ -172,7 +172,7 @@ ${person.address.city}
 
 Create a file with the `.ftl` extension in your templates directory:
 
-**invoice.ftl**:
+invoice.ftl:
 ```html
 <!DOCTYPE html>
 <html>
@@ -276,27 +276,27 @@ try {
 
 ## Best Practices for Templates
 
-1. **Separate Content from Presentation**: Use CSS for styling and keep the template focused on structure.
+1. Separate Content from Presentation: Use CSS for styling and keep the template focused on structure.
 
-2. **Use Includes for Common Elements**: Extract headers, footers, and other repeated elements into separate template files.
+2. Use Includes for Common Elements: Extract headers, footers, and other repeated elements into separate template files.
 
-3. **Handle Missing Values**: Always check if a value exists before using it to avoid errors:
+3. Handle Missing Values: Always check if a value exists before using it to avoid errors:
    ```
    <#if user.email??>${user.email}<#else>No email provided</#if>
    ```
 
-4. **Format Numbers and Dates Properly**: Use FreeMarker's built-in formatting functions:
+4. Format Numbers and Dates Properly: Use FreeMarker's built-in formatting functions:
    ```
    ${price?string.currency}
    ${date?string("yyyy-MM-dd")}
    ```
 
-5. **Comment Your Templates**: Use FreeMarker comments for complex sections:
+5. Comment Your Templates: Use FreeMarker comments for complex sections:
    ```
    <#-- This section displays the user profile -->
    ```
 
-6. **Validate Your Templates**: Use TemplateRenderUtil's validation methods to check for syntax errors:
+6. Validate Your Templates: Use TemplateRenderUtil's validation methods to check for syntax errors:
    ```java
    List<String> errors = TemplateRenderUtil.validateTemplateFile("invoice.ftl");
    if (!errors.isEmpty()) {
@@ -310,4 +310,4 @@ Now that you understand the syntax and structure of FreeMarker templates, you ca
 
 - [PDF Customization Options](03-pdf-customization-options.md)
 - [Advanced Features](04-advanced-features.md)
-- [Complete Examples](05-complete-examples.md)
+- [Template and PDF usage](../../../docs/site/modules/utils.md#quick-start)

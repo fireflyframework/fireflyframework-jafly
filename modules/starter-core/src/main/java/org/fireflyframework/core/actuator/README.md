@@ -5,44 +5,29 @@ The Firefly Common Core actuator components extend Spring Boot Actuator with enh
 ## Features
 
 ### Enhanced Health Indicators
-- **Messaging Health**: Health checks for all supported messaging platforms
-- **HTTP Client Health**: WebClient connection and endpoint monitoring
-- **Custom Health Indicators**: Application-specific health monitoring
-- **Aggregated Health**: Composite health status with detailed breakdown
+- Messaging Health: Health checks for all supported messaging platforms
+- HTTP Client Health: WebClient connection and endpoint monitoring
+- Custom Health Indicators: Application-specific health monitoring
+- Aggregated Health: Composite health status with detailed breakdown
 
 ### Custom Metrics
-- **HTTP Client Metrics**: Request/response metrics for WebClient operations
-- **Messaging Metrics**: Message throughput, latency, and error rates
-- **Application Metrics**: Business-specific performance indicators
-- **Cache Metrics**: Performance statistics for internal caches
+- HTTP Client Metrics: Request/response metrics for WebClient operations
+- Messaging Metrics: Message throughput, latency, and error rates
+- Application Metrics: Business-specific performance indicators
+- Cache Metrics: Performance statistics for internal caches
 
 ### Configuration Management
-- **Dynamic Configuration**: Runtime configuration updates via actuator endpoints
-- **Property Validation**: Configuration property validation and defaults
-- **Environment Information**: Enhanced environment and configuration details
+- Dynamic Configuration: Runtime configuration updates via actuator endpoints
+- Property Validation: Configuration property validation and defaults
+- Environment Information: Enhanced environment and configuration details
 
 ## Health Indicators
 
-### Messaging Health Indicator
-Monitors the health of messaging components across all platforms:
+### Current indicator contracts
 
-```java
-@Component
-public class CustomMessagingHealth extends AbstractMessagingHealthIndicator {
-    
-    @Override
-    protected void doHealthCheck(Health.Builder builder) {
-        // Check Kafka connectivity
-        checkKafkaHealth(builder);
-        
-        // Check Redis connectivity  
-        checkRedisHealth(builder);
-        
-        // Check queue depths
-        checkQueueDepths(builder);
-    }
-}
-```
+Custom indicators implement Spring Boot's `org.springframework.boot.health.contributor.HealthIndicator` SPI. The starter's [LoggingHealthIndicator](health/LoggingHealthIndicator.java) is a current implementation; its [ActuatorProperties](config/ActuatorProperties.java) binds `firefly.actuator`. The former `AbstractMessagingHealthIndicator` example is not a shipped base class.
+
+The custom examples below are application fragments. Their clients, probes, properties, and registration belong to the host service; they are not indicators automatically supplied for every messaging platform.
 
 ### Platform-Specific Health Indicators
 
@@ -365,13 +350,13 @@ groups:
 
 ## Best Practices
 
-1. **Health Check Timeout**: Set appropriate timeouts for health checks to avoid blocking
-2. **Graceful Degradation**: Design health indicators to fail gracefully
-3. **Meaningful Details**: Include useful diagnostic information in health responses
-4. **Security**: Restrict access to sensitive actuator endpoints
-5. **Performance Impact**: Monitor the performance impact of health checks and metrics
-6. **Alerting**: Set up proper alerting based on health and metrics data
-7. **Documentation**: Document custom metrics and their meanings
+1. Health Check Timeout: Set appropriate timeouts for health checks to avoid blocking
+2. Graceful Degradation: Design health indicators to fail gracefully
+3. Meaningful Details: Include useful diagnostic information in health responses
+4. Security: Restrict access to sensitive actuator endpoints
+5. Performance Impact: Monitor the performance impact of health checks and metrics
+6. Alerting: Set up proper alerting based on health and metrics data
+7. Documentation: Document custom metrics and their meanings
 
 ## Security Considerations
 

@@ -1,4 +1,6 @@
-# Alfresco Integration Guide
+# Alfresco integration design (historical)
+
+This retained design proposal describes a dedicated adapter that is not shipped. For current storage choices, use [the component guide](../../../../docs/site/modules/ecm.md).
 
 > **⚠️ IMPLEMENTATION STATUS: PLANNED**
 >

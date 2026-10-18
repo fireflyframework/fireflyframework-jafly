@@ -4,18 +4,18 @@ This guide explains the architecture and design principles of the Firefly ECM Li
 
 ## Overview
 
-The Firefly ECM Library implements **Hexagonal Architecture** (also known as Ports and Adapters pattern) with a clear separation between:
+The Firefly ECM Library implements Hexagonal Architecture (also known as Ports and Adapters pattern) with a clear separation between:
 
-1. **Port Interface Library** (this library): Defines business contracts and domain models
-2. **Adapter Implementation Libraries** (separate repositories): Provide concrete implementations for specific technologies
+1. Port Interface Library (this library): Defines business contracts and domain models
+2. Adapter Implementation Libraries (separate repositories): Provide concrete implementations for specific technologies
 
 This architecture enables:
 
-- **Vendor Independence**: Switch between storage providers without changing business logic
-- **Testability**: Mock external dependencies for unit testing
-- **Maintainability**: Clear separation of concerns
-- **Extensibility**: Add new adapters without modifying the core library
-- **Modularity**: Include only the adapters you need
+- Vendor Independence: Switch between storage providers without changing business logic
+- Testability: Mock external dependencies for unit testing
+- Maintainability: Clear separation of concerns
+- Extensibility: Add new adapters without modifying the core library
+- Modularity: Include only the adapters you need
 
 ## Architecture Diagram
 
@@ -85,11 +85,11 @@ The Firefly ECM implementation separates hexagonal architecture across multiple 
 
 This library contains:
 
-- **Domain Layer**: Business entities and rules (Document, Folder, SignatureEnvelope, etc.)
-- **Port Layer**: Interface contracts for external interactions
-- **Adapter Infrastructure**: Framework for discovering and selecting adapters
+- Domain Layer: Business entities and rules (Document, Folder, SignatureEnvelope, etc.)
+- Port Layer: Interface contracts for external interactions
+- Adapter Infrastructure: Framework for discovering and selecting adapters
 
-**Key characteristics:**
+Key characteristics:
 - No concrete adapter implementations (except no-op fallbacks)
 - No dependencies on external provider SDKs (AWS, Azure, DocuSign, etc.)
 - Provides graceful degradation with no-op adapters
@@ -99,12 +99,12 @@ This library contains:
 
 Each adapter library:
 
-- **Depends on fireflyframework-ecm** for port interfaces and domain models
-- **Implements specific port interfaces** for a particular technology
-- **Includes provider SDK dependencies** (e.g., AWS SDK, DocuSign SDK)
-- **Registers itself** via Spring Boot auto-configuration
+- Depends on fireflyframework-ecm for port interfaces and domain models
+- Implements specific port interfaces for a particular technology
+- Includes provider SDK dependencies (e.g., AWS SDK, DocuSign SDK)
+- Registers itself via Spring Boot auto-configuration
 
-**Key characteristics:**
+Key characteristics:
 - Can be updated independently of the core library
 - Applications choose which adapters to include
 - Multiple adapters can coexist (e.g., S3 + DocuSign)
@@ -117,62 +117,62 @@ Each adapter library:
 Located in `org.fireflyframework.ecm.domain.model`, these represent the core business entities:
 
 #### Document Management
-- **Document**: Core document entity with metadata
-- **DocumentVersion**: Document version information
-- **Folder**: Folder/directory structure
-- **FolderPermission**: Folder-level permissions
+- Document: Core document entity with metadata
+- DocumentVersion: Document version information
+- Folder: Folder/directory structure
+- FolderPermission: Folder-level permissions
 
 #### Security & Audit
-- **Permission**: Access control permissions
-- **AuditEvent**: Audit trail entries
+- Permission: Access control permissions
+- AuditEvent: Audit trail entries
 
 #### Digital Signatures
-- **SignatureEnvelope**: Container for signature workflows
-- **SignatureRequest**: Individual signature requests
-- **SignatureField**: Signature field definitions
+- SignatureEnvelope: Container for signature workflows
+- SignatureRequest: Individual signature requests
+- SignatureField: Signature field definitions
 
 ### Ports (Interfaces)
 
 Located in `org.fireflyframework.ecm.port`, these define the business interfaces:
 
 #### Document Ports
-- **DocumentPort**: Document CRUD operations
-- **DocumentContentPort**: Binary content operations
-- **DocumentVersionPort**: Version management
-- **DocumentSearchPort**: Search capabilities
+- DocumentPort: Document CRUD operations
+- DocumentContentPort: Binary content operations
+- DocumentVersionPort: Version management
+- DocumentSearchPort: Search capabilities
 
 #### Folder Ports
-- **FolderPort**: Folder management
-- **FolderHierarchyPort**: Hierarchical operations
+- FolderPort: Folder management
+- FolderHierarchyPort: Hierarchical operations
 
 #### Security Ports
-- **PermissionPort**: Access control
-- **DocumentSecurityPort**: Document security operations
+- PermissionPort: Access control
+- DocumentSecurityPort: Document security operations
 
 #### Audit Ports
-- **AuditPort**: Audit logging
+- AuditPort: Audit logging
 
 #### eSignature Ports
-- **SignatureEnvelopePort**: Envelope management
-- **SignatureRequestPort**: Signature requests
-- **SignatureValidationPort**: Signature validation
-- **SignatureProofPort**: Signature proof and evidence
+- SignatureEnvelopePort: Envelope management
+- SignatureRequestPort: Signature requests
+- SignatureValidationPort: Signature validation
+- SignatureProofPort: Signature proof and evidence
 
 #### IDP (Intelligent Document Processing) Ports
-- **DocumentExtractionPort**: OCR and text extraction
-- **DocumentClassificationPort**: Document type classification
-- **DataExtractionPort**: Structured data extraction
-- **DocumentValidationPort**: Document validation
+- DocumentExtractionPort: OCR and text extraction
+- DocumentClassificationPort: Document type classification
+- DataExtractionPort: Structured data extraction
+- DocumentValidationPort: Document validation
 
 ### Adapter Infrastructure
 
 Located in `org.fireflyframework.ecm.adapter`, this provides the framework for adapter discovery and selection:
 
-- **AdapterRegistry**: Maintains registry of available adapters
-- **AdapterSelector**: Selects appropriate adapter based on configuration
-- **EcmAdapter**: Base interface for all adapters
-- **AdapterInfo**: Metadata about adapter capabilities
-- **AdapterProfile**: Adapter configuration profiles
+- AdapterRegistry: Maintains registry of available adapters
+- AdapterSelector: Selects appropriate adapter based on configuration
+- EcmAdapter: Base interface for all adapters
+- AdapterInfo: Metadata about adapter capabilities
+- AdapterProfile: Adapter configuration profiles
 
 ## Adapter Implementation Libraries (Separate Repositories)
 
@@ -182,26 +182,26 @@ Adapter implementations are provided in separate libraries that depend on firefl
 
 | Adapter | Library | Status | Implements |
 |---------|---------|--------|------------|
-| **Amazon S3** | `fireflyframework-ecm-adapter-s3` | ✅ Available | DocumentPort, DocumentContentPort |
-| **Azure Blob** | `fireflyframework-ecm-adapter-azure-blob` | ✅ Available | DocumentPort, DocumentContentPort |
-| **MinIO** | `fireflyframework-ecm-adapter-minio` | 🔜 Planned | DocumentPort, DocumentContentPort |
-| **Alfresco** | `fireflyframework-ecm-adapter-alfresco` | 🔜 Planned | DocumentPort, FolderPort, PermissionPort |
+| Amazon S3 | `fireflyframework-ecm-storage-aws` | ✅ Available | DocumentPort, DocumentContentPort |
+| Azure Blob | `fireflyframework-ecm-adapter-azure-blob` | ✅ Available | DocumentPort, DocumentContentPort |
+| MinIO | `fireflyframework-ecm-adapter-minio` | 🔜 Planned | DocumentPort, DocumentContentPort |
+| Alfresco | `fireflyframework-ecm-adapter-alfresco` | 🔜 Planned | DocumentPort, FolderPort, PermissionPort |
 
 ### eSignature Adapters
 
 | Adapter | Library | Status | Implements |
 |---------|---------|--------|------------|
-| **DocuSign** | `fireflyframework-ecm-adapter-docusign` | ✅ Available | SignatureEnvelopePort, SignatureRequestPort |
-| **Adobe Sign** | `fireflyframework-ecm-adapter-adobe-sign` | ✅ Available | SignatureEnvelopePort, SignatureValidationPort |
-| **Logalty** | `fireflyframework-ecm-adapter-logalty` | 🔜 Planned | SignatureEnvelopePort (eIDAS-compliant) |
+| DocuSign | `fireflyframework-ecm-esignature-docusign` | ✅ Available | SignatureEnvelopePort, SignatureRequestPort |
+| Adobe Sign | `fireflyframework-ecm-esignature-adobe-sign` | ✅ Available | SignatureEnvelopePort, SignatureValidationPort |
+| Logalty | `fireflyframework-ecm-adapter-logalty` | 🔜 Planned | SignatureEnvelopePort (eIDAS-compliant) |
 
 ### IDP Adapters
 
 | Adapter | Library | Status | Implements |
 |---------|---------|--------|------------|
-| **AWS Textract** | `fireflyframework-ecm-adapter-aws-textract` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
-| **Azure Form Recognizer** | `fireflyframework-ecm-adapter-azure-form-recognizer` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
-| **Google Document AI** | `fireflyframework-ecm-adapter-google-document-ai` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
+| AWS Textract | `fireflyframework-ecm-adapter-aws-textract` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
+| Azure Form Recognizer | `fireflyframework-ecm-adapter-azure-form-recognizer` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
+| Google Document AI | `fireflyframework-ecm-adapter-google-document-ai` | 🔜 Planned | DocumentExtractionPort, DataExtractionPort |
 
 ## How Adapters Work
 
@@ -209,12 +209,12 @@ Adapter implementations are provided in separate libraries that depend on firefl
 
 When you add an adapter library to your application:
 
-1. **Dependency Resolution**: Maven/Gradle includes the adapter JAR in your classpath
-2. **Auto-Configuration**: Spring Boot discovers the adapter's auto-configuration class
-3. **Bean Registration**: The adapter registers its implementation beans
-4. **Adapter Registry**: The adapter registers itself with the `AdapterRegistry`
+1. Dependency Resolution: Maven/Gradle includes the adapter JAR in your classpath
+2. Auto-Configuration: Spring Boot discovers the adapter's auto-configuration class
+3. Bean Registration: The adapter registers its implementation beans
+4. Adapter Registry: The adapter registers itself with the `AdapterRegistry`
 
-Example from an adapter library (e.g., `fireflyframework-ecm-adapter-s3`):
+Example from an adapter library (e.g., `fireflyframework-ecm-storage-aws`):
 
 ```java
 // In the adapter library (separate repository)
@@ -241,10 +241,10 @@ public class S3DocumentAdapter implements DocumentPort, DocumentContentPort {
 
 The `AdapterSelector` (provided by fireflyframework-ecm) chooses the appropriate adapter based on configuration:
 
-1. **Type Matching**: Matches `firefly.ecm.adapter-type` with adapter type
-2. **Feature Validation**: Ensures adapter supports required features
-3. **Configuration Validation**: Validates required properties are present
-4. **Priority Resolution**: Selects highest priority adapter if multiple match
+1. Type Matching: Matches `firefly.ecm.adapter-type` with adapter type
+2. Feature Validation: Ensures adapter supports required features
+3. Configuration Validation: Validates required properties are present
+4. Priority Resolution: Selects highest priority adapter if multiple match
 
 ### Dependency Flow
 
@@ -253,12 +253,12 @@ Your Application
     │
     ├─ depends on ──> fireflyframework-ecm (port interfaces)
     │
-    ├─ depends on ──> fireflyframework-ecm-adapter-s3
+    ├─ depends on ──> fireflyframework-ecm-storage-aws
     │                     │
     │                     └─ depends on ──> fireflyframework-ecm
     │                     └─ depends on ──> AWS SDK
     │
-    └─ depends on ──> fireflyframework-ecm-adapter-docusign
+    └─ depends on ──> fireflyframework-ecm-esignature-docusign
                           │
                           └─ depends on ──> fireflyframework-ecm
                           └─ depends on ──> DocuSign SDK
@@ -300,7 +300,7 @@ public class EcmProperties {
 
 Each adapter library defines its own configuration properties. For example:
 
-**S3 Adapter Configuration** (in `fireflyframework-ecm-adapter-s3`):
+S3 Adapter Configuration (in `fireflyframework-ecm-storage-aws`):
 ```yaml
 firefly:
   ecm:
@@ -311,7 +311,7 @@ firefly:
         region: us-east-1
 ```
 
-**DocuSign Adapter Configuration** (in `fireflyframework-ecm-adapter-docusign`):
+DocuSign Adapter Configuration (in `fireflyframework-ecm-esignature-docusign`):
 ```yaml
 firefly:
   ecm:
@@ -327,15 +327,15 @@ firefly:
 
 The `EcmAutoConfiguration` class (in fireflyframework-ecm) automatically configures the ECM system:
 
-1. **Property Binding**: Binds core configuration properties
-2. **Adapter Registry Setup**: Creates the adapter registry
-3. **Port Provider Setup**: Configures the port provider
-4. **No-op Adapter Registration**: Registers fallback adapters
+1. Property Binding: Binds core configuration properties
+2. Adapter Registry Setup: Creates the adapter registry
+3. Port Provider Setup: Configures the port provider
+4. No-op Adapter Registration: Registers fallback adapters
 
 Each adapter library provides its own auto-configuration that:
-1. **Registers adapter beans** when conditions are met
-2. **Binds adapter-specific properties**
-3. **Validates adapter configuration**
+1. Registers adapter beans when conditions are met
+2. Binds adapter-specific properties
+3. Validates adapter configuration
 
 ## Service Layer
 
@@ -386,10 +386,10 @@ public class AdapterRegistry {
 The library uses Project Reactor for reactive programming:
 
 ### Benefits
-- **Non-blocking I/O**: Efficient resource utilization
-- **Backpressure Handling**: Automatic flow control
-- **Composable Operations**: Chain operations declaratively
-- **Error Handling**: Comprehensive error handling strategies
+- Non-blocking I/O: Efficient resource utilization
+- Backpressure Handling: Automatic flow control
+- Composable Operations: Chain operations declaratively
+- Error Handling: Comprehensive error handling strategies
 
 ### Usage Patterns
 
@@ -414,74 +414,74 @@ public Flux<DataBuffer> streamContent(UUID documentId) {
 
 ### Exception Hierarchy
 
-- **EcmException**: Base exception for all ECM operations
-- **DocumentNotFoundException**: Document not found
-- **AdapterException**: Adapter-specific errors
-- **ConfigurationException**: Configuration errors
-- **SecurityException**: Security-related errors
+- EcmException: Base exception for all ECM operations
+- DocumentNotFoundException: Document not found
+- AdapterException: Adapter-specific errors
+- ConfigurationException: Configuration errors
+- SecurityException: Security-related errors
 
 ### Error Handling Strategies
 
-1. **Graceful Degradation**: Continue operation with reduced functionality
-2. **Retry Logic**: Automatic retry for transient failures
-3. **Circuit Breaker**: Prevent cascading failures
-4. **Fallback Mechanisms**: Alternative processing paths
+1. Graceful Degradation: Continue operation with reduced functionality
+2. Retry Logic: Automatic retry for transient failures
+3. Circuit Breaker: Prevent cascading failures
+4. Fallback Mechanisms: Alternative processing paths
 
 ## Testing Strategy
 
 ### Unit Testing
 
-- **Mock Adapters**: Test business logic without external dependencies
-- **Port Testing**: Test port implementations independently
-- **Service Testing**: Test service layer with mocked ports
+- Mock Adapters: Test business logic without external dependencies
+- Port Testing: Test port implementations independently
+- Service Testing: Test service layer with mocked ports
 
 ### Integration Testing
 
-- **Adapter Testing**: Test adapters with real external systems
-- **End-to-End Testing**: Test complete workflows
-- **Configuration Testing**: Test different configuration scenarios
+- Adapter Testing: Test adapters with real external systems
+- End-to-End Testing: Test complete workflows
+- Configuration Testing: Test different configuration scenarios
 
 ## Security Considerations
 
 ### Authentication & Authorization
 
-- **Adapter-level Security**: Each adapter handles its own authentication
-- **Permission System**: Fine-grained access control
-- **Audit Logging**: Complete audit trail for compliance
+- Adapter-level Security: Each adapter handles its own authentication
+- Permission System: Fine-grained access control
+- Audit Logging: Complete audit trail for compliance
 
 ### Data Protection
 
-- **Encryption at Rest**: Adapter-specific encryption
-- **Encryption in Transit**: HTTPS/TLS for all communications
-- **Data Masking**: Sensitive data protection in logs
+- Encryption at Rest: Adapter-specific encryption
+- Encryption in Transit: HTTPS/TLS for all communications
+- Data Masking: Sensitive data protection in logs
 
 ## Performance Optimization
 
 ### Caching Strategy
 
-- **Metadata Caching**: Cache document metadata
-- **Content Caching**: Cache frequently accessed content
-- **Configuration Caching**: Cache adapter configurations
+- Metadata Caching: Cache document metadata
+- Content Caching: Cache frequently accessed content
+- Configuration Caching: Cache adapter configurations
 
 ### Connection Management
 
-- **Connection Pooling**: Efficient connection reuse
-- **Timeout Configuration**: Prevent hanging operations
-- **Retry Logic**: Handle transient failures
+- Connection Pooling: Efficient connection reuse
+- Timeout Configuration: Prevent hanging operations
+- Retry Logic: Handle transient failures
 
 ## Monitoring & Observability
 
 ### Metrics
 
-- **Operation Metrics**: Document operations per second
-- **Performance Metrics**: Response times and throughput
-- **Error Metrics**: Error rates and types
+- Operation Metrics: Document operations per second
+- Performance Metrics: Response times and throughput
+- Error Metrics: Error rates and types
 
 ### Logging
 
-- **Structured Logging**: JSON-formatted logs
-- **Correlation IDs**: Track operations across components
-- **Audit Logging**: Compliance and security auditing
+- Structured Logging: JSON-formatted logs
+- Correlation IDs: Track operations across components
+- Audit Logging: Compliance and security auditing
 
 ## Extension Points
 
@@ -507,17 +507,17 @@ Add custom features by:
 
 ### Adapter Development
 
-- **Implement Required Interfaces**: Implement all required ports
-- **Handle Errors Gracefully**: Provide meaningful error messages
-- **Support Configuration**: Use configuration properties
-- **Add Comprehensive Tests**: Unit and integration tests
+- Implement Required Interfaces: Implement all required ports
+- Handle Errors Gracefully: Provide meaningful error messages
+- Support Configuration: Use configuration properties
+- Add Comprehensive Tests: Unit and integration tests
 
 ### Application Integration
 
-- **Use Port Interfaces**: Don't depend on adapter implementations
-- **Handle Reactive Streams**: Use proper reactive patterns
-- **Configure Properly**: Validate configuration on startup
-- **Monitor Operations**: Add metrics and logging
+- Use Port Interfaces: Don't depend on adapter implementations
+- Handle Reactive Streams: Use proper reactive patterns
+- Configure Properly: Validate configuration on startup
+- Monitor Operations: Add metrics and logging
 
 ## Next Steps
 

@@ -20,44 +20,44 @@ This comprehensive guide provides an exhaustive exploration of the Firefly Frame
 
 ## AST System Overview
 
-### 🧠 **What is an Abstract Syntax Tree (AST)?**
+### 🧠 What is an Abstract Syntax Tree (AST)?
 
-An **Abstract Syntax Tree (AST)** is a tree representation of the syntactic structure of source code. Each node in the tree represents a construct occurring in the programming language. The Firefly Framework Rule Engine uses ASTs to represent business rules in a structured, type-safe manner.
+An Abstract Syntax Tree (AST) is a tree representation of the syntactic structure of source code. Each node in the tree represents a construct occurring in the programming language. The Firefly Framework Rule Engine uses ASTs to represent business rules in a structured, type-safe manner.
 
-**Why AST over String-Based Evaluation?**
+Why AST over String-Based Evaluation?
 
 Traditional rule engines often use string-based evaluation where rules are parsed and executed as text. This approach has several limitations:
 
-1. **Runtime Errors**: Syntax errors are only discovered during execution
-2. **Poor Performance**: Text parsing happens repeatedly during evaluation
-3. **Limited Type Safety**: No compile-time type checking
-4. **Difficult Optimization**: Hard to optimize string-based expressions
-5. **Complex Debugging**: Error locations are hard to track in text
+1. Runtime Errors: Syntax errors are only discovered during execution
+2. Poor Performance: Text parsing happens repeatedly during evaluation
+3. Limited Type Safety: No compile-time type checking
+4. Difficult Optimization: Hard to optimize string-based expressions
+5. Complex Debugging: Error locations are hard to track in text
 
-**The AST Approach Solves These Problems:**
+The AST Approach Solves These Problems:
 
 The Firefly Framework Rule Engine transforms YAML-based business rules into structured, type-safe AST nodes that provide:
 
-### 🎯 **Core Benefits**
+### 🎯 Core Benefits
 
-- **Type Safety**: All operations are type-checked at parse time, preventing runtime type errors
-- **Performance**: AST nodes are optimized for fast evaluation and can be cached
-- **Extensibility**: New operators and functions can be added without modifying existing code
-- **Debugging**: Rich source location information enables precise error reporting
-- **Validation**: Comprehensive semantic validation occurs before execution
-- **Optimization**: AST structure enables compile-time optimizations like constant folding
+- Type Safety: All operations are type-checked at parse time, preventing runtime type errors
+- Performance: AST nodes are optimized for fast evaluation and can be cached
+- Extensibility: New operators and functions can be added without modifying existing code
+- Debugging: Rich source location information enables precise error reporting
+- Validation: Comprehensive semantic validation occurs before execution
+- Optimization: AST structure enables compile-time optimizations like constant folding
 
-### 🏗️ **Compiler Design Principles**
+### 🏗️ Compiler Design Principles
 
 The AST system follows established compiler design principles:
 
-1. **Separation of Concerns**: Lexical analysis, parsing, semantic analysis, and execution are separate phases
-2. **Visitor Pattern**: Operations on AST nodes are implemented as visitors, enabling extensibility
-3. **Type System**: Strong typing prevents many classes of runtime errors
-4. **Error Recovery**: The system can continue processing after encountering errors
-5. **Optimization**: Multiple passes over the AST enable various optimizations
+1. Separation of Concerns: Lexical analysis, parsing, semantic analysis, and execution are separate phases
+2. Visitor Pattern: Operations on AST nodes are implemented as visitors, enabling extensibility
+3. Type System: Strong typing prevents many classes of runtime errors
+4. Error Recovery: The system can continue processing after encountering errors
+5. Optimization: Multiple passes over the AST enable various optimizations
 
-### 🏗️ **System Architecture**
+### 🏗️ System Architecture
 
 The AST system follows a multi-layered architecture that separates concerns and enables clean extensibility:
 
@@ -128,11 +128,11 @@ The AST system follows a multi-layered architecture that separates concerns and 
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 🔄 **Processing Flow: From YAML to Execution**
+### 🔄 Processing Flow: From YAML to Execution
 
 Understanding the complete processing pipeline is crucial for working with the AST system. Here's how a YAML rule transforms into executable code:
 
-#### **Phase 1: YAML Parsing**
+#### Phase 1: YAML Parsing
 ```yaml
 # Input: YAML Rule Definition
 name: "Credit Assessment"
@@ -145,17 +145,17 @@ then:
 
 The system first parses this YAML into a Java Map structure using Jackson's YAML parser. This is a standard structural parsing step that doesn't understand the DSL semantics yet.
 
-#### **Phase 2: Lexical Analysis (Tokenization)**
+#### Phase 2: Lexical Analysis (Tokenization)
 The DSL expressions within the YAML (like `creditScore greater_than MIN_CREDIT_SCORE`) are broken down into tokens:
 
 ```
 [IDENTIFIER: "creditScore"] [GREATER_THAN: "greater_than"] [IDENTIFIER: "MIN_CREDIT_SCORE"]
 ```
 
-**Why Tokenization Matters**: This step converts raw text into meaningful symbols that the parser can understand. Each token carries type information and source location for error reporting.
+Why Tokenization Matters: This step converts raw text into meaningful symbols that the parser can understand. Each token carries type information and source location for error reporting.
 
-#### **Phase 3: Syntax Parsing (AST Construction)**
-Tokens are assembled into AST nodes using **recursive descent parsing**:
+#### Phase 3: Syntax Parsing (AST Construction)
+Tokens are assembled into AST nodes using recursive descent parsing:
 
 ```
 ComparisonCondition
@@ -164,30 +164,30 @@ ComparisonCondition
 └── right: VariableExpression("MIN_CREDIT_SCORE")
 ```
 
-**Recursive Descent Parsing**: This is a top-down parsing technique where each grammar rule is implemented as a method. The parser starts with high-level constructs and recursively breaks them down into smaller components.
+Recursive Descent Parsing: This is a top-down parsing technique where each grammar rule is implemented as a method. The parser starts with high-level constructs and recursively breaks them down into smaller components.
 
-#### **Phase 4: Semantic Validation**
+#### Phase 4: Semantic Validation
 The AST is validated for semantic correctness:
 - Type compatibility (can't compare string to number)
 - Variable existence
 - Function signature validation
 - Operator compatibility
 
-#### **Phase 5: Variable Collection**
+#### Phase 5: Variable Collection
 The system traverses the AST to collect all variable references, enabling efficient constant loading from the database.
 
-#### **Phase 6: AST Caching (Optional)**
+#### Phase 6: AST Caching (Optional)
 For performance, parsed ASTs can be cached using a hash of the original YAML content.
 
-#### **Phase 7: Evaluation**
-The AST is executed using the **Visitor Pattern** with an evaluation context containing variables and state.
+#### Phase 7: Evaluation
+The AST is executed using the Visitor Pattern with an evaluation context containing variables and state.
 
-#### **Phase 8: Result Generation**
+#### Phase 8: Result Generation
 Outputs are collected and formatted into the final evaluation result.
 
 ## Architecture Components
 
-### 📦 **Core Package Structure**
+### 📦 Core Package Structure
 
 The AST system is organized into logical packages that separate concerns and enable clean extensibility:
 
@@ -257,43 +257,43 @@ org.fireflyframework.rules.core.dsl.ast/
 └── ASTVisitor.java         # Visitor interface definition
 ```
 
-### 🎯 **Key Design Principles**
+### 🎯 Key Design Principles
 
-1. **Separation of Concerns**: Each component has a single, well-defined responsibility
-2. **Visitor Pattern**: Operations are separated from AST structure for extensibility
-3. **Type Safety**: Strong typing throughout the system prevents runtime errors
-4. **Immutability**: AST nodes are immutable after construction for thread safety
-5. **Error Recovery**: Comprehensive error handling with detailed diagnostics
-6. **Performance**: Optimized for high-throughput rule evaluation scenarios
-7. **Extensibility**: New operators, functions, and node types can be added easily
-8. **Debugging Support**: Rich source location tracking for error reporting
+1. Separation of Concerns: Each component has a single, well-defined responsibility
+2. Visitor Pattern: Operations are separated from AST structure for extensibility
+3. Type Safety: Strong typing throughout the system prevents runtime errors
+4. Immutability: AST nodes are immutable after construction for thread safety
+5. Error Recovery: Comprehensive error handling with detailed diagnostics
+6. Performance: Optimized for high-throughput rule evaluation scenarios
+7. Extensibility: New operators, functions, and node types can be added easily
+8. Debugging Support: Rich source location tracking for error reporting
 
 ## Lexical Analysis System
 
-### 🧠 **Understanding Lexical Analysis**
+### 🧠 Understanding Lexical Analysis
 
-**Lexical Analysis** (also called tokenization or scanning) is the first phase of any compiler or interpreter. It converts a sequence of characters into a sequence of tokens - meaningful symbols that the parser can understand.
+Lexical Analysis (also called tokenization or scanning) is the first phase of any compiler or interpreter. It converts a sequence of characters into a sequence of tokens - meaningful symbols that the parser can understand.
 
-**Why is Lexical Analysis Important?**
+Why is Lexical Analysis Important?
 
-1. **Abstraction**: Converts raw text into meaningful symbols
-2. **Error Detection**: Catches invalid characters early
-3. **Simplification**: Parser works with tokens instead of individual characters
-4. **Performance**: Tokenization can be optimized independently
-5. **Source Tracking**: Each token knows its location for error reporting
+1. Abstraction: Converts raw text into meaningful symbols
+2. Error Detection: Catches invalid characters early
+3. Simplification: Parser works with tokens instead of individual characters
+4. Performance: Tokenization can be optimized independently
+5. Source Tracking: Each token knows its location for error reporting
 
-### 🔍 **Finite State Machine Approach**
+### 🔍 Finite State Machine Approach
 
-The Firefly Framework Rule Engine uses a **Finite State Machine (FSM)** approach for lexical analysis. This is a proven technique used in most programming language compilers.
+The Firefly Framework Rule Engine uses a Finite State Machine (FSM) approach for lexical analysis. This is a proven technique used in most programming language compilers.
 
-**What is a Finite State Machine?**
+What is a Finite State Machine?
 
 An FSM is a computational model with:
 - A finite number of states
 - Transitions between states based on input
 - One start state and one or more accepting states
 
-**Example: Recognizing Numbers**
+Example: Recognizing Numbers
 ```
 State 1 (Start) --[digit]--> State 2 (Integer)
 State 2 (Integer) --[digit]--> State 2 (Integer)
@@ -302,7 +302,7 @@ State 3 (Decimal) --[digit]--> State 4 (Float)
 State 4 (Float) --[digit]--> State 4 (Float)
 ```
 
-### 🏗️ **Lexer Architecture**
+### 🏗️ Lexer Architecture
 
 The `Lexer` class implements this FSM approach:
 
@@ -326,24 +326,24 @@ public class Lexer {
 }
 ```
 
-**Key Concepts:**
+Key Concepts:
 
-1. **Lexeme**: The actual text that forms a token (e.g., "123", "greater_than")
-2. **Token**: The categorized lexeme with type information
-3. **Lookahead**: Examining future characters without consuming them
-4. **Backtracking**: Returning to a previous position when a path fails
+1. Lexeme: The actual text that forms a token (e.g., "123", "greater_than")
+2. Token: The categorized lexeme with type information
+3. Lookahead: Examining future characters without consuming them
+4. Backtracking: Returning to a previous position when a path fails
 
-### 🏷️ **Token Classification System**
+### 🏷️ Token Classification System
 
-**What is a Token?**
+What is a Token?
 
 A token is a categorized piece of text that represents a meaningful unit in the language. Each token has:
-- **Type**: What kind of token it is (NUMBER, IDENTIFIER, OPERATOR, etc.)
-- **Lexeme**: The actual text that was matched
-- **Location**: Where it appears in the source (line, column)
-- **Value**: The interpreted value (for literals)
+- Type: What kind of token it is (NUMBER, IDENTIFIER, OPERATOR, etc.)
+- Lexeme: The actual text that was matched
+- Location: Where it appears in the source (line, column)
+- Value: The interpreted value (for literals)
 
-**Token Categories in Firefly DSL:**
+Token Categories in Firefly DSL:
 
 The `TokenType` enum organizes over 200 token types into logical categories:
 
@@ -384,31 +384,31 @@ public enum TokenType {
 }
 ```
 
-**Why Categorize Tokens?**
+Why Categorize Tokens?
 
-1. **Parser Simplification**: Parser can make decisions based on token categories
-2. **Error Messages**: Better error messages ("expected operator, got literal")
-3. **Syntax Highlighting**: IDEs can color-code based on categories
-4. **Validation**: Can check for valid token sequences
+1. Parser Simplification: Parser can make decisions based on token categories
+2. Error Messages: Better error messages ("expected operator, got literal")
+3. Syntax Highlighting: IDEs can color-code based on categories
+4. Validation: Can check for valid token sequences
 
-#### **Complete Token Categories**
+#### Complete Token Categories
 
-1. **Literals**: `NUMBER`, `STRING`, `BOOLEAN`, `NULL`
-2. **Identifiers**: `IDENTIFIER` (variable names, function names)
-3. **Operators**:
+1. Literals: `NUMBER`, `STRING`, `BOOLEAN`, `NULL`
+2. Identifiers: `IDENTIFIER` (variable names, function names)
+3. Operators:
    - Arithmetic: `PLUS`, `MINUS`, `MULTIPLY`, `DIVIDE`, `MODULO`, `POWER`
    - Comparison: `EQUALS`, `NOT_EQUALS`, `GREATER_THAN`, `LESS_THAN`, etc.
    - Logical: `AND`, `OR`, `NOT`
    - Validation: `IS_POSITIVE`, `IS_EMAIL`, `IS_PHONE`, `IS_CREDIT_SCORE`, etc.
-4. **Keywords**: `SET`, `CALCULATE`, `IF`, `THEN`, `ELSE`, `WHEN`, `CALL`, etc.
-5. **Punctuation**: `LPAREN`, `RPAREN`, `COMMA`, `DOT`, `COLON`, etc.
-6. **Special**: `EOF`, `NEWLINE`, `WHITESPACE`
+4. Keywords: `SET`, `CALCULATE`, `IF`, `THEN`, `ELSE`, `WHEN`, `CALL`, etc.
+5. Punctuation: `LPAREN`, `RPAREN`, `COMMA`, `DOT`, `COLON`, etc.
+6. Special: `EOF`, `NEWLINE`, `WHITESPACE`
 
-### 🔧 **Token Recognition Strategies**
+### 🔧 Token Recognition Strategies
 
 The lexer employs different strategies for recognizing different types of tokens. Understanding these strategies helps when adding new token types.
 
-#### **1. Single Character Tokens (Simplest Case)**
+#### 1. Single Character Tokens (Simplest Case)
 
 For punctuation and simple operators, recognition is straightforward:
 
@@ -426,9 +426,9 @@ private void scanToken() {
 }
 ```
 
-**Concept**: Direct character-to-token mapping with no ambiguity.
+Concept: Direct character-to-token mapping with no ambiguity.
 
-#### **2. Multi-Character Operators (Lookahead Required)**
+#### 2. Multi-Character Operators (Lookahead Required)
 
 Some operators require examining the next character to determine the correct token:
 
@@ -449,16 +449,16 @@ case '!' -> {
 }
 ```
 
-**Concept**: **Lookahead** - examining future characters without consuming them to make decisions.
+Concept: Lookahead - examining future characters without consuming them to make decisions.
 
-#### **3. Keywords vs Identifiers (Context-Sensitive Recognition)**
+#### 3. Keywords vs Identifiers (Context-Sensitive Recognition)
 
 This is the most complex recognition strategy. The lexer must:
 
-1. **Scan the entire word**: Read all alphanumeric characters
-2. **Check keyword tables**: See if it's a reserved word
-3. **Handle multi-word operators**: Like "greater_than" or "age_at_least"
-4. **Default to identifier**: If not a keyword, treat as variable/function name
+1. Scan the entire word: Read all alphanumeric characters
+2. Check keyword tables: See if it's a reserved word
+3. Handle multi-word operators: Like "greater_than" or "age_at_least"
+4. Default to identifier: If not a keyword, treat as variable/function name
 
 ```java
 private void identifier() {
@@ -497,21 +497,21 @@ private void identifier() {
 }
 ```
 
-**Key Concepts:**
+Key Concepts:
 
-- **Maximal Munch**: Always consume the longest possible token
-- **Keyword Priority**: Keywords take precedence over identifiers
-- **Context Sensitivity**: The same text might be different tokens in different contexts
+- Maximal Munch: Always consume the longest possible token
+- Keyword Priority: Keywords take precedence over identifiers
+- Context Sensitivity: The same text might be different tokens in different contexts
 
-#### **4. Multi-Word Tokens (Complex Operator Recognition)**
+#### 4. Multi-Word Tokens (Complex Operator Recognition)
 
 The DSL supports complex operators like `age_at_least`, `is_credit_score`, `not_between`. These require special handling because they span multiple words.
 
-**The Challenge**: When the lexer sees "age", it doesn't know if it's:
+The Challenge: When the lexer sees "age", it doesn't know if it's:
 - A variable named "age"
 - The start of "age_at_least" operator
 
-**The Solution**: **Lookahead with Backtracking**
+The Solution: Lookahead with Backtracking
 
 ```java
 private boolean isMultiWordToken(String firstWord) {
@@ -548,14 +548,14 @@ private boolean checkForAgeOperators() {
 }
 ```
 
-**Key Concepts:**
-- **Lookahead**: Examining future characters
-- **Backtracking**: Returning to previous position if pattern fails
-- **Greedy Matching**: Always try to match the longest possible token
+Key Concepts:
+- Lookahead: Examining future characters
+- Backtracking: Returning to previous position if pattern fails
+- Greedy Matching: Always try to match the longest possible token
 
-### 📍 **Source Location Tracking**
+### 📍 Source Location Tracking
 
-**Why Track Source Locations?**
+Why Track Source Locations?
 
 When a rule fails during evaluation, developers need to know exactly where in the original YAML the problem occurred. This is crucial for debugging complex rules.
 
@@ -573,48 +573,48 @@ public class SourceLocation {
 }
 ```
 
-**How Location Tracking Works:**
+How Location Tracking Works:
 
-1. **Character Counting**: Lexer tracks current line and column
-2. **Token Association**: Each token stores its source location
-3. **AST Propagation**: Location information flows up to AST nodes
-4. **Error Reporting**: Errors include precise location information
+1. Character Counting: Lexer tracks current line and column
+2. Token Association: Each token stores its source location
+3. AST Propagation: Location information flows up to AST nodes
+4. Error Reporting: Errors include precise location information
 
-**Example Error Message:**
+Example Error Message:
 ```
 Type mismatch: Cannot compare string to number at line 5, column 12
   - creditScore greater_than "high"
                             ^
 ```
 
-### 🎯 **Lexer Features**
+### 🎯 Lexer Features
 
-1. **Error Recovery**: Continues parsing after encountering invalid characters
-2. **Unicode Support**: Handles UTF-8 encoded input correctly
-3. **String Literals**: Supports both double and single quoted strings with escape sequences
-4. **Number Parsing**: Handles integers, decimals, and scientific notation
-5. **Comment Support**: Ignores comments (though not used in current DSL)
-6. **Whitespace Handling**: Properly handles spaces, tabs, and newlines
-7. **Multi-Word Operators**: Recognizes complex operators like `age_at_least 18`
+1. Error Recovery: Continues parsing after encountering invalid characters
+2. Unicode Support: Handles UTF-8 encoded input correctly
+3. String Literals: Supports both double and single quoted strings with escape sequences
+4. Number Parsing: Handles integers, decimals, and scientific notation
+5. Comment Support: Ignores comments (though not used in current DSL)
+6. Whitespace Handling: Properly handles spaces, tabs, and newlines
+7. Multi-Word Operators: Recognizes complex operators like `age_at_least 18`
 
 ## AST Node Hierarchy
 
-### 🧠 **Understanding AST Nodes**
+### 🧠 Understanding AST Nodes
 
-**What is an AST Node?**
+What is an AST Node?
 
 An AST node represents a single construct in the programming language. In the Firefly Framework Rule Engine, every piece of a rule (expressions, conditions, actions) is represented by a specific type of AST node.
 
-**Why Use a Hierarchy?**
+Why Use a Hierarchy?
 
 The node hierarchy provides several benefits:
 
-1. **Type Safety**: Each node type has specific properties and behaviors
-2. **Polymorphism**: Different node types can be treated uniformly through base classes
-3. **Extensibility**: New node types can be added without modifying existing code
-4. **Visitor Pattern Support**: Operations can be defined separately from node structure
+1. Type Safety: Each node type has specific properties and behaviors
+2. Polymorphism: Different node types can be treated uniformly through base classes
+3. Extensibility: New node types can be added without modifying existing code
+4. Visitor Pattern Support: Operations can be defined separately from node structure
 
-### 🌳 **Base AST Node Design**
+### 🌳 Base AST Node Design
 
 All AST nodes inherit from the abstract `ASTNode` class, which establishes the fundamental contract:
 
@@ -652,15 +652,15 @@ public abstract class ASTNode {
 }
 ```
 
-**Key Design Decisions:**
+Key Design Decisions:
 
-1. **Abstract Base Class**: Forces all nodes to implement required methods
-2. **Location Tracking**: Every node knows where it came from in the source
-3. **Visitor Pattern**: The `accept` method enables the visitor pattern
-4. **Debugging Support**: Every node can describe itself for debugging
-5. **Immutability**: Nodes are immutable after construction (thread-safe)
+1. Abstract Base Class: Forces all nodes to implement required methods
+2. Location Tracking: Every node knows where it came from in the source
+3. Visitor Pattern: The `accept` method enables the visitor pattern
+4. Debugging Support: Every node can describe itself for debugging
+5. Immutability: Nodes are immutable after construction (thread-safe)
 
-### 📊 **Complete Node Hierarchy**
+### 📊 Complete Node Hierarchy
 
 ```
 ASTNode (abstract base)
@@ -688,11 +688,11 @@ ASTNode (abstract base)
     └── CircuitBreakerAction        # `circuit_breaker "MESSAGE"` -- early termination
 ```
 
-> **Note:** The DSL was simplified in 2026-05 to remove orphan AST classes that were never produced by the parser. The compound-assignment family (`+=`, `-=`, etc.) and the multi-operand `ArithmeticExpression` n-ary form are no longer present. Use `add`/`subtract`/`multiply`/`divide` arithmetic actions or `calculate`/`run` with `+`/`-`/`*`/`/` for the same outcomes.
+> Note: The DSL was simplified in 2026-05 to remove orphan AST classes that were never produced by the parser. The compound-assignment family (`+=`, `-=`, etc.) and the multi-operand `ArithmeticExpression` n-ary form are no longer present. Use `add`/`subtract`/`multiply`/`divide` arithmetic actions or `calculate`/`run` with `+`/`-`/`*`/`/` for the same outcomes.
 
-### 🔢 **Expression Nodes: Representing Computable Values**
+### 🔢 Expression Nodes: Representing Computable Values
 
-**What is an Expression?**
+What is an Expression?
 
 An expression is any construct that can be evaluated to produce a value. Examples:
 - `creditScore` (variable reference)
@@ -700,7 +700,7 @@ An expression is any construct that can be evaluated to produce a value. Example
 - `income + bonus` (arithmetic operation)
 - `calculateRisk(creditScore, income)` (function call)
 
-**Expression Base Class Design:**
+Expression Base Class Design:
 
 ```java
 public abstract class Expression extends ASTNode {
@@ -731,14 +731,14 @@ public abstract class Expression extends ASTNode {
 }
 ```
 
-**Key Concepts:**
+Key Concepts:
 
-1. **Type System**: Every expression has a known type (NUMBER, STRING, BOOLEAN, etc.)
-2. **Constant Folding**: Constant expressions can be evaluated at parse time
-3. **Dependency Analysis**: Knowing variable references helps optimize evaluation
-4. **Polymorphism**: All expressions can be treated uniformly despite different implementations
+1. Type System: Every expression has a known type (NUMBER, STRING, BOOLEAN, etc.)
+2. Constant Folding: Constant expressions can be evaluated at parse time
+3. Dependency Analysis: Knowing variable references helps optimize evaluation
+4. Polymorphism: All expressions can be treated uniformly despite different implementations
 
-**Expression Type System:**
+Expression Type System:
 
 ```java
 public enum ExpressionType {
@@ -751,16 +751,16 @@ public enum ExpressionType {
 }
 ```
 
-**Why Type Information Matters:**
+Why Type Information Matters:
 
-1. **Error Prevention**: Catch type mismatches at parse time
-2. **Optimization**: Type-specific optimizations
-3. **Code Generation**: Different types may need different evaluation strategies
-4. **IDE Support**: Better autocomplete and error highlighting
+1. Error Prevention: Catch type mismatches at parse time
+2. Optimization: Type-specific optimizations
+3. Code Generation: Different types may need different evaluation strategies
+4. IDE Support: Better autocomplete and error highlighting
 
-#### **Binary Expressions: Two-Operand Operations**
+#### Binary Expressions: Two-Operand Operations
 
-**What is a Binary Expression?**
+What is a Binary Expression?
 
 A binary expression represents an operation between two operands. The structure is always:
 `left_operand operator right_operand`
@@ -770,7 +770,7 @@ Examples:
 - `creditScore > 700` (comparison)
 - `isActive AND isVerified` (logical)
 
-**Binary Expression Design:**
+Binary Expression Design:
 
 ```java
 public class BinaryExpression extends Expression {
@@ -803,14 +803,14 @@ public class BinaryExpression extends Expression {
 }
 ```
 
-**Key Design Principles:**
+Key Design Principles:
 
-1. **Recursive Structure**: Operands are expressions themselves, enabling complex nesting
-2. **Operator Determines Type**: The operator defines what type the result will be
-3. **Compositional**: Binary expressions can be combined to form larger expressions
-4. **Immutable**: Once created, the expression cannot be modified
+1. Recursive Structure: Operands are expressions themselves, enabling complex nesting
+2. Operator Determines Type: The operator defines what type the result will be
+3. Compositional: Binary expressions can be combined to form larger expressions
+4. Immutable: Once created, the expression cannot be modified
 
-**Example AST Structure:**
+Example AST Structure:
 
 For the expression `(income + bonus) > threshold`:
 
@@ -824,9 +824,9 @@ BinaryExpression (>)
 └── right: VariableExpression("threshold")
 ```
 
-#### **Binary Operators: The Heart of Expression Evaluation**
+#### Binary Operators: The Heart of Expression Evaluation
 
-**What is Operator Precedence?**
+What is Operator Precedence?
 
 Operator precedence determines the order of operations in complex expressions. Without precedence rules, `2 + 3 * 4` could be interpreted as either:
 - `(2 + 3) * 4 = 20` (left-to-right)
@@ -834,7 +834,7 @@ Operator precedence determines the order of operations in complex expressions. W
 
 Mathematical convention says multiplication has higher precedence, so the second interpretation is correct.
 
-**Binary Operator Design:**
+Binary Operator Design:
 
 ```java
 public enum BinaryOperator {
@@ -875,7 +875,7 @@ public enum BinaryOperator {
 }
 ```
 
-**Precedence Rules in Action:**
+Precedence Rules in Action:
 
 Expression: `income + bonus * 0.1 > threshold`
 
@@ -884,14 +884,14 @@ Parsing order (by precedence):
 2. `income + (result)` (precedence 6)
 3. `(result) > threshold` (precedence 5)
 
-**Why This Design Works:**
+Why This Design Works:
 
-1. **Mathematical Intuition**: Follows standard mathematical precedence
-2. **Unambiguous Parsing**: Clear rules for complex expressions
-3. **Extensible**: New operators can be added with appropriate precedence
-4. **Type Safety**: Each operator declares its result type
+1. Mathematical Intuition: Follows standard mathematical precedence
+2. Unambiguous Parsing: Clear rules for complex expressions
+3. Extensible: New operators can be added with appropriate precedence
+4. Type Safety: Each operator declares its result type
 
-#### **Unary Expressions**
+#### Unary Expressions
 
 Unary expressions handle operations on a single operand, including validation operators:
 
@@ -914,7 +914,7 @@ public class UnaryExpression extends Expression {
 }
 ````
 
-#### **Unary Operators**
+#### Unary Operators
 
 The `UnaryOperator` enum includes arithmetic, logical, and validation operators:
 
@@ -958,7 +958,7 @@ public enum UnaryOperator {
 }
 ````
 
-### 🔍 **Condition Nodes**
+### 🔍 Condition Nodes
 
 Condition nodes represent boolean expressions used in `when` clauses and conditional actions:
 
@@ -981,7 +981,7 @@ public abstract class Condition extends ASTNode {
 }
 ````
 
-#### **Comparison Conditions**
+#### Comparison Conditions
 
 Handle comparisons between expressions using various operators:
 
@@ -1009,7 +1009,7 @@ public class ComparisonCondition extends Condition {
 }
 ````
 
-#### **Comparison Operators**
+#### Comparison Operators
 
 The `ComparisonOperator` enum defines all comparison and validation operations:
 
@@ -1047,7 +1047,7 @@ public enum ComparisonOperator {
 }
 ````
 
-### ⚡ **Action Nodes**
+### ⚡ Action Nodes
 
 Action nodes represent operations that modify the evaluation context or perform side effects:
 
@@ -1070,7 +1070,7 @@ public abstract class Action extends ASTNode {
 }
 ````
 
-#### **Set Actions**
+#### Set Actions
 
 The most common action type for variable assignment:
 
@@ -1098,7 +1098,7 @@ public class SetAction extends Action {
 }
 ````
 
-#### **Calculate Actions**
+#### Calculate Actions
 
 For arithmetic calculations with result assignment:
 
@@ -1126,9 +1126,9 @@ public class CalculateAction extends Action {
 
 The parsing pipeline transforms tokens into AST nodes through a series of specialized parsers that work together to handle the complete DSL grammar.
 
-### 🔄 **Parser Architecture**
+### 🔄 Parser Architecture
 
-The parsing system uses a **recursive descent parser** architecture with separate parsers for different language constructs:
+The parsing system uses a recursive descent parser architecture with separate parsers for different language constructs:
 
 ```
 DSLParser (Main Coordinator)
@@ -1138,7 +1138,7 @@ DSLParser (Main Coordinator)
 └── BaseParser (Common parsing utilities)
 ```
 
-### 🎯 **Main DSL Parser**
+### 🎯 Main DSL Parser
 
 The `DSLParser` class coordinates the parsing process and delegates to specialized parsers:
 
@@ -1170,7 +1170,7 @@ public class DSLParser extends BaseParser {
 }
 ````
 
-### 📊 **Expression Parser**
+### 📊 Expression Parser
 
 The `ExpressionParser` handles arithmetic, logical, and function call expressions using operator precedence parsing:
 
@@ -1219,7 +1219,7 @@ public class ExpressionParser extends BaseParser {
 }
 ````
 
-### 🔍 **Condition Parser**
+### 🔍 Condition Parser
 
 The `ConditionParser` specializes in parsing comparison and logical conditions:
 
@@ -1261,7 +1261,7 @@ public class ConditionParser extends BaseParser {
 }
 ````
 
-### ⚡ **Action Parser**
+### ⚡ Action Parser
 
 The `ActionParser` handles all action types including assignments and function calls:
 
@@ -1303,13 +1303,13 @@ public class ActionParser extends BaseParser {
 
 ## Visitor Pattern Implementation
 
-### 🧠 **Understanding the Visitor Pattern**
+### 🧠 Understanding the Visitor Pattern
 
-**What is the Visitor Pattern?**
+What is the Visitor Pattern?
 
 The Visitor Pattern is a behavioral design pattern that allows you to define new operations on a set of objects without modifying their classes. It's particularly useful when you have a stable object structure (like an AST) but want to add new operations frequently.
 
-**The Problem It Solves:**
+The Problem It Solves:
 
 Imagine you have an AST with many node types (BinaryExpression, VariableExpression, SetAction, etc.). You want to perform different operations on these nodes:
 - Evaluate expressions
@@ -1318,7 +1318,7 @@ Imagine you have an AST with many node types (BinaryExpression, VariableExpressi
 - Generate code
 - Collect statistics
 
-**Without Visitor Pattern (Bad Approach):**
+Without Visitor Pattern (Bad Approach):
 
 ```java
 // This approach violates the Open/Closed Principle
@@ -1331,13 +1331,13 @@ public abstract class ASTNode {
 }
 ```
 
-**Problems with this approach:**
-1. **Violates Open/Closed Principle**: Adding new operations requires modifying existing classes
-2. **Mixed Responsibilities**: Node classes contain both structure and operations
-3. **Difficult Maintenance**: Changes to one operation affect all node classes
-4. **Poor Extensibility**: Third-party developers can't add operations
+Problems with this approach:
+1. Violates Open/Closed Principle: Adding new operations requires modifying existing classes
+2. Mixed Responsibilities: Node classes contain both structure and operations
+3. Difficult Maintenance: Changes to one operation affect all node classes
+4. Poor Extensibility: Third-party developers can't add operations
 
-**With Visitor Pattern (Good Approach):**
+With Visitor Pattern (Good Approach):
 
 ```java
 // Node classes only contain structure
@@ -1353,13 +1353,13 @@ public interface ASTVisitor<T> {
 }
 ```
 
-**Benefits of this approach:**
-1. **Follows Open/Closed Principle**: New operations can be added without modifying existing code
-2. **Separation of Concerns**: Node structure is separate from operations
-3. **Easy Extensibility**: New visitors can be added by anyone
-4. **Type Safety**: Compile-time checking ensures all node types are handled
+Benefits of this approach:
+1. Follows Open/Closed Principle: New operations can be added without modifying existing code
+2. Separation of Concerns: Node structure is separate from operations
+3. Easy Extensibility: New visitors can be added by anyone
+4. Type Safety: Compile-time checking ensures all node types are handled
 
-### 🎯 **ASTVisitor Interface Design**
+### 🎯 ASTVisitor Interface Design
 
 The `ASTVisitor` interface is the heart of the visitor pattern implementation:
 
@@ -1393,20 +1393,20 @@ public interface ASTVisitor<T> {
 }
 ```
 
-**Key Design Decisions:**
+Key Design Decisions:
 
-1. **Generic Return Type**: `<T>` allows different visitors to return different types
-2. **One Method Per Node**: Ensures all node types are explicitly handled
-3. **Descriptive Names**: Method names clearly indicate which node type they handle
-4. **Logical Grouping**: Methods are grouped by node category (expressions, conditions, actions)
+1. Generic Return Type: `<T>` allows different visitors to return different types
+2. One Method Per Node: Ensures all node types are explicitly handled
+3. Descriptive Names: Method names clearly indicate which node type they handle
+4. Logical Grouping: Methods are grouped by node category (expressions, conditions, actions)
 
-### 🧮 **Expression Evaluator: Bringing AST to Life**
+### 🧮 Expression Evaluator: Bringing AST to Life
 
-**What is the Expression Evaluator?**
+What is the Expression Evaluator?
 
 The `ExpressionEvaluator` is a concrete implementation of the `ASTVisitor` interface that traverses an AST and computes the actual values of expressions. It's the component that transforms the abstract syntax tree into concrete results.
 
-**How the Visitor Pattern Works in Practice:**
+How the Visitor Pattern Works in Practice:
 
 ```java
 public class ExpressionEvaluator implements ASTVisitor<Object> {
@@ -1469,15 +1469,15 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 }
 ```
 
-**Key Concepts Demonstrated:**
+Key Concepts Demonstrated:
 
-1. **Recursive Evaluation**: Each visitor method calls `accept(this)` on child nodes
-2. **Bottom-Up Evaluation**: Leaf nodes (literals, variables) are evaluated first
-3. **Type Handling**: The evaluator handles type conversions and validations
-4. **Context Dependency**: Variable values come from the evaluation context
-5. **Error Handling**: Invalid operations throw descriptive exceptions
+1. Recursive Evaluation: Each visitor method calls `accept(this)` on child nodes
+2. Bottom-Up Evaluation: Leaf nodes (literals, variables) are evaluated first
+3. Type Handling: The evaluator handles type conversions and validations
+4. Context Dependency: Variable values come from the evaluation context
+5. Error Handling: Invalid operations throw descriptive exceptions
 
-**Example Evaluation Flow:**
+Example Evaluation Flow:
 
 For the expression `(income + bonus) * 0.1`:
 
@@ -1491,25 +1491,25 @@ For the expression `(income + bonus) * 0.1`:
    └── Final Result: 5500.0
 ```
 
-**Why This Design is Powerful:**
+Why This Design is Powerful:
 
-1. **Composability**: Complex expressions are built from simple ones
-2. **Reusability**: The same evaluator works for any expression structure
-3. **Extensibility**: New expression types just need new visitor methods
-4. **Testability**: Each visitor method can be tested independently
+1. Composability: Complex expressions are built from simple ones
+2. Reusability: The same evaluator works for any expression structure
+3. Extensibility: New expression types just need new visitor methods
+4. Testability: Each visitor method can be tested independently
 
-### ⚡ **Action Executor: Modifying System State**
+### ⚡ Action Executor: Modifying System State
 
-**What is the Action Executor?**
+What is the Action Executor?
 
 The `ActionExecutor` is another concrete visitor that executes actions - operations that modify the system state rather than just computing values. While expressions are "pure" (they don't change anything), actions have "side effects" (they modify variables, call external services, etc.).
 
-**Key Difference from Expression Evaluator:**
+Key Difference from Expression Evaluator:
 
-- **Expression Evaluator**: Returns values (`ASTVisitor<Object>`)
-- **Action Executor**: Performs side effects (`ASTVisitor<Void>`)
+- Expression Evaluator: Returns values (`ASTVisitor<Object>`)
+- Action Executor: Performs side effects (`ASTVisitor<Void>`)
 
-**Action Executor Design:**
+Action Executor Design:
 
 ```java
 public class ActionExecutor implements ASTVisitor<Void> {
@@ -1596,15 +1596,15 @@ public class ActionExecutor implements ASTVisitor<Void> {
 }
 ```
 
-**Key Concepts:**
+Key Concepts:
 
-1. **Side Effects**: Actions modify the evaluation context
-2. **Expression Delegation**: Actions use the expression evaluator for value computation
-3. **Recursive Execution**: Conditional actions can contain other actions
-4. **Type Handling**: Different assignment operators handle types differently
-5. **Error Handling**: Invalid operations throw descriptive exceptions
+1. Side Effects: Actions modify the evaluation context
+2. Expression Delegation: Actions use the expression evaluator for value computation
+3. Recursive Execution: Conditional actions can contain other actions
+4. Type Handling: Different assignment operators handle types differently
+5. Error Handling: Invalid operations throw descriptive exceptions
 
-**Example Action Execution:**
+Example Action Execution:
 
 For the action sequence:
 ```yaml
@@ -1619,29 +1619,29 @@ Execution flow:
 2. `visitCalculateAction`: Evaluates `600 + (75000 / 1000) = 675`, sets `adjusted_score = 675`
 3. `visitSetAction`: Sets `final_score = 675`
 
-### 🎯 **Evaluation Context: The State Container**
+### 🎯 Evaluation Context: The State Container
 
-**What is the Evaluation Context?**
+What is the Evaluation Context?
 
 The `EvaluationContext` is the central state container during rule evaluation. It holds all variables, tracks execution state, and provides the runtime environment for rule execution. Think of it as the "memory" of the rule engine during evaluation.
 
-**Why Do We Need Variable Scoping?**
+Why Do We Need Variable Scoping?
 
 In a rule engine, variables can come from different sources with different priorities:
 
-1. **Input Variables**: Provided by the API caller (e.g., `creditScore`, `income`)
-2. **System Constants**: Loaded from database (e.g., `MIN_CREDIT_SCORE`, `MAX_LOAN_AMOUNT`)
-3. **Computed Variables**: Calculated during rule execution (e.g., `risk_score`, `approval_status`)
+1. Input Variables: Provided by the API caller (e.g., `creditScore`, `income`)
+2. System Constants: Loaded from database (e.g., `MIN_CREDIT_SCORE`, `MAX_LOAN_AMOUNT`)
+3. Computed Variables: Calculated during rule execution (e.g., `risk_score`, `approval_status`)
 
-**The Variable Resolution Problem:**
+The Variable Resolution Problem:
 
 What happens if the same variable name exists in multiple scopes? For example:
 - Input: `score = 750` (from API)
 - Computed: `score = 800` (calculated during rule)
 
-Which value should `score` resolve to? The evaluation context implements a **priority-based resolution system**.
+Which value should `score` resolve to? The evaluation context implements a priority-based resolution system.
 
-**Evaluation Context Design:**
+Evaluation Context Design:
 
 ```java
 public class EvaluationContext {
@@ -1717,15 +1717,15 @@ public class EvaluationContext {
 }
 ```
 
-**Key Design Principles:**
+Key Design Principles:
 
-1. **Priority-Based Resolution**: Computed variables shadow input variables and constants
-2. **Thread Safety**: Uses `ConcurrentHashMap` for thread-safe access
-3. **Debug Support**: Optional logging of all variable changes
-4. **Immutable Snapshots**: Getter methods return defensive copies
-5. **Performance Tracking**: Built-in metrics collection
+1. Priority-Based Resolution: Computed variables shadow input variables and constants
+2. Thread Safety: Uses `ConcurrentHashMap` for thread-safe access
+3. Debug Support: Optional logging of all variable changes
+4. Immutable Snapshots: Getter methods return defensive copies
+5. Performance Tracking: Built-in metrics collection
 
-**Example Variable Resolution:**
+Example Variable Resolution:
 
 ```java
 // Setup context
@@ -1739,23 +1739,23 @@ context.getVariable("MIN_SCORE");  // Returns 600 (only in constants)
 context.getVariable("unknown");    // Returns null (doesn't exist)
 ```
 
-**Why This Design Works:**
+Why This Design Works:
 
-1. **Predictable Behavior**: Clear priority rules prevent confusion
-2. **Flexibility**: Rules can override input values when needed
-3. **Performance**: Hash map lookups are O(1)
-4. **Debugging**: Full trace of variable changes available
-5. **Isolation**: Each evaluation gets its own context
+1. Predictable Behavior: Clear priority rules prevent confusion
+2. Flexibility: Rules can override input values when needed
+3. Performance: Hash map lookups are O(1)
+4. Debugging: Full trace of variable changes available
+5. Isolation: Each evaluation gets its own context
 
 ## Evaluation Engine
 
-### 🧠 **Understanding the Evaluation Engine**
+### 🧠 Understanding the Evaluation Engine
 
-**What is the Evaluation Engine?**
+What is the Evaluation Engine?
 
 The `ASTRulesEvaluationEngine` is the orchestrator that coordinates the entire rule evaluation process. It's like the conductor of an orchestra, ensuring all components work together harmoniously to evaluate a rule.
 
-**The Evaluation Process:**
+The Evaluation Process:
 
 Rule evaluation follows a well-defined pipeline that ensures correctness, performance, and debuggability:
 
@@ -1763,7 +1763,7 @@ Rule evaluation follows a well-defined pipeline that ensures correctness, perfor
 Input (YAML + Data) → Parse → Validate → Load Constants → Evaluate → Execute → Result
 ```
 
-### 🚀 **Main Evaluation Engine Architecture**
+### 🚀 Main Evaluation Engine Architecture
 
 ```java
 @Component
@@ -1844,62 +1844,62 @@ public class ASTRulesEvaluationEngine {
 }
 ```
 
-### 🔍 **Detailed Phase Analysis**
+### 🔍 Detailed Phase Analysis
 
-#### **Phase 1: Parsing**
+#### Phase 1: Parsing
 ```java
 ASTRulesDSL rulesDSL = astParser.parseRules(rulesDefinition);
 ```
 
-**What happens:**
+What happens:
 - YAML is parsed into a Map structure
 - DSL expressions are tokenized
 - AST nodes are constructed
 - Syntax validation occurs
 
-**Why it's important:**
+Why it's important:
 - Catches syntax errors early
 - Creates optimized AST structure
 - Enables caching for performance
 
-#### **Phase 2: Context Creation**
+#### Phase 2: Context Creation
 ```java
 EvaluationContext context = createEvaluationContext(rulesDSL, inputData, operationId);
 ```
 
-**What happens:**
+What happens:
 - Input variables are stored in context
 - Metadata (rule name, operation ID) is set
 - Debug mode is configured
 - Performance tracking is initialized
 
-#### **Phase 3: Constant Loading**
+#### Phase 3: Constant Loading
 ```java
 loadSystemConstants(context, rulesDSL);
 ```
 
-**What happens:**
+What happens:
 - AST is scanned for variable references
 - Required constants are loaded from database
 - Constants are stored in context with lowest priority
 
-**Why it's optimized:**
+Why it's optimized:
 - Only loads constants that are actually used
 - Batch loads multiple constants in one query
 - Caches constants for subsequent evaluations
 
-#### **Phase 4: Visitor Creation**
+#### Phase 4: Visitor Creation
 ```java
 ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator(context, ...);
 ActionExecutor actionExecutor = new ActionExecutor(context, ...);
 ```
 
-**What happens:**
+What happens:
 - Visitors are configured with evaluation context
 - External services are injected for REST calls and JSON path queries
 - Visitors are ready to traverse the AST
 
-#### **Phase 5: Condition Evaluation**
+#### Phase 5: Condition Evaluation
 ```java
 boolean conditionResult = evaluateConditions(rulesDSL.getConditions(), expressionEvaluator);
 
@@ -1923,12 +1923,12 @@ private boolean evaluateConditions(List<Condition> conditions, ExpressionEvaluat
 }
 ```
 
-**Key concepts:**
-- **Short-circuit evaluation**: Stops at first false condition
-- **Implicit AND**: All conditions must be true
-- **Null safety**: Handles null results gracefully
+Key concepts:
+- Short-circuit evaluation: Stops at first false condition
+- Implicit AND: All conditions must be true
+- Null safety: Handles null results gracefully
 
-#### **Phase 6: Action Execution**
+#### Phase 6: Action Execution
 ```java
 List<Action> actionsToExecute = conditionResult ?
     rulesDSL.getThenActions() : rulesDSL.getElseActions();
@@ -1936,18 +1936,18 @@ List<Action> actionsToExecute = conditionResult ?
 executeActions(actionsToExecute, actionExecutor);
 ```
 
-**What happens:**
+What happens:
 - Chooses action list based on condition result
 - Executes actions sequentially
 - Each action can modify the evaluation context
 - Side effects (variable assignments, external calls) occur here
 
-#### **Phase 7: Result Generation**
+#### Phase 7: Result Generation
 ```java
 return buildEvaluationResult(context, conditionResult, startTime);
 ```
 
-**What happens:**
+What happens:
 - Collects all computed variables as outputs
 - Calculates performance metrics
 - Packages debug information if enabled
@@ -1957,7 +1957,7 @@ return buildEvaluationResult(context, conditionResult, startTime);
 
 The validation system ensures that AST structures are semantically correct before evaluation. It uses the visitor pattern to traverse the AST and collect validation errors.
 
-### 🔍 **YAML DSL Validator**
+### 🔍 YAML DSL Validator
 
 The main validator coordinates validation across multiple dimensions:
 
@@ -2016,7 +2016,7 @@ public class YamlDslValidator implements ASTVisitor<List<ValidationError>> {
 }
 ````
 
-### 🎯 **Validation Visitor**
+### 🎯 Validation Visitor
 
 The `ValidationVisitor` performs semantic validation of AST nodes:
 
@@ -2113,9 +2113,9 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
 
 ## Error Handling
 
-The AST system provides comprehensive error handling with detailed diagnostics and recovery mechanisms.
+The AST system provides error handling with detailed diagnostics and recovery mechanisms.
 
-### 🚨 **Exception Hierarchy**
+### 🚨 Exception Hierarchy
 
 ```
 Exception
@@ -2127,7 +2127,7 @@ Exception
         └── EvaluationException (evaluation errors)
 ```
 
-### 🎯 **AST Exception**
+### 🎯 AST Exception
 
 The base exception class for all AST-related errors:
 
@@ -2179,7 +2179,7 @@ public class ASTException extends RuntimeException {
 }
 ````
 
-### 🔧 **Error Recovery**
+### 🔧 Error Recovery
 
 The parser includes error recovery mechanisms to continue parsing after encountering errors:
 
@@ -2218,7 +2218,7 @@ private void synchronize() {
 
 The AST system includes several performance optimizations for high-throughput scenarios:
 
-### 🚀 **AST Caching**
+### 🚀 AST Caching
 
 Parsed AST trees can be cached to avoid re-parsing identical YAML content:
 
@@ -2248,16 +2248,16 @@ public ASTRulesDSL parseRules(String rulesDefinition) {
 }
 ````
 
-### ⚡ **Optimization Strategies**
+### ⚡ Optimization Strategies
 
-1. **Constant Folding**: Evaluate constant expressions at parse time
-2. **Variable Reference Optimization**: Pre-collect variable references for efficient constant loading
-3. **Expression Type Inference**: Determine expression types early for optimization
-4. **Operator Precedence**: Use precedence-based parsing for efficient expression evaluation
-5. **Memory Pool**: Reuse AST node instances where possible
-6. **Lazy Evaluation**: Defer expensive operations until needed
+1. Constant Folding: Evaluate constant expressions at parse time
+2. Variable Reference Optimization: Pre-collect variable references for efficient constant loading
+3. Expression Type Inference: Determine expression types early for optimization
+4. Operator Precedence: Use precedence-based parsing for efficient expression evaluation
+5. Memory Pool: Reuse AST node instances where possible
+6. Lazy Evaluation: Defer expensive operations until needed
 
-### 📊 **Performance Metrics**
+### 📊 Performance Metrics
 
 The evaluation engine tracks performance metrics:
 
@@ -2277,25 +2277,25 @@ private void recordPerformanceMetrics(EvaluationContext context, long startTime)
 
 This section provides a comprehensive understanding of the architectural distinction between functions and operators in the Firefly Framework Rule Engine, along with practical tutorials for implementing both.
 
-### 🧠 **Fundamental Architectural Distinction**
+### 🧠 Fundamental Architectural Distinction
 
-The Firefly Framework Rule Engine makes a clear architectural distinction between **operators** and **functions** based on their purpose, complexity, and implementation requirements.
+The Firefly Framework Rule Engine makes a clear architectural distinction between operators and functions based on their purpose, complexity, and implementation requirements.
 
-#### **🔧 Operators: Core Language Constructs**
+#### 🔧 Operators: Core Language Constructs
 
-**Operators** are fundamental language constructs that form the backbone of the DSL grammar. They are:
+Operators are fundamental language constructs that form the backbone of the DSL grammar. They are:
 
-- **Purpose**: Core comparisons and logical operations
-- **Syntax**: Infix notation (`creditScore greater_than 650`)
-- **Implementation**: Defined in lexer tokens and handled by specialized parsers
-- **Characteristics**:
+- Purpose: Core comparisons and logical operations
+- Syntax: Infix notation (`creditScore greater_than 650`)
+- Implementation: Defined in lexer tokens and handled by specialized parsers
+- Characteristics:
   - Fixed arity (usually binary: left operator right)
   - Simple, predictable behavior
   - Core to the DSL grammar structure
   - Optimized for performance
   - Type-safe at parse time
 
-**Examples of Operators:**
+Examples of Operators:
 ```yaml
 # Comparison operators
 - creditScore greater_than 650
@@ -2312,21 +2312,21 @@ The Firefly Framework Rule Engine makes a clear architectural distinction betwee
 - creditScore is_credit_score
 ```
 
-#### **⚡ Functions: Complex Operations with Side Effects**
+#### ⚡ Functions: Complex Operations with Side Effects
 
-**Functions** are complex operations that may have side effects, variable parameters, or require external services. They are:
+Functions are complex operations that may have side effects, variable parameters, or require external services. They are:
 
-- **Purpose**: Complex operations, calculations, and external integrations
-- **Syntax**: Function call notation (`rest_get(url, headers, timeout)`)
-- **Implementation**: Handled in the ExpressionEvaluator visitor
-- **Characteristics**:
+- Purpose: Complex operations, calculations, and external integrations
+- Syntax: Function call notation (`rest_get(url, headers, timeout)`)
+- Implementation: Handled in the ExpressionEvaluator visitor
+- Characteristics:
   - Variable arity (0 to many parameters)
   - May have side effects (REST calls, logging, database access)
   - Can access injected services
   - Extensible without changing core grammar
   - Runtime parameter validation
 
-**Examples of Functions:**
+Examples of Functions:
 ```yaml
 # REST API calls
 - run api_data as rest_get("https://api.example.com/credit", headers, 30)
@@ -2345,9 +2345,9 @@ The Firefly Framework Rule Engine makes a clear architectural distinction betwee
 - calculate full_name as concat(firstName, " ", lastName)
 ```
 
-### 🏗️ **Why This Architecture Matters**
+### 🏗️ Why This Architecture Matters
 
-#### **1. Separation of Concerns**
+#### 1. Separation of Concerns
 
 ```java
 // Operators: Handled in lexer and parser
@@ -2369,9 +2369,9 @@ public Object visitFunctionCallExpression(FunctionCallExpression node) {
 }
 ```
 
-#### **2. Parameter Flexibility**
+#### 2. Parameter Flexibility
 
-**Operators** have fixed parameter patterns:
+Operators have fixed parameter patterns:
 ```yaml
 # Binary operators: left operator right
 creditScore greater_than 650
@@ -2381,7 +2381,7 @@ income between 30000 and 80000
 email is_email
 ```
 
-**Functions** support variable parameters:
+Functions support variable parameters:
 ```yaml
 # Variable number of parameters
 - run max_value as max(score1)                    # 1 parameter
@@ -2394,9 +2394,9 @@ email is_email
 - run api_data as rest_get(url, headers, 30)      # Custom timeout
 ```
 
-#### **3. Service Integration**
+#### 3. Service Integration
 
-**Functions** can access injected Spring services:
+Functions can access injected Spring services:
 ```java
 @Component
 public class ExpressionEvaluator implements ASTVisitor<Object> {
@@ -2430,11 +2430,11 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 }
 ```
 
-### 📚 **Tutorial: Creating a New Function**
+### 📚 Tutorial: Creating a New Function
 
 Let's walk through creating a new function called `calculate_credit_risk` that combines multiple credit factors.
 
-#### **Step 1: Define the Function Logic**
+#### Step 1: Define the Function Logic
 
 Add the function to the `ExpressionEvaluator` class:
 
@@ -2537,11 +2537,11 @@ private String getRecommendation(double riskScore) {
 }
 ```
 
-#### **Step 2: Add Function Documentation**
+#### Step 2: Add Function Documentation
 
 Update the YAML DSL reference to document the new function:
 
-```yaml
+````markdown
 # In docs/yaml-dsl-reference.md
 
 ## Mathematical and Financial Functions
@@ -2579,9 +2579,9 @@ Object with properties:
 - set approved to risk_assessment.recommendation equals "APPROVE"
 - set risk_level to risk_assessment.riskLevel
 ```
-```
+````
 
-#### **Step 3: Add Comprehensive Tests**
+#### Step 3: Add Comprehensive Tests
 
 Create tests for the new function:
 
@@ -2662,7 +2662,7 @@ void testCalculateCreditRiskErrorHandling() {
 }
 ```
 
-#### **Step 4: Usage Examples**
+#### Step 4: Usage Examples
 
 Here's how the new function would be used in real rules:
 
@@ -2710,11 +2710,11 @@ then:
       - set loan_term_months to 240
 ```
 
-### 📚 **Tutorial: Creating a New Operator**
+### 📚 Tutorial: Creating a New Operator
 
 Now let's create a new operator called `credit_score_range` that checks if a credit score falls within a specific range category.
 
-#### **Step 1: Add Token Type**
+#### Step 1: Add Token Type
 
 Add the new operator to the `TokenType` enum:
 
@@ -2729,7 +2729,7 @@ public enum TokenType {
 }
 ```
 
-#### **Step 2: Add Lexer Recognition**
+#### Step 2: Add Lexer Recognition
 
 Update the lexer to recognize the new operator:
 
@@ -2756,7 +2756,7 @@ private boolean checkForCreditOperators() {
 }
 ```
 
-#### **Step 3: Add Comparison Operator**
+#### Step 3: Add Comparison Operator
 
 Add the operator to the `ComparisonOperator` enum:
 
@@ -2770,7 +2770,7 @@ public enum ComparisonOperator {
 }
 ```
 
-#### **Step 4: Add Parser Support**
+#### Step 4: Add Parser Support
 
 Update the condition parser to handle the new operator:
 
@@ -2788,7 +2788,7 @@ private Condition comparison() {
 }
 ```
 
-#### **Step 5: Add Evaluation Logic**
+#### Step 5: Add Evaluation Logic
 
 Add the evaluation logic to the condition evaluator:
 
@@ -2838,7 +2838,7 @@ private Boolean evaluateCreditScoreRange(Object creditScoreObj, Expression range
 }
 ```
 
-#### **Step 6: Add Documentation and Tests**
+#### Step 6: Add Documentation and Tests
 
 Document the new operator:
 
@@ -2853,14 +2853,14 @@ Checks if a credit score falls within a standard credit score range category.
 creditScore credit_score_range "range_name"
 ```
 
-**Valid Ranges:**
+Valid Ranges:
 - `"poor"`: 300-579
 - `"fair"`: 580-669
 - `"good"`: 670-739
 - `"very_good"`: 740-799
 - `"excellent"`: 800-850
 
-**Examples:**
+Examples:
 ```yaml
 when:
   - creditScore credit_score_range "good"
@@ -2928,41 +2928,41 @@ void testAllCreditScoreRanges() {
 }
 ```
 
-### 🎯 **When to Choose Functions vs Operators**
+### 🎯 When to Choose Functions vs Operators
 
-#### **Choose Functions When:**
+#### Choose Functions When:
 
-1. **Variable Parameters**: Need 0 to many parameters
+1. Variable Parameters: Need 0 to many parameters
    ```yaml
    # Functions can handle variable parameters elegantly
    - run max_value as max(score1, score2, score3, score4)
    - run api_data as rest_get(url, headers, timeout)
    ```
 
-2. **Side Effects**: Operation involves external systems
+2. Side Effects: Operation involves external systems
    ```yaml
    # REST calls, database access, logging
    - run credit_report as rest_get("https://credit-api.com/report", headers)
    - calculate audit_log as log_event("CREDIT_CHECK", userId, timestamp)
    ```
 
-3. **Complex Logic**: Multi-step calculations or business logic
+3. Complex Logic: Multi-step calculations or business logic
    ```yaml
    # Complex financial calculations
    - calculate loan_payment as calculate_loan_payment(principal, rate, term, type)
    - calculate risk_score as calculate_credit_risk(score, income, debt, employment)
    ```
 
-4. **Service Integration**: Need access to Spring services
+4. Service Integration: Need access to Spring services
    ```java
    // Functions can access injected services
    @Autowired private RestCallService restCallService;
    @Autowired private DatabaseService databaseService;
    ```
 
-#### **Choose Operators When:**
+#### Choose Operators When:
 
-1. **Core Language Constructs**: Fundamental comparisons and logic
+1. Core Language Constructs: Fundamental comparisons and logic
    ```yaml
    # Basic comparisons that are core to the language
    - creditScore greater_than 650
@@ -2970,31 +2970,31 @@ void testAllCreditScoreRanges() {
    - income between 30000 and 80000
    ```
 
-2. **Fixed Arity**: Always the same number of operands
+2. Fixed Arity: Always the same number of operands
    ```yaml
    # Binary operators: left operator right
    - value1 greater_than value2
    - text contains "substring"
    ```
 
-3. **High Performance**: Need optimized evaluation
+3. High Performance: Need optimized evaluation
    ```java
    // Operators are optimized in the parser and evaluator
    // No function call overhead
    ```
 
-4. **Grammar Integration**: Part of the core DSL syntax
+4. Grammar Integration: Part of the core DSL syntax
    ```yaml
    # Operators integrate naturally with the grammar
    when:
      - condition1 and condition2 or condition3
    ```
 
-### 🚀 **Best Practices**
+### 🚀 Best Practices
 
-#### **For Functions:**
+#### For Functions:
 
-1. **Parameter Validation**: Always validate parameters
+1. Parameter Validation: Always validate parameters
    ```java
    private Object myFunction(Object[] args) {
        if (args.length < 2) {
@@ -3005,7 +3005,7 @@ void testAllCreditScoreRanges() {
    }
    ```
 
-2. **Error Handling**: Graceful error handling with logging
+2. Error Handling: Graceful error handling with logging
    ```java
    try {
        // Function logic
@@ -3015,15 +3015,15 @@ void testAllCreditScoreRanges() {
    }
    ```
 
-3. **Documentation**: Comprehensive documentation with examples
-4. **Testing**: Test all parameter combinations and error cases
+3. Documentation: Comprehensive documentation with examples
+4. Testing: Test all parameter combinations and error cases
 
-#### **For Operators:**
+#### For Operators:
 
-1. **Precedence**: Carefully consider operator precedence
-2. **Type Safety**: Ensure type compatibility at parse time
-3. **Performance**: Optimize for high-frequency evaluation
-4. **Consistency**: Follow existing operator patterns
+1. Precedence: Carefully consider operator precedence
+2. Type Safety: Ensure type compatibility at parse time
+3. Performance: Optimize for high-frequency evaluation
+4. Consistency: Follow existing operator patterns
 
 This comprehensive guide provides everything needed to understand and extend the function and operator systems in the Firefly Framework Rule Engine. The clear architectural separation enables both powerful functionality and maintainable code.
 
@@ -3031,9 +3031,9 @@ This comprehensive guide provides everything needed to understand and extend the
 
 This section provides comprehensive guidance for extending the AST system with new functionality.
 
-### 🔧 **Adding New Operators**
+### 🔧 Adding New Operators
 
-#### **Step 1: Define the Operator**
+#### Step 1: Define the Operator
 
 Add your operator to the appropriate enum:
 
@@ -3048,7 +3048,7 @@ IS_CUSTOM("is_custom", ExpressionType.BOOLEAN),
 CUSTOM_COMPARISON("custom_comparison"),
 ```
 
-#### **Step 2: Add Token Type**
+#### Step 2: Add Token Type
 
 Add the token type to `TokenType.java`:
 
@@ -3057,7 +3057,7 @@ Add the token type to `TokenType.java`:
 CUSTOM_OPERATOR("custom_op", TokenCategory.OPERATOR),
 ```
 
-#### **Step 3: Update Lexer**
+#### Step 3: Update Lexer
 
 Add recognition in the lexer if needed:
 
@@ -3069,7 +3069,7 @@ static {
 }
 ```
 
-#### **Step 4: Implement Evaluation Logic**
+#### Step 4: Implement Evaluation Logic
 
 Add evaluation logic to `ExpressionEvaluator.java`:
 
@@ -3098,7 +3098,7 @@ private Object evaluateCustomOperator(Object left, Object right) {
 }
 ```
 
-#### **Step 5: Add Validation**
+#### Step 5: Add Validation
 
 Update validation logic in `ValidationVisitor.java`:
 
@@ -3113,7 +3113,7 @@ private boolean isOperatorCompatible(BinaryOperator operator, ExpressionType lef
 }
 ```
 
-#### **Step 6: Add Tests**
+#### Step 6: Add Tests
 
 Create comprehensive tests:
 
@@ -3147,9 +3147,9 @@ void testCustomOperator() {
 }
 ```
 
-### 🔧 **Adding New Functions**
+### 🔧 Adding New Functions
 
-#### **Step 1: Implement Function Logic**
+#### Step 1: Implement Function Logic
 
 Add your function to `ExpressionEvaluator.java`:
 
@@ -3191,7 +3191,7 @@ private Object customFunction(Object[] args) {
 }
 ```
 
-#### **Step 2: Add Function to Action Executor**
+#### Step 2: Add Function to Action Executor
 
 If your function can be used in actions:
 
@@ -3217,7 +3217,7 @@ public Void visitFunctionCallAction(FunctionCallAction node) {
 }
 ```
 
-#### **Step 3: Add Validation**
+#### Step 3: Add Validation
 
 Update validation to recognize your function:
 
@@ -3253,9 +3253,9 @@ public List<ValidationError> visitFunctionCallExpression(FunctionCallExpression 
 }
 ```
 
-### 🔧 **Adding New AST Node Types**
+### 🔧 Adding New AST Node Types
 
-#### **Step 1: Create the Node Class**
+#### Step 1: Create the Node Class
 
 ```java
 // Create new file: CustomExpression.java
@@ -3310,7 +3310,7 @@ public class CustomExpression extends Expression {
 }
 ```
 
-#### **Step 2: Update ASTVisitor Interface**
+#### Step 2: Update ASTVisitor Interface
 
 ```java
 // In ASTVisitor.java
@@ -3320,7 +3320,7 @@ public interface ASTVisitor<T> {
 }
 ```
 
-#### **Step 3: Implement Visitor Methods**
+#### Step 3: Implement Visitor Methods
 
 ```java
 // In ExpressionEvaluator.java
@@ -3343,68 +3343,67 @@ public Object visitCustomExpression(CustomExpression node) {
 
 ## Best Practices
 
-### 🎯 **Development Guidelines**
+### 🎯 Development Guidelines
 
-#### **1. Type Safety**
+#### 1. Type Safety
 - Always validate argument types in functions and operators
 - Use proper type conversion with error handling
 - Provide clear error messages for type mismatches
 - Leverage the `ExpressionType` enum for type checking
 
-#### **2. Performance Considerations**
+#### 2. Performance Considerations
 - Avoid expensive operations in frequently called functions
 - Consider caching for complex calculations
 - Use lazy evaluation where appropriate
 - Profile performance with realistic data volumes
 
-#### **3. Error Handling**
+#### 3. Error Handling
 - Throw `ASTException` for AST-related errors
 - Include context information in error messages
 - Provide suggestions for fixing errors when possible
 - Use proper error codes for categorization
 
-#### **4. Testing Strategy**
+#### 4. Testing Strategy
 - Write comprehensive unit tests for all extensions
 - Include edge cases and error scenarios
 - Test integration with existing AST components
 - Verify validation rules work correctly
 - Use property-based testing for complex operators
 
-#### **5. Documentation**
+#### 5. Documentation
 - Document all new operators, functions, and node types
 - Provide examples in YAML DSL format
 - Include performance characteristics and limitations
 - Update the YAML DSL reference documentation
 
-#### **6. Code Organization**
+#### 6. Code Organization
 - Follow the existing package structure
 - Use consistent naming conventions
 - Implement proper equals/hashCode for AST nodes
 - Maintain immutability of AST nodes after construction
 
-### 🔧 **Extension Checklist**
+### 🔧 Extension Checklist
 
 When adding new functionality to the AST system, use this checklist:
 
-- [ ] **Token Type**: Added to `TokenType.java` if needed
-- [ ] **Lexer**: Updated to recognize new tokens
-- [ ] **Parser**: Updated to parse new syntax
-- [ ] **AST Node**: Created new node class if needed
-- [ ] **Visitor Interface**: Updated with new visit methods
-- [ ] **Expression Evaluator**: Implemented evaluation logic
-- [ ] **Action Executor**: Implemented execution logic if applicable
-- [ ] **Validation**: Added validation rules
-- [ ] **Error Handling**: Proper exception handling
-- [ ] **Tests**: Comprehensive test coverage
-- [ ] **Documentation**: Updated documentation
-- [ ] **Performance**: Considered performance implications
+- [ ] Token Type: Added to `TokenType.java` if needed
+- [ ] Lexer: Updated to recognize new tokens
+- [ ] Parser: Updated to parse new syntax
+- [ ] AST Node: Created new node class if needed
+- [ ] Visitor Interface: Updated with new visit methods
+- [ ] Expression Evaluator: Implemented evaluation logic
+- [ ] Action Executor: Implemented execution logic if applicable
+- [ ] Validation: Added validation rules
+- [ ] Error Handling: Proper exception handling
+- [ ] Tests: Comprehensive test coverage
+- [ ] Documentation: Updated documentation
+- [ ] Performance: Considered performance implications
 
-### 📚 **Resources**
+### 📚 Resources
 
-- **Source Code**: `fireflyframework-rule-engine-core/src/main/java/com/firefly/rules/core/dsl/ast/`
-- **Tests**: `fireflyframework-rule-engine-core/src/test/java/com/firefly/rules/core/dsl/`
-- **Documentation**: `docs/yaml-dsl-reference.md`
-- **Examples**: `docs/my-first-rule-design.md`
+- Source Code: `fireflyframework-rule-engine-core/src/main/java/com/firefly/rules/core/dsl/ast/`
+- Tests: `fireflyframework-rule-engine-core/src/test/java/com/firefly/rules/core/dsl/`
+- Documentation: `docs/yaml-dsl-reference.md`
+- Examples: `docs/my-first-rule-design.md`
 
 This comprehensive guide provides everything needed to understand, use, and extend the Firefly Framework Rule Engine's AST system. The modular architecture and visitor pattern make it straightforward to add new functionality while maintaining type safety, performance, and reliability.
-```

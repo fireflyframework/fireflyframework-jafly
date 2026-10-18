@@ -54,8 +54,8 @@ fields so log lines are usable without unpacking the context.
 
 The default `RetryPolicy`:
 
-- **Retries** transport failures and 5xx responses.
-- **Does not retry** authentication or rate-limit failures.
+- Retries transport failures and 5xx responses.
+- Does not retry authentication or rate-limit failures.
 - Uses exponential backoff with jitter (`250ms`, `500ms`, `1s`, …, capped
   at `5s`).
 

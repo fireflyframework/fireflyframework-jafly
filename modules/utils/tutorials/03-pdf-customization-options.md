@@ -249,23 +249,23 @@ try {
 
 ## Best Practices for PDF Customization
 
-1. **Choose Appropriate Page Size**: Select the page size based on your target audience (A4 is common internationally, Letter in the US).
+1. Choose Appropriate Page Size: Select the page size based on your target audience (A4 is common internationally, Letter in the US).
 
-2. **Set Reasonable Margins**: Ensure your margins are large enough for printing (at least 0.5 inch or 36 points).
+2. Set Reasonable Margins: Ensure your margins are large enough for printing (at least 0.5 inch or 36 points).
 
-3. **Use Bookmarks for Long Documents**: Add bookmarks to make navigation easier in longer documents.
+3. Use Bookmarks for Long Documents: Add bookmarks to make navigation easier in longer documents.
 
-4. **Embed Fonts**: For consistent rendering across all PDF viewers, embed custom fonts by setting the font directory.
+4. Embed Fonts: For consistent rendering across all PDF viewers, embed custom fonts by setting the font directory.
 
-5. **Add Metadata**: Include proper metadata to make your PDFs more searchable and professional.
+5. Add Metadata: Include proper metadata to make your PDFs more searchable and professional.
 
-6. **Test PDF Rendering**: Always test your PDFs on different viewers to ensure consistent rendering.
+6. Test PDF Rendering: Always test your PDFs on different viewers to ensure consistent rendering.
 
-7. **Consider File Size**: Be mindful of image quality and embedded resources to keep PDF file sizes reasonable.
+7. Consider File Size: Be mindful of image quality and embedded resources to keep PDF file sizes reasonable.
 
 ## Next Steps
 
 Now that you understand how to customize PDF output, you can explore:
 
 - [Advanced Features](04-advanced-features.md)
-- [Complete Examples](05-complete-examples.md)
+- [Template and PDF usage](../../../docs/site/modules/utils.md#quick-start)

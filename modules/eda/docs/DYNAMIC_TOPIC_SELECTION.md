@@ -12,13 +12,13 @@ The Dynamic Topic Selection feature allows you to override default destinations 
 
 Creates an EventPublisher with a custom default destination using the default connection.
 
-**Parameters:**
+Parameters:
 - `publisherType` - The type of publisher (KAFKA, RABBITMQ, APPLICATION_EVENT, NOOP)
 - `customDefaultDestination` - The custom default destination to use
 
-**Returns:** `EventPublisher` or `null` if the base publisher is not available
+Returns: `EventPublisher` or `null` if the base publisher is not available
 
-**Example:**
+Example:
 ```java
 EventPublisher publisher = publisherFactory.getPublisherWithDestination(
     PublisherType.KAFKA, 
@@ -30,14 +30,14 @@ EventPublisher publisher = publisherFactory.getPublisherWithDestination(
 
 Creates an EventPublisher with a custom default destination using a specific connection.
 
-**Parameters:**
+Parameters:
 - `publisherType` - The type of publisher
 - `connectionId` - The connection ID to use
 - `customDefaultDestination` - The custom default destination to use
 
-**Returns:** `EventPublisher` or `null` if the base publisher is not available
+Returns: `EventPublisher` or `null` if the base publisher is not available
 
-**Example:**
+Example:
 ```java
 EventPublisher publisher = publisherFactory.getPublisherWithDestination(
     PublisherType.KAFKA, 
@@ -50,12 +50,12 @@ EventPublisher publisher = publisherFactory.getPublisherWithDestination(
 
 Creates the default EventPublisher with a custom default destination.
 
-**Parameters:**
+Parameters:
 - `customDefaultDestination` - The custom default destination to use
 
-**Returns:** `EventPublisher` or `null` if the default publisher is not available
+Returns: `EventPublisher` or `null` if the default publisher is not available
 
-**Example:**
+Example:
 ```java
 EventPublisher publisher = publisherFactory.getDefaultPublisherWithDestination("audit-events");
 ```
@@ -64,9 +64,9 @@ EventPublisher publisher = publisherFactory.getDefaultPublisherWithDestination("
 
 When publishing events, destinations are resolved in the following priority order:
 
-1. **Explicit Destination** - Destination provided in the `publish()` method call
-2. **Custom Default Destination** - Destination specified when creating the publisher
-3. **Configured Default Destination** - Destination from application properties
+1. Explicit Destination - Destination provided in the `publish()` method call
+2. Custom Default Destination - Destination specified when creating the publisher
+3. Configured Default Destination - Destination from application properties
 
 ### Example:
 
@@ -193,11 +193,11 @@ publisher.publish(event, null).subscribe();
 
 ## Best Practices
 
-1. **Cache Publishers**: Create publishers once and reuse them rather than creating new ones for each publish operation
-2. **Null Checks**: Always check if the returned publisher is null before using it
-3. **Meaningful Names**: Use descriptive destination names that clearly indicate the purpose
-4. **Environment Separation**: Use environment prefixes to separate events across different environments
-5. **Tenant Isolation**: In multi-tenant applications, ensure proper tenant isolation in destination names
+1. Cache Publishers: Create publishers once and reuse them rather than creating new ones for each publish operation
+2. Null Checks: Always check if the returned publisher is null before using it
+3. Meaningful Names: Use descriptive destination names that clearly indicate the purpose
+4. Environment Separation: Use environment prefixes to separate events across different environments
+5. Tenant Isolation: In multi-tenant applications, ensure proper tenant isolation in destination names
 
 ## Error Handling
 

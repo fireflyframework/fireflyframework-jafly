@@ -2,6 +2,10 @@
   "source": "../brand/ORIGIN.json",
   "recipe": "scripts/generate_brand.mjs",
   "exports": {
+    "onboarding-coordination.svg": "277d799b27615337909f2c3df0522ac73926108e915a19bd78528d954f18cccf",
+    "onboarding-coordination-narrow.svg": "dbec0cb9b9c29153f09c34c1d9f92dca109a555d25fe40bd3a1fb7f2909c026b",
+    "event-store.svg": "3209869f4f7472dfde6cdcf090a27ad7b40ece57d66ba96b92f077a8ccb98964",
+    "event-store-narrow.svg": "0e310800dd7b370ad5554b50caffb724f7fadb8974efb5ac9f90941bb11599e6",
     "reactor.svg": "f793ee06b70f78b6a7cf75b68c35e0eb765bc0fee361846a6a349e4ecbff784a",
     "reactor-narrow.svg": "027d2074ae5417f7d1f3d655b26ef38721507c068e3c042cf8d3c26044f7e08a",
     "request-flow.svg": "9ea2ccd325492a6a458fcc458482bd1fccfc5d9d23ccb015a01a7ee27de9ae5e",

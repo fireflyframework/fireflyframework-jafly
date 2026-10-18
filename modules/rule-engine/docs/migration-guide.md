@@ -1,6 +1,6 @@
 # Migration Guide
 
-A practical mapping from common rule-engine concepts to the Firefly Rule Engine DSL. The goal is to give you the **shortest path from a rule you've written in another engine to its Firefly equivalent**, and to make the trade-offs explicit so you know whether this engine is the right fit.
+A practical mapping from common rule-engine concepts to the Firefly Rule Engine DSL. The goal is to give you the shortest path from a rule you've written in another engine to its Firefly equivalent, and to make the trade-offs explicit so you know whether this engine is the right fit.
 
 ## Table of Contents
 
@@ -14,8 +14,8 @@ A practical mapping from common rule-engine concepts to the Firefly Rule Engine 
 
 ## Where Firefly sits in the landscape
 
-Firefly Rule Engine is a **stateless expression-evaluation engine over a single
-input map**. Each evaluation is an independent function call: parse a YAML rule,
+Firefly Rule Engine is a stateless expression-evaluation engine over a single
+input map. Each evaluation is an independent function call: parse a YAML rule,
 feed it inputs, get outputs.
 
 This is intentionally a smaller, more focused model than full-blown rule engines:
@@ -36,9 +36,9 @@ This is intentionally a smaller, more focused model than full-blown rule engines
 | Audit trail                          | Built-in               | Plugin                     | Listener interface    |
 | Hot reload                           | DB-backed; replace rule definition | KieScanner       | App reload            |
 
-If your rules are **"score / decide / classify based on this one payload"**, Firefly
-is purpose-built. If your rules are **"find applications where the spouse's credit
-history triggers something on the primary applicant's file"**, you want Drools.
+If your rules are "score / decide / classify based on this one payload", Firefly
+is purpose-built. If your rules are "find applications where the spouse's credit
+history triggers something on the primary applicant's file", you want Drools.
 
 ---
 
@@ -46,7 +46,7 @@ history triggers something on the primary applicant's file"**, you want Drools.
 
 ### Side-by-side: a credit-score-driven approval
 
-**Drools (DRL):**
+Drools (DRL):
 
 ```drl
 rule "Approve high credit"
@@ -67,7 +67,7 @@ then
 end
 ```
 
-**Firefly (YAML):**
+Firefly (YAML):
 
 ```yaml
 name: "Application Approval"
@@ -101,9 +101,9 @@ output:
 | `update($a)`                          | Implicit -- variables in `EvaluationContext` are mutable for the rest of this evaluation |
 | Salience / priority                   | Order of entries in the `rules:` list                  |
 | `agendaGroup`, `ruleflow-group`       | Sub-rules within one evaluation; chained by output → input |
-| Forward chaining (a `then` triggers another rule's `when`) | **Not supported** -- run multiple evaluations or use sub-rules with explicit variables |
-| `accumulate` over multiple facts      | **Not supported** -- pass an already-aggregated value as an input |
-| `query` / backward chaining           | **Not supported**                                      |
+| Forward chaining (a `then` triggers another rule's `when`) | Not supported -- run multiple evaluations or use sub-rules with explicit variables |
+| `accumulate` over multiple facts      | Not supported -- pass an already-aggregated value as an input |
+| `query` / backward chaining           | Not supported                                      |
 | Decision tables (DRT)                 | Express as `if/then/else` chains or many `rules:`      |
 | Globals (`global Logger logger`)      | Constants (`UPPER_CASE`, loaded from DB)               |
 | Imports / `function` blocks           | Spring beans implementing `RuleFunction` and registered with `CustomFunctionRegistry` |
@@ -111,19 +111,19 @@ output:
 
 ### Patterns that map cleanly
 
-- **Single-fact decisions** -- direct translation.
-- **Tiered scoring** with `if/then/else` chains -- direct translation.
-- **Decision tables** -- DRL `RuleTable` blocks map to Firefly `decision_table:` with `FIRST`, `COLLECT`, `ANY`, or `UNIQUE` hit policies. See [yaml-dsl-reference.md](yaml-dsl-reference.md#decision-tables-dmn-style).
-- **Salience / priority** -- DRL `salience` corresponds to Firefly's per-sub-rule `priority: N`. Higher priority evaluates first; ties preserve declaration order.
-- **Rule composition** -- DRL `rule "X" extends "Y"` and modify-then-fire chains map to `invoke_rule("other_rule", "k1", v1, "k2", v2)` which returns the nested rule's output map.
-- **External data calls** -- Drools requires plugin work; Firefly has `rest_get`, `json_get`, etc. built-in.
-- **Per-rule budgets** -- where DRL relies on `KieSession`-level timeouts, Firefly accepts a `timeout: 5s` directive on each rule.
+- Single-fact decisions -- direct translation.
+- Tiered scoring with `if/then/else` chains -- direct translation.
+- Decision tables -- DRL `RuleTable` blocks map to Firefly `decision_table:` with `FIRST`, `COLLECT`, `ANY`, or `UNIQUE` hit policies. See [yaml-dsl-reference.md](yaml-dsl-reference.md#decision-tables-dmn-style).
+- Salience / priority -- DRL `salience` corresponds to Firefly's per-sub-rule `priority: N`. Higher priority evaluates first; ties preserve declaration order.
+- Rule composition -- DRL `rule "X" extends "Y"` and modify-then-fire chains map to `invoke_rule("other_rule", "k1", v1, "k2", v2)` which returns the nested rule's output map.
+- External data calls -- Drools requires plugin work; Firefly has `rest_get`, `json_get`, etc. built-in.
+- Per-rule budgets -- where DRL relies on `KieSession`-level timeouts, Firefly accepts a `timeout: 5s` directive on each rule.
 
 ### Patterns that don't map
 
-- **Cross-fact joins** -- no equivalent. Pre-compute the join into a single input.
-- **Truth maintenance / retraction** -- no equivalent. Re-run with new inputs.
-- **Backward chaining** -- no equivalent.
+- Cross-fact joins -- no equivalent. Pre-compute the join into a single input.
+- Truth maintenance / retraction -- no equivalent. Re-run with new inputs.
+- Backward chaining -- no equivalent.
 
 ---
 
@@ -132,7 +132,7 @@ output:
 Easy Rules is closer to Firefly in spirit (stateless, single-fact). The migration is
 usually mechanical.
 
-**Easy Rules (annotated Java):**
+Easy Rules (annotated Java):
 
 ```java
 @Rule(name = "Approve high credit", priority = 1)
@@ -151,7 +151,7 @@ public class ApproveHighCreditRule {
 }
 ```
 
-**Firefly (YAML):**
+Firefly (YAML):
 
 ```yaml
 name: "Approve high credit"
@@ -223,12 +223,12 @@ public DecisionResult decide(Customer c) {
 The Firefly equivalent is the YAML rule shown in the [Drools section above](#migrating-from-drools-drl).
 The translation pattern:
 
-1. **Inputs**: every method parameter / accessed bean field → an entry in `inputs:`
-2. **Top-level `if` test**: → `when:` conditions
-3. **Inside `if` body**: → `then:` actions
-4. **Inside `else` body**: → `else:` actions
-5. **Nested `if/else`**: → `if cond then ... else ...` action, or a sub-rule
-6. **Result builder**: → `output:` mapping
+1. Inputs: every method parameter / accessed bean field → an entry in `inputs:`
+2. Top-level `if` test: → `when:` conditions
+3. Inside `if` body: → `then:` actions
+4. Inside `else` body: → `else:` actions
+5. Nested `if/else`: → `if cond then ... else ...` action, or a sub-rule
+6. Result builder: → `output:` mapping
 
 ### Why move from hand-rolled to Firefly
 
@@ -242,15 +242,15 @@ The translation pattern:
 
 Be honest about the model. Choose a different engine if you need any of:
 
-- **Inference / forward chaining**: facts in working memory triggering more rules as
+- Inference / forward chaining: facts in working memory triggering more rules as
   they're derived. Use Drools.
-- **Backward chaining / goal-driven reasoning**: e.g., "find a configuration that
+- Backward chaining / goal-driven reasoning: e.g., "find a configuration that
   satisfies these constraints". Use Drools or a CLP solver.
-- **Decision tables in Excel format** consumed directly. Use Drools DRT, OpenL Tablets,
+- Decision tables in Excel format consumed directly. Use Drools DRT, OpenL Tablets,
   or a DMN engine.
-- **Multi-fact joins**: rules that match across pairs/groups of facts.
-- **Truth maintenance**: retracting a fact and having dependent conclusions roll back.
-- **Workflow / BPMN** orchestration with long-running state.
+- Multi-fact joins: rules that match across pairs/groups of facts.
+- Truth maintenance: retracting a fact and having dependent conclusions roll back.
+- Workflow / BPMN orchestration with long-running state.
 
 For everything that's expressible as "given this payload, compute / decide / classify
 the outcome", Firefly's narrower model is the right tool and will be faster to onramp,

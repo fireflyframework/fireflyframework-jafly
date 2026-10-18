@@ -1,6 +1,6 @@
 # WebSocket Client Helper Guide
 
-Enterprise-grade guide for using the WebSocket client helper in the Firefly Common Client Library.
+guide for using the WebSocket client helper in the Firefly Common Client Library.
 
 ---
 
@@ -26,20 +26,20 @@ Enterprise-grade guide for using the WebSocket client helper in the Firefly Comm
 
 ## Overview
 
-The `WebSocketClientHelper` provides an enterprise-grade reactive API for WebSocket communication with production-ready features for reliability, scalability, and observability.
+The `WebSocketClientHelper` provides an reactive API for WebSocket communication with features for reliability, scalability, and observability.
 
-**Enterprise Features**:
-- ✅ **Automatic reconnection** with exponential backoff
-- ✅ **Heartbeat/ping-pong** for connection health monitoring
-- ✅ **Message queuing** when connection is down
-- ✅ **Connection pooling** for resource efficiency
-- ✅ **Message acknowledgment** system for reliability
-- ✅ **Binary message support** for efficient data transfer
-- ✅ **Compression support** (permessage-deflate)
-- ✅ **Authentication/authorization** headers
-- ✅ **Reactive programming** with `Mono<T>` and `Flux<T>`
-- ✅ **Thread-safe** operations
-- ✅ **Production-ready** error handling
+Enterprise Features:
+- ✅ Automatic reconnection with exponential backoff
+- ✅ Heartbeat/ping-pong for connection health monitoring
+- ✅ Message queuing when connection is down
+- ✅ Connection pooling for resource efficiency
+- ✅ Message acknowledgment system for reliability
+- ✅ Binary message support for efficient data transfer
+- ✅ Compression support (permessage-deflate)
+- ✅ Authentication/authorization headers
+- ✅ Reactive programming with `Mono<T>` and `Flux<T>`
+- ✅ Thread-safe operations
+- ✅ error handling
 
 ---
 
@@ -47,21 +47,21 @@ The `WebSocketClientHelper` provides an enterprise-grade reactive API for WebSoc
 
 ### ✅ Use WebSocket When:
 
-- You need **real-time bidirectional** communication
-- You're building **chat applications**
-- You need **live notifications** or updates
-- You're implementing **real-time dashboards**
-- You need **streaming data** (stock prices, sensor data, IoT)
-- You want to **reduce HTTP polling** overhead
-- You need **low-latency** communication
-- You're building **collaborative applications** (Google Docs-style)
+- You need real-time bidirectional communication
+- You're building chat applications
+- You need live notifications or updates
+- You're implementing real-time dashboards
+- You need streaming data (stock prices, sensor data, IoT)
+- You want to reduce HTTP polling overhead
+- You need low-latency communication
+- You're building collaborative applications (Google Docs-style)
 
 ### ❌ Consider Alternatives When:
 
-- Simple request/response is sufficient → **Use REST Client**
-- You only need server-to-client streaming → **Use Server-Sent Events (SSE)**
-- You need RPC-style communication → **Use gRPC Client**
-- You need SOAP/XML services → **Use SOAP Client**
+- Simple request/response is sufficient → Use REST Client
+- You only need server-to-client streaming → Use Server-Sent Events (SSE)
+- You need RPC-style communication → Use gRPC Client
+- You need SOAP/XML services → Use SOAP Client
 
 ---
 
@@ -254,10 +254,10 @@ WebSocketClientHelper wsHelper = new WebSocketClientHelper("ws://localhost:8080/
 
 ### How It Works
 
-1. **Automatic Ping**: Sends WebSocket PING frames every `heartbeatInterval`
-2. **Server Response**: Server responds with PONG frames
-3. **Connection Health**: Detects dead connections quickly
-4. **Firewall Friendly**: Keeps connection alive through firewalls/proxies
+1. Automatic Ping: Sends WebSocket PING frames every `heartbeatInterval`
+2. Server Response: Server responds with PONG frames
+3. Connection Health: Detects dead connections quickly
+4. Firewall Friendly: Keeps connection alive through firewalls/proxies
 
 ### Monitor Heartbeat
 
@@ -272,7 +272,7 @@ if (timeSinceLastHeartbeat > 60000) {
 
 ### Best Practices
 
-✅ **GOOD**: Use heartbeat for long-lived connections
+✅ GOOD: Use heartbeat for long-lived connections
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableHeartbeat(true)
@@ -280,7 +280,7 @@ WebSocketConfig config = WebSocketConfig.builder()
     .build();
 ```
 
-❌ **BAD**: Too frequent heartbeats waste bandwidth
+❌ BAD: Too frequent heartbeats waste bandwidth
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableHeartbeat(true)
@@ -305,10 +305,10 @@ WebSocketClientHelper wsHelper = new WebSocketClientHelper("ws://localhost:8080/
 
 ### How It Works
 
-1. **Offline Buffering**: Messages are queued when connection is down
-2. **Automatic Replay**: Queued messages are sent when connection is restored
-3. **FIFO Order**: Messages are sent in the order they were queued
-4. **Queue Limit**: Prevents memory overflow with `maxQueueSize`
+1. Offline Buffering: Messages are queued when connection is down
+2. Automatic Replay: Queued messages are sent when connection is restored
+3. FIFO Order: Messages are sent in the order they were queued
+4. Queue Limit: Prevents memory overflow with `maxQueueSize`
 
 ### Send Message with Queuing
 
@@ -390,11 +390,11 @@ wsHelper.receiveBinaryMessages(data -> {
 
 ### Use Cases for Binary Messages
 
-1. **File Transfer**: Send/receive files efficiently
-2. **Image Streaming**: Real-time image/video streaming
-3. **Protocol Buffers**: Efficient serialization with Protobuf
-4. **Audio Streaming**: Real-time audio communication
-5. **IoT Data**: Sensor data in binary format
+1. File Transfer: Send/receive files efficiently
+2. Image Streaming: Real-time image/video streaming
+3. Protocol Buffers: Efficient serialization with Protobuf
+4. Audio Streaming: Real-time audio communication
+5. IoT Data: Sensor data in binary format
 
 ### Example: Image Streaming
 
@@ -454,20 +454,20 @@ WebSocketClientHelper wsHelper = new WebSocketClientHelper("ws://localhost:8080/
 
 ### How It Works
 
-1. **Negotiation**: Client and server negotiate compression during handshake
-2. **Automatic**: Messages are automatically compressed/decompressed
-3. **Transparent**: No code changes needed for compressed messages
-4. **Bandwidth Savings**: Typically 60-80% reduction for text messages
+1. Negotiation: Client and server negotiate compression during handshake
+2. Automatic: Messages are automatically compressed/decompressed
+3. Transparent: No code changes needed for compressed messages
+4. Bandwidth Savings: Typically 60-80% reduction for text messages
 
 ### When to Use Compression
 
-✅ **Use compression when**:
+✅ Use compression when:
 - Sending large text messages (JSON, XML)
 - Bandwidth is limited (mobile networks)
 - Sending repetitive data
 - Cost optimization (cloud egress fees)
 
-❌ **Don't use compression when**:
+❌ Don't use compression when:
 - Messages are already compressed (images, videos)
 - Messages are very small (<100 bytes)
 - CPU is constrained
@@ -685,13 +685,13 @@ public class WebSocketService {
 
 ### 1. Always Use Reconnection in Production
 
-❌ **BAD**: No reconnection
+❌ BAD: No reconnection
 ```java
 WebSocketClientHelper wsHelper = new WebSocketClientHelper("ws://localhost:8080/ws");
 // Connection lost = service down
 ```
 
-✅ **GOOD**: Automatic reconnection
+✅ GOOD: Automatic reconnection
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableReconnection(true)
@@ -704,14 +704,14 @@ WebSocketClientHelper wsHelper = new WebSocketClientHelper("ws://localhost:8080/
 
 ### 2. Enable Heartbeat for Long-Lived Connections
 
-❌ **BAD**: No heartbeat (connection may die silently)
+❌ BAD: No heartbeat (connection may die silently)
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableReconnection(true)
     .build();
 ```
 
-✅ **GOOD**: Heartbeat enabled
+✅ GOOD: Heartbeat enabled
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableReconnection(true)
@@ -722,13 +722,13 @@ WebSocketConfig config = WebSocketConfig.builder()
 
 ### 3. Use Message Queuing for Critical Messages
 
-❌ **BAD**: Messages lost when offline
+❌ BAD: Messages lost when offline
 ```java
 wsHelper.sendMessages(Flux.just("Important message")).subscribe();
 // Message lost if connection is down
 ```
 
-✅ **GOOD**: Messages queued when offline
+✅ GOOD: Messages queued when offline
 ```java
 WebSocketConfig config = WebSocketConfig.builder()
     .enableMessageQueue(true)
@@ -742,7 +742,7 @@ wsHelper.sendMessageWithAck("Important message", messageId -> {
 
 ### 4. Use Connection Pooling for Shared Connections
 
-❌ **BAD**: Creating new connections everywhere
+❌ BAD: Creating new connections everywhere
 ```java
 public void sendNotification(String message) {
     WebSocketClientHelper ws = new WebSocketClientHelper(url);  // New connection!
@@ -750,7 +750,7 @@ public void sendNotification(String message) {
 }
 ```
 
-✅ **GOOD**: Reuse pooled connection
+✅ GOOD: Reuse pooled connection
 ```java
 @Service
 public class NotificationService {
@@ -764,14 +764,14 @@ public class NotificationService {
 
 ### 5. Handle Backpressure
 
-❌ **BAD**: No backpressure handling
+❌ BAD: No backpressure handling
 ```java
 wsHelper.receiveMessages(message -> {
     slowDatabaseOperation(message);  // Blocks!
 }).subscribe();
 ```
 
-✅ **GOOD**: Handle backpressure
+✅ GOOD: Handle backpressure
 ```java
 wsHelper.receiveMessagesWithReconnection(message -> message)
     .onBackpressureBuffer(1000)  // Buffer up to 1000 messages
@@ -781,12 +781,12 @@ wsHelper.receiveMessagesWithReconnection(message -> message)
 
 ### 6. Use Structured Messages (JSON)
 
-❌ **BAD**: String parsing
+❌ BAD: String parsing
 ```java
 wsHelper.sendMessages(Mono.just("USER:john|MESSAGE:Hello")).subscribe();
 ```
 
-✅ **GOOD**: JSON messages
+✅ GOOD: JSON messages
 ```java
 ChatMessage msg = new ChatMessage("john", "Hello");
 String json = objectMapper.writeValueAsString(msg);
@@ -795,12 +795,12 @@ wsHelper.sendMessageWithAck(json, null).subscribe();
 
 ### 7. Implement Graceful Shutdown
 
-❌ **BAD**: Abrupt disconnection
+❌ BAD: Abrupt disconnection
 ```java
 // Application shuts down, connection drops
 ```
 
-✅ **GOOD**: Graceful shutdown
+✅ GOOD: Graceful shutdown
 ```java
 @PreDestroy
 public void shutdown() {
@@ -812,7 +812,7 @@ public void shutdown() {
 
 ### 8. Monitor Connection Health
 
-✅ **GOOD**: Monitor metrics
+✅ GOOD: Monitor metrics
 ```java
 @Scheduled(fixedRate = 60000)  // Every minute
 public void monitorWebSocket() {
@@ -1045,13 +1045,13 @@ public class IoTDataCollector {
 
 ## Summary
 
-The `WebSocketClientHelper` provides enterprise-grade WebSocket communication with:
+The `WebSocketClientHelper` provides WebSocket communication with:
 
-✅ **Reliability**: Automatic reconnection, message queuing, acknowledgments
-✅ **Performance**: Binary messages, compression, connection pooling
-✅ **Observability**: Connection status, queue metrics, heartbeat monitoring
-✅ **Security**: Authentication headers, secure WSS connections
-✅ **Developer Experience**: Reactive API, type-safe configuration, comprehensive error handling
+✅ Reliability: Automatic reconnection, message queuing, acknowledgments
+✅ Performance: Binary messages, compression, connection pooling
+✅ Observability: Connection status, queue metrics, heartbeat monitoring
+✅ Security: Authentication headers, secure WSS connections
+✅ Developer Experience: Reactive API, type-safe configuration, error handling
 
 For more information, see:
 - [REST Client Guide](REST_CLIENT.md)
@@ -1059,5 +1059,3 @@ For more information, see:
 - [GraphQL Client Guide](GRAPHQL_CLIENT.md)
 - [OAuth2 Helper Guide](OAUTH2_HELPER.md)
 - [Multipart Upload Helper Guide](MULTIPART_HELPER.md)
-
-

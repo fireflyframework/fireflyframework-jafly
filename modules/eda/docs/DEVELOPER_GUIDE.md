@@ -23,11 +23,11 @@ This comprehensive guide covers advanced features, best practices, and detailed 
 
 The Firefly EDA Library is built on several key principles:
 
-1. **Reactive Programming**: All operations are non-blocking and return `Mono<T>` or `Flux<T>`
-2. **Event Sourcing**: Events are the source of truth for system state
-3. **Loose Coupling**: Publishers and consumers are decoupled via events
-4. **Scalability**: Built for high-throughput, distributed systems
-5. **Resilience**: Built-in fault tolerance and error recovery
+1. Reactive Programming: All operations are non-blocking and return `Mono<T>` or `Flux<T>`
+2. Event Sourcing: Events are the source of truth for system state
+3. Loose Coupling: Publishers and consumers are decoupled via events
+4. Scalability: Built for high-throughput, distributed systems
+5. Resilience: Built-in fault tolerance and error recovery
 
 ### Event Lifecycle
 
@@ -68,7 +68,7 @@ public Mono<Order> createOrder(CreateOrderRequest request) {
 
 #### Advanced Features
 
-**Conditional Publishing**:
+Conditional Publishing:
 ```java
 @PublishResult(
     destination = "user-events",
@@ -81,7 +81,7 @@ public Mono<User> upgradeUser(String userId) {
 }
 ```
 
-**Dynamic Destinations**:
+Dynamic Destinations:
 ```java
 @PublishResult(
     destination = "#{#result.getRegion()}-orders",
@@ -93,7 +93,7 @@ public Mono<Order> createRegionalOrder(CreateOrderRequest request) {
 }
 ```
 
-**Error Event Publishing**:
+Error Event Publishing:
 ```java
 @PublishResult(
     destination = "error-events",
@@ -1016,10 +1016,10 @@ public class SecureEventHandler {
 
 ### Event Design
 
-1. **Immutable Events**: Use records or immutable classes
-2. **Rich Context**: Include all necessary information
-3. **Versioning**: Plan for event schema evolution
-4. **Correlation IDs**: Include for request tracing
+1. Immutable Events: Use records or immutable classes
+2. Rich Context: Include all necessary information
+3. Versioning: Plan for event schema evolution
+4. Correlation IDs: Include for request tracing
 
 ```java
 public record OrderCreatedEvent(
@@ -1048,10 +1048,10 @@ public record OrderCreatedEvent(
 
 ### Error Handling Best Practices
 
-1. **Fail Fast**: Validate early and reject invalid events
-2. **Idempotency**: Design consumers to handle duplicate events
-3. **Compensation**: Implement compensating actions for failures
-4. **Observability**: Log important events and errors
+1. Fail Fast: Validate early and reject invalid events
+2. Idempotency: Design consumers to handle duplicate events
+3. Compensation: Implement compensating actions for failures
+4. Observability: Log important events and errors
 
 ```java
 @Component
@@ -1103,9 +1103,9 @@ public class ResourceAwareEventProcessor {
 
 #### 1. Events Not Being Published
 
-**Symptoms**: Methods with `@PublishResult` execute but no events appear in topics
+Symptoms: Methods with `@PublishResult` execute but no events appear in topics
 
-**Diagnosis**:
+Diagnosis:
 ```bash
 # Check publisher health
 curl http://localhost:8080/actuator/health
@@ -1114,16 +1114,16 @@ curl http://localhost:8080/actuator/health
 curl http://localhost:8080/actuator/metrics/firefly.eda.publish.count
 ```
 
-**Solutions**:
+Solutions:
 - Verify publisher configuration
 - Check if the messaging platform is running
 - Enable debug logging: `logging.level.org.fireflyframework.eda=DEBUG`
 
 #### 2. Consumer Not Processing Events
 
-**Symptoms**: Events are published but not consumed
+Symptoms: Events are published but not consumed
 
-**Solutions**:
+Solutions:
 - Ensure `firefly.eda.consumer.enabled=true`
 - Check consumer group configuration
 - Verify topic/queue names match
@@ -1131,9 +1131,9 @@ curl http://localhost:8080/actuator/metrics/firefly.eda.publish.count
 
 #### 3. Performance Issues
 
-**Symptoms**: High latency or low throughput
+Symptoms: High latency or low throughput
 
-**Diagnosis**:
+Diagnosis:
 ```yaml
 management:
   endpoints:
@@ -1146,7 +1146,7 @@ management:
         enabled: true
 ```
 
-**Solutions**:
+Solutions:
 - Tune batch sizes and timeouts
 - Increase concurrency
 - Enable compression
@@ -1154,9 +1154,9 @@ management:
 
 #### 4. Memory Leaks
 
-**Symptoms**: Increasing memory usage over time
+Symptoms: Increasing memory usage over time
 
-**Solutions**:
+Solutions:
 - Enable backpressure handling
 - Limit buffer sizes
 - Monitor connection pools

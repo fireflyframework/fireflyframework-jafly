@@ -15,12 +15,12 @@ Complete guide to monitoring, metrics, and observability for the Firefly Common 
 
 ## Overview
 
-The Firefly Common Cache Library provides comprehensive monitoring capabilities:
+The Firefly Common Cache Library provides monitoring capabilities:
 
-- **Health Checks**: Verify cache availability and responsiveness
-- **Metrics**: Track performance and usage via Micrometer
-- **Statistics**: Detailed cache statistics (hits, misses, evictions)
-- **Logging**: Structured logging for debugging and auditing
+- Health Checks: Verify cache availability and responsiveness
+- Metrics: Track performance and usage via Micrometer
+- Statistics: Detailed cache statistics (hits, misses, evictions)
+- Logging: Structured logging for debugging and auditing
 
 ## Health Checks
 
@@ -80,9 +80,9 @@ curl http://localhost:8080/actuator/health/cache
 
 ### Health Status Values
 
-- **UP**: Cache is healthy and operational
-- **DOWN**: Cache is unavailable or unhealthy
-- **UNKNOWN**: Health status cannot be determined
+- UP: Cache is healthy and operational
+- DOWN: Cache is unavailable or unhealthy
+- UNKNOWN: Health status cannot be determined
 
 ### Programmatic Health Checks
 
@@ -370,11 +370,11 @@ logging:
 
 ### Log Levels
 
-- **ERROR**: Critical errors (cache unavailable, serialization failures)
-- **WARN**: Warnings (low hit rate, evictions, timeouts)
-- **INFO**: Important events (cache registration, configuration)
-- **DEBUG**: Detailed operations (get, put, evict operations)
-- **TRACE**: Very detailed (serialization, internal state)
+- ERROR: Critical errors (cache unavailable, serialization failures)
+- WARN: Warnings (low hit rate, evictions, timeouts)
+- INFO: Important events (cache registration, configuration)
+- DEBUG: Detailed operations (get, put, evict operations)
+- TRACE: Very detailed (serialization, internal state)
 
 ### Structured Logging Example
 
@@ -574,28 +574,28 @@ public class CacheMonitoringController {
 
 ## Best Practices
 
-1. **Monitor Hit Rates**: Aim for >80% hit rate for effective caching
-2. **Set Up Alerts**: Alert on cache unavailability and low hit rates
-3. **Track Evictions**: High eviction rates may indicate undersized cache
-4. **Monitor Response Times**: Ensure cache operations remain fast
-5. **Use Dashboards**: Visualize metrics for better insights
-6. **Log Important Events**: Log cache misses for critical operations
-7. **Regular Reviews**: Review cache statistics regularly
-8. **Capacity Planning**: Use metrics to plan cache capacity
+1. Monitor Hit Rates: Aim for >80% hit rate for effective caching
+2. Set Up Alerts: Alert on cache unavailability and low hit rates
+3. Track Evictions: High eviction rates may indicate undersized cache
+4. Monitor Response Times: Ensure cache operations remain fast
+5. Use Dashboards: Visualize metrics for better insights
+6. Log Important Events: Log cache misses for critical operations
+7. Regular Reviews: Review cache statistics regularly
+8. Capacity Planning: Use metrics to plan cache capacity
 
 ## Troubleshooting
 
 ### Low Hit Rate
 
-**Symptoms**: Hit rate below 50%
+Symptoms: Hit rate below 50%
 
-**Possible Causes**:
+Possible Causes:
 - TTL too short
 - Cache size too small
 - Data access patterns not suitable for caching
 - Cache keys not consistent
 
-**Solutions**:
+Solutions:
 - Increase TTL
 - Increase cache size
 - Review caching strategy
@@ -603,30 +603,29 @@ public class CacheMonitoringController {
 
 ### High Eviction Rate
 
-**Symptoms**: Many evictions per minute
+Symptoms: Many evictions per minute
 
-**Possible Causes**:
+Possible Causes:
 - Cache size too small
 - TTL too long (filling cache)
 - Memory pressure
 
-**Solutions**:
+Solutions:
 - Increase maximum cache size
 - Reduce TTL
 - Use soft/weak references for Caffeine
 
 ### Slow Cache Operations
 
-**Symptoms**: High response times
+Symptoms: High response times
 
-**Possible Causes**:
+Possible Causes:
 - Network latency (Redis)
 - Serialization overhead
 - Large objects
 
-**Solutions**:
+Solutions:
 - Optimize network configuration
 - Use binary serialization
 - Cache smaller objects
 - Use compression
-

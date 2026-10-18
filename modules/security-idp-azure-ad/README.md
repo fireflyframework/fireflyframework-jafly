@@ -26,6 +26,8 @@ Connect applicant or reviewer identity operations to the configured Entra ID or 
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (above) and select the provider:
@@ -48,6 +50,7 @@ That is all the wiring needed. `AzureAdAutoConfiguration` registers an `IdpAdapt
 types, so it stays portable across providers:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
 import org.fireflyframework.security.idp.dtos.*;
 import org.springframework.http.ResponseEntity;
@@ -55,13 +58,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class AuthFacade {
 
     private final IdpAdapter idp;
 
-    public AuthFacade(IdpAdapter idp) {
-        this.idp = idp;
-    }
+
 
     public Mono<ResponseEntity<TokenResponse>> login(String username, String password) {
         return idp.login(LoginRequest.builder()
@@ -104,7 +106,9 @@ The `firefly.security.idp.azure-ad` namespace is bound by [AzureAdProperties.jav
 
 ## Continue the application
 
-Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration. ## Build and validation
+Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

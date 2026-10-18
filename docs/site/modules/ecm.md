@@ -43,6 +43,8 @@ An applicant may upload supporting documents or sign an agreement after submissi
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (above) and a provider adapter. Select it via configuration:
@@ -66,6 +68,7 @@ firefly:
 2. Inject the reactive ports you need. Your code is provider-agnostic:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.ecm.port.document.DocumentContentPort;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
 import org.springframework.stereotype.Service;
@@ -74,15 +77,13 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentContentPort content;
     private final SignatureEnvelopePort envelopes;
 
-    public DocumentService(DocumentContentPort content, SignatureEnvelopePort envelopes) {
-        this.content = content;
-        this.envelopes = envelopes;
-    }
+
 
     /** Store binary content for a document and return its storage path. */
     public Mono<String> upload(UUID documentId, byte[] bytes, String mimeType) {

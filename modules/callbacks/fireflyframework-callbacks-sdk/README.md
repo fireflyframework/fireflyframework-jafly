@@ -68,7 +68,9 @@ The generation input is [openapi.yml](https://github.com/fireflyframework/firefl
 
 ## Continue the application
 
-Use the [Callback Management Platform - Web guide](../../../docs/site/modules/callbacks-web.md) for the next part of this integration. ## Build and validation
+Use the [Callback Management Platform - Web guide](../../../docs/site/modules/callbacks-web.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

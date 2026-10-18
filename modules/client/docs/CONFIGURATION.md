@@ -21,8 +21,8 @@ Complete reference for all configuration options in the Firefly Common Client Li
 
 Configuration can be provided in two ways:
 
-1. **Programmatically** - Using the builder API
-2. **Declaratively** - Using `application.yml` or `application.properties`
+1. Programmatically - Using the builder API
+2. Declaratively - Using `application.yml` or `application.properties`
 
 ### Configuration Precedence
 
@@ -408,8 +408,7 @@ firefly:
 
 ---
 
-**Next Steps**:
+Next Steps:
 - [REST Client Guide](REST_CLIENT.md)
 - [gRPC Client Guide](GRPC_CLIENT.md)
 - [SOAP Client Guide](SOAP_CLIENT.md)
-

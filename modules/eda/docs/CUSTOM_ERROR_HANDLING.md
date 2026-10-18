@@ -67,7 +67,7 @@ The library includes several built-in custom error handlers that you can enable:
 
 Sends notifications for critical errors.
 
-**Configuration:**
+Configuration:
 ```yaml
 firefly:
   eda:
@@ -76,7 +76,7 @@ firefly:
         enabled: true
 ```
 
-**Features:**
+Features:
 - Handles `RuntimeException`, `IllegalStateException`, and `SecurityException`
 - Differentiates between critical and warning alerts
 - High priority (100)
@@ -85,7 +85,7 @@ firefly:
 
 Records error metrics for monitoring and observability.
 
-**Configuration:**
+Configuration:
 ```yaml
 firefly:
   eda:
@@ -94,7 +94,7 @@ firefly:
         enabled: true  # Default: true
 ```
 
-**Features:**
+Features:
 - Records error counts by listener method and error type
 - Records error processing duration
 - Integrates with Micrometer metrics
@@ -142,9 +142,9 @@ public void registerMyHandler() {
 
 ## Error Handler Lifecycle
 
-1. **Discovery**: Custom error handlers are automatically discovered as Spring beans
-2. **Registration**: Handlers are registered and sorted by priority during startup
-3. **Execution**: When a CUSTOM error strategy is triggered:
+1. Discovery: Custom error handlers are automatically discovered as Spring beans
+2. Registration: Handlers are registered and sorted by priority during startup
+3. Execution: When a CUSTOM error strategy is triggered:
    - All applicable handlers (based on `canHandle()`) are identified
    - Handlers are executed in priority order
    - Each handler runs independently (failures don't affect others)
@@ -172,9 +172,9 @@ public Mono<Void> handleError(Object event, Map<String, Object> headers,
 
 ### 2. Use Appropriate Priorities
 
-- **Critical handlers** (notifications, alerts): 100-200
-- **Monitoring handlers** (metrics, logging): 50-99
-- **Cleanup handlers** (resource cleanup): 1-49
+- Critical handlers (notifications, alerts): 100-200
+- Monitoring handlers (metrics, logging): 50-99
+- Cleanup handlers (resource cleanup): 1-49
 
 ### 3. Implement Efficient Error Type Checking
 
@@ -237,21 +237,21 @@ If you see this warning:
 CUSTOM error strategy specified but no custom error handlers available, falling back to LOG_AND_CONTINUE
 ```
 
-**Solutions:**
+Solutions:
 1. Ensure your custom error handler is annotated with `@Component`
 2. Verify the handler is in a package scanned by Spring
 3. Check that the handler implements `CustomErrorHandler` correctly
 
 ### Handler Not Executing
 
-**Check:**
+Check:
 1. The `canHandle()` method returns `true` for your error type
 2. The handler is properly registered (check logs during startup)
 3. The error handling strategy is set to `CUSTOM`
 
 ### Performance Issues
 
-**Optimize:**
+Optimize:
 1. Keep error handling logic lightweight
 2. Use async operations for heavy processing
 3. Implement efficient error type checking

@@ -26,6 +26,8 @@ Use a Redis-backed cache when several onboarding-service instances need the same
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../../docs/site/maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (see [Installation](#installation)).
@@ -47,6 +49,7 @@ firefly:
 3. Inject and use the cache through the core abstraction. Your code never references Redis directly:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -55,13 +58,12 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
     private final CacheAdapter cache;
 
-    public ProductService(CacheAdapter cache) {
-        this.cache = cache;
-    }
+
 
     public Mono<Product> getProduct(String id) {
         return cache.<String, Product>get(id, Product.class)
@@ -95,7 +97,9 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 ## Continue the application
 
-Use the [Cache guide](../../docs/site/modules/cache.md) for the next part of this integration. ## Build and validation
+Use the [Cache guide](../../docs/site/modules/cache.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

@@ -22,7 +22,7 @@ An opinionated Spring Boot starter for building data-processing microservices wi
 
 - Java 25
 - Maven 3.9+
-- Spring Boot 3.x
+- Spring Boot 4.1.1
 - Familiarity with reactive programming (Project Reactor)
 
 ### Installation
@@ -31,7 +31,7 @@ An opinionated Spring Boot starter for building data-processing microservices wi
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.02.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <relativePath/>
 </parent>
 
@@ -39,7 +39,7 @@ An opinionated Spring Boot starter for building data-processing microservices wi
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-starter-data</artifactId>
-        <version>26.02.06</version>
+        <version>26.10.17-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```

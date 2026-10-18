@@ -1,6 +1,6 @@
 # 📑 API Reference
 
-> **Complete API documentation for lib-common-application**
+> Complete API documentation for lib-common-application
 
 Comprehensive reference for all classes, methods, annotations, and configurations in the Firefly Application Layer library.
 
@@ -203,7 +203,7 @@ public static class ProviderConfig {
 }
 ```
 
-**ProviderConfig Methods:**
+ProviderConfig Methods:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -245,7 +245,7 @@ public class AppSecurityContext {
 
 #### Enums
 
-**SecurityConfigSource:**
+SecurityConfigSource:
 - `ANNOTATION` - From @Secure annotation
 - `EXPLICIT_MAP` - From EndpointSecurityRegistry
 - `SECURITY_CENTER` - From SecurityCenter
@@ -294,7 +294,7 @@ public @interface Secure {
 
 #### Usage Examples
 
-**Class-level security (applies to all methods):**
+Class-level security (applies to all methods):
 ```java
 @RestController
 @Secure(roles = {"USER", "ADMIN"})
@@ -303,7 +303,7 @@ public class MyController {
 }
 ```
 
-**Method-level security (overrides class-level):**
+Method-level security (overrides class-level):
 ```java
 @PostMapping("/transfer")
 @Secure(
@@ -316,7 +316,7 @@ public Mono<Transfer> transfer(@RequestBody TransferRequest request) {
 }
 ```
 
-**Anonymous access:**
+Anonymous access:
 ```java
 @GetMapping("/public")
 @Secure(allowAnonymous = true)
@@ -325,7 +325,7 @@ public Mono<Data> publicEndpoint() {
 }
 ```
 
-**Complex authorization with SpEL:**
+Complex authorization with SpEL:
 ```java
 @PutMapping("/{id}")
 @Secure(expression = "context.hasRole('ADMIN') or context.partyId == #id")
@@ -604,7 +604,7 @@ public static class EndpointSecurity {
 }
 ```
 
-**Builder Methods:**
+Builder Methods:
 - `builder()` - Creates new builder
 - `roles(Set<String>)` - Sets required roles
 - `permissions(Set<String>)` - Sets required permissions
@@ -641,18 +641,18 @@ firefly:
 
 #### Property Groups
 
-**Security:**
+Security:
 - `enabled` (boolean): Enable security features
 - `use-security-center` (boolean): Delegate to SecurityCenter
 - `default-roles` (String[]): Default roles when none configured
 - `fail-on-missing` (boolean): Fail on missing security config
 
-**Context:**
+Context:
 - `cache-enabled` (boolean): Enable context caching
 - `cache-ttl` (int): Cache TTL in seconds
 - `cache-max-size` (int): Maximum cache size
 
-**Config:**
+Config:
 - `cache-enabled` (boolean): Enable config caching
 - `cache-ttl` (int): Cache TTL in seconds
 - `refresh-on-startup` (boolean): Refresh config on application startup
@@ -721,4 +721,4 @@ protected Mono<Set<String>> resolveRoles(AppContext context) {
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Architectural patterns and decisions
 - [USAGE_GUIDE.md](USAGE_GUIDE.md) - Step-by-step usage instructions
-- [EXAMPLES.md](EXAMPLES.md) - Code examples and patterns
+- [Application usage](USAGE_GUIDE.md) - Code examples and patterns

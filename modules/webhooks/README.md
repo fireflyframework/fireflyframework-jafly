@@ -63,15 +63,17 @@ This POM has no runtime configuration namespace. Configure the selected child li
 
 ## Continue the application
 
-Use the [Webhook Processor Framework guide](../../docs/site/modules/webhooks-processor.md) for the next part of this integration. ## Build and validation
+Use the [Webhook Processor Framework guide](../../docs/site/modules/webhooks-processor.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-webhooks -am verify
-./mvnw -pl :fireflyframework-webhooks -am install
+./mvnw -pl :fireflyframework-webhooks,:fireflyframework-webhooks-core,:fireflyframework-webhooks-interfaces,:fireflyframework-webhooks-processor,:fireflyframework-webhooks-sdk,:fireflyframework-webhooks-web -am verify
+./mvnw -pl :fireflyframework-webhooks,:fireflyframework-webhooks-core,:fireflyframework-webhooks-interfaces,:fireflyframework-webhooks-processor,:fireflyframework-webhooks-sdk,:fireflyframework-webhooks-web -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

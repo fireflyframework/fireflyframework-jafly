@@ -30,6 +30,8 @@ Resend is another email provider for application confirmations. Select it throug
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 If you use a core channel service instead of the provider SPI directly, [register the matching service implementation explicitly](notifications-core.md#quick-start). Provider auto-configuration does not expand the application's component scan.
@@ -51,6 +53,7 @@ firefly:
 3. Inject `EmailProvider` and send a message. Your code depends only on the core SPI, never on Resend:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailRequestDTO;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailResponseDTO;
 import org.fireflyframework.notifications.interfaces.providers.email.v1.EmailProvider;
@@ -58,13 +61,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class WelcomeEmailService {
 
     private final EmailProvider emailProvider; // ResendEmailProvider, auto-wired
 
-    public WelcomeEmailService(EmailProvider emailProvider) {
-        this.emailProvider = emailProvider;
-    }
+
 
     public Mono<EmailResponseDTO> sendWelcome(String recipient) {
         EmailRequestDTO request = EmailRequestDTO.builder()

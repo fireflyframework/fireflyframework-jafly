@@ -30,6 +30,8 @@ Use an existing Cognito user pool for applicant identities. Configure its region
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Select the Cognito provider and configure your User Pool in `application.yml`:
@@ -49,6 +51,7 @@ firefly:
 2. Inject the provider-neutral `IdpAdapter`. Auto-configuration supplies the Cognito-backed bean:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
 import org.fireflyframework.security.idp.dtos.LoginRequest;
 import org.fireflyframework.security.idp.dtos.TokenResponse;
@@ -57,13 +60,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final IdpAdapter idp;   // CognitoIdpAdapter wired by CognitoAutoConfiguration
 
-    public AuthService(IdpAdapter idp) {
-        this.idp = idp;
-    }
+
 
     public Mono<ResponseEntity<TokenResponse>> login(String username, String password) {
         LoginRequest request = new LoginRequest();

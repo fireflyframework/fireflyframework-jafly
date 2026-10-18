@@ -6,17 +6,17 @@ The Firefly OpenCore Platform ECM library provides comprehensive support for Int
 
 ## Current Implementation Status
 
-✅ **Available Now:**
+✅ Available Now:
 - Complete port interface definitions for all IDP operations
 - Domain models and enumerations for IDP data structures
 - Autoconfiguration framework with feature toggles
 - Comprehensive documentation and integration guides
 
-🚧 **Coming Soon:**
+🚧 Coming Soon:
 - Concrete adapter implementations for AWS Textract, Azure Form Recognizer, and Google Document AI
 - Ready-to-use adapter packages for immediate deployment
 
-The current implementation provides the **complete foundation** for IDP integration. You can start building your IDP workflows using the port interfaces, and concrete adapters can be implemented following the provided integration guides.
+The current implementation provides the complete foundation for IDP integration. You can start building your IDP workflows using the port interfaces, and concrete adapters can be implemented following the provided integration guides.
 
 ## Table of Contents
 
@@ -51,11 +51,11 @@ the port interfaces and infrastructure for implementing these adapters.
 
 ### Key Benefits
 
-- **Provider Agnostic**: Switch between IDP providers without changing business logic
-- **Extensible**: Add new IDP providers through adapter implementation
-- **Configurable**: Enable/disable features through properties
-- **Reactive**: Non-blocking operations using Project Reactor
-- **Comprehensive**: Support for text extraction, classification, validation, and structured data extraction
+- Provider Agnostic: Switch between IDP providers without changing business logic
+- Extensible: Add new IDP providers through adapter implementation
+- Configurable: Enable/disable features through properties
+- Reactive: Non-blocking operations using Project Reactor
+- Comprehensive: Support for text extraction, classification, validation, and structured data extraction
 
 ## Core Components
 
@@ -63,30 +63,30 @@ the port interfaces and infrastructure for implementing these adapters.
 
 The IDP functionality is exposed through four main port interfaces:
 
-1. **DocumentExtractionPort**: Text extraction and OCR operations
-2. **DocumentClassificationPort**: Document classification and categorization
-3. **DocumentValidationPort**: Document validation and verification
-4. **DataExtractionPort**: Structured and semi-structured data extraction
+1. DocumentExtractionPort: Text extraction and OCR operations
+2. DocumentClassificationPort: Document classification and categorization
+3. DocumentValidationPort: Document validation and verification
+4. DataExtractionPort: Structured and semi-structured data extraction
 
 ### Domain Models
 
 Key domain models for IDP operations:
 
-- **DocumentProcessingRequest**: Request for document processing
-- **DocumentProcessingResult**: Complete processing results
-- **ExtractedData**: Individual extracted data elements
-- **ClassificationResult**: Document classification outcomes
-- **ValidationResult**: Validation results and quality metrics
+- DocumentProcessingRequest: Request for document processing
+- DocumentProcessingResult: Complete processing results
+- ExtractedData: Individual extracted data elements
+- ClassificationResult: Document classification outcomes
+- ValidationResult: Validation results and quality metrics
 
 ### Enumerations
 
 Supporting enumerations for type safety:
 
-- **DocumentType**: Supported document types (invoice, contract, etc.)
-- **ProcessingStatus**: Processing lifecycle states
-- **ExtractionType**: Types of data extraction operations
-- **ClassificationConfidence**: Confidence levels for classifications
-- **ValidationLevel**: Validation rigor levels
+- DocumentType: Supported document types (invoice, contract, etc.)
+- ProcessingStatus: Processing lifecycle states
+- ExtractionType: Types of data extraction operations
+- ClassificationConfidence: Confidence levels for classifications
+- ValidationLevel: Validation rigor levels
 
 ## Configuration
 

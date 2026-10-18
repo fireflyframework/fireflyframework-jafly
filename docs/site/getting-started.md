@@ -8,19 +8,21 @@ The service stores applications in memory, so restarting it clears the data. It 
 
 ## Prepare the libraries
 
-Use JDK 25 and the checked-in Maven 3.9.16 wrapper. The full framework build also needs Docker for provider-backed tests.
+Use JDK 25 and the checked-in Maven 3.9.16 wrapper. Install CQRS and its reactor prerequisites for this tutorial:
 
 ```sh
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -B -ntp install
+./mvnw -B -ntp -pl :fireflyframework-cqrs -am install
 ```
+
+This builds seven framework projects and runs their configured tests without Docker. The full framework build also tests database and broker adapters and needs Docker; see [installation](installation.md).
 
 The complete application is in [`docs/examples/getting-started`](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/docs/examples/getting-started). See [installation](installation.md) for prerequisites and choosing a locally installed or verified registry version.
 
 ## Define the application
 
-The framework parent manages dependency and build versions. The application keeps its own version, `0.1.0-SNAPSHOT`. It declares WebFlux, validation, and CQRS, with Spring Boot test support and Reactor Test for the tests.
+The framework parent manages dependency and build versions. The application keeps its own version, `0.1.0-SNAPSHOT`. It declares WebFlux, validation, CQRS, and Lombok, with Spring Boot test support and Reactor Test for the tests. Lombok has `provided` scope; the parent configures its annotation processor.
 
 `pom.xml`:
 
@@ -44,7 +46,7 @@ The existing `GET /hello` route checks that Spring Boot and WebFlux are serving 
 --8<-- "docs/examples/getting-started/src/main/java/com/example/jafly/ApplicationsController.java"
 ```
 
-The controller validates input and translates results into HTTP responses. It sends typed work through `CommandBus` and `QueryBus`; it does not instantiate either handler.
+The controller validates input and translates results into HTTP responses. It sends typed work through `CommandBus` and `QueryBus`; it does not instantiate either handler. `@RequiredArgsConstructor` generates a constructor for the two `final` dependencies, which Spring injects automatically. The handlers use the same pattern for their repository dependency.
 
 ## Define the application record
 

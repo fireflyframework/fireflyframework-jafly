@@ -1,6 +1,6 @@
 # Firefly Framework Rule Engine - Common Patterns Guide
 
-**Real-world patterns organized by complexity tier**
+Real-world patterns organized by complexity tier
 
 *Discover the right features for your use case*
 
@@ -9,18 +9,18 @@
 ## How to Use This Guide
 
 This guide organizes patterns by complexity to help you:
-- 🎯 **Find the right approach** for your specific needs
-- 📈 **Progress gradually** from simple to advanced features
-- 🔍 **Discover capabilities** you might not know about
-- ⚖️ **Choose appropriate complexity** for your team's context
+- 🎯 Find the right approach for your specific needs
+- 📈 Progress gradually from simple to advanced features
+- 🔍 Discover capabilities you might not know about
+- ⚖️ Choose appropriate complexity for your team's context
 
 ### Complexity Tiers
 
 | Tier | When to Use | Team Experience | Rule Maintenance |
 |------|-------------|-----------------|------------------|
-| **🟢 Basic** | Simple business rules | New to rule engine | Easy to modify |
-| **🟡 Intermediate** | Multi-step logic | Some experience | Moderate complexity |
-| **🔴 Advanced** | Complex workflows | Experienced team | Requires expertise |
+| 🟢 Basic | Simple business rules | New to rule engine | Easy to modify |
+| 🟡 Intermediate | Multi-step logic | Some experience | Moderate complexity |
+| 🔴 Advanced | Complex workflows | Experienced team | Requires expertise |
 
 ---
 
@@ -30,7 +30,7 @@ This guide organizes patterns by complexity to help you:
 
 ### Pattern: Simple Approval Logic
 
-**Use Case**: Basic yes/no decisions based on thresholds
+Use Case: Basic yes/no decisions based on thresholds
 
 ```yaml
 name: "Loan Pre-Approval"
@@ -57,11 +57,11 @@ output:
   message: text
 ```
 
-**Why This Pattern**: Simple, readable, easy to modify thresholds.
+Why This Pattern: Simple, readable, easy to modify thresholds.
 
 ### Pattern: Tiered Classification
 
-**Use Case**: Categorizing customers, products, or risk levels
+Use Case: Categorizing customers, products, or risk levels
 
 ```yaml
 name: "Customer Tier Assignment"
@@ -98,11 +98,11 @@ output:
   benefits: list
 ```
 
-**Why This Pattern**: Clear tier logic, easy to add new tiers or benefits.
+Why This Pattern: Clear tier logic, easy to add new tiers or benefits.
 
 ### Pattern: Data Validation
 
-**Use Case**: Validating input data before processing
+Use Case: Validating input data before processing
 
 ```yaml
 name: "Application Data Validation"
@@ -143,7 +143,7 @@ output:
   errors: list
 ```
 
-**Why This Pattern**: Comprehensive validation, clear error reporting.
+Why This Pattern: Comprehensive validation, clear error reporting.
 
 ---
 
@@ -153,7 +153,7 @@ output:
 
 ### Pattern: List Processing with forEach
 
-**Use Case**: Processing collections of data, aggregating values, filtering lists
+Use Case: Processing collections of data, aggregating values, filtering lists
 
 ```yaml
 name: "Transaction Analysis"
@@ -201,9 +201,9 @@ output:
   pattern: text
 ```
 
-**Why This Pattern**: Efficient list processing, multiple aggregations in one pass, clear business logic.
+Why This Pattern: Efficient list processing, multiple aggregations in one pass, clear business logic.
 
-**Advanced forEach Example - Building Filtered Lists:**
+Advanced forEach Example - Building Filtered Lists:
 
 ```yaml
 name: "Score Filtering and Categorization"
@@ -249,9 +249,9 @@ output:
   totalStudents: number
 ```
 
-**Why This Pattern**: Demonstrates filtering, categorization, and statistical analysis on lists.
+Why This Pattern: Demonstrates filtering, categorization, and statistical analysis on lists.
 
-**forEach with Index Example:**
+forEach with Index Example:
 
 ```yaml
 name: "Position-Based Processing"
@@ -279,11 +279,11 @@ output:
   processedItems: list
 ```
 
-**Why This Pattern**: Shows how to use index for position-dependent calculations and logic.
+Why This Pattern: Shows how to use index for position-dependent calculations and logic.
 
 ### Pattern: Conditional Loops with while
 
-**Use Case**: Iterating until a condition is met, accumulating values, retry logic
+Use Case: Iterating until a condition is met, accumulating values, retry logic
 
 ```yaml
 name: "Accumulate Until Threshold"
@@ -314,9 +314,9 @@ output:
   status: string
 ```
 
-**Why This Pattern**: Useful for accumulation, counting, and iterative calculations with dynamic stopping conditions.
+Why This Pattern: Useful for accumulation, counting, and iterative calculations with dynamic stopping conditions.
 
-**Advanced while Example - Fibonacci Sequence:**
+Advanced while Example - Fibonacci Sequence:
 
 ```yaml
 name: "Generate Fibonacci Sequence"
@@ -341,11 +341,11 @@ output:
   count: number
 ```
 
-**Why This Pattern**: Demonstrates sequence generation with dynamic termination based on calculated values.
+Why This Pattern: Demonstrates sequence generation with dynamic termination based on calculated values.
 
 ### Pattern: Guaranteed Execution with do-while
 
-**Use Case**: Retry logic, validation loops, processing that must happen at least once
+Use Case: Retry logic, validation loops, processing that must happen at least once
 
 ```yaml
 name: "Retry with Backoff"
@@ -375,9 +375,9 @@ output:
   outcome: string
 ```
 
-**Why This Pattern**: Ensures at least one execution, perfect for retry logic and validation scenarios.
+Why This Pattern: Ensures at least one execution, perfect for retry logic and validation scenarios.
 
-**do-while Example - Build Until Condition:**
+do-while Example - Build Until Condition:
 
 ```yaml
 name: "Build Sequence Until Target"
@@ -403,11 +403,11 @@ output:
   finalValue: number
 ```
 
-**Why This Pattern**: Guarantees initial data population before checking continuation conditions.
+Why This Pattern: Guarantees initial data population before checking continuation conditions.
 
 ### Pattern: Multi-Factor Risk Scoring
 
-**Use Case**: Calculating risk scores from multiple factors
+Use Case: Calculating risk scores from multiple factors
 
 ```yaml
 name: "Credit Risk Assessment"
@@ -483,11 +483,11 @@ output:
   factors: factors
 ```
 
-**Why This Pattern**: Transparent scoring, weighted factors, detailed audit trail.
+Why This Pattern: Transparent scoring, weighted factors, detailed audit trail.
 
 ### Pattern: Sequential Processing with Dependencies
 
-**Use Case**: Multi-stage processes where later stages depend on earlier results
+Use Case: Multi-stage processes where later stages depend on earlier results
 
 ```yaml
 name: "Loan Application Processing"
@@ -566,7 +566,7 @@ output:
   processed_at: text
 ```
 
-**Why This Pattern**: Clear stage progression, dependency management, comprehensive audit trail.
+Why This Pattern: Clear stage progression, dependency management, comprehensive audit trail.
 
 ---
 
@@ -576,7 +576,7 @@ output:
 
 ### Pattern: External API Integration with Fallbacks
 
-**Use Case**: Enriching data from external services with error handling
+Use Case: Enriching data from external services with error handling
 
 ```yaml
 name: "Customer Data Enrichment with Fallbacks"
@@ -651,7 +651,7 @@ output:
   sources: list
 ```
 
-**Why This Pattern**: Resilient data integration, multiple fallbacks, quality tracking.
+Why This Pattern: Resilient data integration, multiple fallbacks, quality tracking.
 
 ---
 
@@ -679,10 +679,10 @@ output:
 
 ## Next Steps
 
-- **📚 Learn More**: Explore the [Full YAML DSL Reference](yaml-dsl-reference.md) for complete syntax
-- **🏛️ Set Standards**: Review [Governance Guidelines](governance-guidelines.md) for team practices
-- **🎓 Practice**: Try the [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
-- **⚡ Get Started**: Return to [Quick Start Guide](quick-start-guide.md) for basics
+- 📚 Learn More: Explore the [Full YAML DSL Reference](yaml-dsl-reference.md) for complete syntax
+- 🏛️ Set Standards: Review [Governance Guidelines](governance-guidelines.md) for team practices
+- 🎓 Practice: Try the [B2B Credit Scoring Tutorial](b2b-credit-scoring-tutorial.md)
+- ⚡ Get Started: Return to [Quick Start Guide](quick-start-guide.md) for basics
 
 ---
 

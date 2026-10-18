@@ -18,10 +18,10 @@ bidirectional sessions. All three surface results through a single
 
 `*` = repeated zero or more times.
 
-Choose **buffered** for batch-style consumers, server-rendered HTML, or
+Choose buffered for batch-style consumers, server-rendered HTML, or
 when the upstream model emits naturally chunked output. Choose
-**incremental** for chat UIs and any caller that wants the smallest
-possible time-to-first-token. Choose **WebSocket** when the same session
+incremental for chat UIs and any caller that wants the smallest
+possible time-to-first-token. Choose WebSocket when the same session
 needs multiple round-trips with full duplex framing.
 
 ---

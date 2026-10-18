@@ -6,13 +6,13 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
 
 ### Getting Started
 
-- **[Quick Start Guide](QUICKSTART.md)** - Get up and running in minutes
+- [Quick Start Guide](QUICKSTART.md) - Get up and running in minutes
   - Installation instructions
   - Basic configuration
   - First cache operations
   - Verification steps
 
-- **[Auto-Configuration Guide](AUTO_CONFIGURATION.md)** - Spring Boot auto-configuration
+- [Auto-Configuration Guide](AUTO_CONFIGURATION.md) - Spring Boot auto-configuration
   - How auto-configuration works
   - Configuration properties
   - Conditional beans
@@ -21,14 +21,14 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
 
 ### Core Documentation
 
-- **[Architecture Guide](ARCHITECTURE.md)** - Understand how it works
+- [Architecture Guide](ARCHITECTURE.md) - Understand how it works
   - Hexagonal architecture overview
   - Core components and their responsibilities
   - Design patterns used
   - Package structure
   - Extension points
 
-- **[Configuration Reference](CONFIGURATION.md)** - Complete configuration guide
+- [Configuration Reference](CONFIGURATION.md) - Complete configuration guide
   - Global configuration options
   - Caffeine cache configuration
   - Redis cache configuration
@@ -36,7 +36,7 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
   - Environment-specific settings
   - Best practices
 
-- **[API Reference](API_REFERENCE.md)** - Detailed API documentation
+- [API Reference](API_REFERENCE.md) - Detailed API documentation
   - FireflyCacheManager API
   - CacheAdapter interface
   - Annotations (@Cacheable, @CacheEvict, @CachePut)
@@ -46,7 +46,7 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
 
 ### Practical Guides
 
-- **[Examples](EXAMPLES.md)** - Real-world usage examples
+- [Examples](EXAMPLES.md) - Real-world usage examples
   - Basic usage patterns
   - User service example
   - Product catalog caching
@@ -57,7 +57,7 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
   - Multi-level caching
   - Error handling
 
-- **[Monitoring Guide](MONITORING.md)** - Observability and metrics
+- [Monitoring Guide](MONITORING.md) - Observability and metrics
   - Health checks
   - Metrics collection
   - Statistics API
@@ -66,7 +66,7 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
   - Alerting strategies
   - Dashboard examples
 
-- **[Testing Guide](TESTING.md)** - Testing strategies
+- [Testing Guide](TESTING.md) - Testing strategies
   - Unit testing with mocks
   - Integration testing
   - Testing with Caffeine
@@ -79,25 +79,25 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
 
 ### I want to...
 
-**Get started quickly**
+Get started quickly
 → [Quick Start Guide](QUICKSTART.md)
 
-**Understand the architecture**
+Understand the architecture
 → [Architecture Guide](ARCHITECTURE.md)
 
-**Configure the cache**
+Configure the cache
 → [Configuration Reference](CONFIGURATION.md)
 
-**See code examples**
+See code examples
 → [Examples](EXAMPLES.md)
 
-**Look up API details**
+Look up API details
 → [API Reference](API_REFERENCE.md)
 
-**Set up monitoring**
+Set up monitoring
 → [Monitoring Guide](MONITORING.md)
 
-**Write tests**
+Write tests
 → [Testing Guide](TESTING.md)
 
 ## 📖 Learning Path
@@ -176,8 +176,8 @@ Designed for testability with mocking support. Guide in [Testing Guide](TESTING.
 ### Code Examples
 
 All code examples are tested and reflect the actual API. They use:
-- Java 25 syntax (Java 21+ compatible)
-- Spring Boot 3.5+
+- Java 25 syntax (Java 25 compatible)
+- Spring Boot 4.1.1
 - Reactive programming with Reactor
 - Lombok for brevity
 
@@ -199,7 +199,7 @@ Configuration examples use YAML format (application.yml) but can be adapted to:
 
 Found an error or want to improve the documentation?
 
-1. Check the [Contributing Guidelines](../CONTRIBUTING.md)
+1. Check the [Cache build and tests](../../../docs/site/modules/cache.md#build-and-test)
 2. Submit an issue or pull request
 3. Follow the documentation style guide
 
@@ -209,5 +209,4 @@ This documentation is part of the Firefly Common Cache Library and is licensed u
 
 ---
 
-**Need help?** Check the [Troubleshooting section](../README.md#-troubleshooting) in the main README or open an issue on GitHub.
-
+Need help? Check the [Troubleshooting section](../README.md#-troubleshooting) in the main README or open an issue on GitHub.

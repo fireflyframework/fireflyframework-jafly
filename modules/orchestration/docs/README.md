@@ -1,14 +1,14 @@
 # Firefly Orchestration Documentation
 
-> **Version:** 26.02.06 | **Java:** 25+ | **Spring Boot:** 3.x | **Reactor:** 3.x
+> Current build: Java 25, Spring Boot 4.1.1. Use the version managed by the Jafly parent and BOM.
 
-Firefly Orchestration is a reactive framework for coordinating multi-step business processes in Spring Boot applications. It provides three complementary patterns — **Workflow**, **Saga**, and **TCC** — unified by a shared core layer for persistence, observability, retry, and event integration.
+Firefly Orchestration coordinates business steps through Workflow, Saga, and TCC engines. The engines share execution state, retries, persistence interfaces, and observability callbacks.
 
 ---
 
 ## Quick Start
 
-New to Firefly Orchestration? Start with the **[Tutorial: Fintech Payment Processing](tutorial.md)** — a step-by-step guide that builds a complete fund transfer system using all three patterns.
+Start with the [executable customer onboarding coordination guide](../../../docs/site/guides/onboarding-coordination.md). It runs Saga, TCC, and Workflow cases against application-owned in-memory providers. The [payment composition reference](tutorial.md) discusses service integration fragments that require business implementations.
 
 ---
 

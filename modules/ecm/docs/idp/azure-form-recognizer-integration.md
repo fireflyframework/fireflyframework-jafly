@@ -1,5 +1,7 @@
 # Azure Form Recognizer Integration Guide
 
+This guide is an implementation blueprint for a custom document-processing adapter. Jafly supplies the processing ports but no adapter artifact for this provider. Implement and wire the required [processing contracts](../api/README.md#ports) before using provider configuration in an application.
+
 ## Overview
 
 This guide provides step-by-step instructions for integrating Azure Form Recognizer with the Firefly OpenCore Platform ECM library. Azure Form Recognizer is a cognitive service that uses machine learning to extract text, key-value pairs, selection marks, and table data from documents.
@@ -8,8 +10,8 @@ This guide provides step-by-step instructions for integrating Azure Form Recogni
 
 - Azure subscription with Form Recognizer service
 - Azure CLI installed and configured
-- Java 21 or higher
-- Spring Boot 3.x application
+- Java 25 or higher
+- Spring Boot 4.1.1 application
 
 ## Step 1: Azure Setup
 
@@ -156,7 +158,7 @@ export AZURE_TENANT_ID=your-tenant-id
 
 ## Step 4: Adapter Implementation
 
-**Note: The Azure Form Recognizer adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.**
+Note: The Azure Form Recognizer adapter is not yet implemented. This section shows how you would implement it using the provided port interfaces.
 
 Here's how you would implement the Azure Form Recognizer adapter for all four IDP port interfaces:
 
@@ -410,13 +412,13 @@ public class AzureFormRecognizerHealthIndicator implements HealthIndicator {
 ### 6.3 Common Issues and Solutions
 
 #### Issue: "Unauthorized" Error
-**Solution**: Verify API key and endpoint configuration.
+Solution: Verify API key and endpoint configuration.
 
 #### Issue: "Model not found" Error
-**Solution**: Ensure custom model IDs are correct and models are trained.
+Solution: Ensure custom model IDs are correct and models are trained.
 
 #### Issue: Low extraction accuracy
-**Solution**: Use prebuilt models for standard documents or train custom models.
+Solution: Use prebuilt models for standard documents or train custom models.
 
 ## Step 7: Advanced Features
 

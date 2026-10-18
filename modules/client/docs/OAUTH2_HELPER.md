@@ -1,6 +1,6 @@
 # OAuth2 Client Helper Guide
 
-Complete guide for using the **best-in-class** OAuth2 client helper in the Firefly Common Client Library.
+Complete guide for using the OAuth2 client helper in the Firefly Common Client Library.
 
 ---
 
@@ -23,22 +23,22 @@ Complete guide for using the **best-in-class** OAuth2 client helper in the Firef
 
 ## Overview
 
-The `OAuth2ClientHelper` provides a **production-ready**, enterprise-grade API for OAuth2 authentication flows with advanced features like automatic retry, intelligent token caching, and seamless integration with REST clients.
+The `OAuth2ClientHelper` provides a production-ready, API for OAuth2 authentication flows with advanced features like automatic retry, intelligent token caching, and seamless integration with REST clients.
 
-**Key Features**:
-- ✅ **Client Credentials Flow** - Machine-to-machine authentication
-- ✅ **Password Grant Flow** - User authentication (legacy systems)
-- ✅ **Refresh Token Flow** - Automatic token refresh
-- ✅ **NEW: Multi-scope token caching** - Cache tokens per scope
-- ✅ **NEW: Automatic retry with exponential backoff** - Resilient token requests
-- ✅ **NEW: Configurable timeout and retry policies** - Production-ready configuration
-- ✅ **NEW: Automatic refresh token management** - Store and reuse refresh tokens
-- ✅ **Reactive programming with `Mono<T>`** - Non-blocking operations
-- ✅ **Seamless integration with RestClient** - Easy authentication
-- ✅ **Thread-safe token management** - Concurrent request support
-- ✅ **ID Token support** - OpenID Connect compatibility
+Key Features:
+- ✅ Client Credentials Flow - Machine-to-machine authentication
+- ✅ Password Grant Flow - User authentication (legacy systems)
+- ✅ Refresh Token Flow - Automatic token refresh
+- ✅ NEW: Multi-scope token caching - Cache tokens per scope
+- ✅ NEW: Automatic retry with exponential backoff - Resilient token requests
+- ✅ NEW: Configurable timeout and retry policies - configuration
+- ✅ NEW: Automatic refresh token management - Store and reuse refresh tokens
+- ✅ Reactive programming with `Mono<T>` - Non-blocking operations
+- ✅ Integration with RestClient - Easy authentication
+- ✅ Thread-safe token management - Concurrent request support
+- ✅ ID Token support - OpenID Connect compatibility
 
-**Note**: For production applications with complex OAuth2/OIDC needs (Authorization Code Flow, PKCE, Social Login), use **Spring Security OAuth2 Client**.
+Note: For production applications with complex OAuth2/OIDC needs (Authorization Code Flow, PKCE, Social Login), use Spring Security OAuth2 Client.
 
 ---
 
@@ -250,7 +250,7 @@ response.subscribe(tokenResponse -> {
 
 The Password Grant flow authenticates users with username and password.
 
-**Warning**: This flow is considered less secure. Use Authorization Code Flow when possible.
+Warning: This flow is considered less secure. Use Authorization Code Flow when possible.
 
 ### Basic Usage
 
@@ -345,7 +345,7 @@ oauth2.getPasswordGrantToken("user@example.com", "password", null)
 
 ## Token Caching
 
-The OAuth2 helper automatically caches tokens **per scope** to reduce unnecessary token requests.
+The OAuth2 helper automatically caches tokens per scope to reduce unnecessary token requests.
 
 ### 💾 Multi-Scope Caching (NEW)
 
@@ -409,7 +409,7 @@ if (!hasToken) {
 
 ### Token Expiration Buffer
 
-Tokens are considered expired **before** their actual expiration time:
+Tokens are considered expired before their actual expiration time:
 
 ```java
 OAuth2Config config = OAuth2Config.builder()
@@ -449,14 +449,14 @@ The OAuth2 helper supports automatic retry with exponential backoff for resilien
 
 The helper automatically retries on the following errors:
 
-- **5xx Server Errors** - Server-side failures (500, 502, 503, 504)
-- **429 Too Many Requests** - Rate limiting
-- **Timeout Exceptions** - Request timeouts
-- **Connection Errors** - Network connectivity issues
+- 5xx Server Errors - Server-side failures (500, 502, 503, 504)
+- 429 Too Many Requests - Rate limiting
+- Timeout Exceptions - Request timeouts
+- Connection Errors - Network connectivity issues
 
-**Non-retryable errors** (fail immediately):
-- **4xx Client Errors** (except 429) - Invalid credentials, bad request
-- **OAuth2 Errors** - Invalid grant, unsupported grant type
+Non-retryable errors (fail immediately):
+- 4xx Client Errors (except 429) - Invalid credentials, bad request
+- OAuth2 Errors - Invalid grant, unsupported grant type
 
 ### Enable Retry
 
@@ -484,7 +484,7 @@ oauth2.getClientCredentialsToken()
 
 ### Retry Behavior
 
-**Exponential Backoff**:
+Exponential Backoff:
 - Attempt 1: Immediate
 - Attempt 2: Wait 1 second
 - Attempt 3: Wait 2 seconds
@@ -642,7 +642,7 @@ oauth2.getClientCredentialsToken()
 
 ### 1. Use Production-Ready Configuration
 
-❌ **Bad**:
+❌ Bad:
 ```java
 // No retry, default timeout, no custom configuration
 OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(
@@ -652,7 +652,7 @@ OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(
 );
 ```
 
-✅ **Good**:
+✅ Good:
 ```java
 // Production-ready with retry, custom timeout, and buffer
 OAuth2Config config = OAuth2Config.builder()
@@ -674,7 +674,7 @@ OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(
 
 ### 2. Store Credentials Securely
 
-❌ **Bad**:
+❌ Bad:
 ```java
 OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(
     "https://auth.example.com/token",
@@ -683,7 +683,7 @@ OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(
 );
 ```
 
-✅ **Good**:
+✅ Good:
 ```java
 @Configuration
 public class OAuth2Configuration {
@@ -709,7 +709,7 @@ public class OAuth2Configuration {
 
 ### 3. Reuse OAuth2 Helper Instances
 
-❌ **Bad**:
+❌ Bad:
 ```java
 public Mono<User> getUser(String id) {
     OAuth2ClientHelper oauth2 = new OAuth2ClientHelper(...);  // New instance each time
@@ -717,7 +717,7 @@ public Mono<User> getUser(String id) {
 }
 ```
 
-✅ **Good**:
+✅ Good:
 ```java
 @Component
 public class UserService {
@@ -735,7 +735,7 @@ public class UserService {
 
 ### 4. Handle Token Expiration Gracefully
 
-❌ **Bad**:
+❌ Bad:
 ```java
 // No error handling
 public Mono<Resource> getResource() {
@@ -744,7 +744,7 @@ public Mono<Resource> getResource() {
 }
 ```
 
-✅ **Good**:
+✅ Good:
 ```java
 // Automatic retry with fresh token on 401
 public Mono<Resource> getResource() {
@@ -761,13 +761,13 @@ public Mono<Resource> getResource() {
 
 ### 5. Use Appropriate Grant Types
 
-- **Client Credentials**: For service-to-service communication
-- **Password Grant**: Only when Authorization Code flow is not possible
-- **Refresh Token**: To extend user sessions without re-authentication
+- Client Credentials: For service-to-service communication
+- Password Grant: Only when Authorization Code flow is not possible
+- Refresh Token: To extend user sessions without re-authentication
 
 ### 6. Leverage Multi-Scope Caching
 
-❌ **Bad**:
+❌ Bad:
 ```java
 // Requesting new token for each scope
 oauth2.getClientCredentialsToken("read").subscribe(...);
@@ -775,7 +775,7 @@ oauth2.getClientCredentialsToken("write").subscribe(...);
 oauth2.getClientCredentialsToken("read").subscribe(...);  // Requests new token again
 ```
 
-✅ **Good**:
+✅ Good:
 ```java
 // Tokens are cached per scope automatically
 oauth2.getClientCredentialsToken("read").subscribe(...);   // Requests from server
@@ -891,30 +891,29 @@ public class OrderService {
 
 ## What's Included
 
-✅ **Client Credentials Flow**: Machine-to-machine authentication  
-✅ **Password Grant Flow**: User authentication with credentials  
-✅ **Refresh Token Flow**: Token refresh without re-authentication  
-✅ **Token Caching**: Automatic caching with expiration  
-✅ **Reactive API**: Full `Mono<T>` support  
-✅ **Thread-Safe**: Safe for concurrent use  
+✅ Client Credentials Flow: Machine-to-machine authentication
+✅ Password Grant Flow: User authentication with credentials
+✅ Refresh Token Flow: Token refresh without re-authentication
+✅ Token Caching: Automatic caching with expiration
+✅ Reactive API: Full `Mono<T>` support
+✅ Thread-Safe: Safe for concurrent use
 
 ## What's NOT Included
 
-❌ **Authorization Code Flow**: Use Spring Security OAuth2  
-❌ **PKCE Support**: Use Spring Security OAuth2  
-❌ **OpenID Connect**: Use Spring Security OAuth2  
-❌ **Social Login**: Use Spring Security OAuth2  
-❌ **Token Introspection**: Implement custom logic  
-❌ **JWT Parsing**: Use dedicated JWT libraries  
+❌ Authorization Code Flow: Use Spring Security OAuth2
+❌ PKCE Support: Use Spring Security OAuth2
+❌ OpenID Connect: Use Spring Security OAuth2
+❌ Social Login: Use Spring Security OAuth2
+❌ Token Introspection: Implement custom logic
+❌ JWT Parsing: Use dedicated JWT libraries
 
-**For Production**: Use **Spring Security OAuth2 Client** for full OAuth2/OIDC support.
+For Production: Use Spring Security OAuth2 Client for full OAuth2/OIDC support.
 
 ---
 
-**Next Steps**:
+Next Steps:
 - [REST Client Guide](REST_CLIENT.md)
 - [GraphQL Client Guide](GRAPHQL_CLIENT.md)
 - [WebSocket Helper Guide](WEBSOCKET_HELPER.md)
 - [File Upload Helper Guide](MULTIPART_HELPER.md)
 - [Configuration Reference](CONFIGURATION.md)
-

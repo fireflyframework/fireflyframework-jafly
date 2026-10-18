@@ -6,10 +6,10 @@ Complete API reference for the Firefly Event Driven Architecture Library.
 
 ## ⚠️ Configuration Namespace Warning
 
-**This library follows hexagonal architecture principles.**
+This library follows hexagonal architecture principles.
 
-✅ **ALWAYS use `firefly.eda.*` configuration properties**
-❌ **NEVER use `spring.kafka.*` or `spring.rabbitmq.*` properties**
+✅ ALWAYS use `firefly.eda.*` configuration properties
+❌ NEVER use `spring.kafka.*` or `spring.rabbitmq.*` properties
 
 The library provides complete abstraction from messaging platform implementations. All provider-specific configurations are managed internally. See [Configuration Reference](CONFIGURATION.md) for details.
 
@@ -350,7 +350,7 @@ public record EventEnvelope(
 }
 ```
 
-**EventMetadata Record:**
+EventMetadata Record:
 
 ```java
 public record EventMetadata(
@@ -370,7 +370,7 @@ public record EventMetadata(
 }
 ```
 
-**Example Usage:**
+Example Usage:
 
 ```java
 // For publishing
@@ -471,7 +471,7 @@ public @interface PublishResult {
 }
 ```
 
-**Example Usage:**
+Example Usage:
 ```java
 @PublishResult(
     publisherType = PublisherType.KAFKA,
@@ -564,7 +564,7 @@ public @interface EventListener {
 }
 ```
 
-**Example Usage:**
+Example Usage:
 ```java
 @EventListener(
     destinations = {"order-events", "payment-events"},
@@ -1113,7 +1113,7 @@ public class CompositeEventFilter implements EventFilter {
 
 ### Available Metrics
 
-The library automatically collects comprehensive metrics via Micrometer:
+The library automatically collects metrics via Micrometer:
 
 #### Publishing Metrics
 
@@ -1243,7 +1243,7 @@ public class EdaHealthIndicator {
 }
 ```
 
-> **Note**: This health indicator is automatically enabled when Spring Boot Actuator is on the classpath and `firefly.eda.health-enabled=true`.
+> Note: This health indicator is automatically enabled when Spring Boot Actuator is on the classpath and `firefly.eda.health-enabled=true`.
 
 ### Health Response Format
 

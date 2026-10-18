@@ -122,7 +122,9 @@ The host configures EDA, cache selection, provider beans, and secrets. Supply th
 
 ## Continue the application
 
-Use the [Webhooks guide](../../../docs/site/modules/webhooks.md) for the next part of this integration. ## Build and validation
+Use the [Webhooks guide](../../../docs/site/modules/webhooks.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

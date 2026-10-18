@@ -7,9 +7,9 @@ This document provides a comprehensive reference for all supported publisher typ
 The `PublisherType` enum defines the following supported messaging platforms:
 
 ### AUTO
-**Description**: Automatically select the best available publisher  
-**Selection Priority**: KAFKA → RABBITMQ → POSTGRES → APPLICATION_EVENT → NOOP  
-**Use Case**: Let the system choose the optimal publisher based on availability and configuration
+Description: Automatically select the best available publisher
+Selection Priority: KAFKA → RABBITMQ → POSTGRES → APPLICATION_EVENT → NOOP
+Use Case: Let the system choose the optimal publisher based on availability and configuration
 
 ```java
 @PublishResult(publisherType = PublisherType.AUTO)
@@ -19,12 +19,12 @@ public Mono<User> createUser(CreateUserRequest request) {
 ```
 
 ### KAFKA
-**Description**: Apache Kafka  
-**Features**: High-throughput, partitioning, persistence, ordering  
-**Best For**: Event sourcing, real-time data streaming, high-volume events  
-**Persistence**: ✅ Yes  
-**Ordering**: ✅ Yes (per partition)  
-**Cloud Service**: ❌ No (self-hosted)
+Description: Apache Kafka
+Features: High-throughput, partitioning, persistence, ordering
+Best For: Event sourcing, real-time data streaming, high-volume events
+Persistence: ✅ Yes
+Ordering: ✅ Yes (per partition)
+Cloud Service: ❌ No (self-hosted)
 
 ```yaml
 firefly:
@@ -40,12 +40,12 @@ firefly:
 ```
 
 ### RABBITMQ
-**Description**: RabbitMQ AMQP Broker  
-**Features**: Advanced routing, flexible exchanges, guaranteed delivery  
-**Best For**: Complex messaging patterns, reliable delivery, flexible routing  
-**Persistence**: ✅ Yes  
-**Ordering**: ❌ No (depends on routing)  
-**Cloud Service**: ❌ No (self-hosted)
+Description: RabbitMQ AMQP Broker
+Features: Advanced routing, flexible exchanges, guaranteed delivery
+Best For: Complex messaging patterns, reliable delivery, flexible routing
+Persistence: ✅ Yes
+Ordering: ❌ No (depends on routing)
+Cloud Service: ❌ No (self-hosted)
 
 ```yaml
 firefly:
@@ -61,12 +61,12 @@ firefly:
 ```
 
 ### POSTGRES
-**Description**: PostgreSQL `LISTEN`/`NOTIFY` with a transactional outbox table
-**Features**: Persistent storage, payload sizes beyond `NOTIFY`'s 8 kB limit, retry counts, dead-letter status, polling fallback for missed notifications
-**Best For**: Services that already use PostgreSQL and want reliable event publishing without an additional broker; outbox-style transactional event publishing
-**Persistence**: ✅ Yes (outbox table rows)
-**Ordering**: ✅ Yes (per destination -- rows are ordered by `created_at` / `id`)
-**Cloud Service**: ❌ No (self-hosted; works with managed PostgreSQL services)
+Description: PostgreSQL `LISTEN`/`NOTIFY` with a transactional outbox table
+Features: Persistent storage, payload sizes beyond `NOTIFY`'s 8 kB limit, retry counts, dead-letter status, polling fallback for missed notifications
+Best For: Services that already use PostgreSQL and want reliable event publishing without an additional broker; outbox-style transactional event publishing
+Persistence: ✅ Yes (outbox table rows)
+Ordering: ✅ Yes (per destination -- rows are ordered by `created_at` / `id`)
+Cloud Service: ❌ No (self-hosted; works with managed PostgreSQL services)
 
 ```yaml
 firefly:
@@ -98,7 +98,7 @@ firefly:
           max-attempts: 3
 ```
 
-**How it works**: Each `publish()` performs a single `INSERT` into the
+How it works: Each `publish()` performs a single `INSERT` into the
 configured outbox table. A trigger fires `pg_notify(channel, id)` for the
 new row, so any consumer that has issued `LISTEN` on the matching channel
 receives the row id and fetches the full payload from the table. The
@@ -108,12 +108,12 @@ is reached. A periodic poll catches rows that slipped past the live
 channel (consumer offline, payload too large, etc.).
 
 ### APPLICATION_EVENT
-**Description**: Spring Application Event Bus (in-memory)  
-**Features**: Synchronous processing, JVM-local, simple integration  
-**Best For**: Single-instance applications, testing, internal communication  
-**Persistence**: ❌ No  
-**Ordering**: ❌ No  
-**Cloud Service**: ❌ No
+Description: Spring Application Event Bus (in-memory)
+Features: Synchronous processing, JVM-local, simple integration
+Best For: Single-instance applications, testing, internal communication
+Persistence: ❌ No
+Ordering: ❌ No
+Cloud Service: ❌ No
 
 ```yaml
 firefly:
@@ -125,12 +125,12 @@ firefly:
 ```
 
 ### NOOP
-**Description**: No-operation publisher that discards all messages  
-**Features**: Testing, disabled mode, development  
-**Best For**: Testing scenarios, development without messaging  
-**Persistence**: ❌ No  
-**Ordering**: ❌ No  
-**Cloud Service**: ❌ No
+Description: No-operation publisher that discards all messages
+Features: Testing, disabled mode, development
+Best For: Testing scenarios, development without messaging
+Persistence: ❌ No
+Ordering: ❌ No
+Cloud Service: ❌ No
 
 ```java
 @TestPropertySource(properties = {
@@ -145,26 +145,26 @@ class ServiceTest {
 
 When using `PublisherType.AUTO`, the system selects publishers in this priority order:
 
-1. **KAFKA** - If Kafka is configured and available
-2. **RABBITMQ** - If RabbitMQ is configured and available
-3. **POSTGRES** - If a PostgreSQL EDA connection is configured and available
-4. **APPLICATION_EVENT** - If Spring context is available (always true)
-5. **NOOP** - If explicitly enabled for testing
+1. KAFKA - If Kafka is configured and available
+2. RABBITMQ - If RabbitMQ is configured and available
+3. POSTGRES - If a PostgreSQL EDA connection is configured and available
+4. APPLICATION_EVENT - If Spring context is available (always true)
+5. NOOP - If explicitly enabled for testing
 
 ## Feature Comparison Matrix
 
 | Feature | KAFKA | RABBITMQ | POSTGRES | APPLICATION_EVENT | NOOP |
 |---------|-------|----------|----------|------------------|------|
-| **Throughput** | Very High | High | Medium | High | N/A |
-| **Persistence** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Ordering** | ✅ | ❌ | ✅ | ❌ | ❌ |
-| **Partitioning** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Complex Routing** | ❌ | ✅ | ❌ | ❌ | ❌ |
-| **Guaranteed Delivery** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Multi-Instance** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Cloud Native** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Setup Complexity** | Medium | Medium | Low | Low | None |
-| **Requires extra broker** | Yes | Yes | No (reuses DB) | No | No |
+| Throughput | Very High | High | Medium | High | N/A |
+| Persistence | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Ordering | ✅ | ❌ | ✅ | ❌ | ❌ |
+| Partitioning | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Complex Routing | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Guaranteed Delivery | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Multi-Instance | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Cloud Native | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Setup Complexity | Medium | Medium | Low | Low | None |
+| Requires extra broker | Yes | Yes | No (reuses DB) | No | No |
 
 ## Configuration Examples
 
@@ -217,35 +217,35 @@ public class EventService {
 
 ### When to Use Each Publisher
 
-**Use KAFKA when:**
+Use KAFKA when:
 - High throughput is required (>10k events/second)
 - Event ordering is important
 - Long-term event storage is needed
 - Building event-sourced systems
 - Streaming analytics is required
 
-**Use RABBITMQ when:**
+Use RABBITMQ when:
 - Complex routing patterns are needed
 - Guaranteed delivery is critical
 - Different message types need different handling
 - Fan-out patterns are common
 - Priority queues are required
 
-**Use POSTGRES when:**
+Use POSTGRES when:
 - The service already uses PostgreSQL and you want event publishing without operating a separate broker
 - You need transactional outbox semantics (event publish ties to a database transaction)
 - Moderate throughput is sufficient (the table acts as the queue)
 - You want persistent, auditable events with built-in retry / dead-letter status
 - You can tolerate a small NOTIFY-delivery delay covered by the polling fallback
 
-**Use APPLICATION_EVENT when:**
+Use APPLICATION_EVENT when:
 - Simple internal communication is needed
 - Single-instance deployment
 - Low-latency local processing
 - Testing scenarios
 - Prototyping
 
-**Use NOOP when:**
+Use NOOP when:
 - Running tests without messaging
 - Temporarily disabling events
 - Development environments

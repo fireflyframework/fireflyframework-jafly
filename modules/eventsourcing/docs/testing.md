@@ -223,12 +223,12 @@ firefly:
 
 H2 does not support several PostgreSQL features used in the production migrations:
 
-- **BIGSERIAL** -- H2 uses `IDENTITY` or `AUTO_INCREMENT` instead
-- **Partial indexes** (e.g., `WHERE status = 'PENDING'`)
-- **Materialized views**
-- **Custom triggers and functions** (PL/pgSQL)
-- **`gen_random_uuid()`**
-- **Table partitioning**
+- BIGSERIAL -- H2 uses `IDENTITY` or `AUTO_INCREMENT` instead
+- Partial indexes (e.g., `WHERE status = 'PENDING'`)
+- Materialized views
+- Custom triggers and functions (PL/pgSQL)
+- `gen_random_uuid()`
+- Table partitioning
 
 For tests that need the full `events`, `snapshots`, or `event_outbox` tables, you must either create H2-compatible versions of those tables in your test schema or use Testcontainers with a real PostgreSQL instance.
 
@@ -529,7 +529,7 @@ void shouldStreamAllEventsReactively() {
 
 ## CI Configuration
 
-The project uses Java 21 for compilation and testing. Below is a GitHub Actions workflow that runs tests with Testcontainers.
+The project uses Java 25 for compilation and testing. Below is a GitHub Actions workflow that runs tests with Testcontainers.
 
 ```yaml
 name: CI
@@ -547,10 +547,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: maven
 
@@ -569,7 +569,7 @@ Testcontainers starts a PostgreSQL Docker container automatically during the tes
 
 ### Maven Surefire Configuration
 
-Ensure your `pom.xml` configures Surefire for Java 21:
+Ensure your `pom.xml` configures Surefire for Java 25:
 
 ```xml
 <plugin>

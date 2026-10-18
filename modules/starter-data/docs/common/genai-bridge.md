@@ -36,11 +36,11 @@ This document provides a comprehensive guide to the `fireflyframework-genai-data
 
 The `fireflyframework-genai-data` package provides native integration between the Java-based data starter and the Python-based GenAI agent framework. It enables AI agents to:
 
-- **Enrich data** through the data starter REST API
-- **Manage data jobs** (start, check status, collect results)
-- **Execute provider-specific operations** against registered data providers
-- **Track data lineage** across agent runs
-- **Validate data quality** within GenAI pipelines
+- Enrich data through the data starter REST API
+- Manage data jobs (start, check status, collect results)
+- Execute provider-specific operations against registered data providers
+- Track data lineage across agent runs
+- Validate data quality within GenAI pipelines
 
 The package follows the same hexagonal architecture and protocol-driven design as the broader Firefly Framework ecosystem.
 
@@ -70,7 +70,7 @@ The package follows the same hexagonal architecture and protocol-driven design a
 pip install fireflyframework-genai-data
 ```
 
-**Requirements:**
+Requirements:
 
 | Dependency | Version |
 |---|---|
@@ -78,7 +78,7 @@ pip install fireflyframework-genai-data
 | `fireflyframework-genai` | >= 26.02.07 |
 | `httpx` | >= 0.27.0 |
 
-**Development dependencies:**
+Development dependencies:
 
 ```bash
 pip install fireflyframework-genai-data[dev]
@@ -196,7 +196,7 @@ client = DataStarterClient(base_url="http://localhost:8080")
 tool = DataEnrichmentTool(client)
 ```
 
-**Tool metadata:**
+Tool metadata:
 
 | Property | Value |
 |---|---|
@@ -204,7 +204,7 @@ tool = DataEnrichmentTool(client)
 | Tags | `data`, `enrichment` |
 | Description | Enrich data records using configurable strategies (ENHANCE, MERGE, VALIDATE, etc.) |
 
-**Parameters:**
+Parameters:
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
@@ -223,7 +223,7 @@ from fireflyframework_genai_data.tools.job_tool import DataJobTool
 tool = DataJobTool(client)
 ```
 
-**Tool metadata:**
+Tool metadata:
 
 | Property | Value |
 |---|---|
@@ -231,7 +231,7 @@ tool = DataJobTool(client)
 | Tags | `data`, `jobs` |
 | Description | Manage data processing jobs: start, check status, or collect results |
 
-**Parameters:**
+Parameters:
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
@@ -240,7 +240,7 @@ tool = DataJobTool(client)
 | `execution_id` | `str` | No | Job execution ID (required for `check` and `collect`) |
 | `parameters` | `dict` | No | Job parameters (used with `start`) |
 
-**Action dispatch:**
+Action dispatch:
 
 ```python
 # Start a job
@@ -263,7 +263,7 @@ from fireflyframework_genai_data.tools.operations_tool import DataOperationsTool
 tool = DataOperationsTool(client)
 ```
 
-**Tool metadata:**
+Tool metadata:
 
 | Property | Value |
 |---|---|
@@ -271,7 +271,7 @@ tool = DataOperationsTool(client)
 | Tags | `data`, `operations` |
 | Description | Execute provider-specific data operations by type and operation ID |
 
-**Parameters:**
+Parameters:
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
@@ -294,7 +294,7 @@ toolkit = DataToolKit(
 )
 ```
 
-**Toolkit metadata:**
+Toolkit metadata:
 
 | Property | Value |
 |---|---|
@@ -302,7 +302,7 @@ toolkit = DataToolKit(
 | Tags | `data` |
 | Description | Toolkit providing data enrichment, job management, and operations tools |
 
-**Bundled tools:**
+Bundled tools:
 
 1. `DataEnrichmentTool`
 2. `DataJobTool`
@@ -310,7 +310,7 @@ toolkit = DataToolKit(
 
 The toolkit creates its own `DataStarterClient` internally, so you only need to provide the base URL.
 
-**Usage with an agent:**
+Usage with an agent:
 
 ```python
 from fireflyframework_genai.agents.agent import FireflyAgent
@@ -348,14 +348,14 @@ step = EnrichmentStep(
 )
 ```
 
-**Behavior:**
+Behavior:
 
 - The `inputs` dict is forwarded as the `parameters` payload to the enrichment API
 - If `inputs` contains a `tenant_id` key, it is extracted and sent separately as the tenant identifier
 - After execution, enrichment metadata is stored on `context.metadata["enrichment_results"]` for downstream steps
 - Returns the API response as-is
 
-**Pipeline context metadata:**
+Pipeline context metadata:
 
 ```python
 # After execution, the context will contain:
@@ -385,7 +385,7 @@ step = QualityGateStep(rules=[
 ])
 ```
 
-**Behavior:**
+Behavior:
 
 - Each rule is a callable that receives the `inputs` dict and returns `True` (pass) or `False` (fail)
 - Rules can optionally be `(callable, description)` tuples for human-readable violation messages
@@ -395,7 +395,7 @@ step = QualityGateStep(rules=[
 - On success, `context.metadata["quality_checks_passed"]` is incremented by the number of rules
 - The original `inputs` are returned unchanged when all rules pass
 
-**Error format:**
+Error format:
 
 ```
 ValueError: Quality gate failed with 2 violation(s): email must contain @; score must be non-negative
@@ -415,14 +415,14 @@ from fireflyframework_genai_data.middleware.lineage import DataLineageMiddleware
 middleware = DataLineageMiddleware()
 ```
 
-**Lifecycle hooks:**
+Lifecycle hooks:
 
 | Hook | Action |
 |---|---|
 | `before_run` | Generates a unique `lineage_id` (UUID hex), attaches it and the agent name to `context.metadata`, records the start time |
 | `after_run` | Computes elapsed time in milliseconds, creates a lineage record, appends it to the internal records list |
 
-**Context metadata set by `before_run`:**
+Context metadata set by `before_run`:
 
 | Key | Value |
 |---|---|
@@ -430,7 +430,7 @@ middleware = DataLineageMiddleware()
 | `lineage_agent` | Name of the agent being run |
 | `lineage_start_ns` | Monotonic nanosecond timestamp (removed after run) |
 
-**Lineage record structure (appended to `records`):**
+Lineage record structure (appended to `records`):
 
 ```python
 {
@@ -442,7 +442,7 @@ middleware = DataLineageMiddleware()
 }
 ```
 
-**Accessing lineage records:**
+Accessing lineage records:
 
 ```python
 middleware = DataLineageMiddleware()
@@ -472,7 +472,7 @@ agent = create_data_analyst_agent(
 )
 ```
 
-**Included components:**
+Included components:
 
 | Component | Details |
 |---|---|
@@ -481,11 +481,11 @@ agent = create_data_analyst_agent(
 | Instructions | Default data analysis instructions (overridable via `instructions` kwarg) |
 | Tags | `data`, `analyst` |
 
-**Default instructions:**
+Default instructions:
 
 > "You are a data analyst agent with access to data enrichment, job management, and data operations tools. Analyze data requests, choose appropriate enrichment strategies, and manage data processing jobs efficiently. Always validate inputs before processing and provide clear summaries of results."
 
-**Customization:**
+Customization:
 
 All aspects of the agent are customizable via keyword arguments:
 
@@ -662,22 +662,22 @@ async def run_pipeline_safely(client, domain):
 
 ## Best Practices
 
-1. **Use `DataToolKit` instead of individual tools.** The toolkit bundles all data tools with a single `DataStarterClient`, avoiding redundant HTTP client instances.
+1. Use `DataToolKit` instead of individual tools. The toolkit bundles all data tools with a single `DataStarterClient`, avoiding redundant HTTP client instances.
 
-2. **Use `create_data_analyst_agent()` for rapid prototyping.** The template function provides sensible defaults for data analysis agents. Override specific aspects (instructions, tools, middleware) as needed rather than building from scratch.
+2. Use `create_data_analyst_agent()` for rapid prototyping. The template function provides sensible defaults for data analysis agents. Override specific aspects (instructions, tools, middleware) as needed rather than building from scratch.
 
-3. **Always close the `DataStarterClient`.** The client holds an `httpx.AsyncClient` that should be closed when no longer needed to release network connections. Use try/finally blocks or manage the lifecycle alongside your application.
+3. Always close the `DataStarterClient`. The client holds an `httpx.AsyncClient` that should be closed when no longer needed to release network connections. Use try/finally blocks or manage the lifecycle alongside your application.
 
-4. **Add descriptive rule names to `QualityGateStep`.** Pass `(callable, description)` tuples instead of bare callables so quality violations produce actionable error messages.
+4. Add descriptive rule names to `QualityGateStep`. Pass `(callable, description)` tuples instead of bare callables so quality violations produce actionable error messages.
 
-5. **Inspect lineage records for debugging.** The `DataLineageMiddleware.records` property provides a chronological log of all agent runs, including elapsed times. Use this for performance analysis and debugging.
+5. Inspect lineage records for debugging. The `DataLineageMiddleware.records` property provides a chronological log of all agent runs, including elapsed times. Use this for performance analysis and debugging.
 
-6. **Combine pipeline steps for robust workflows.** Use `EnrichmentStep` followed by `QualityGateStep` in a pipeline to ensure enriched data meets quality standards before downstream processing.
+6. Combine pipeline steps for robust workflows. Use `EnrichmentStep` followed by `QualityGateStep` in a pipeline to ensure enriched data meets quality standards before downstream processing.
 
-7. **Leverage entry points for auto-discovery.** Install the package in your Python environment and let the GenAI framework discover data tools automatically. This reduces boilerplate and ensures tools are available wherever the package is installed.
+7. Leverage entry points for auto-discovery. Install the package in your Python environment and let the GenAI framework discover data tools automatically. This reduces boilerplate and ensures tools are available wherever the package is installed.
 
-8. **Configure timeouts appropriately.** The default 30-second timeout on `DataStarterClient` may not be sufficient for large enrichment batches or slow providers. Adjust the `timeout` parameter based on your expected workload.
+8. Configure timeouts appropriately. The default 30-second timeout on `DataStarterClient` may not be sufficient for large enrichment batches or slow providers. Adjust the `timeout` parameter based on your expected workload.
 
-9. **Use `preview_enrichment()` for testing.** Before running enrichment in production, use the preview endpoint to verify the enrichment output without committing changes.
+9. Use `preview_enrichment()` for testing. Before running enrichment in production, use the preview endpoint to verify the enrichment output without committing changes.
 
-> **See also:** [Data Quality](data-quality.md) | [Data Lineage](data-lineage.md) | [Data Transformation](data-transformation.md)
+> See also: [Data Quality](data-quality.md) | [Data Lineage](data-lineage.md) | [Data Transformation](data-transformation.md)

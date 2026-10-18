@@ -87,8 +87,8 @@ Use Java 25. From the repository root, build this component with its required de
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-webhooks -am verify
-./mvnw -pl :fireflyframework-webhooks -am install
+./mvnw -pl :fireflyframework-webhooks,:fireflyframework-webhooks-core,:fireflyframework-webhooks-interfaces,:fireflyframework-webhooks-processor,:fireflyframework-webhooks-sdk,:fireflyframework-webhooks-web -am verify
+./mvnw -pl :fireflyframework-webhooks,:fireflyframework-webhooks-core,:fireflyframework-webhooks-interfaces,:fireflyframework-webhooks-processor,:fireflyframework-webhooks-sdk,:fireflyframework-webhooks-web -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

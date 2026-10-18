@@ -2,7 +2,7 @@
 
 # Part III: Saga Pattern
 
-**Contents:**
+Contents:
 - [§13 Saga Annotation Reference](#13-saga-annotation-reference)
 - [§14 Saga Tutorial](#14-saga-tutorial)
 - [§15 Saga Compensation Deep Dive](#15-saga-compensation-deep-dive)
@@ -18,7 +18,7 @@
 
 Marks a class as a saga definition. Applied to a Spring-managed bean.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME`
+Target: `ElementType.TYPE` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -26,13 +26,13 @@ Marks a class as a saga definition. Applied to a Spring-managed bean.
 | `layerConcurrency` | `int` | `0` | Max parallel steps per DAG layer (`0` = unbounded) |
 | `triggerEventType` | `String` | `""` | Event type that triggers this saga via `EventGateway` |
 
-> **Note:** Unlike `@Workflow`, the `@Saga` annotation does not carry retry or timeout defaults. These are configured per-step via `@SagaStep` attributes, per-saga via `OrchestrationProperties.saga.defaultTimeout`, or globally via the `CompensationPolicy`.
+> Note: Unlike `@Workflow`, the `@Saga` annotation does not carry retry or timeout defaults. These are configured per-step via `@SagaStep` attributes, per-saga via `OrchestrationProperties.saga.defaultTimeout`, or globally via the `CompensationPolicy`.
 
 ### @SagaStep
 
 Marks a method as a saga step. The method must return `Mono<T>`.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -43,7 +43,7 @@ Marks a method as a saga step. The method must return `Mono<T>`.
 | `backoffMs` | `long` | `-1` | Base backoff in milliseconds (`-1` = use default 100ms) |
 | `timeoutMs` | `long` | `-1` | Step timeout in milliseconds (`-1` = no timeout) |
 | `jitter` | `boolean` | `false` | Apply jitter to backoff delays |
-| `jitterFactor` | `double` | `0.5` | Jitter factor (`0.0`–`1.0`) |
+| `jitterFactor` | `double` | `0.5` | Jitter factor (`0.0` to `1.0`) |
 | `idempotencyKey` | `String` | `""` | Literal string for deduplication |
 | `cpuBound` | `boolean` | `false` | Schedule on bounded-elastic scheduler for CPU-intensive work |
 | `compensationRetry` | `int` | `-1` | Compensation retry attempts (`-1` = use step's `retry`) |
@@ -55,7 +55,7 @@ Marks a method as a saga step. The method must return `Mono<T>`.
 
 Publishes an event when a saga step completes successfully.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -67,7 +67,7 @@ Publishes an event when a saga step completes successfully.
 
 Defines a saga step on a bean that lives outside the `@Saga` class. Useful for reusing existing services as saga steps without modifying them.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -91,7 +91,7 @@ Defines a saga step on a bean that lives outside the `@Saga` class. Useful for r
 
 Defines a compensation method on a bean outside the `@Saga` class. Links to a specific step by saga name and step ID.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -102,20 +102,20 @@ Defines a compensation method on a bean outside the `@Saga` class. Links to a sp
 
 Callback invoked when the saga completes successfully.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `async` | `boolean` | `false` | Run callback asynchronously |
 | `priority` | `int` | `0` | Ordering priority |
 
-The callback method can declare `ExecutionContext` and/or `SagaResult` as parameters — both are resolved automatically by the `ArgumentResolver`.
+The callback method can declare `ExecutionContext` and/or `SagaResult` as parameters: both are resolved automatically by the `ArgumentResolver`.
 
 ### @OnSagaError
 
 Callback invoked when the saga fails.
 
-**Target:** `ElementType.METHOD` | **Retention:** `RUNTIME`
+Target: `ElementType.METHOD` | Retention: `RUNTIME`
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -130,7 +130,7 @@ The callback method can declare `Throwable` and/or `ExecutionContext` as paramet
 
 Schedules automatic execution of a saga. This annotation is `@Repeatable`.
 
-**Target:** `ElementType.TYPE` | **Retention:** `RUNTIME` | **Repeatable:** Yes (container: `@ScheduledSagas`)
+Target: `ElementType.TYPE` | Retention: `RUNTIME` | Repeatable: Yes (container: `@ScheduledSagas`)
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -147,12 +147,12 @@ Schedules automatic execution of a saga. This annotation is `@Repeatable`.
 
 ## 14. Saga Tutorial
 
-A **Saga** is a sequence of local transactions where each step has a **compensating action**. If any step fails, the saga engine automatically runs compensations for all completed steps.
+A saga coordinates local operations and their compensating actions. On failure, the engine invokes the registered compensations according to its compensation policy. The application must implement each business reversal.
 
 ```
 Step 1: Reserve Inventory   →  Compensation: Cancel Reservation
 Step 2: Charge Payment      →  Compensation: Refund Payment
-Step 3: Ship Order            (no compensation — final step)
+Step 3: Ship Order            (no compensation: final step)
 
 If Step 2 fails:
   1. Run compensation for Step 1 (Cancel Reservation)
@@ -163,13 +163,11 @@ If Step 2 fails:
 
 ```java
 @Saga(name = "TransferFunds")
+@RequiredArgsConstructor
 public class TransferFundsSaga {
 
     private final AccountService accountService;
 
-    public TransferFundsSaga(AccountService accountService) {
-        this.accountService = accountService;
-    }
 
     @SagaStep(id = "debit", compensate = "creditBack",
               retry = 3, backoffMs = 500, timeoutMs = 10000,
@@ -205,8 +203,8 @@ public class TransferFundsSaga {
 Key points:
 
 - `@SagaStep(compensate = "creditBack")` links the `"debit"` step to its compensation method
-- Compensation methods are regular methods on the same bean — they don't need a `@SagaStep` annotation
-- The `"credit"` step depends on `"debit"` via `dependsOn` — creating a two-layer DAG
+- Compensation methods are regular methods on the same bean: they don't need a `@SagaStep` annotation
+- The `"credit"` step depends on `"debit"` via `dependsOn`: creating a two-layer DAG
 - `@FromStep("debit")` injects the result of the completed `"debit"` step
 
 ### Step 2: Execute the Saga
@@ -223,7 +221,7 @@ public class TransferService {
 }
 ```
 
-`StepInputs.of("debit", request)` maps the input to the `"debit"` step. Steps without explicit inputs receive `null` for `@Input` parameters — they typically use `@FromStep` to access upstream results.
+`StepInputs.of("debit", request)` maps the input to the `"debit"` step. Steps without explicit inputs receive `null` for `@Input` parameters: they typically use `@FromStep` to access upstream results.
 
 ### Step 3: Handle the Result
 
@@ -270,7 +268,7 @@ public class InventoryService {
 
 ## 15. Saga Compensation Deep Dive
 
-When a saga step fails, the engine compensates all previously completed steps. The **compensation policy** determines how those compensations execute.
+When a saga step fails, the engine selects completed steps with registered compensations. The compensation policy determines execution order and failure handling.
 
 ### Setting the Policy
 
@@ -296,7 +294,7 @@ Step 1 ok → Step 2 ok → Step 3 FAIL
 Compensate Step 2 → Compensate Step 1
 ```
 
-Best for most applications. Predictable, debuggable, safe.
+Use this policy when compensation order must follow reverse completion order.
 
 #### GROUPED_PARALLEL
 
@@ -486,7 +484,7 @@ Static utility class with a `ConcurrentHashMap<String, Supplier<CompensationErro
 | `composite(CompensationErrorHandler... handlers)` | `CompensationErrorHandler` | Create a composite handler |
 | `resetDefaults()` | `void` | Reset registry to built-in defaults |
 
-**Pre-registered handler names:**
+Pre-registered handler names:
 
 | Name | Handler | Description |
 |------|---------|-------------|
@@ -496,7 +494,7 @@ Static utility class with a `ConcurrentHashMap<String, Supplier<CompensationErro
 | `"retry"` | `RetryWithBackoffErrorHandler(3)` | Retry up to 3 times, then `FAIL_SAGA` |
 | `"robust"` | Composite: retry(3) + log-and-continue | Retries first, then logs and continues on exhaustion |
 
-**Configuration:**
+Configuration:
 
 ```yaml
 firefly:
@@ -564,13 +562,13 @@ ExpandEach.of(items, item -> item.id())  // uses :id suffix (e.g., reserve:SKU-0
 
 ### Compensation for Expanded Steps
 
-Each expanded step instance is compensated independently. If `reserve:SKU-002` fails, only `reserve:SKU-001` (if completed) is compensated — `reserve:SKU-003` may or may not have run depending on layer timing.
+Each expanded step instance is compensated independently. If `reserve:SKU-002` fails, only `reserve:SKU-001` (if completed) is compensated: `reserve:SKU-003` may or may not have run depending on layer timing.
 
 ---
 
 ## 17. Saga Builder DSL
 
-The programmatic builder provides a fluent API for constructing sagas without annotations — useful for dynamic composition, testing, or runtime configuration.
+The programmatic builder provides a fluent API for constructing sagas without annotations: useful for dynamic composition, testing, or runtime configuration.
 
 ### SagaBuilder Methods
 
@@ -585,7 +583,7 @@ The programmatic builder provides a fluent API for constructing sagas without an
 
 ### Step Builder Methods
 
-**Handler variants** — choose one per step:
+**Handler variants**: choose one per step:
 
 | Method | Signature | Use When |
 |--------|-----------|----------|
@@ -595,7 +593,7 @@ The programmatic builder provides a fluent API for constructing sagas without an
 | `.handlerCtx(Function)` | `(ExecutionContext) → Mono<O>` | Lambda needing only the context |
 | `.handler(Supplier)` | `() → Mono<O>` | Lambda needing no arguments |
 
-**Compensation variants** — optional, choose one:
+**Compensation variants**: optional, choose one:
 
 | Method | Signature |
 |--------|-----------|
@@ -603,7 +601,7 @@ The programmatic builder provides a fluent API for constructing sagas without an
 | `.compensationCtx(Function)` | `(ExecutionContext) → Mono<Void>` |
 | `.compensation(Supplier)` | `() → Mono<Void>` |
 
-**Step configuration:**
+Step configuration:
 
 | Method | Description |
 |--------|-------------|
@@ -612,7 +610,7 @@ The programmatic builder provides a fluent API for constructing sagas without an
 | `.backoff(Duration)` / `.backoffMs(long)` | Backoff between retries |
 | `.timeout(Duration)` / `.timeoutMs(long)` | Step timeout |
 | `.jitter()` / `.jitter(boolean)` | Enable jitter on backoff |
-| `.jitterFactor(double)` | Jitter factor (`0.0`–`1.0`, default `0.5`) |
+| `.jitterFactor(double)` | Jitter factor (`0.0` to `1.0`, default `0.5`) |
 | `.idempotencyKey(String)` | Literal key for deduplication |
 | `.cpuBound(boolean)` | Schedule on bounded-elastic scheduler |
 | `.stepEvent(String topic, String type, String key)` | Per-step event publishing |
@@ -829,11 +827,11 @@ sagaEngine.execute("TransferFunds", StepInputs.of("debit", request))
 
 ### Overview
 
-Saga composition enables multi-saga orchestration with DAG topology. Individual sagas within a composition can depend on each other, share data through flow mappings, and compensate in reverse order on failure. This is useful for complex business processes that span multiple sagas — for example, an e-commerce checkout that orchestrates inventory reservation, payment processing, and shipping fulfillment as separate sagas.
+Saga composition enables multi-saga orchestration with DAG topology. Individual sagas within a composition can depend on each other, share data through flow mappings, and compensate in reverse order on failure. This is useful for complex business processes that span multiple sagas: for example, an e-commerce checkout that orchestrates inventory reservation, payment processing, and shipping fulfillment as separate sagas.
 
 ### SagaComposition
 
-The `SagaComposition` class is the immutable definition of a composition — a DAG of multiple sagas.
+The `SagaComposition` class is the immutable definition of a composition: a DAG of multiple sagas.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -900,7 +898,7 @@ Fluent API for constructing `SagaComposition` instances with built-in validation
 | `.condition(String)` | `SagaEntryBuilder` | Set a condition expression |
 | `.add()` | `SagaCompositionBuilder` | Finish entry, return to parent builder |
 
-**Full builder example:**
+Full builder example:
 
 ```java
 SagaComposition composition = SagaCompositionBuilder.composition("OrderFulfillment")
@@ -965,7 +963,7 @@ public class CompositionDataFlowManager {
 The merge order is:
 1. Start with `globalInput`
 2. Overlay `staticInput` from the `CompositionSaga` entry
-3. Apply `DataMapping` entries — extract values from upstream saga step results and inject into the input map
+3. Apply `DataMapping` entries: extract values from upstream saga step results and inject into the input map
 
 ### CompositionCompensationManager
 
@@ -983,8 +981,8 @@ public class CompositionCompensationManager {
 ```
 
 The manager retrieves the list of completed saga aliases in execution order, reverses it, and compensates each saga according to the policy:
-- `STRICT_SEQUENTIAL`, `RETRY_WITH_BACKOFF`, `CIRCUIT_BREAKER` — compensate one at a time in reverse order
-- `BEST_EFFORT_PARALLEL`, `GROUPED_PARALLEL` — compensate all in parallel
+- `STRICT_SEQUENTIAL`, `RETRY_WITH_BACKOFF`, `CIRCUIT_BREAKER`: compensate one at a time in reverse order
+- `BEST_EFFORT_PARALLEL`, `GROUPED_PARALLEL`: compensate all in parallel
 
 ### CompositionValidator
 
@@ -995,7 +993,7 @@ Validates a `SagaComposition` definition for structural correctness before execu
 | `validate(SagaComposition)` | `List<ValidationIssue>` | Returns all validation issues (empty = valid) |
 | `validateAndThrow(SagaComposition)` | `void` | Throws `IllegalStateException` if any ERROR-level issues |
 
-**Validation checks performed:**
+Validation checks performed:
 
 | Check | Severity | Description |
 |-------|----------|-------------|

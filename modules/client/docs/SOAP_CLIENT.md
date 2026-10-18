@@ -427,9 +427,9 @@ SoapClient client = ServiceClient.soap("document-service")
 
 ### WSDL Not Found
 
-**Problem**: Cannot access WSDL URL
+Problem: Cannot access WSDL URL
 
-**Solution**:
+Solution:
 - Verify WSDL URL is correct and accessible
 - Check network connectivity
 - Verify authentication if required
@@ -437,9 +437,9 @@ SoapClient client = ServiceClient.soap("document-service")
 
 ### Authentication Failures
 
-**Problem**: WS-Security authentication fails
+Problem: WS-Security authentication fails
 
-**Solution**:
+Solution:
 ```java
 // Ensure credentials are correct
 SoapClient client = ServiceClient.soap("service")
@@ -455,9 +455,9 @@ SoapClient client = ServiceClient.soap("service")
 
 ### SSL/TLS Errors
 
-**Problem**: SSL handshake failures, certificate errors
+Problem: SSL handshake failures, certificate errors
 
-**Solution**:
+Solution:
 ```java
 // For production: Use proper trust store
 SoapClient client = ServiceClient.soap("service")
@@ -474,9 +474,9 @@ SoapClient client = ServiceClient.soap("service")
 
 ### Timeout Errors
 
-**Problem**: Requests timing out
+Problem: Requests timing out
 
-**Solution**:
+Solution:
 ```java
 // Increase timeout
 SoapClient client = ServiceClient.soap("slow-service")
@@ -487,9 +487,9 @@ SoapClient client = ServiceClient.soap("slow-service")
 
 ### Operation Not Found
 
-**Problem**: Operation name not found in WSDL
+Problem: Operation name not found in WSDL
 
-**Solution**:
+Solution:
 ```java
 // List available operations
 List<String> operations = soapClient.getOperations();
@@ -501,9 +501,9 @@ soapClient.invokeAsync("GetWeather", request, Response.class);  // Case-sensitiv
 
 ### XML Parsing Errors
 
-**Problem**: Cannot parse SOAP response
+Problem: Cannot parse SOAP response
 
-**Solution**:
+Solution:
 ```java
 // Disable schema validation if schema is problematic
 SoapClient client = ServiceClient.soap("service")
@@ -526,39 +526,38 @@ firefly:
 
 ## What's Included
 
-✅ **WSDL Parsing**: Automatic service discovery  
-✅ **WS-Security**: Username/password authentication  
-✅ **MTOM/XOP**: Efficient binary attachments  
-✅ **SSL/TLS**: Custom trust stores and key stores  
-✅ **Custom Headers**: HTTP and SOAP headers  
-✅ **Schema Validation**: XML validation against WSDL  
-✅ **Circuit Breaker**: Automatic failure detection  
-✅ **Health Checks**: WSDL availability monitoring  
-✅ **Timeouts**: Configurable request timeouts  
-✅ **Reactive**: Non-blocking Mono responses  
-✅ **Fluent API**: Easy operation invocation  
+✅ WSDL Parsing: Automatic service discovery
+✅ WS-Security: Username/password authentication
+✅ MTOM/XOP: Efficient binary attachments
+✅ SSL/TLS: Custom trust stores and key stores
+✅ Custom Headers: HTTP and SOAP headers
+✅ Schema Validation: XML validation against WSDL
+✅ Circuit Breaker: Automatic failure detection
+✅ Health Checks: WSDL availability monitoring
+✅ Timeouts: Configurable request timeouts
+✅ Reactive: Non-blocking Mono responses
+✅ Fluent API: Easy operation invocation
 
 ## What's NOT Included
 
-❌ **SOAP Server**: This is client-only  
-❌ **WSDL Generation**: Use JAX-WS tools  
-❌ **WS-Policy**: Not currently supported  
-❌ **WS-ReliableMessaging**: Not currently supported  
+❌ SOAP Server: This is client-only
+❌ WSDL Generation: Use JAX-WS tools
+❌ WS-Policy: Not currently supported
+❌ WS-ReliableMessaging: Not currently supported
 
 ---
 
-**Next Steps**:
+Next Steps:
 
-**Core Clients**:
+Core Clients:
 - [REST Client Guide](REST_CLIENT.md)
 - [gRPC Client Guide](GRPC_CLIENT.md)
 
-**Helper Utilities**:
+Helper Utilities:
 - [GraphQL Client Guide](GRAPHQL_CLIENT.md)
 - [WebSocket Helper Guide](WEBSOCKET_HELPER.md)
 - [OAuth2 Helper Guide](OAUTH2_HELPER.md)
 - [File Upload Helper Guide](MULTIPART_HELPER.md)
 
-**Configuration**:
+Configuration:
 - [Configuration Reference](CONFIGURATION.md)
-

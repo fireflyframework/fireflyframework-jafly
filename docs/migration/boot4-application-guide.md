@@ -30,11 +30,11 @@ The original repository's main commit remains in the ancestry of the monorepo. S
 
 ## Validate the Boot 4 application boundary
 
-**Spring APIs.** Boot 4 adopts Spring Framework 7, Spring Security 7, and Jakarta EE 11. Recompile application customizations, security configuration, HTTP integrations, and test support against the selected platform.
+Spring APIs. Boot 4 adopts Spring Framework 7, Spring Security 7, and Jakarta EE 11. Recompile application customizations, security configuration, HTTP integrations, and test support against the selected platform.
 
-**Focused Boot modules.** Auto-configuration and test APIs moved into technology-specific modules. Update imports and dependencies together; adding a dependency alone does not fix a moved Java package.
+Focused Boot modules. Auto-configuration and test APIs moved into technology-specific modules. Update imports and dependencies together; adding a dependency alone does not fix a moved Java package.
 
-**Jackson compatibility.** The migration preserves existing public Jackson 2 types through Boot's `spring-boot-jackson2` compatibility module and Boot-managed Jackson 2 versions. Jackson 3 can coexist. Do not mix independently pinned Jackson versions into the managed train.
+Jackson compatibility. The migration preserves existing public Jackson 2 types through Boot's `spring-boot-jackson2` compatibility module and Boot-managed Jackson 2 versions. Jackson 3 can coexist. Do not mix independently pinned Jackson versions into the managed train.
 
 For Jackson 2 configuration, review these Boot 4 settings where applicable:
 
@@ -45,11 +45,11 @@ spring.http.converters.preferred-json-mapper=jackson2
 
 Move Jackson 2 binding settings from `spring.jackson.*` to `spring.jackson2.*`. Validate actual HTTP bodies and configured codecs in the application; a successful compile cannot establish serialization compatibility.
 
-**Observability.** Tracing OTLP configuration uses `management.opentelemetry.tracing.export.otlp.*`. Review deployment configuration and collector connectivity.
+Observability. Tracing OTLP configuration uses `management.opentelemetry.tracing.export.otlp.*`. Review deployment configuration and collector connectivity.
 
-**Testcontainers.** Version 2 changes Maven module names. Keep Docker available and execute provider-backed tests against the infrastructure your application uses.
+Testcontainers. Version 2 changes Maven module names. Keep Docker available and execute provider-backed tests against the infrastructure your application uses.
 
-**Provider integrations.** Cloud SDK starters, Springdoc, resilience, and security integrations move with the Boot 4 generation. Verify authentication, connection configuration, and failure handling against your actual providers.
+Provider integrations. Cloud SDK starters, Springdoc, resilience, and security integrations move with the Boot 4 generation. Verify authentication, connection configuration, and failure handling against your actual providers.
 
 ## Suggested application verification
 

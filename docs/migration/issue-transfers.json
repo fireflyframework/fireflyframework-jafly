@@ -1,0 +1,15 @@
+[
+  {
+    "transferred_at": "2026-10-18T05:14:45.841213+00:00",
+    "source": "https://github.com/fireflyframework/fireflyframework-observability/issues/6",
+    "destination": "https://github.com/fireflyframework/fireflyframework-jafly/issues/1",
+    "preserved": [
+      "title",
+      "body",
+      "state",
+      "comments",
+      "labels",
+      "assignees"
+    ]
+  }
+]

@@ -6,8 +6,8 @@ This guide covers configuration for the Firefly ECM Library and its adapter impl
 
 Configuration is split between:
 
-1. **Core Library Configuration** (fireflyframework-ecm): Basic ECM settings and adapter selection
-2. **Adapter Configuration**: Adapter-specific settings (provided by each adapter library)
+1. Core Library Configuration (fireflyframework-ecm): Basic ECM settings and adapter selection
+2. Adapter Configuration: Adapter-specific settings (provided by each adapter library)
 
 ## Prerequisites
 
@@ -18,14 +18,14 @@ Before configuring, ensure you have added the required dependencies:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 
 <!-- Add adapter libraries as needed -->
 <dependency>
     <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-ecm-adapter-s3</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>fireflyframework-ecm-storage-aws</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -58,7 +58,7 @@ Adapter-specific configuration is provided under `firefly.ecm.adapter.<adapter-n
 
 ### Amazon S3 Adapter Configuration
 
-**Requires**: `fireflyframework-ecm-adapter-s3` dependency
+Requires: `fireflyframework-ecm-storage-aws` dependency
 
 ```yaml
 firefly:
@@ -77,7 +77,7 @@ See [S3 Integration Guide](guides/s3-integration.md) for complete setup instruct
 
 ### Azure Blob Storage Adapter Configuration
 
-**Requires**: `fireflyframework-ecm-adapter-azure-blob` dependency
+Requires: `fireflyframework-ecm-adapter-azure-blob` dependency
 
 ```yaml
 firefly:
@@ -95,7 +95,7 @@ See [Azure Blob Integration Guide](guides/azure-integration.md) for complete set
 
 ### DocuSign Adapter Configuration
 
-**Requires**: `fireflyframework-ecm-adapter-docusign` dependency
+Requires: `fireflyframework-ecm-esignature-docusign` dependency
 
 ```yaml
 firefly:
@@ -115,7 +115,7 @@ See [DocuSign Integration Guide](guides/docusign-integration.md) for complete se
 
 ### Adobe Sign Adapter Configuration
 
-**Requires**: `fireflyframework-ecm-adapter-adobe-sign` dependency
+Requires: `fireflyframework-ecm-esignature-adobe-sign` dependency
 
 ```yaml
 firefly:
@@ -187,9 +187,9 @@ firefly:
 
 If no adapter is configured or available, the library will:
 
-1. **Log a warning** at startup indicating no adapter was found
-2. **Use no-op adapters** that return empty results or throw `UnsupportedOperationException`
-3. **Allow the application to start** without failing
+1. Log a warning at startup indicating no adapter was found
+2. Use no-op adapters that return empty results or throw `UnsupportedOperationException`
+3. Allow the application to start without failing
 
 This allows you to include the library without being forced to configure an adapter immediately.
 
@@ -294,12 +294,12 @@ If you see warnings like:
 WARN: No adapter found for type 'document'. Using no-op adapter.
 ```
 
-**Causes:**
+Causes:
 1. Adapter library not added to dependencies
 2. `adapter-type` doesn't match any registered adapter
 3. Adapter auto-configuration conditions not met
 
-**Solutions:**
+Solutions:
 1. Add the adapter dependency to your `pom.xml`
 2. Verify `firefly.ecm.adapter-type` matches the adapter name
 3. Check adapter-specific configuration requirements

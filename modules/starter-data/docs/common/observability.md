@@ -13,11 +13,11 @@ This document describes the observability features in fireflyframework-starter-d
 
 ## Overview
 
-The library provides comprehensive observability features out of the box:
+The library provides observability features with its default configuration:
 
-- **Distributed Tracing**: Track job execution across services using Micrometer Observation
-- **Metrics**: Collect detailed metrics about job performance and orchestrator operations
-- **Health Checks**: Monitor orchestrator availability and connectivity
+- Distributed Tracing: Track job execution across services using Micrometer Observation
+- Metrics: Collect detailed metrics about job performance and orchestrator operations
+- Health Checks: Monitor orchestrator availability and connectivity
 
 All observability features are automatically configured and can be customized through properties.
 
@@ -98,23 +98,23 @@ tracingService.recordEvent("data.validated", "Data validation completed successf
 
 Each trace includes:
 
-- **Span Name**: `job.stage.<stage_name>` (e.g., `job.stage.start`)
-- **Low Cardinality Tags**:
+- Span Name: `job.stage.<stage_name>` (e.g., `job.stage.start`)
+- Low Cardinality Tags:
   - `job.stage`: The job stage (START, CHECK, COLLECT, RESULT)
   - `execution.id`: Truncated execution ID
 
 ### Real Trace ID and Span ID Extraction
 
-The library provides **tracing context extraction** using the `TracingContextExtractor` utility:
+The library provides tracing context extraction using the `TracingContextExtractor` utility:
 
 #### Features
 
-- **Real Trace IDs** - Extracted from Micrometer Tracing (not generated timestamps)
-- **Real Span IDs** - Extracted from current observation span
-- **OpenTelemetry Support** - Full support for OpenTelemetry tracing backend
-- **Automatic Configuration** - Tracer is automatically injected via Spring Boot
-- **Multiple Extraction Strategies** - Tries tracer first, then observation context
-- **Distributed Tracing** - Full correlation with Jaeger, Grafana Tempo, and other OpenTelemetry-compatible systems
+- Real Trace IDs - Extracted from Micrometer Tracing (not generated timestamps)
+- Real Span IDs - Extracted from current observation span
+- OpenTelemetry Support - Full support for OpenTelemetry tracing backend
+- Automatic Configuration - Tracer is automatically injected via Spring Boot
+- Multiple Extraction Strategies - Tries tracer first, then observation context
+- Distributed Tracing - Full correlation with Jaeger, Grafana Tempo, and other OpenTelemetry-compatible systems
 
 #### How It Works
 
@@ -166,13 +166,13 @@ private String extractSpanId(io.micrometer.observation.Observation observation) 
 
 #### Example Trace IDs
 
-**Before (Simplified):**
+Before (Simplified):
 ```
 traceId: trace-1760466188449986
 spanId: span-1760466188449986
 ```
 
-**After (Real OpenTelemetry Tracing):**
+After (Real OpenTelemetry Tracing):
 ```
 traceId: 4bf92f3577b34da6a3ce929d0e0e4736  (32-character hex from OpenTelemetry)
 spanId: 00f067aa0ba902b7   (16-character hex from OpenTelemetry)
@@ -198,12 +198,12 @@ boolean hasContext = TracingContextExtractor.hasTracingContext(observation);
 
 | Backend | Status | Notes |
 |---------|--------|-------|
-| **OpenTelemetry** | Fully Supported | Default implementation, tested |
-| **Generic Micrometer** | Fallback | Uses generic `TraceContext` interface |
+| OpenTelemetry | Fully Supported | Default implementation, tested |
+| Generic Micrometer | Fallback | Uses generic `TraceContext` interface |
   - `orchestrator.type`: Type of orchestrator (AWS_STEP_FUNCTIONS, etc.)
-- **High Cardinality Tags**:
+- High Cardinality Tags:
   - `execution.id.full`: Complete execution ID
-- **Events**:
+- Events:
   - `job.stage.success`: Emitted on successful completion
   - `job.stage.error`: Emitted on failure with error details
 
@@ -215,59 +215,59 @@ The library automatically collects the following metrics:
 
 #### Job Stage Metrics
 
-- **`<metric-prefix>.stage.execution`** (Timer)
+- `<metric-prefix>.stage.execution` (Timer)
   - Default: `firefly.data.job.stage.execution`
   - Tags: `stage`, `status`, `orchestrator`
   - Measures execution time for each job stage
 
-- **`<metric-prefix>.stage.count`** (Counter)
+- `<metric-prefix>.stage.count` (Counter)
   - Default: `firefly.data.job.stage.count`
   - Tags: `stage`, `status`, `orchestrator`
   - Counts job stage executions
 
 #### Job Execution Metrics
 
-- **`<metric-prefix>.execution.started`** (Counter)
+- `<metric-prefix>.execution.started` (Counter)
   - Default: `firefly.data.job.execution.started`
   - Tags: `orchestrator`
   - Counts job executions started
 
-- **`<metric-prefix>.execution.completed`** (Counter)
+- `<metric-prefix>.execution.completed` (Counter)
   - Default: `firefly.data.job.execution.completed`
   - Tags: `status`, `orchestrator`
   - Counts job executions completed
 
-- **`<metric-prefix>.execution.duration`** (Timer)
+- `<metric-prefix>.execution.duration` (Timer)
   - Default: `firefly.data.job.execution.duration`
   - Tags: `status`, `orchestrator`
   - Measures total job execution time
 
 #### Error Metrics
 
-- **`<metric-prefix>.error`** (Counter)
+- `<metric-prefix>.error` (Counter)
   - Default: `firefly.data.job.error`
   - Tags: `stage`, `error.type`, `orchestrator`
   - Counts errors by stage and type
 
 #### Mapper Metrics
 
-- **`<metric-prefix>.mapper.execution`** (Timer)
+- `<metric-prefix>.mapper.execution` (Timer)
   - Default: `firefly.data.job.mapper.execution`
   - Tags: `mapper`, `status`
   - Measures mapper execution time
 
 #### Orchestrator Metrics
 
-- **`<metric-prefix>.orchestrator.operation`** (Timer)
+- `<metric-prefix>.orchestrator.operation` (Timer)
   - Default: `firefly.data.job.orchestrator.operation`
   - Tags: `operation`, `status`, `orchestrator`
   - Measures orchestrator operation time
 
-- **`<metric-prefix>.active.count`** (Gauge)
+- `<metric-prefix>.active.count` (Gauge)
   - Default: `firefly.data.job.active.count`
   - Current number of active jobs
 
-**Note:** The `<metric-prefix>` is configurable via `firefly.data.orchestration.observability.metric-prefix` (default: `firefly.data.job`).
+Note: The `<metric-prefix>` is configurable via `firefly.data.orchestration.observability.metric-prefix` (default: `firefly.data.job`).
 
 ### Custom Metrics
 
@@ -325,9 +325,9 @@ Response example:
 
 ### Health Check States
 
-- **UP**: Orchestrator is available and healthy
-- **DOWN**: Orchestrator is unavailable or unhealthy
-- **UNKNOWN**: Health check disabled or orchestrator not configured
+- UP: Orchestrator is available and healthy
+- DOWN: Orchestrator is unavailable or unhealthy
+- UNKNOWN: Health check disabled or orchestrator not configured
 
 ### Programmatic Health Check
 
@@ -538,11 +538,10 @@ resilience4j_circuitbreaker_state{name="jobOrchestrator"}
 
 ## Best Practices
 
-1. **Enable Tracing in Production**: Distributed tracing helps diagnose issues across services
-2. **Use Sampling**: For high-volume systems, configure sampling to reduce overhead
-3. **Monitor Key Metrics**: Focus on execution duration, error rates, and active job count
-4. **Set Up Alerts**: Create alerts for health check failures and high error rates
-5. **Avoid Sensitive Data**: Don't include sensitive data in traces unless necessary
-6. **Use Custom Tags Wisely**: Add business-relevant tags for better observability
-7. **Regular Health Checks**: Monitor orchestrator health to detect issues early
-
+1. Enable Tracing in Production: Distributed tracing helps diagnose issues across services
+2. Use Sampling: For high-volume systems, configure sampling to reduce overhead
+3. Monitor Key Metrics: Focus on execution duration, error rates, and active job count
+4. Set Up Alerts: Create alerts for health check failures and high error rates
+5. Avoid Sensitive Data: Don't include sensitive data in traces unless necessary
+6. Use Custom Tags Wisely: Add business-relevant tags for better observability
+7. Regular Health Checks: Monitor orchestrator health to detect issues early

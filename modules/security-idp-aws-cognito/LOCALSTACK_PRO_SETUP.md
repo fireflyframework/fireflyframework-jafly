@@ -8,9 +8,9 @@ LocalStack PRO provides full AWS Cognito support for local testing. This guide e
 
 ## Prerequisites
 
-1. **Docker Desktop** - Running on your machine
-2. **LocalStack PRO license key** - Get it from https://localstack.cloud
-3. **Java 21+** and **Maven 3.9+**
+1. Docker Desktop - Running on your machine
+2. LocalStack PRO license key - Get it from https://localstack.cloud
+3. Java 21+ and Maven 3.9+
 
 ---
 
@@ -82,9 +82,9 @@ The `pom.xml` is already configured to use LocalStack PRO. Verify the configurat
 
 ## Step 4: Update Test to Use LocalStack PRO
 
-The test is already configured. Just **remove or comment out the @Disabled annotation**:
+The test is already configured. Just remove or comment out the @Disabled annotation:
 
-**File**: `src/test/java/org/fireflyframework/idp/cognito/adapter/CognitoIdpAdapterLocalStackIT.java`
+File: `src/test/java/org/fireflyframework/idp/cognito/adapter/CognitoIdpAdapterLocalStackIT.java`
 
 ```java
 @Testcontainers
@@ -124,12 +124,12 @@ mvn clean verify
 
 ### Run with IntelliJ IDEA
 
-1. **Set Environment Variable**:
+1. Set Environment Variable:
    - Run → Edit Configurations
    - Select the test
    - Add Environment Variable: `LOCALSTACK_AUTH_TOKEN=your-token`
 
-2. **Run the test** as normal
+2. Run the test as normal
 
 ### Run with Docker Compose (Alternative)
 
@@ -199,18 +199,18 @@ aws --endpoint-url=http://localhost:4566 cognito-idp create-user-pool \
 
 ### Error: "API not yet implemented or pro feature (Status Code: 501)"
 
-**Problem**: LocalStack Free version doesn't support Cognito
+Problem: LocalStack Free version doesn't support Cognito
 
-**Solution**: 
+Solution:
 1. Verify you're using `localstack/localstack-pro` image (not `localstack/localstack`)
 2. Verify `LOCALSTACK_AUTH_TOKEN` is set correctly
 3. Check token is valid at https://app.localstack.cloud/workspace/auth-tokens
 
 ### Error: "Unable to pull localstack/localstack-pro"
 
-**Problem**: Not authenticated to pull PRO image
+Problem: Not authenticated to pull PRO image
 
-**Solution**:
+Solution:
 ```bash
 # Login to LocalStack docker registry
 docker login -u localstack -p $LOCALSTACK_AUTH_TOKEN public.ecr.aws/localstack
@@ -218,9 +218,9 @@ docker login -u localstack -p $LOCALSTACK_AUTH_TOKEN public.ecr.aws/localstack
 
 ### Error: "Connection refused to localhost:4566"
 
-**Problem**: LocalStack container not running or port mapping issue
+Problem: LocalStack container not running or port mapping issue
 
-**Solution**:
+Solution:
 ```bash
 # Check if container is running
 docker ps | grep localstack
@@ -234,9 +234,9 @@ docker restart $(docker ps -q --filter ancestor=localstack/localstack-pro)
 
 ### Error: "Invalid auth token"
 
-**Problem**: Auth token expired or invalid
+Problem: Auth token expired or invalid
 
-**Solution**:
+Solution:
 1. Login to https://app.localstack.cloud
 2. Go to Auth Tokens section
 3. Generate new token
@@ -296,20 +296,20 @@ integration-tests:
 
 ### LocalStack PRO Pricing (as of 2024)
 
-- **Free Trial**: 14 days, full features
-- **Team Plan**: ~$25/month per user
-- **Business Plan**: Contact sales
-- **Enterprise Plan**: Custom pricing
+- Free Trial: 14 days, full features
+- Team Plan: ~$25/month per user
+- Business Plan: Contact sales
+- Enterprise Plan: Custom pricing
 
 ### When to Use LocalStack PRO
 
-✅ **Use LocalStack PRO when**:
+✅ Use LocalStack PRO when:
 - Running integration tests in CI/CD
 - Need to test AWS Cognito locally
 - Want faster test execution than mocking
 - Need realistic AWS service behavior
 
-❌ **Don't need LocalStack PRO when**:
+❌ Don't need LocalStack PRO when:
 - Unit tests with mocks are sufficient
 - Testing against real AWS (dev account)
 - Only testing basic functionality
@@ -363,18 +363,18 @@ class CognitoIdpAdapterRealAwsIT {
 
 ## Best Practices
 
-1. **Never commit auth tokens** to version control
-2. **Use environment variables** for tokens
-3. **Run integration tests in CI/CD** with LocalStack PRO
-4. **Keep unit tests** (with mocks) for fast feedback
-5. **Use integration tests** for critical flows only
-6. **Clean up resources** after tests (user pools, users)
+1. Never commit auth tokens to version control
+2. Use environment variables for tokens
+3. Run integration tests in CI/CD with LocalStack PRO
+4. Keep unit tests (with mocks) for fast feedback
+5. Use integration tests for critical flows only
+6. Clean up resources after tests (user pools, users)
 
 ---
 
 ## Summary
 
-**Quick Start**:
+Quick Start:
 
 ```bash
 # 1. Get LocalStack PRO token
@@ -394,10 +394,10 @@ mvn clean verify
 
 ## Support
 
-- **LocalStack Docs**: https://docs.localstack.cloud
-- **LocalStack PRO Features**: https://docs.localstack.cloud/references/coverage/
-- **Community Slack**: https://localstack.cloud/slack
-- **GitHub Issues**: https://github.com/localstack/localstack
+- LocalStack Docs: https://docs.localstack.cloud
+- LocalStack PRO Features: https://docs.localstack.cloud/references/coverage/
+- Community Slack: https://localstack.cloud/slack
+- GitHub Issues: https://github.com/localstack/localstack
 
 ---
 

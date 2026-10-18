@@ -55,6 +55,8 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 
 ## Quick start
 
+The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
+
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add a provider adapter (here: SendGrid for email). The adapter brings `fireflyframework-notifications-core` in transitively.
@@ -93,6 +95,7 @@ class EmailNotificationsConfiguration {
 Inject `EmailService` after the configuration and provider have been loaded:
 
 ```java
+import lombok.RequiredArgsConstructor;
 import org.fireflyframework.notifications.core.services.email.v1.EmailService;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailRequestDTO;
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailResponseDTO;
@@ -100,13 +103,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class OrderNotificationService {
 
     private final EmailService emailService;
 
-    public OrderNotificationService(EmailService emailService) {
-        this.emailService = emailService;
-    }
+
 
     public Mono<EmailResponseDTO> sendOrderConfirmation(String customerEmail, String orderId) {
         EmailRequestDTO request = EmailRequestDTO.builder()
@@ -160,8 +162,8 @@ Use Java 25. From the repository root, build this component with its required de
 ```bash
 git clone https://github.com/fireflyframework/fireflyframework-jafly.git
 cd fireflyframework-jafly
-./mvnw -pl :fireflyframework-notifications -am verify
-./mvnw -pl :fireflyframework-notifications -am install
+./mvnw -pl :fireflyframework-notifications,:fireflyframework-notifications-core -am verify
+./mvnw -pl :fireflyframework-notifications,:fireflyframework-notifications-core -am install
 ```
 
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.

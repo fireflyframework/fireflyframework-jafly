@@ -107,7 +107,9 @@ The `firefly.security.idp.internal-db` namespace is bound by [InternalDbProperti
 
 ## Continue the application
 
-Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration. ## Build and validation
+Use the [Identity Provider guide](../../docs/site/modules/security-idp.md) for the next part of this integration.
+
+## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:
 

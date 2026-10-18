@@ -342,22 +342,22 @@ pdfFuture.thenAccept(pdfBytes -> {
 
 ## Best Practices for Advanced Features
 
-1. **Use Template Caching Wisely**: Enable caching for production environments but consider disabling it during development for easier debugging.
+1. Use Template Caching Wisely: Enable caching for production environments but consider disabling it during development for easier debugging.
 
-2. **Limit Shared Variables**: Only use shared variables for truly global values to avoid confusion.
+2. Limit Shared Variables: Only use shared variables for truly global values to avoid confusion.
 
-3. **Keep Processing Hooks Simple**: Complex processing in hooks can impact performance.
+3. Keep Processing Hooks Simple: Complex processing in hooks can impact performance.
 
-4. **Handle Async Exceptions**: Always include exception handling with asynchronous operations.
+4. Handle Async Exceptions: Always include exception handling with asynchronous operations.
 
-5. **Validate Templates Early**: Validate templates during application startup to catch errors early.
+5. Validate Templates Early: Validate templates during application startup to catch errors early.
 
-6. **Clean Up Resources**: Shut down the async thread pool when your application is shutting down.
+6. Clean Up Resources: Shut down the async thread pool when your application is shutting down.
 
-7. **Test Thoroughly**: Advanced features can have subtle interactions, so test combinations thoroughly.
+7. Test Thoroughly: Advanced features can have subtle interactions, so test combinations thoroughly.
 
 ## Next Steps
 
 Now that you understand the advanced features of TemplateRenderUtil, you can explore:
 
-- [Complete Examples](05-complete-examples.md)
+- [Template and PDF usage](../../../docs/site/modules/utils.md#quick-start)

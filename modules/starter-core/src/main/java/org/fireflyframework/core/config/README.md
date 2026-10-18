@@ -5,22 +5,22 @@ The Firefly Common Core configuration management provides auto-configuration for
 ## Features
 
 ### Cloud Configuration
-- **Spring Cloud Config**: Centralized configuration management
-- **Auto-Configuration**: Automatic setup and connection to config server
-- **Profile Support**: Environment-specific configuration profiles
-- **Refresh Support**: Dynamic configuration updates without restart
+- Spring Cloud Config: Centralized configuration management
+- Auto-Configuration: Automatic setup and connection to config server
+- Profile Support: Environment-specific configuration profiles
+- Refresh Support: Dynamic configuration updates without restart
 
 ### Service Registry
-- **Eureka Integration**: Netflix Eureka service discovery
-- **Consul Integration**: HashiCorp Consul service discovery  
-- **Auto-Registration**: Automatic service registration and discovery
-- **Health Checks**: Service health monitoring and reporting
+- Eureka Integration: Netflix Eureka service discovery
+- Consul Integration: HashiCorp Consul service discovery
+- Auto-Registration: Automatic service registration and discovery
+- Health Checks: Service health monitoring and reporting
 
 ### Web Configuration
-- **WebFlux Auto-Configuration**: Reactive web framework setup
-- **WebClient Configuration**: Enhanced HTTP client with customization
-- **Filter Configuration**: Request/response filtering and processing
-- **Resilience Integration**: Circuit breakers, retry, and timeout handling
+- WebFlux Auto-Configuration: Reactive web framework setup
+- WebClient Configuration: Enhanced HTTP client with customization
+- Filter Configuration: Request/response filtering and processing
+- Resilience Integration: Circuit breakers, retry, and timeout handling
 
 ## Cloud Configuration
 
@@ -218,7 +218,7 @@ eureka:
     health-check-url-path: ${firefly.registry.eureka.health-check-url-path}
 ```
 
-#### Consul Configuration  
+#### Consul Configuration
 ```yaml
 firefly:
   registry:
@@ -261,7 +261,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
 }
 ```
 
-> **Note:** CORS configuration is provided by `fireflyframework-web` via `firefly.web.cors.*` properties.
+> Note: CORS configuration is provided by `fireflyframework-web` via `firefly.web.cors.*` properties.
 > See the [fireflyframework-web](https://github.com/fireflyframework/fireflyframework-web) module.
 
 ### WebClient Configuration
@@ -439,13 +439,13 @@ public class ConfigController {
 
 ## Best Practices
 
-1. **Environment-Specific Configs**: Use profiles for different environments
-2. **Sensitive Data**: Use encrypted properties for sensitive configuration
-3. **Health Checks**: Implement proper health check endpoints for service registry
-4. **Circuit Breakers**: Use resilience patterns for service-to-service communication
-5. **Configuration Validation**: Validate configuration properties at startup
-6. **Monitoring**: Monitor service discovery and configuration refresh events
-7. **Security**: Secure configuration endpoints and service registry access
+1. Environment-Specific Configs: Use profiles for different environments
+2. Sensitive Data: Use encrypted properties for sensitive configuration
+3. Health Checks: Implement proper health check endpoints for service registry
+4. Circuit Breakers: Use resilience patterns for service-to-service communication
+5. Configuration Validation: Validate configuration properties at startup
+6. Monitoring: Monitor service discovery and configuration refresh events
+7. Security: Secure configuration endpoints and service registry access
 
 ## Troubleshooting
 
@@ -469,7 +469,7 @@ spring:
         initial-interval: 1000ms
 ```
 
-#### Service Discovery Issues  
+#### Service Discovery Issues
 ```yaml
 # Increase lease renewal for unstable networks
 firefly:

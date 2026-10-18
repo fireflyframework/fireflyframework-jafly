@@ -4,7 +4,7 @@
 
 This guide explains how security and authorization work in Firefly Application Layer microservices, including:
 
-1. How `contractId` and `productId` are **always** extracted from URL paths
+1. How `contractId` and `productId` are always extracted from URL paths
 2. How SecurityCenter integration works via `FireflySessionManager`
 3. How to use `@Secure` annotations
 4. Complete authorization flow from request to response
@@ -75,9 +75,9 @@ This guide explains how security and authorization work in Firefly Application L
 
 ### Key Principles
 
-1. **Authentication**: JWT token validates WHO the user is (partyId)
-2. **Context**: Path parameters specify WHAT they want to access (contractId, productId)
-3. **Authorization**: SecurityCenter validates IF they can do it (roles, permissions)
+1. Authentication: JWT token validates WHO the user is (partyId)
+2. Context: Path parameters specify WHAT they want to access (contractId, productId)
+3. Authorization: SecurityCenter validates IF they can do it (roles, permissions)
 
 ---
 
@@ -85,13 +85,13 @@ This guide explains how security and authorization work in Firefly Application L
 
 ### The Golden Rule
 
-> **contractId and productId MUST ALWAYS come from URL path parameters**
+> contractId and productId MUST ALWAYS come from URL path parameters
 
 This is a fundamental architectural decision that ensures:
-- **Explicit intent**: Every request clearly states which contract/product it targets
-- **RESTful design**: Resources are properly identified in URLs
-- **Security clarity**: Authorization knows exactly what's being accessed
-- **Audit trail**: Logs show which resources were accessed
+- Explicit intent: Every request clearly states which contract/product it targets
+- RESTful design: Resources are properly identified in URLs
+- Security clarity: Authorization knows exactly what's being accessed
+- Audit trail: Logs show which resources were accessed
 
 ### URL Structure Standard
 
@@ -165,11 +165,11 @@ public class MyContextResolver extends AbstractContextResolver {
 
 SecurityCenter (`firefly-security-center`) is the centralized service that:
 
-1. **Manages Party-Contract relationships**: Which parties have access to which contracts
-2. **Manages Contract-Product associations**: Which products belong to which contracts
-3. **Resolves roles**: What roles does a party have on a contract (ACCOUNT_HOLDER, OWNER, etc.)
-4. **Resolves permissions**: What can a party do based on their roles and product rules
-5. **Authorizes operations**: Final decision on whether an operation is allowed
+1. Manages Party-Contract relationships: Which parties have access to which contracts
+2. Manages Contract-Product associations: Which products belong to which contracts
+3. Resolves roles: What roles does a party have on a contract (ACCOUNT_HOLDER, OWNER, etc.)
+4. Resolves permissions: What can a party do based on their roles and product rules
+5. Authorizes operations: Final decision on whether an operation is allowed
 
 ### FireflySessionManager
 
@@ -198,12 +198,12 @@ public interface FireflySessionManager {
 
 When you use `@Secure(roles="ACCOUNT_HOLDER", permissions="TRANSFER_FUNDS")`:
 
-1. **Library extracts context**:
+1. Library extracts context:
    - `partyId`: `12345678-1234-1234-1234-123456789012` (from JWT)
    - `contractId`: `abcd1234-5678-90ab-cdef-123456789abc` (from path `/contracts/{contractId}/...`)
    - `productId`: `prod9876-5432-10fe-dcba-987654321fed` (from path if present)
 
-2. **Library calls SecurityCenter**:
+2. Library calls SecurityCenter:
    ```java
    sessionManager.authorize(
        partyId: 12345678-1234-1234-1234-123456789012,
@@ -214,13 +214,13 @@ When you use `@Secure(roles="ACCOUNT_HOLDER", permissions="TRANSFER_FUNDS")`:
    )
    ```
 
-3. **SecurityCenter validates**:
+3. SecurityCenter validates:
    - ✅ Does party `12345678...` have access to contract `abcd1234...`?
    - ✅ Does contract `abcd1234...` belong to product `prod9876...`?
    - ✅ Does party `12345678...` have role `ACCOUNT_HOLDER` on contract `abcd1234...`?
    - ✅ Does role `ACCOUNT_HOLDER` grant permission `TRANSFER_FUNDS` for product `prod9876...`?
 
-4. **SecurityCenter returns decision**:
+4. SecurityCenter returns decision:
    ```java
    AuthorizationResult {
        granted: true,
@@ -232,7 +232,7 @@ When you use `@Secure(roles="ACCOUNT_HOLDER", permissions="TRANSFER_FUNDS")`:
    }
    ```
 
-5. **Library makes decision**:
+5. Library makes decision:
    - If `granted = true`: ✅ Proceed to business logic
    - If `granted = false`: ❌ Throw `AccessDeniedException` → 403 Forbidden
 
@@ -242,12 +242,12 @@ When you use `@Secure(roles="ACCOUNT_HOLDER", permissions="TRANSFER_FUNDS")`:
 
 ### Two Ways to Configure Security
 
-The Application Layer provides **two complementary approaches** to configure endpoint security:
+The Application Layer provides two complementary approaches to configure endpoint security:
 
-1. **Declarative (Annotations)**: Using `@Secure` on controller methods - **Simple and readable**
-2. **Explicit (Registry)**: Using `EndpointSecurityRegistry` - **Flexible and dynamic**
+1. Declarative (Annotations): Using `@Secure` on controller methods - Simple and readable
+2. Explicit (Registry): Using `EndpointSecurityRegistry` - Flexible and dynamic
 
-**Priority Rule**: ⚠️ **Explicit configuration (registry) ALWAYS takes precedence over declarative configuration (annotations).**
+Priority Rule: ⚠️ Explicit configuration (registry) ALWAYS takes precedence over declarative configuration (annotations).
 
 This dual approach allows you to:
 - Use annotations for standard, static security requirements
@@ -343,13 +343,13 @@ public class AdminController {
 
 #### Why Use Explicit Configuration?
 
-The `EndpointSecurityRegistry` allows you to configure security **programmatically at runtime**, which is useful for:
+The `EndpointSecurityRegistry` allows you to configure security programmatically at runtime, which is useful for:
 
-- **Dynamic security**: Change security rules based on environment variables or feature flags
-- **External configuration**: Load security rules from database or configuration service
-- **Override annotations**: Temporarily override `@Secure` annotations without modifying code
-- **Testing**: Easily adjust security for integration tests
-- **A/B testing**: Different security for different user segments
+- Dynamic security: Change security rules based on environment variables or feature flags
+- External configuration: Load security rules from database or configuration service
+- Override annotations: Temporarily override `@Secure` annotations without modifying code
+- Testing: Easily adjust security for integration tests
+- A/B testing: Different security for different user segments
 
 #### Basic Usage
 
@@ -600,13 +600,13 @@ public class TransferSecurityConfig {
 
 | Use Case | Recommended Approach |
 |----------|---------------------|
-| Standard CRUD operations | **Annotations** - Simple and clear |
-| Environment-specific security | **Registry** - Production vs. Development |
-| Feature-flagged endpoints | **Registry** - Enable/disable dynamically |
-| Temporary security overrides | **Registry** - No code changes needed |
-| A/B testing security | **Registry** - Different rules per segment |
-| Static, well-known requirements | **Annotations** - Easier to read in code |
-| Database-driven security rules | **Registry** - Load from external source |
+| Standard CRUD operations | Annotations - Simple and clear |
+| Environment-specific security | Registry - Production vs. Development |
+| Feature-flagged endpoints | Registry - Enable/disable dynamically |
+| Temporary security overrides | Registry - No code changes needed |
+| A/B testing security | Registry - Different rules per segment |
+| Static, well-known requirements | Annotations - Easier to read in code |
+| Database-driven security rules | Registry - Load from external source |
 
 ---
 
@@ -652,18 +652,18 @@ public class TransferController {
 
 #### Security Flow
 
-1. **AOP Intercepts**:
+1. AOP Intercepts:
    - Method: `transfer()`
    - Security requirements: `roles=["ACCOUNT_HOLDER"], permissions=["TRANSFER_FUNDS"]`
 
-2. **Extract Context**:
+2. Extract Context:
    ```java
    partyId = extractFromJwt(exchange)      // xxxx-9999-yyyy-8888
    contractId = pathVariable("contractId") // aaaa-1111-bbbb-2222
    productId = null                        // Not in this path
    ```
 
-3. **Call SecurityCenter**:
+3. Call SecurityCenter:
    ```java
    sessionManager.authorize(
        xxxx-9999-yyyy-8888,              // partyId
@@ -674,15 +674,15 @@ public class TransferController {
    )
    ```
 
-4. **SecurityCenter Checks**:
-   - ✅ Party `xxxx-9999` has access to contract `aaaa-1111`? **YES**
-   - ✅ Party has role `ACCOUNT_HOLDER` on this contract? **YES**
-   - ✅ Role `ACCOUNT_HOLDER` grants permission `TRANSFER_FUNDS`? **YES**
+4. SecurityCenter Checks:
+   - ✅ Party `xxxx-9999` has access to contract `aaaa-1111`? YES
+   - ✅ Party has role `ACCOUNT_HOLDER` on this contract? YES
+   - ✅ Role `ACCOUNT_HOLDER` grants permission `TRANSFER_FUNDS`? YES
 
-5. **Decision**:
-   - ✅ **GRANTED** → Proceed to `transferService.executeTransfer()`
+5. Decision:
+   - ✅ GRANTED → Proceed to `transferService.executeTransfer()`
 
-6. **Response**:
+6. Response:
    ```json
    {
      "transferId": "transfer-5555-6666",
@@ -713,14 +713,14 @@ Content-Type: application/json
 
 ### Overview
 
-The library provides **optional** abstract base controllers that help enforce clear, consistent path structures for contract and product-scoped endpoints. These controllers:
+The library provides optional abstract base controllers that help enforce clear, consistent path structures for contract and product-scoped endpoints. These controllers:
 
 - Provide validation helper methods
 - Enforce explicit `contractId` and `productId` in paths
 - Promote consistent API design across microservices
 - Include logging utilities for debugging
 
-⚠️ **Important**: These are **optional**. You are NOT required to extend them, but they provide a convenient pattern for ensuring clarity.
+⚠️ Important: These are optional. You are NOT required to extend them, but they provide a convenient pattern for ensuring clarity.
 
 ---
 
@@ -840,19 +840,19 @@ public class TransactionController extends AbstractProductController {
 
 ### 6.3. Benefits of Using Base Controllers
 
-✅ **Explicit scoping**: Path structure makes it clear this is a contract/product-scoped operation  
-✅ **Built-in validation**: Prevents null contractId/productId from reaching business logic  
-✅ **Consistent patterns**: All microservices follow the same structure  
-✅ **Better debugging**: Logging helpers provide context in logs  
-✅ **Clear intent**: Developers immediately understand the resource hierarchy  
+✅ Explicit scoping: Path structure makes it clear this is a contract/product-scoped operation
+✅ Built-in validation: Prevents null contractId/productId from reaching business logic
+✅ Consistent patterns: All microservices follow the same structure
+✅ Better debugging: Logging helpers provide context in logs
+✅ Clear intent: Developers immediately understand the resource hierarchy
 
 ---
 
 ### 6.4. When NOT to Use Base Controllers
 
-❌ **Public endpoints**: Endpoints that don't require contract context  
-❌ **Admin endpoints**: System-level operations not scoped to contracts  
-❌ **Health/metrics endpoints**: Infrastructure endpoints  
+❌ Public endpoints: Endpoints that don't require contract context
+❌ Admin endpoints: System-level operations not scoped to contracts
+❌ Health/metrics endpoints: Infrastructure endpoints
 
 ```java
 // These DO NOT need base controllers
@@ -945,14 +945,14 @@ public Mono<LimitsResponse> updateLimits(
 
 ### Key Takeaways
 
-1. **Always use path parameters** for `contractId` and `productId` - Never use query params or request body
-2. **Two security configuration methods**:
-   - **Annotations** (`@Secure`) - For static, well-known requirements
-   - **Registry** (`EndpointSecurityRegistry`) - For dynamic, runtime configuration
-3. **Priority rule**: **Registry ALWAYS overrides annotations**
-4. **SecurityCenter validates** all authorization decisions via `FireflySessionManager`
-5. **Base controllers** are optional but help enforce clear path structures
-6. **Trust the library** - it handles all the complexity of context resolution and SecurityCenter integration
+1. Always use path parameters for `contractId` and `productId` - Never use query params or request body
+2. Two security configuration methods:
+   - Annotations (`@Secure`) - For static, well-known requirements
+   - Registry (`EndpointSecurityRegistry`) - For dynamic, runtime configuration
+3. Priority rule: Registry ALWAYS overrides annotations
+4. SecurityCenter validates all authorization decisions via `FireflySessionManager`
+5. Base controllers are optional but help enforce clear path structures
+6. Trust the library - it handles all the complexity of context resolution and SecurityCenter integration
 
 ---
 
@@ -986,24 +986,24 @@ Use EndpointSecurityRegistry
 
 When building an Application Layer microservice:
 
-**Path Structure:**
+Path Structure:
 - [ ] Add `@PathVariable UUID contractId` to ALL endpoints (except public/admin)
 - [ ] Add `@PathVariable UUID productId` where product-specific
 - [ ] Use path pattern: `/api/v1/contracts/{contractId}/...` or `/api/v1/contracts/{contractId}/products/{productId}/...`
 - [ ] Optionally extend `AbstractContractController` or `AbstractProductController` for validation helpers
 
-**Security Configuration:**
+Security Configuration:
 - [ ] Add `@Secure` annotations with appropriate roles/permissions
 - [ ] OR register endpoints in `EndpointSecurityRegistry` for dynamic security
 - [ ] Understand that registry config overrides annotations
 
-**Integration:**
+Integration:
 - [ ] Pass `ServerWebExchange` to services (needed for context resolution)
 - [ ] Implement `ContextResolver` to extract `partyId` from JWT
 - [ ] Add `firefly-security-center-sdk` dependency (when available)
 - [ ] Configure SecurityCenter URL in `application.yml`
 
-**Testing:**
+Testing:
 - [ ] Test with different roles and permissions
 - [ ] Test registry override behavior if using explicit configuration
 - [ ] Verify path variable validation works correctly
@@ -1014,14 +1014,14 @@ When building an Application Layer microservice:
 
 | Feature | How to Use |
 |---------|------------|
-| **Declarative Security** | `@Secure(roles = "ROLE", permissions = "PERM")` on controller methods |
-| **Explicit Security** | `securityRegistry.registerEndpoint(path, method, config)` in `@Configuration` |
-| **Contract-Scoped Endpoints** | Extend `AbstractContractController` + `/contracts/{contractId}/...` |
-| **Product-Scoped Endpoints** | Extend `AbstractProductController` + `/contracts/{contractId}/products/{productId}/...` |
-| **Override Annotations** | Register same endpoint in registry with different config |
-| **Check Registration** | `securityRegistry.isRegistered(path, method)` |
-| **Get Current Config** | `securityRegistry.getEndpointSecurity(path, method)` |
-| **Remove Override** | `securityRegistry.unregisterEndpoint(path, method)` (falls back to annotation) |
+| Declarative Security | `@Secure(roles = "ROLE", permissions = "PERM")` on controller methods |
+| Explicit Security | `securityRegistry.registerEndpoint(path, method, config)` in `@Configuration` |
+| Contract-Scoped Endpoints | Extend `AbstractContractController` + `/contracts/{contractId}/...` |
+| Product-Scoped Endpoints | Extend `AbstractProductController` + `/contracts/{contractId}/products/{productId}/...` |
+| Override Annotations | Register same endpoint in registry with different config |
+| Check Registration | `securityRegistry.isRegistered(path, method)` |
+| Get Current Config | `securityRegistry.getEndpointSecurity(path, method)` |
+| Remove Override | `securityRegistry.unregisterEndpoint(path, method)` (falls back to annotation) |
 
 ---
 

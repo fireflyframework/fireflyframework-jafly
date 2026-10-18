@@ -1,41 +1,16 @@
-# DTO Field Mapping Reference
+# DTO field mapping
 
-This document maps the internal database fields to the IDP adapter DTO fields.
+The adapter uses DTOs from `org.fireflyframework.security.idp.dtos`. Entity fields belong to the internal database module; HTTP payloads follow the shared DTO names.
 
-## Field Name Differences
+| DTO | Mapping |
+| --- | --- |
+| `CreateUserRequest` | `givenName` and `familyName` map to entity `firstName` and `lastName`. New internal users are enabled by `UserManagementService`; an `enabled` entry in generic attributes does not change that behavior. |
+| `CreateUserResponse` / `UpdateUserResponse` | The identifier is `id`. Creation and update timestamps use `Instant`. These response DTOs do not expose the entity's first/last-name fields. |
+| `UpdateUserRequest` | `givenName`, `familyName`, and the optional Boolean `enabled` update the matching entity fields. The target identifier is `userId`. |
+| `UserInfoResponse` | Uses `preferredUsername`, `givenName`, and `familyName`. It has no `roles` or generic `attributes` field; request roles through the adapter's roles operation. |
+| `SessionInfo` | `createdAt`, `lastAccessAt`, and `expiresAt` are separate `Instant` fields. The internal adapter sets `createdAt` and `expiresAt` from the session entity. |
+| `CreateRolesResponse` | Returns `createdRoleNames`. |
+| `CreateScopeRequest` | Uses `name` and `description`. The internal adapter stores the scope as a role. |
+| `CreateScopeResponse` | Uses `id`, `name`, and `createdAt`. |
 
-### CreateUserRequest
-- `givenName` → maps to internal `firstName`
-- `familyName` → maps to internal `lastName`
-- NO `enabled` field - must be handled via attributes
-
-### CreateUserResponse / UpdateUserResponse
-- `id` → NOT `userId`
-- `createdAt` / `updatedAt` → `Instant` type
-- NO firstName/lastName in response
-
-### UpdateUserRequest
-- `givenName` → maps to internal `firstName`
-- `familyName` → maps to internal `lastName`
-- `enabled` → Boolean field EXISTS
-
-### UserInfoResponse
-- `preferredUsername` → NOT `username`
-- `givenName` → NOT `firstName`
-- `familyName` → NOT `lastName`
-- NO `roles` field - must be in attributes
-
-### SessionInfo
-- `createdAt` → `Instant` NOT `String`
-- `lastAccessAt` → `Instant` (we use as expiresAt)
-- NO `expiresAt` field directly
-
-### CreateRolesResponse
-- `createdRoleNames` → NOT `roleNames`
-
-### CreateScopeRequest
-- `name` → NOT `scopeName`
-- `description` → EXISTS
-
-### CreateScopeResponse
-- `name` → NOT `scopeName`
+See the [DTO definitions](../../security-idp/src/main/java/org/fireflyframework/security/idp/dtos), [adapter mapping code](../src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapter.java), and [user service](../src/main/java/org/fireflyframework/security/idp/internaldb/service/UserManagementService.java).

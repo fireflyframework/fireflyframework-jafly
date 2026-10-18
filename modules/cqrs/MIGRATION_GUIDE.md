@@ -1,4 +1,6 @@
-# Migration Guide: fireflyframework-cache Integration
+# Cache integration migration notes (historical)
+
+These notes describe an earlier CQRS cache integration change. Use the current component guide for query caching, event invalidation, and application setup. [Current guide](../../docs/site/modules/cqrs.md).
 
 This guide helps you migrate from the old internal cache implementation to the new **fireflyframework-cache** integration.
 
@@ -316,7 +318,7 @@ firefly:
 
 If you encounter issues during migration:
 
-1. Check the [fireflyframework-cache documentation](../fireflyframework-cache/README.md)
+1. Check the [fireflyframework-cache documentation](../cache/README.md)
 2. Review the [CQRS configuration guide](./docs/CONFIGURATION.md)
 3. Enable debug logging:
    ```yaml

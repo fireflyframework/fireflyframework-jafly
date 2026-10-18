@@ -13,7 +13,7 @@ Complete API reference for the Firefly Common Cache Library.
 
 ## FireflyCacheManager
 
-**Package**: `org.fireflyframework.cache.manager.FireflyCacheManager`
+Package: `org.fireflyframework.cache.manager.FireflyCacheManager`
 
 The main entry point for cache operations. Manages multiple cache instances and provides a unified API.
 
@@ -35,13 +35,13 @@ public <K, V> Mono<Optional<V>> get(K key)
 public <K, V> Mono<Optional<V>> get(K key, Class<V> valueType)
 ```
 
-**Parameters**:
+Parameters:
 - `key`: The cache key
 - `valueType`: Expected value type (for type-safe retrieval)
 
-**Returns**: `Mono<Optional<V>>` containing the value if present
+Returns: `Mono<Optional<V>>` containing the value if present
 
-**Example**:
+Example:
 ```java
 cacheManager.get("user:123", User.class)
     .subscribe(optionalUser -> {
@@ -61,14 +61,14 @@ public <K, V> Mono<Void> put(K key, V value)
 public <K, V> Mono<Void> put(K key, V value, Duration ttl)
 ```
 
-**Parameters**:
+Parameters:
 - `key`: The cache key
 - `value`: The value to store
 - `ttl`: Time-to-live (optional)
 
-**Returns**: `Mono<Void>` that completes when stored
+Returns: `Mono<Void>` that completes when stored
 
-**Example**:
+Example:
 ```java
 User user = new User("123", "John");
 cacheManager.put("user:123", user, Duration.ofMinutes(30))
@@ -84,14 +84,14 @@ public <K, V> Mono<Boolean> putIfAbsent(K key, V value)
 public <K, V> Mono<Boolean> putIfAbsent(K key, V value, Duration ttl)
 ```
 
-**Parameters**:
+Parameters:
 - `key`: The cache key
 - `value`: The value to store
 - `ttl`: Time-to-live (optional)
 
-**Returns**: `Mono<Boolean>` - true if stored, false if key existed
+Returns: `Mono<Boolean>` - true if stored, false if key existed
 
-**Example**:
+Example:
 ```java
 cacheManager.putIfAbsent("lock:resource", "locked", Duration.ofSeconds(30))
     .subscribe(wasStored -> {
@@ -111,12 +111,12 @@ Remove a value from the default cache.
 public <K> Mono<Boolean> evict(K key)
 ```
 
-**Parameters**:
+Parameters:
 - `key`: The cache key to remove
 
-**Returns**: `Mono<Boolean>` - true if removed, false if not found
+Returns: `Mono<Boolean>` - true if removed, false if not found
 
-**Example**:
+Example:
 ```java
 cacheManager.evict("user:123")
     .subscribe(removed -> {
@@ -134,9 +134,9 @@ Remove all entries from the default cache.
 public Mono<Void> clear()
 ```
 
-**Returns**: `Mono<Void>` that completes when cleared
+Returns: `Mono<Void>` that completes when cleared
 
-**Example**:
+Example:
 ```java
 cacheManager.clear()
     .subscribe(() -> log.info("Cache cleared"));
@@ -150,12 +150,12 @@ Check if a key exists in the default cache.
 public <K> Mono<Boolean> exists(K key)
 ```
 
-**Parameters**:
+Parameters:
 - `key`: The cache key to check
 
-**Returns**: `Mono<Boolean>` - true if exists
+Returns: `Mono<Boolean>` - true if exists
 
-**Example**:
+Example:
 ```java
 cacheManager.exists("user:123")
     .subscribe(exists -> {
@@ -176,7 +176,7 @@ public <K> Mono<Boolean> evict(String cacheName, K key)
 public Mono<Void> clear(String cacheName)
 ```
 
-**Example**:
+Example:
 ```java
 cacheManager.put("user-cache", "123", user)
     .subscribe();
@@ -192,11 +192,11 @@ Register a cache adapter with the manager.
 public void registerCache(String name, CacheAdapter adapter)
 ```
 
-**Parameters**:
+Parameters:
 - `name`: Cache name
 - `adapter`: Cache adapter instance
 
-**Example**:
+Example:
 ```java
 CaffeineCacheAdapter adapter = new CaffeineCacheAdapter("my-cache", config);
 cacheManager.registerCache("my-cache", adapter);
@@ -210,10 +210,10 @@ Unregister and close a cache adapter.
 public CacheAdapter unregisterCache(String name)
 ```
 
-**Parameters**:
+Parameters:
 - `name`: Cache name to unregister
 
-**Returns**: The removed adapter, or null if not found
+Returns: The removed adapter, or null if not found
 
 #### getCache
 
@@ -223,10 +223,10 @@ Get a cache adapter by name.
 public CacheAdapter getCache(String name)
 ```
 
-**Parameters**:
+Parameters:
 - `name`: Cache name
 
-**Returns**: The cache adapter, or null if not found
+Returns: The cache adapter, or null if not found
 
 #### getCacheNames
 
@@ -236,7 +236,7 @@ Get all registered cache names.
 public Set<String> getCacheNames()
 ```
 
-**Returns**: Set of cache names
+Returns: Set of cache names
 
 #### hasCache
 
@@ -246,10 +246,10 @@ Check if a cache is registered.
 public boolean hasCache(String name)
 ```
 
-**Parameters**:
+Parameters:
 - `name`: Cache name
 
-**Returns**: true if registered
+Returns: true if registered
 
 ### Health and Statistics
 
@@ -262,9 +262,9 @@ public Flux<CacheHealth> getHealth()
 public Mono<CacheHealth> getHealth(String cacheName)
 ```
 
-**Returns**: Health information
+Returns: Health information
 
-**Example**:
+Example:
 ```java
 cacheManager.getHealth()
     .subscribe(health -> {
@@ -283,9 +283,9 @@ public Flux<CacheStats> getStats()
 public Mono<CacheStats> getStats(String cacheName)
 ```
 
-**Returns**: Cache statistics
+Returns: Cache statistics
 
-**Example**:
+Example:
 ```java
 cacheManager.getStats("default")
     .subscribe(stats -> {
@@ -306,7 +306,7 @@ Close the cache manager and all registered caches.
 public void close()
 ```
 
-**Example**:
+Example:
 ```java
 @PreDestroy
 public void cleanup() {
@@ -316,7 +316,7 @@ public void cleanup() {
 
 ## CacheAdapter
 
-**Package**: `org.fireflyframework.cache.core.CacheAdapter`
+Package: `org.fireflyframework.cache.core.CacheAdapter`
 
 Interface defining cache operations. Implemented by cache providers.
 
@@ -359,14 +359,14 @@ void close()
 
 ### Implementations
 
-- **CaffeineCacheAdapter**: In-memory cache using Caffeine
-- **RedisCacheAdapter**: Distributed cache using Redis
+- CaffeineCacheAdapter: In-memory cache using Caffeine
+- RedisCacheAdapter: Distributed cache using Redis
 
 ## Annotations
 
-**Package**: `org.fireflyframework.cache.annotation`
+Package: `org.fireflyframework.cache.annotation`
 
-> **Note**: Annotations are defined but aspect implementation is not yet complete. Use programmatic API for production.
+> Note: Annotations are defined but aspect implementation is not yet complete. Use programmatic API for production.
 
 ### @EnableCaching
 
@@ -382,7 +382,7 @@ public @interface EnableCaching {
 }
 ```
 
-**Usage**:
+Usage:
 ```java
 @Configuration
 @EnableCaching
@@ -409,7 +409,7 @@ public @interface Cacheable {
 }
 ```
 
-**Attributes**:
+Attributes:
 - `value`/`cacheNames`: Cache names to use
 - `key`: SpEL expression for cache key
 - `condition`: SpEL condition for caching
@@ -417,7 +417,7 @@ public @interface Cacheable {
 - `ttl`: Time-to-live (ISO-8601 format)
 - `sync`: Synchronize concurrent calls
 
-**Example**:
+Example:
 ```java
 @Cacheable(value = "users", key = "#userId", ttl = "PT30M")
 public Mono<User> getUser(String userId) {
@@ -442,14 +442,14 @@ public @interface CacheEvict {
 }
 ```
 
-**Attributes**:
+Attributes:
 - `value`/`cacheNames`: Cache names
 - `key`: SpEL expression for cache key
 - `condition`: SpEL condition for eviction
 - `allEntries`: Evict all entries
 - `beforeInvocation`: Evict before method execution
 
-**Example**:
+Example:
 ```java
 @CacheEvict(value = "users", key = "#user.id")
 public Mono<User> updateUser(User user) {
@@ -475,7 +475,7 @@ public @interface CachePut {
 }
 ```
 
-**Example**:
+Example:
 ```java
 @CachePut(value = "users", key = "#result.id")
 public Mono<User> createUser(User user) {
@@ -497,7 +497,7 @@ public @interface Caching {
 }
 ```
 
-**Example**:
+Example:
 ```java
 @Caching(
     evict = {
@@ -514,7 +514,7 @@ public Mono<Void> deleteUser(User user) {
 
 ### CacheProperties
 
-**Package**: `org.fireflyframework.cache.properties.CacheProperties`
+Package: `org.fireflyframework.cache.properties.CacheProperties`
 
 Main configuration properties class.
 
@@ -534,7 +534,7 @@ public class CacheProperties {
 
 ### CaffeineCacheConfig
 
-**Package**: `org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig`
+Package: `org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig`
 
 Caffeine cache configuration.
 
@@ -554,7 +554,7 @@ public class CaffeineCacheConfig {
 
 ### RedisCacheConfig
 
-**Package**: `org.fireflyframework.cache.adapter.redis.RedisCacheConfig`
+Package: `org.fireflyframework.cache.adapter.redis.RedisCacheConfig`
 
 Redis cache configuration.
 
@@ -580,7 +580,7 @@ public class RedisCacheConfig {
 
 ### CacheHealth
 
-**Package**: `org.fireflyframework.cache.core.CacheHealth`
+Package: `org.fireflyframework.cache.core.CacheHealth`
 
 Cache health information.
 
@@ -599,7 +599,7 @@ public class CacheHealth {
 
 ### CacheStats
 
-**Package**: `org.fireflyframework.cache.core.CacheStats`
+Package: `org.fireflyframework.cache.core.CacheStats`
 
 Cache statistics.
 
@@ -625,7 +625,7 @@ public class CacheStats {
 
 ### CacheException
 
-**Package**: `org.fireflyframework.cache.exception.CacheException`
+Package: `org.fireflyframework.cache.exception.CacheException`
 
 Base exception for cache operations.
 
@@ -638,7 +638,7 @@ public class CacheException extends RuntimeException {
 
 ### SerializationException
 
-**Package**: `org.fireflyframework.cache.serialization.SerializationException`
+Package: `org.fireflyframework.cache.serialization.SerializationException`
 
 Exception for serialization errors.
 
@@ -647,4 +647,3 @@ public class SerializationException extends CacheException {
     public SerializationException(String message, Throwable cause)
 }
 ```
-

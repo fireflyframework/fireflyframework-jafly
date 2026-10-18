@@ -13,23 +13,23 @@ Complete guide to Spring Boot auto-configuration for the Firefly Common Cache Li
 
 ## Overview
 
-The Firefly Common Cache Library provides **automatic Spring Boot configuration** that activates when you add the library as a dependency. No manual configuration is required for basic usage.
+The Firefly Common Cache Library provides automatic Spring Boot configuration that activates when you add the library as a dependency. No manual configuration is required for basic usage.
 
 ### Key Features
 
-- ✅ **Zero Configuration**: Works out of the box with sensible defaults
-- ✅ **Property-Based**: Configure via `application.yml` or `application.properties`
-- ✅ **Conditional**: Only creates beans when needed
-- ✅ **Firefly Properties**: Uses `firefly.cache.*` properties (not `spring.cache.*`)
-- ✅ **Customizable**: Override any bean or configuration
+- ✅ Zero Configuration: Works with its default configuration with sensible defaults
+- ✅ Property-Based: Configure via `application.yml` or `application.properties`
+- ✅ Conditional: Only creates beans when needed
+- ✅ Firefly Properties: Uses `firefly.cache.*` properties (not `spring.cache.*`)
+- ✅ Customizable: Override any bean or configuration
 
 ## How It Works
 
 ### Auto-Configuration File
 
-The library uses Spring Boot 3.x auto-configuration mechanism:
+The library uses Spring Boot 4.1.1 auto-configuration mechanism:
 
-**File**: `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
+File: `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
 
 ```
 org.fireflyframework.cache.config.CacheAutoConfiguration
@@ -39,12 +39,12 @@ org.fireflyframework.cache.config.CacheAutoConfiguration
 
 When you add the library as a dependency, Spring Boot automatically configures:
 
-1. **CacheProperties** - Configuration properties from `firefly.cache.*`
-2. **ObjectMapper** - JSON serialization (if not already present)
-3. **CacheSerializer** - Cache value serialization
-4. **CacheManagerFactory** - Factory to create multiple independent caches
-5. **FireflyCacheManager (default)** - Primary default cache instance
-6. **Redis infrastructure** - Connection factory and template (if Redis is configured)
+1. CacheProperties - Configuration properties from `firefly.cache.*`
+2. ObjectMapper - JSON serialization (if not already present)
+3. CacheSerializer - Cache value serialization
+4. CacheManagerFactory - Factory to create multiple independent caches
+5. FireflyCacheManager (default) - Primary default cache instance
+6. Redis infrastructure - Connection factory and template (if Redis is configured)
 
 ### Activation Conditions
 
@@ -116,22 +116,22 @@ firefly:
 
 ### Caffeine Cache Adapter
 
-**Created when**:
+Created when:
 - Caffeine library is on classpath
 - `firefly.cache.caffeine.default.enabled=true` (default)
 
-**Not created when**:
+Not created when:
 - Caffeine library is missing
 - `firefly.cache.caffeine.default.enabled=false`
 
 ### Redis Connection Factory
 
-**Created when**:
+Created when:
 - Redis libraries are on classpath
 - No existing `ReactiveRedisConnectionFactory` bean
 - `firefly.cache.redis.default.host` is configured
 
-**Not created when**:
+Not created when:
 - Redis libraries are missing
 - Another `ReactiveRedisConnectionFactory` bean exists
 - No host is configured
@@ -140,12 +140,12 @@ firefly:
 
 The library only auto-configures Redis infrastructure (connection factory and template). Actual caches are created on-demand via `CacheManagerFactory`.
 
-**Infrastructure created when**:
+Infrastructure created when:
 - Redis libraries are on classpath
 - `firefly.cache.redis.enabled=true` (default)
 - `firefly.cache.redis.host` is configured
 
-**Not created when**:
+Not created when:
 - Redis libraries are missing
 - `firefly.cache.redis.enabled=false`
 - No host is configured
@@ -290,7 +290,7 @@ Just add the dependency - no configuration needed:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>1.0.0</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -351,9 +351,9 @@ firefly:
 
 ### Cache Not Auto-Configuring
 
-**Problem**: FireflyCacheManager bean not found
+Problem: FireflyCacheManager bean not found
 
-**Solutions**:
+Solutions:
 1. Check that `firefly.cache.enabled` is not set to `false`
 2. Verify the library is on the classpath
 3. Check for conflicting auto-configurations
@@ -361,9 +361,9 @@ firefly:
 
 ### Redis Not Connecting
 
-**Problem**: Redis cache adapter not created
+Problem: Redis cache adapter not created
 
-**Solutions**:
+Solutions:
 1. Verify `firefly.cache.redis.default.host` is configured
 2. Check Redis is running and accessible
 3. Verify Redis dependencies are on classpath
@@ -371,9 +371,9 @@ firefly:
 
 ### Multiple Cache Adapters with Same Name
 
-**Problem**: Warning about duplicate cache names
+Problem: Warning about duplicate cache names
 
-**Solution**: Ensure each cache adapter has a unique name:
+Solution: Ensure each cache adapter has a unique name:
 
 ```yaml
 firefly:
@@ -387,15 +387,14 @@ firefly:
 
 ## Best Practices
 
-1. **Use Property Files**: Configure via `application.yml` instead of Java code
-2. **Environment-Specific**: Use Spring profiles for different environments
-3. **Externalize Secrets**: Use environment variables for passwords
-4. **Monitor Auto-Configuration**: Enable debug logging during development
-5. **Test Configuration**: Write tests to verify auto-configuration works as expected
+1. Use Property Files: Configure via `application.yml` instead of Java code
+2. Environment-Specific: Use Spring profiles for different environments
+3. Externalize Secrets: Use environment variables for passwords
+4. Monitor Auto-Configuration: Enable debug logging during development
+5. Test Configuration: Write tests to verify auto-configuration works as expected
 
 ## See Also
 
 - [Configuration Reference](CONFIGURATION.md) - Complete property reference
 - [Quick Start Guide](QUICKSTART.md) - Getting started tutorial
 - [Architecture Guide](ARCHITECTURE.md) - Understanding the design
-
