@@ -20,7 +20,7 @@ A partner-management client can use this generated SDK to register or inspect ca
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-callbacks-sdk</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

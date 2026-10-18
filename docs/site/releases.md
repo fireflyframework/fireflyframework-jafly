@@ -2,7 +2,7 @@
 
 ![Unified Jafly releases](assets/banners/releases.svg)
 
-The parent, BOM, and libraries share one version train. The working version, `26.10.17-SNAPSHOT`, identifies development builds. See GitHub Releases and the registries for available final versions.
+The parent, BOM, and libraries share one version train. The release train version is `26.10.17`. See GitHub Releases and the registries for published artifacts.
 
 ## Workflows
 

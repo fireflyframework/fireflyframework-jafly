@@ -20,7 +20,7 @@ Use an existing Cognito user pool for applicant identities. Configure its region
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-idp-aws-cognito</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

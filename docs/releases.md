@@ -1,7 +1,6 @@
 # Unified Jafly releases
 
-The monorepo builds one version train. The working version is `26.10.17-SNAPSHOT`.
-It is a development version, not a published final release.
+The monorepo builds one version train. The release train version is `26.10.17`.
 
 ## Workflows
 

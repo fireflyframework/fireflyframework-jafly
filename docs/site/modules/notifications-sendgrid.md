@@ -24,7 +24,7 @@ SendGrid can deliver application confirmations through the email provider port. 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications-sendgrid</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

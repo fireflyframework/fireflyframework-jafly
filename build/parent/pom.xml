@@ -6,7 +6,7 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Parent POM</name>
@@ -35,7 +35,7 @@
     </scm>
 
     <properties>
-        <fireflyframework.version>26.10.17-SNAPSHOT</fireflyframework.version>
+        <fireflyframework.version>26.10.17</fireflyframework.version>
         <!-- Java -->
         <java.version>25</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>

@@ -8,12 +8,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.17-SNAPSHOT</version>
+        <version>26.10.17</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-starter-core</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Starter Core</name>

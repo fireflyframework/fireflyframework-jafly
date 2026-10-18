@@ -24,7 +24,7 @@ Use the internal database adapter when this service owns its identity store. Con
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-idp-internal-db</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

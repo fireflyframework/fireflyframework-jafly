@@ -24,7 +24,7 @@ Use a Redis-backed cache when several onboarding-service instances need the same
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache-redis</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

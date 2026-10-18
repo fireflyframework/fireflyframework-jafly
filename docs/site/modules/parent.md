@@ -24,7 +24,7 @@ The onboarding example inherits this parent and keeps its own application versio
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
     <relativePath/>
 </parent>
 ```

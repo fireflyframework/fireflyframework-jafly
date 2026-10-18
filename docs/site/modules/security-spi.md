@@ -24,7 +24,7 @@ Connect the onboarding service's policy, relationship, revocation, key, or secre
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-spi</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

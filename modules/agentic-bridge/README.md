@@ -31,7 +31,7 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge-core</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

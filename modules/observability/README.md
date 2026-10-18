@@ -20,7 +20,7 @@ Measure application submissions and review latency with the metrics support, and
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-observability</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

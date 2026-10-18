@@ -20,7 +20,7 @@ Configure the primary agent endpoint and authentication for the reviewer-assista
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge-autoconfigure</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

@@ -11,7 +11,7 @@ Before starting these tutorials, make sure you have:
    <dependency>
        <groupId>org.fireflyframework</groupId>
        <artifactId>fireflyframework-utils</artifactId>
-       <version>26.10.17-SNAPSHOT</version>
+       <version>26.10.17</version>
    </dependency>
    ```
 

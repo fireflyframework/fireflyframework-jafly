@@ -15,7 +15,7 @@ Use event history to reconstruct an aggregate. In an onboarding service, that wo
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eventsourcing</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

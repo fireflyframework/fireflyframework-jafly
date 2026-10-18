@@ -39,7 +39,7 @@ An extended onboarding flow might verify documents, wait for a review, and provi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-orchestration</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.17</version>
 </dependency>
 ```
 

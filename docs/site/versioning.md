@@ -2,13 +2,13 @@
 
 ![One version train](assets/banners/versioning.svg)
 
-Jafly uses padded CalVer versions: `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The final component counts releases within the month; it does not represent a date. The current development version is `26.10.17-SNAPSHOT`.
+Jafly uses padded CalVer versions: `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The final component counts releases within the month; it does not represent a date. The current development version is `26.10.17`.
 
 ## What the version identifies
 
 A framework train covers the consumer parent, independent BOM, libraries, adapters, and component aggregators. Nested projects may inherit their effective version from a local framework parent. Internal framework dependencies select that same train; third-party libraries retain their own managed versions.
 
-An application's version remains separate. An application at `1.0.0` can use framework train `26.10.17-SNAPSHOT`; the public parent/BOM use `fireflyframework.version` rather than the consumer's `${project.version}` for internal dependency management.
+An application's version remains separate. An application at `1.0.0` can use framework train `26.10.17`; the public parent/BOM use `fireflyframework.version` rather than the consumer's `${project.version}` for internal dependency management.
 
 ## Development snapshots
 
