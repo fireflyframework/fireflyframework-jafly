@@ -14,6 +14,8 @@
 <p align="center">
   <a href="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/ci.yml"><img src="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/ci.yml/badge.svg?branch=main" alt="Framework CI"></a>
   <a href="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/docs.yml"><img src="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/docs.yml/badge.svg?branch=main" alt="Documentation build and publication"></a>
+  <a href="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/release.yml"><img src="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/release.yml/badge.svg" alt="Unified release"></a>
+  <a href="https://central.sonatype.com/artifact/org.fireflyframework/fireflyframework-parent"><img src="https://img.shields.io/maven-central/v/org.fireflyframework/fireflyframework-parent?color=10110f&style=flat-square&label=Maven%20Central" alt="Maven Central"></a>
   <img src="https://img.shields.io/badge/Java-25-10110f?style=flat-square" alt="Java 25">
   <img src="https://img.shields.io/badge/Spring_Boot-4.1.1-10110f?style=flat-square" alt="Spring Boot 4.1.1">
   <img src="https://img.shields.io/badge/Maven-3.9.16-10110f?style=flat-square" alt="Maven 3.9.16 wrapper">

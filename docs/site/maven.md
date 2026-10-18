@@ -72,15 +72,20 @@ Before using the parent or BOM in a separate application, install the source loc
 
 For source builds, follow [installation](installation.md). For application code and tests, continue with [your first service](getting-started.md).
 
-## Read packages from GitHub
+## Read packages from Maven Central or GitHub
 
-Maven Central requires no additional framework repository entry. For a version verified in GitHub Packages, resolve Jafly libraries from the framework repository:
+Final trains publish to **Maven Central** first in the release job; consumers need no extra repository once `repo1.maven.org` lists the version. Prefer Central for production builds.
+
+When a train is verified on GitHub Packages before Central CDN sync (or for SNAPSHOT trains), resolve from the Jafly repository:
 
 ```xml
 <repositories>
     <repository>
         <id>firefly-github</id>
         <url>https://maven.pkg.github.com/fireflyframework/fireflyframework-jafly</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
         <snapshots>
             <enabled>true</enabled>
         </snapshots>
@@ -88,7 +93,7 @@ Maven Central requires no additional framework repository entry. For a version v
 </repositories>
 ```
 
-Configure credentials for the same `firefly-github` server ID in your local Maven settings. GitHub requires an authorized token even for public Maven packages. Keep token values out of the POM and source tree. Publication uses the same Jafly repository, with the complete artifact catalog checked before uploading. See [GitHub's Maven registry instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
+Configure credentials for the same `firefly-github` server ID in your local Maven settings. GitHub requires an authorized token even for public Maven packages. Keep token values out of the POM and source tree. Publication uses the same Jafly repository, with the complete artifact catalog checked before uploading. See [GitHub's Maven registry instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry) and the [release runbook](releases.md).
 
 ## Constructor injection
 

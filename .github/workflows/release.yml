@@ -96,16 +96,31 @@ jobs:
             --manifest target/github-manifest.json \
             --output target/github-verification.json --attempts 12 --delay 10
       - name: Deploy and wait for Maven Central publication
+        id: central-deploy
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin
+          echo "::notice::Starting Central Portal publish for $RELEASE_TAG (signed aggregate bundle, waitUntil=published, waitMaxTime=3600s)"
+          echo "GitHub Packages already verified for this tag; a Central failure leaves a partial release."
+          set +e
           ./mvnw -B -ntp -s .github/maven-settings.xml \
             -Dmaven.repo.local="$MAVEN_REPO" deploy -Prelease,maven-central \
             -DautoPublish=true -DwaitUntil=published -DwaitMaxTime=3600 \
-            -DoutputDirectory="$RUNNER_TEMP/central-bundle"
+            -DoutputDirectory="$RUNNER_TEMP/central-bundle" \
+            2>&1 | tee "$RUNNER_TEMP/central-deploy.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          # Surface Portal deployment identifiers without dumping credentials.
+          grep -E -n 'Deployment ([Ii][Dd]|id)|deploymentId|Publishing status|Waiting until|Bundle uploaded|Publication' \
+            "$RUNNER_TEMP/central-deploy.log" | tee -a "$GITHUB_STEP_SUMMARY" || true
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Maven Central publication failed for $RELEASE_TAG. GitHub Packages may already hold this version; do not retag. Inspect the retained central-bundle ZIP and Portal deployment ID above."
+            exit "$status"
+          fi
+          echo "::notice::Maven Central publication completed for $RELEASE_TAG"
       - name: Verify every Maven Central artifact
         run: |
           python3 scripts/release_tools.py inventory \
@@ -115,6 +130,14 @@ jobs:
           cp target/central-manifest.json target/release-manifest.json
           cp "$RUNNER_TEMP/reactor-inventory.json" target/reactor-inventory.json
           git rev-parse HEAD > target/release-commit.txt
+          {
+            echo "## Maven Central verification"
+            echo ""
+            echo "- Tag: \`$RELEASE_TAG\`"
+            echo "- Manifest entries: $(python3 -c 'import json; print(len(json.load(open("target/central-manifest.json"))))')"
+            echo "- CDN base: https://repo.maven.apache.org/maven2/org/fireflyframework/"
+            echo "- Portal: https://central.sonatype.com/search?q=g:org.fireflyframework"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Publish verified GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -131,6 +154,18 @@ jobs:
             target/package-homes.json target/github-verification.json
           gh release view "$RELEASE_TAG" --repo "$RELEASE_REPOSITORY" \
             --json url,tagName,isDraft,targetCommitish,assets
+          echo "GitHub Release: https://github.com/$RELEASE_REPOSITORY/releases/tag/$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+      - name: Summarize partial publication if Central failed after GitHub Packages
+        if: failure() && hashFiles('target/github-verification.json') != ''
+        run: |
+          {
+            echo "## Partial release"
+            echo ""
+            echo "GitHub Packages verification artifacts exist, but the job failed before a verified GitHub Release."
+            echo "Do **not** delete or move tag \`$RELEASE_TAG\`."
+            echo "Inspect \`release-evidence\` artifacts and the Central Portal before any retry."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::Partial publication state for $RELEASE_TAG — see job summary"
       - name: Retain release evidence even after a failed publication
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -146,6 +181,7 @@ jobs:
             ${{ runner.temp }}/github-stage/*.json
             ${{ runner.temp }}/github-stage/*maven.log
             ${{ runner.temp }}/central-bundle/
+            ${{ runner.temp }}/central-deploy.log
             **/target/surefire-reports/
             **/target/failsafe-reports/
           if-no-files-found: warn
