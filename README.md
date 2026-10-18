@@ -1,3 +1,5 @@
+> **Moved to [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-idp-internal-db).** Active Java development, builds, issues and releases are consolidated in [fireflyframework-jafly](https://github.com/fireflyframework/fireflyframework-jafly). Maven artifact coordinates are preserved. This repository retains the original history and release records.
+
 # Firefly Framework - IDP Internal Database Adapter
 
 [![CI](https://github.com/fireflyframework/fireflyframework-security-idp-internal-db/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-security-idp-internal-db/actions/workflows/ci.yml)
