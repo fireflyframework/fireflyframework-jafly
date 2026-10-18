@@ -1,0 +1,43 @@
+/*
+ * Copyright 2024-2026 Firefly Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.kernel.exception;
+
+/**
+ * Base exception for all security and authorization related errors across the framework.
+ */
+public class FireflySecurityException extends FireflyException {
+
+    public FireflySecurityException(String message) {
+        super(message);
+    }
+
+    public FireflySecurityException(Throwable cause) {
+        super(cause);
+    }
+
+    public FireflySecurityException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public FireflySecurityException(String message, String errorCode) {
+        super(message, errorCode);
+    }
+
+    public FireflySecurityException(String message, String errorCode, Throwable cause) {
+        super(message, errorCode, cause);
+    }
+}
