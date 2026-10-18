@@ -33,6 +33,16 @@ def fixture_inventory(projects):
             for path in sorted(r.required_paths(projects))]
 
 
+def snapshot_projects(projects=None):
+    """Snapshot verification fixtures must use -SNAPSHOT coordinates even on a final train."""
+    projects = copy.deepcopy(projects if projects is not None else PROJECTS)
+    for project in projects:
+        version = project.get('version') or ''
+        if version and not version.endswith('-SNAPSHOT'):
+            project['version'] = version + '-SNAPSHOT'
+    return projects
+
+
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -115,9 +125,11 @@ class MappedPublishingTests(unittest.TestCase):
                 m.validate_inventory(PROJECTS, changed)
 
     def test_snapshot_metadata_and_all312_timestamped_files_are_read(self):
-        self.write_registry(PROJECTS, self.inventory, snapshot=True)
+        projects = snapshot_projects()
+        inventory = fixture_inventory(projects)
+        self.write_registry(projects, inventory, snapshot=True)
         server, base = self.server()
-        proof = m.verify_mapped(PROJECTS, self.homes, self.inventory, base=base)
+        proof = m.verify_mapped(projects, self.homes, inventory, base=base)
         self.assertEqual(len(proof), 312)
         self.assertEqual(len(server.requests), 312 + 168)
         self.assertEqual(sum(path.endswith('/maven-metadata.xml') for path in server.requests), 168)
@@ -137,18 +149,22 @@ class MappedPublishingTests(unittest.TestCase):
         self.assertTrue(any('/fireflyframework-bom/' in path for path in server.requests))
 
     def test_tampered_or_missing_artifact_fails_verification(self):
-        self.write_registry(PROJECTS, self.inventory, snapshot=True)
+        projects = snapshot_projects()
+        inventory = fixture_inventory(projects)
+        self.write_registry(projects, inventory, snapshot=True)
         server, base = self.server()
         target = next(self.root.rglob('*-sources.jar'))
         target.write_bytes(b'wrong bytes')
         with self.assertRaisesRegex(ValueError, 'digest'):
-            m.verify_mapped(PROJECTS, self.homes, self.inventory, base=base)
+            m.verify_mapped(projects, self.homes, inventory, base=base)
         target.unlink()
         with self.assertRaisesRegex(ValueError, 'HTTP 404'):
-            m.verify_mapped(PROJECTS, self.homes, self.inventory, base=base)
+            m.verify_mapped(projects, self.homes, inventory, base=base)
 
     def test_wrong_metadata_coordinates_missing_variant_or_mixed_timestamp_fails(self):
-        self.write_registry(PROJECTS, self.inventory, snapshot=True)
+        projects = snapshot_projects()
+        inventory = fixture_inventory(projects)
+        self.write_registry(projects, inventory, snapshot=True)
         server, base = self.server()
         metadata = next(self.root.rglob('maven-metadata.xml'))
         original = metadata.read_text()
@@ -158,7 +174,7 @@ class MappedPublishingTests(unittest.TestCase):
         for changed in cases:
             metadata.write_text(changed)
             with self.assertRaises(ValueError):
-                m.verify_mapped(PROJECTS, self.homes, self.inventory, base=base)
+                m.verify_mapped(projects, self.homes, inventory, base=base)
         metadata.write_text(original)
 
     def test_plan_home_cannot_be_changed_to_another_valid_repository(self):
@@ -168,7 +184,9 @@ class MappedPublishingTests(unittest.TestCase):
             m.validate_associations(PROJECTS, changed, ASSOCIATIONS)
 
     def test_snapshot_metadata_change_after_downloads_is_rejected(self):
-        self.write_registry(PROJECTS, self.inventory, snapshot=True)
+        projects = snapshot_projects()
+        inventory = fixture_inventory(projects)
+        self.write_registry(projects, inventory, snapshot=True)
         server, base = self.server()
         original_read = m.Reader.read
         seen = set()
@@ -181,7 +199,7 @@ class MappedPublishingTests(unittest.TestCase):
             return data
         with patch.object(m.Reader, 'read', changed_read):
             with self.assertRaisesRegex(ValueError, 'changed during verification'):
-                m.verify_mapped(PROJECTS, self.homes, self.inventory, base=base)
+                m.verify_mapped(projects, self.homes, inventory, base=base)
         self.assertEqual(len(seen), 84)
         self.assertEqual(len(server.requests), 312 + 84 + 1)
 
