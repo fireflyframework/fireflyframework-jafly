@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  org.fireflyframework.eda.config.FireflyEdaRabbitMqEnvironmentPostProcessor

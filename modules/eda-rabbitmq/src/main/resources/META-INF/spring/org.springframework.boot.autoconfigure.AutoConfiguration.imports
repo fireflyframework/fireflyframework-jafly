@@ -1,0 +1,3 @@
+org.fireflyframework.eda.config.FireflyEdaRabbitMqAutoConfiguration
+org.fireflyframework.eda.config.FireflyEdaAmqpAdminAutoConfiguration
+org.fireflyframework.eda.config.FireflyEdaRabbitMqConsumerAutoConfiguration
