@@ -1,3 +1,5 @@
+> **Moved to [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/notifications-sendgrid).** Active Java development, builds, issues and releases are consolidated in [fireflyframework-jafly](https://github.com/fireflyframework/fireflyframework-jafly). Maven artifact coordinates are preserved. This repository retains the original history and release records.
+
 # Firefly Framework - Notifications SendGrid
 
 [![CI](https://github.com/fireflyframework/fireflyframework-notifications-sendgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-notifications-sendgrid/actions/workflows/ci.yml)
