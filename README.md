@@ -1,3 +1,5 @@
+> **Moved to [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/build/bom).** Active Java development, builds, issues and releases are consolidated in [fireflyframework-jafly](https://github.com/fireflyframework/fireflyframework-jafly). Maven artifact coordinates are preserved. This repository retains the original history and release records.
+
 # Firefly Framework - Bill of Materials (BOM)
 
 [![CI](https://github.com/fireflyframework/fireflyframework-bom/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-bom/actions/workflows/ci.yml)
