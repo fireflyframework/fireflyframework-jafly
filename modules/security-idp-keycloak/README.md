@@ -20,7 +20,7 @@ Manage applicant identities in the configured Keycloak realm. Set its server and
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-idp-keycloak</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

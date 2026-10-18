@@ -24,7 +24,7 @@ Protect a reactive review method on a Spring bean with the required reviewer aut
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-method-policy</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

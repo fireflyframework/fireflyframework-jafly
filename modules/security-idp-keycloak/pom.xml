@@ -7,19 +7,19 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.17</version>
+        <version>26.10.18</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-idp-keycloak</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - IDP Keycloak</name>
     <description>Keycloak identity provider integration for the Firefly Framework</description>
 
     <properties>
-        <fireflyframework-security-idp.version>26.10.17</fireflyframework-security-idp.version>
+        <fireflyframework-security-idp.version>26.10.18</fireflyframework-security-idp.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <keycloak.admin.version>26.0.8</keycloak.admin.version>
     </properties>

@@ -20,7 +20,7 @@ The tutorial validates name and email with Jakarta constraints. Later onboarding
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-validators</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

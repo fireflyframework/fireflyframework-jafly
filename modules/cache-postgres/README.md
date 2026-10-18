@@ -20,7 +20,7 @@ A service that already operates PostgreSQL can use a separate cache table for re
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache-postgres</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

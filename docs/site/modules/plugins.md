@@ -47,7 +47,7 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>plugin-api</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

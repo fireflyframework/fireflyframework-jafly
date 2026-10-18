@@ -60,14 +60,14 @@ Add the DocuSign adapter dependency to your `pom.xml`:
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm</artifactId>
-        <version>26.10.17</version>
+        <version>26.10.18</version>
     </dependency>
 
     <!-- DocuSign Adapter -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
-        <version>26.10.17</version>
+        <version>26.10.18</version>
     </dependency>
 </dependencies>
 ```

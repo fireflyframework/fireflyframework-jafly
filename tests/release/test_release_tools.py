@@ -35,7 +35,7 @@ class ReleaseToolsTests(unittest.TestCase):
         self.pom(self.root / 'build/bom', 'fireflyframework-bom')
         self.pom(self.root / 'modules/kernel', 'fireflyframework-kernel', packaging='jar')
 
-    def pom(self, root, artifact, version='26.10.17', modules=(), packaging='pom', extra=''):
+    def pom(self, root, artifact, version='26.10.18', modules=(), packaging='pom', extra=''):
         root.mkdir(parents=True, exist_ok=True)
         (root / 'pom.xml').write_text(
             '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion>'
@@ -44,19 +44,19 @@ class ReleaseToolsTests(unittest.TestCase):
             '<modules>' + ''.join(f'<module>{m}</module>' for m in modules) + '</modules></project>')
 
     def test_accepts_unified_explicit_versions(self):
-        projects = self.tools.check_reactor(self.root, 'v26.10.17', expected=4)
+        projects = self.tools.check_reactor(self.root, 'v26.10.18', expected=4)
         self.assertEqual(len(projects), 4)
 
     def test_accepts_version_inherited_from_the_local_parent(self):
         path = self.root / 'modules/kernel/pom.xml'
-        source = path.read_text().replace('<version>26.10.17</version>', '', 1)
-        source = source.replace('<artifactId>fireflyframework-kernel</artifactId>', '<parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.10.17</version></parent><artifactId>fireflyframework-kernel</artifactId>')
+        source = path.read_text().replace('<version>26.10.18</version>', '', 1)
+        source = source.replace('<artifactId>fireflyframework-kernel</artifactId>', '<parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.10.18</version></parent><artifactId>fireflyframework-kernel</artifactId>')
         path.write_text(source)
         try:
             projects = self.tools.check_reactor(self.root)
         except ValueError as error:
             self.fail(f'Valid local version inheritance must work: {error}')
-        self.assertEqual(projects[-1]['version'], '26.10.17')
+        self.assertEqual(projects[-1]['version'], '26.10.18')
 
     def test_explicitly_nonpublishable_projects_are_excluded(self):
         self.pom(self.root / 'modules/kernel', 'fireflyframework-kernel', packaging='jar', extra='<properties><maven.deploy.skip>true</maven.deploy.skip></properties>')
@@ -67,11 +67,11 @@ class ReleaseToolsTests(unittest.TestCase):
     def test_rejects_mixed_version(self):
         self.pom(self.root / 'modules/kernel', 'fireflyframework-kernel', '26.07.06')
         with self.assertRaisesRegex(ValueError, 'version'):
-            self.tools.check_reactor(self.root, 'v26.10.17')
+            self.tools.check_reactor(self.root, 'v26.10.18')
 
     def test_rejects_snapshot_release_tag(self):
         with self.assertRaisesRegex(ValueError, 'tag'):
-            self.tools.check_reactor(self.root, 'v26.10.17-SNAPSHOT')
+            self.tools.check_reactor(self.root, 'v26.10.18-SNAPSHOT')
 
     def test_rejects_tag_different_from_pom(self):
         with self.assertRaisesRegex(ValueError, 'tag'):
@@ -96,7 +96,7 @@ class ReleaseToolsTests(unittest.TestCase):
             self.tools.check_reactor(self.root)
 
     def test_rejects_parent_bom_cycle(self):
-        self.pom(self.root / 'build/bom', 'fireflyframework-bom', extra='<parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.10.17</version></parent>')
+        self.pom(self.root / 'build/bom', 'fireflyframework-bom', extra='<parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.10.18</version></parent>')
         with self.assertRaisesRegex(ValueError, 'standalone'):
             self.tools.check_reactor(self.root)
 
@@ -108,11 +108,11 @@ class ReleaseToolsTests(unittest.TestCase):
     def test_tag_resolves_exact_commit(self):
         subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
         subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '--allow-empty', '-qm', 'Initial'], check=True)
-        subprocess.run(['git', '-C', str(self.root), 'tag', 'v26.10.17'], check=True)
-        self.tools.check_tag_commit(self.root, 'v26.10.17')
+        subprocess.run(['git', '-C', str(self.root), 'tag', 'v26.10.18'], check=True)
+        self.tools.check_tag_commit(self.root, 'v26.10.18')
         subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '--allow-empty', '-qm', 'Different'], check=True)
         with self.assertRaisesRegex(ValueError, 'commit'):
-            self.tools.check_tag_commit(self.root, 'v26.10.17')
+            self.tools.check_tag_commit(self.root, 'v26.10.18')
 
     def tagged_remote(self, directory, annotated=False):
         directory.mkdir()
@@ -120,14 +120,14 @@ class ReleaseToolsTests(unittest.TestCase):
         source.mkdir()
         self.git(source, 'init', '-q')
         self.git(source, 'commit', '--allow-empty', '-qm', 'Initial')
-        arguments = ['tag', 'v26.10.17']
+        arguments = ['tag', 'v26.10.18']
         if annotated:
             arguments.extend(['-a', '-m', 'Release'])
         self.git(source, *arguments)
         self.git(directory, 'init', '--bare', '-q', str(remote))
         self.git(source, 'remote', 'add', 'origin', str(remote))
-        self.git(source, 'push', 'origin', 'HEAD:main', 'refs/tags/v26.10.17')
-        self.git(directory, 'clone', '-q', '--branch', 'v26.10.17', str(remote), str(runner))
+        self.git(source, 'push', 'origin', 'HEAD:main', 'refs/tags/v26.10.18')
+        self.git(directory, 'clone', '-q', '--branch', 'v26.10.18', str(remote), str(runner))
         return source, runner
 
     def git(self, directory, *arguments):
@@ -139,28 +139,28 @@ class ReleaseToolsTests(unittest.TestCase):
         for annotated in (False, True):
             with self.subTest(annotated=annotated):
                 _, runner = self.tagged_remote(self.root / str(annotated), annotated)
-                self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+                self.tools.check_tag_commit(runner, 'v26.10.18', remote='origin')
 
     def test_rejects_remote_tag_moved_after_the_runner_checkout(self):
         source, runner = self.tagged_remote(self.root / 'moved', annotated=True)
         self.git(source, 'commit', '--allow-empty', '-qm', 'Different')
-        self.git(source, 'tag', '-f', 'v26.10.17')
-        self.git(source, 'push', '--force', 'origin', 'refs/tags/v26.10.17')
-        self.tools.check_tag_commit(runner, 'v26.10.17')
+        self.git(source, 'tag', '-f', 'v26.10.18')
+        self.git(source, 'push', '--force', 'origin', 'refs/tags/v26.10.18')
+        self.tools.check_tag_commit(runner, 'v26.10.18')
         with self.assertRaisesRegex(ValueError, 'remote.*commit'):
-            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+            self.tools.check_tag_commit(runner, 'v26.10.18', remote='origin')
 
     def test_rejects_remote_tag_deleted_after_the_runner_checkout(self):
         source, runner = self.tagged_remote(self.root / 'deleted')
-        self.git(source, 'push', 'origin', ':refs/tags/v26.10.17')
+        self.git(source, 'push', 'origin', ':refs/tags/v26.10.18')
         with self.assertRaises(subprocess.CalledProcessError):
-            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+            self.tools.check_tag_commit(runner, 'v26.10.18', remote='origin')
 
     def test_rejects_unavailable_release_remote(self):
         _, runner = self.tagged_remote(self.root / 'unavailable')
         self.git(runner, 'remote', 'set-url', 'origin', str(self.root / 'missing.git'))
         with self.assertRaises(subprocess.CalledProcessError):
-            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+            self.tools.check_tag_commit(runner, 'v26.10.18', remote='origin')
 
     def test_repository_inventory_requires_all_attachments(self):
         projects = self.tools.check_reactor(self.root)
@@ -176,7 +176,7 @@ class ReleaseToolsTests(unittest.TestCase):
     def test_bundle_inventory_rejects_missing_project(self):
         bundle = self.root / 'bundle.zip'
         with zipfile.ZipFile(bundle, 'w') as archive:
-            archive.writestr('org/fireflyframework/fireflyframework-parent/26.10.17/fireflyframework-parent-26.10.17.pom', 'pom')
+            archive.writestr('org/fireflyframework/fireflyframework-parent/26.10.18/fireflyframework-parent-26.10.18.pom', 'pom')
         with self.assertRaisesRegex(ValueError, 'missing'):
             self.tools.inventory_bundle(self.tools.check_reactor(self.root), bundle)
 

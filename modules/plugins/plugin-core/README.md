@@ -20,7 +20,7 @@ The onboarding host can load an application plugin class and start its contribut
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>plugin-core</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

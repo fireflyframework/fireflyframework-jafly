@@ -20,7 +20,7 @@ The tutorial saves applications in a process-local map. An application-owned R2D
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
 </dependency>
 ```
 

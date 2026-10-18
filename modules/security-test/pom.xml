@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.17</version>
+        <version>26.10.18</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-test</artifactId>
-    <version>26.10.17</version>
+    <version>26.10.18</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Security Test</name>

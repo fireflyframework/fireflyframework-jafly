@@ -1,6 +1,6 @@
 # Unified Jafly releases
 
-The monorepo builds one version train. The release train version is `26.10.17`.
+The monorepo builds one version train. The release train version is `26.10.18`.
 
 ## Workflows
 
@@ -17,7 +17,7 @@ The root and nonpublishable samples must have both normal Maven deploy suppressi
 
 ## Final-version procedure
 
-1. Qualify the source changes and set every explicit project/parent reference and internal version property to the same final version, for example `26.10.17`. Inherited versions resolve to that train.
+1. Qualify the source changes and set every explicit project/parent reference and internal version property to the same final version, for example `26.10.18`. Inherited versions resolve to that train.
 2. Run `python3 scripts/release_tools.py check` and `./mvnw -B -ntp clean verify`.
 3. Create an immutable tag whose name is exactly `v` plus the final POM version. The release workflow refuses a snapshot, a mismatched tag, or a checkout that differs from the tag commit.
 4. Inspect the complete `release` job result. A final release requires both registries and the GitHub Release to succeed. GitHub Packages can succeed before a later Central failure; this is a partial release, even though some artifacts are already downloadable.
