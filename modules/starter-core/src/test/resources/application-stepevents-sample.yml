@@ -1,0 +1,179 @@
+# Firefly Common Core Library - Orchestration Integration Sample Configuration
+# This file demonstrates all available configuration options for integrating fireflyframework-orchestration
+# with fireflyframework-core messaging infrastructure
+
+spring:
+  profiles:
+    active: development
+
+---
+# Development Profile - Spring Event Bus (Default)
+spring:
+  config:
+    activate:
+      on-profile: development
+
+# Basic messaging configuration  
+messaging:
+  enabled: true
+  default-connection-id: default
+
+# Step Events configuration
+firefly:
+  stepevents:
+    enabled: true
+    default-topic: step-events
+    publisher-type: EVENT_BUS  # Use Spring Event Bus for development
+    connection-id: default
+
+  # CQRS Framework Configuration
+  cqrs:
+    enabled: true
+    command:
+      timeout: 30s
+      metrics-enabled: true
+    query:
+      timeout: 15s
+      caching-enabled: false
+
+---
+# Production Profile - Kafka Configuration
+spring:
+  config:
+    activate:
+      on-profile: production-kafka
+
+# Kafka messaging configuration
+messaging:
+  enabled: true
+  kafka:
+    enabled: true
+    bootstrap-servers: localhost:9092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    default-topic: banking-events
+
+# Step Events configuration for Kafka
+firefly:
+  stepevents:
+    enabled: true
+    default-topic: step-events
+    publisher-type: KAFKA  # Use Kafka for production
+    connection-id: default
+
+  # CQRS Framework Configuration
+  cqrs:
+    enabled: true
+    command:
+      timeout: 30s
+      metrics-enabled: true
+      tracing-enabled: true
+    query:
+      timeout: 15s
+      caching-enabled: true
+      cache-ttl: 15m
+      metrics-enabled: true
+      tracing-enabled: true
+
+---
+# Production Profile - RabbitMQ Configuration  
+spring:
+  config:
+    activate:
+      on-profile: production-rabbitmq
+      
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+# RabbitMQ messaging configuration
+messaging:
+  enabled: true
+  rabbitmq:
+    enabled: true
+    default-exchange: step-events-exchange
+    default-routing-key: step-events
+
+# Step Events configuration for RabbitMQ
+firefly:
+  stepevents:
+    enabled: true
+    default-topic: step-events
+    publisher-type: RABBITMQ  # Use RabbitMQ for production
+    connection-id: default
+
+  # CQRS Framework Configuration
+  cqrs:
+    enabled: true
+
+---
+# Multi-Publisher Configuration Example
+spring:
+  config:
+    activate:
+      on-profile: multi-publisher
+
+# Enable multiple messaging systems
+messaging:
+  enabled: true
+  kafka:
+    enabled: true
+    bootstrap-servers: localhost:9092
+    default-topic: kafka-step-events
+  rabbitmq:
+    enabled: true
+    default-exchange: rabbitmq-step-events-exchange
+  sqs:
+    enabled: true
+    default-queue: sqs-step-events-queue
+
+# Step Events can be configured to use any of the available publishers
+firefly:
+  stepevents:
+    enabled: true
+    default-topic: step-events-multi
+    publisher-type: KAFKA  # Choose primary publisher
+    connection-id: kafka-primary
+
+  # CQRS Framework Configuration
+  cqrs:
+    enabled: true
+
+---
+# Testing Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  main:
+    banner-mode: off
+
+# Minimal configuration for testing
+messaging:
+  enabled: true
+
+# Step Events configuration for testing
+firefly:
+  stepevents:
+    enabled: true
+    default-topic: test-step-events
+    publisher-type: EVENT_BUS
+    connection-id: test
+
+  # CQRS Framework Configuration
+  cqrs:
+    enabled: true
+
+# Logging configuration for development
+logging:
+  level:
+    org.fireflyframework: DEBUG
+    org.fireflyframework.orchestration: DEBUG
+    org.fireflyframework.core.messaging: DEBUG
+    org.springframework: WARN
+    reactor: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,297 @@
+messaging:
+  # Enable or disable all messaging functionality (default: false)
+  enabled: true
+
+  # Enable or disable resilience features (circuit breaker, retry, metrics)
+  resilience: true
+
+  # Default timeout for publishing operations in seconds
+  publish-timeout-seconds: 5
+
+  # Serialization configuration
+  serialization:
+    # Default serialization format (JSON, AVRO, PROTOBUF, STRING, JAVA)
+    default-format: JSON
+    # Whether to include type information in the serialized data
+    include-type-info: false
+    # Whether to pretty-print JSON output
+    pretty-print: false
+    # Schema registry URL for Avro serialization
+    schema-registry-url: ""
+    # Whether to validate schema for Avro and Protobuf serialization
+    validate-schema: true
+    # Additional properties for serialization
+    properties:
+      # Jackson JSON serialization properties
+      jackson.default-typing: false
+      jackson.ignore-unknown-properties: true
+      # Avro serialization properties
+      avro.use-schema-registry: false
+      # Protobuf serialization properties
+      protobuf.use-json-format: false
+
+  # Kafka configuration
+  kafka:
+    # Enable or disable Kafka publishing (default: false)
+    enabled: true
+    # Default topic to use if not specified in the annotation
+    default-topic: events
+    # Bootstrap servers for Kafka (comma-separated list)
+    bootstrap-servers: localhost:9092
+    # Client ID for Kafka producer
+    client-id: messaging-publisher
+    # Key serializer class for Kafka producer
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    # Value serializer class for Kafka producer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    # Security protocol for Kafka (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+    security-protocol: PLAINTEXT
+    # SASL mechanism for Kafka (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, GSSAPI, OAUTHBEARER)
+    sasl-mechanism: ""
+    # SASL username for Kafka
+    sasl-username: ""
+    # SASL password for Kafka
+    sasl-password: ""
+    # Consumer group ID for Kafka subscribers
+    consumer-group-id: messaging-consumer
+    # Consumer client ID for Kafka subscribers
+    consumer-client-id: messaging-client
+    # Auto offset reset for Kafka subscribers (earliest, latest)
+    auto-offset-reset: latest
+    # Maximum poll records for Kafka subscribers
+    max-poll-records: 500
+    # Poll timeout for Kafka subscribers in milliseconds
+    poll-timeout: 5000
+    # Additional properties for Kafka producer
+    properties:
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+
+  # RabbitMQ configuration
+  rabbitmq:
+    # Enable or disable RabbitMQ publishing (default: false)
+    enabled: true
+    # Default exchange to use if not specified in the annotation
+    default-exchange: events
+    # Default queue to use if not specified in the annotation
+    default-queue: events
+    # Default routing key to use if not specified in the annotation
+    default-routing-key: default
+    # RabbitMQ host
+    host: localhost
+    # RabbitMQ port
+    port: 5672
+    # RabbitMQ virtual host
+    virtual-host: /
+    # RabbitMQ username
+    username: guest
+    # RabbitMQ password
+    password: guest
+    # Whether to use SSL for RabbitMQ connection
+    ssl: false
+    # Connection timeout in milliseconds
+    connection-timeout: 60000
+    # Prefetch count for RabbitMQ consumers
+    prefetch-count: 10
+    # Whether to use durable queues
+    durable: true
+    # Whether to use exclusive queues
+    exclusive: false
+    # Whether to auto-delete queues
+    auto-delete: false
+    # Additional properties for RabbitMQ connection
+    properties:
+      publisher-confirms: true
+      publisher-returns: true
+      mandatory: true
+
+  # Amazon SQS configuration
+  sqs:
+    # Enable or disable SQS publishing (default: false)
+    enabled: false
+    # Default queue name to use if not specified in the annotation
+    default-queue: events
+    # AWS region
+    region: us-east-1
+    # AWS access key ID
+    access-key-id: ""
+    # AWS secret access key
+    secret-access-key: ""
+    # AWS session token (for temporary credentials)
+    session-token: ""
+    # SQS endpoint override (useful for localstack or custom endpoints)
+    endpoint: ""
+    # Maximum number of messages to retrieve in a single batch
+    max-number-of-messages: 10
+    # Visibility timeout in seconds
+    visibility-timeout: 30
+    # Wait time in seconds for long polling
+    wait-time-seconds: 20
+    # Additional properties for SQS client
+    properties: {}
+
+  # Google Cloud Pub/Sub configuration
+  google-pub-sub:
+    # Enable or disable Google Pub/Sub publishing (default: false)
+    enabled: false
+    # Default topic to use if not specified in the annotation
+    default-topic: events
+    # Google Cloud project ID
+    project-id: my-project
+    # Path to the Google Cloud credentials JSON file
+    credentials-path: ""
+    # Google Cloud credentials JSON as a string
+    credentials-json: ""
+    # Endpoint override for Google Pub/Sub (useful for emulator)
+    endpoint: ""
+    # Whether to use the emulator
+    use-emulator: false
+    # Emulator host (e.g., localhost:8085)
+    emulator-host: ""
+    # Retry settings - initial retry delay in milliseconds
+    initial-retry-delay-millis: 100
+    # Retry settings - retry delay multiplier
+    retry-delay-multiplier: 1.3
+    # Retry settings - maximum retry delay in milliseconds
+    max-retry-delay-millis: 60000
+    # Retry settings - maximum number of attempts
+    max-attempts: 5
+    # Additional properties for Google Pub/Sub client
+    properties: {}
+
+  # Azure Service Bus configuration
+  azure-service-bus:
+    # Enable or disable Azure Service Bus publishing (default: false)
+    enabled: false
+    # Default topic to use if not specified in the annotation
+    default-topic: events
+    # Default queue to use if not specified in the annotation
+    default-queue: events
+    # Connection string for Azure Service Bus
+    connection-string: ""
+    # Namespace for Azure Service Bus
+    namespace: ""
+    # Shared access key name for Azure Service Bus
+    shared-access-key-name: RootManageSharedAccessKey
+    # Shared access key for Azure Service Bus
+    shared-access-key: ""
+    # Whether to use managed identity for authentication
+    use-managed-identity: false
+    # Client ID for managed identity
+    client-id: ""
+    # Retry settings - maximum number of attempts
+    max-retries: 3
+    # Retry settings - delay in milliseconds
+    retry-delay-millis: 100
+    # Retry settings - maximum delay in milliseconds
+    max-retry-delay-millis: 30000
+    # Retry settings - delay multiplier
+    retry-delay-multiplier: 1.5
+    # Additional properties for Azure Service Bus client
+    properties: {}
+
+  # Redis Pub/Sub configuration
+  redis:
+    # Enable or disable Redis Pub/Sub publishing (default: false)
+    enabled: false
+    # Default channel to use if not specified in the annotation
+    default-channel: events
+    # Redis host
+    host: localhost
+    # Redis port
+    port: 6379
+    # Redis password
+    password: ""
+    # Redis database index
+    database: 0
+    # Connection timeout in milliseconds
+    timeout: 2000
+    # Whether to use SSL for Redis connection
+    ssl: false
+    # Redis sentinel master name (if using Redis Sentinel)
+    sentinel-master: ""
+    # Redis sentinel nodes (comma-separated list, if using Redis Sentinel)
+    sentinel-nodes: ""
+    # Redis cluster nodes (comma-separated list, if using Redis Cluster)
+    cluster-nodes: ""
+    # Maximum number of redirects for Redis Cluster
+    max-redirects: 3
+    # Additional properties for Redis connection
+    properties: {}
+
+  # JMS (ActiveMQ) configuration
+  jms:
+    # Enable or disable JMS publishing (default: false)
+    enabled: false
+    # Default destination to use if not specified in the annotation
+    default-destination: events
+    # Whether to use topics (true) or queues (false)
+    use-topic: true
+    # JMS broker URL (e.g., tcp://localhost:61616 for ActiveMQ)
+    broker-url: tcp://localhost:61616
+    # JMS username
+    username: ""
+    # JMS password
+    password: ""
+    # Client ID for JMS connection
+    client-id: messaging-publisher
+    # Connection factory class name
+    connection-factory-class: org.apache.activemq.ActiveMQConnectionFactory
+    # Whether to use transactions
+    transacted: false
+    # Acknowledgement mode (1=AUTO_ACKNOWLEDGE, 2=CLIENT_ACKNOWLEDGE, 3=DUPS_OK_ACKNOWLEDGE, 4=SESSION_TRANSACTED)
+    acknowledge-mode: 1
+    # Connection timeout in milliseconds
+    connection-timeout: 30000
+    # Whether to use SSL for JMS connection
+    ssl: false
+    # Trust store path for SSL
+    trust-store-path: ""
+    # Trust store password for SSL
+    trust-store-password: ""
+    # Key store path for SSL
+    key-store-path: ""
+    # Key store password for SSL
+    key-store-password: ""
+    # Additional properties for JMS connection
+    properties: {}
+
+  # AWS Kinesis configuration
+  kinesis:
+    # Enable or disable Kinesis publishing (default: false)
+    enabled: false
+    # Default stream to use if not specified in the annotation
+    default-stream: events
+    # AWS region for Kinesis
+    region: us-east-1
+    # AWS access key ID
+    access-key-id: ""
+    # AWS secret access key
+    secret-access-key: ""
+    # AWS session token (for temporary credentials)
+    session-token: ""
+    # Kinesis endpoint override (useful for localstack or custom endpoints)
+    endpoint: ""
+    # Maximum number of records to retrieve in a single batch
+    max-records: 100
+    # Initial position in the stream when starting a new consumer (LATEST, TRIM_HORIZON, AT_TIMESTAMP)
+    initial-position: LATEST
+    # Timestamp to use when initialPosition is AT_TIMESTAMP (ISO-8601 format)
+    initial-timestamp: ""
+    # Shard iterator type for consumer (AT_SEQUENCE_NUMBER, AFTER_SEQUENCE_NUMBER, AT_TIMESTAMP, TRIM_HORIZON, LATEST)
+    shard-iterator-type: LATEST
+    # Application name for Kinesis Client Library (KCL)
+    application-name: messaging-consumer
+    # Whether to use enhanced fan-out for Kinesis consumers
+    enhanced-fan-out: false
+    # Consumer name for enhanced fan-out
+    consumer-name: messaging-consumer
+    # Retry settings - maximum number of attempts
+    max-retries: 3
+    # Retry settings - delay in milliseconds
+    retry-delay-millis: 1000
+    # Additional properties for Kinesis client
+    properties: {}

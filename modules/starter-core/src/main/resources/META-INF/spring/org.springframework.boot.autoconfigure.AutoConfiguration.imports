@@ -1,0 +1,13 @@
+org.fireflyframework.core.config.FireflyBannerAutoConfiguration
+org.fireflyframework.core.config.WebClientAutoConfiguration
+org.fireflyframework.core.config.WebClientBuilderCustomizer
+org.fireflyframework.core.config.WebFilterAutoConfiguration
+org.fireflyframework.core.web.resilience.WebClientResilienceAutoConfiguration
+org.fireflyframework.core.actuator.config.ActuatorDefaultPropertiesAutoConfiguration
+org.fireflyframework.core.actuator.config.ActuatorAutoConfiguration
+org.fireflyframework.core.actuator.config.DefaultHealthAutoConfiguration
+org.fireflyframework.core.actuator.config.DefaultInfoContributorAutoConfiguration
+org.fireflyframework.core.actuator.config.TracingAutoConfiguration
+org.fireflyframework.core.config.cloud.CloudConfigAutoConfiguration
+org.fireflyframework.core.config.registry.ServiceRegistryAutoConfiguration
+org.fireflyframework.core.messaging.config.OrchestrationAutoConfiguration

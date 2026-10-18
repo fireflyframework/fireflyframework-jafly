@@ -1,0 +1,33 @@
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework:
+      web: INFO
+      boot.autoconfigure: INFO
+      security: INFO
+      cloud: INFO
+    io.netty: INFO
+    reactor.netty: INFO
+    org.apache.kafka: WARN
+    org.hibernate: WARN
+    com.amazonaws: INFO
+    software.amazon: INFO
+    io.micrometer: INFO
+  # MDC properties to include in all logs
+  include-mdc-keys:
+    - X-Transaction-Id
+    - traceId
+    - spanId
+    - userId
+    - requestId
+    - orderId
+    - correlationId
+  # Pattern for console logs (non-JSON format for local development)
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%X{X-Transaction-Id:-},%X{traceId:-},%X{spanId:-}] %cyan(%logger{15}) - %msg%n%throwable"
+  # Configure log file location (optional)
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 7

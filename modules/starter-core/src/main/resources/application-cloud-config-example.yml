@@ -1,0 +1,51 @@
+# Example configuration for Spring Cloud Config client
+# Include this profile to enable centralized configuration
+
+# Enable Spring Cloud Config client
+cloud:
+  config:
+    enabled: true
+    uri: http://config-server:8888
+    # Name defaults to spring.application.name if not specified
+    # name: ${spring.application.name}
+    # Profile defaults to active profiles if not specified
+    # profile: ${spring.profiles.active}
+    label: main
+    fail-fast: true
+    timeout-ms: 5000
+    retry: true
+    max-retries: 6
+    initial-retry-interval-ms: 1000
+    max-retry-interval-ms: 2000
+    retry-multiplier: 1.1
+    refresh-enabled: true
+
+# Enable the refresh endpoint for dynamic configuration updates
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info
+  endpoint:
+    refresh:
+      enabled: true
+
+# Bootstrap configuration (optional, for Spring Boot 2.4+)
+spring:
+  config:
+    import: optional:configserver:${cloud.config.uri}
+  cloud:
+    config:
+      enabled: ${cloud.config.enabled}
+      uri: ${cloud.config.uri}
+      name: ${cloud.config.name:${spring.application.name}}
+      profile: ${cloud.config.profile:${spring.profiles.active:default}}
+      label: ${cloud.config.label}
+      fail-fast: ${cloud.config.fail-fast}
+      request-connect-timeout: ${cloud.config.timeout-ms}
+      request-read-timeout: ${cloud.config.timeout-ms}
+      retry:
+        max-attempts: ${cloud.config.max-retries}
+        initial-interval: ${cloud.config.initial-retry-interval-ms}
+        max-interval: ${cloud.config.max-retry-interval-ms}
+        multiplier: ${cloud.config.retry-multiplier}

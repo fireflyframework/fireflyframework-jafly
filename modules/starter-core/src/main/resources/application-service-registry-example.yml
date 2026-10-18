@@ -1,0 +1,55 @@
+# Example configuration for service registry
+# Include this profile to enable service registration and discovery
+
+# Enable service registry
+service:
+  registry:
+    enabled: true
+    # Type can be EUREKA or CONSUL
+    type: EUREKA
+    
+    # Eureka configuration (used when type is EUREKA)
+    eureka:
+      service-url: http://eureka-server:8761/eureka/
+      register: true
+      fetch-registry: true
+      registry-fetch-interval-seconds: 30
+      # Instance ID defaults to a generated value if not specified
+      # instance-id: ${spring.application.name}:${random.value}
+      prefer-ip-address: true
+      lease-renewal-interval-in-seconds: 30
+      lease-expiration-duration-in-seconds: 90
+      health-check-enabled: true
+      health-check-url-path: /actuator/health
+      status-page-url-path: /actuator/info
+    
+    # Consul configuration (used when type is CONSUL)
+    consul:
+      host: consul
+      port: 8500
+      register: true
+      deregister: true
+      # Service name defaults to spring.application.name if not specified
+      # service-name: ${spring.application.name}
+      # Instance ID defaults to a generated value if not specified
+      # instance-id: ${spring.application.name}-${random.value}
+      tags:
+        - microservice
+        - spring-boot
+      health-check-interval: 10
+      health-check-timeout: 5
+      health-check-path: /actuator/health
+      health-check-enabled: true
+      catalog-services-watch: true
+      catalog-services-watch-timeout: 10
+      catalog-services-watch-delay: 1000
+
+# Ensure actuator endpoints are available for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

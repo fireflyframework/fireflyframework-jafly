@@ -1,0 +1,187 @@
+# Example configuration for WebClient
+# Include this profile to enable advanced WebClient configuration
+
+# WebClient configuration
+webclient:
+  # Enable or disable WebClient auto-configuration
+  enabled: true
+  
+  # Headers that should not be propagated
+  skip-headers:
+    - connection
+    - keep-alive
+    - proxy-authenticate
+    - proxy-authorization
+    - te
+    - trailer
+    - transfer-encoding
+    - upgrade
+  
+  # Connection timeout in milliseconds
+  connect-timeout-ms: 5000
+  
+  # Read timeout in milliseconds
+  read-timeout-ms: 10000
+  
+  # Write timeout in milliseconds
+  write-timeout-ms: 10000
+  
+  # Maximum size of in-memory buffer in bytes (16MB)
+  max-in-memory-size: 16777216
+  
+  # SSL/TLS configuration
+  ssl:
+    # Enable or disable SSL/TLS
+    enabled: false
+    
+    # Whether to use the default SSL context
+    use-default-ssl-context: true
+    
+    # Trust store path
+    trust-store-path: ""
+    
+    # Trust store password
+    trust-store-password: ""
+    
+    # Trust store type (JKS, PKCS12, etc.)
+    trust-store-type: "JKS"
+    
+    # Key store path
+    key-store-path: ""
+    
+    # Key store password
+    key-store-password: ""
+    
+    # Key store type (JKS, PKCS12, etc.)
+    key-store-type: "JKS"
+    
+    # Whether to verify hostname
+    verify-hostname: true
+    
+    # Protocols to enable (TLSv1.2, TLSv1.3, etc.)
+    enabled-protocols:
+      - TLSv1.2
+      - TLSv1.3
+    
+    # Cipher suites to enable
+    enabled-cipher-suites:
+      - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  
+  # Proxy configuration
+  proxy:
+    # Enable or disable proxy
+    enabled: false
+    
+    # Proxy type (HTTP, SOCKS4, SOCKS5)
+    type: "HTTP"
+    
+    # Proxy host
+    host: ""
+    
+    # Proxy port
+    port: 8080
+    
+    # Proxy username
+    username: ""
+    
+    # Proxy password
+    password: ""
+    
+    # Non-proxy hosts (hosts that should bypass the proxy)
+    non-proxy-hosts:
+      - localhost
+      - 127.0.0.1
+  
+  # Connection pool configuration
+  connection-pool:
+    # Enable or disable connection pooling
+    enabled: true
+    
+    # Maximum number of connections
+    max-connections: 500
+    
+    # Maximum number of pending acquires
+    max-pending-acquires: 1000
+    
+    # Maximum idle time in milliseconds
+    max-idle-time-ms: 30000
+    
+    # Maximum life time in milliseconds
+    max-life-time-ms: 60000
+    
+    # Whether to enable metrics
+    metrics-enabled: true
+  
+  # HTTP/2 configuration
+  http2:
+    # Enable or disable HTTP/2
+    enabled: true
+    
+    # Maximum concurrent streams
+    max-concurrent-streams: 100
+    
+    # Initial window size
+    initial-window-size: 1048576
+  
+  # Codec configuration
+  codec:
+    # Enable or disable custom codec configuration
+    enabled: false
+    
+    # Maximum in memory size for codecs (16MB)
+    max-in-memory-size: 16777216
+    
+    # Whether to enable logging of form data
+    enable-logging-form-data: false
+    
+    # Jackson configuration properties
+    jackson-properties:
+      default-typing: false
+      ignore-unknown-properties: true
+
+# Resilience configuration for WebClient
+webclient.resilience:
+  # Enable or disable resilience patterns
+  enabled: true
+  
+  # Circuit breaker configuration
+  circuit-breaker:
+    # Failure rate threshold in percentage above which the circuit breaker should trip open
+    failure-rate-threshold: 50
+    
+    # Duration the circuit breaker should stay open before switching to half-open (in milliseconds)
+    wait-duration-in-open-state-ms: 10000
+    
+    # Number of permitted calls when the circuit breaker is half-open
+    permitted-number-of-calls-in-half-open-state: 5
+    
+    # Size of the sliding window used to record the outcome of calls when the circuit breaker is closed
+    sliding-window-size: 10
+  
+  # Retry configuration
+  retry:
+    # Maximum number of retry attempts
+    max-attempts: 3
+    
+    # Initial backoff duration in milliseconds
+    initial-backoff-ms: 500
+    
+    # Maximum backoff duration in milliseconds
+    max-backoff-ms: 5000
+    
+    # Backoff multiplier for exponential backoff
+    backoff-multiplier: 2.0
+  
+  # Timeout configuration
+  timeout:
+    # Timeout duration in milliseconds
+    timeout-ms: 5000
+  
+  # Bulkhead configuration
+  bulkhead:
+    # Maximum number of concurrent calls permitted
+    max-concurrent-calls: 25
+    
+    # Maximum amount of time a thread should wait to enter a bulkhead (in milliseconds)
+    max-wait-duration-ms: 0

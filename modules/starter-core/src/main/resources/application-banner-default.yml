@@ -1,0 +1,8 @@
+spring:
+  main:
+    banner-mode: console   # <- correct place
+  banner:
+    location: classpath:/banner.txt
+  output:
+    ansi:
+      enabled: ALWAYS      # <- force ANSI on

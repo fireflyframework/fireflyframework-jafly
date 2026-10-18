@@ -1,0 +1,32 @@
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+webclient:
+  skip-headers:
+    - connection
+    - keep-alive
+    - proxy-authenticate
+    - proxy-authorization
+    - te
+    - trailer
+    - transfer-encoding
+    - upgrade
+  resilience:
+    enabled: true
+    circuit-breaker:
+      failure-rate-threshold: 50
+      wait-duration-in-open-state-ms: 10000
+      permitted-number-of-calls-in-half-open-state: 5
+      sliding-window-size: 10
+    retry:
+      max-attempts: 3
+      initial-backoff-ms: 500
+      max-backoff-ms: 5000
+      backoff-multiplier: 2.0
+    timeout:
+      timeout-ms: 5000
+    bulkhead:
+      max-concurrent-calls: 25
+      max-wait-duration-ms: 0
