@@ -1,0 +1,108 @@
+openapi: 3.0.1
+info:
+  title: Firefly Webhook Management Platform
+  description: Unified webhook ingestion platform for multiple providers with message queue integration
+  contact:
+    name: Firefly Platform Team
+    email: platform@getfirefly.io
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local Development Environment
+  - url: https://webhooks.getfirefly.io
+    description: Production Environment
+tags:
+  - name: Webhooks
+    description: Webhook ingestion endpoints for multiple providers
+paths:
+  /api/v1/webhook/{providerName}:
+    post:
+      tags:
+        - Webhooks
+      summary: Receive webhook from any provider
+      description: Universal endpoint that accepts webhooks from any provider. The webhook payload is stored AS-IS and published to a message queue for processing.
+      operationId: receiveWebhook
+      parameters:
+        - name: providerName
+          in: path
+          description: Name of the webhook provider
+          required: true
+          schema:
+            type: string
+          example: stripe
+        - name: X-Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+        required: true
+      responses:
+        '202':
+          description: Webhook accepted and queued for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponseDTO'
+        '400':
+          description: Invalid webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponseDTO'
+components:
+  schemas:
+    JsonNode:
+      type: object
+      description: Echo of the received payload for verification purposes
+    WebhookResponseDTO:
+      type: object
+      properties:
+        eventId:
+          type: string
+          description: Unique identifier for the processed webhook event
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        status:
+          type: string
+          description: Status of the webhook processing
+          example: ACCEPTED
+          enum:
+            - ACCEPTED
+            - ERROR
+            - REJECTED
+        message:
+          type: string
+          description: Message describing the result
+          example: Webhook received and queued for processing
+        receivedAt:
+          type: string
+          description: Timestamp when the webhook was received by the platform
+          format: date-time
+        processedAt:
+          type: string
+          description: Timestamp when the webhook was processed and acknowledged
+          format: date-time
+        providerName:
+          type: string
+          description: Provider name for reference
+          example: stripe
+        receivedPayload:
+          $ref: '#/components/schemas/JsonNode'
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+            description: Metadata about the webhook processing
+          description: Metadata about the webhook processing
+      description: Response after webhook event is received

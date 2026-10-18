@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Shared Firefly observability logging configuration -->
+    <include resource="logback-firefly.xml"/>
+
+    <!-- Root Logger - uses shared FIREFLY_ASYNC appender from logback-firefly.xml -->
+    <root level="INFO">
+        <appender-ref ref="FIREFLY_ASYNC"/>
+    </root>
+
+    <!-- Application Loggers -->
+    <logger name="org.fireflyframework.webhooks" level="DEBUG"/>
+    <logger name="org.fireflyframework.eda" level="DEBUG"/>
+
+    <!-- Kafka Loggers -->
+    <logger name="org.apache.kafka" level="WARN"/>
+
+    <!-- Spring Loggers -->
+    <logger name="org.springframework" level="INFO"/>
+
+    <!-- Resilience4j Loggers -->
+    <logger name="io.github.resilience4j" level="INFO"/>
+</configuration>

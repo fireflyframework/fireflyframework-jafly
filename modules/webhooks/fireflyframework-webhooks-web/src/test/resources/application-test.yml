@@ -1,0 +1,155 @@
+spring:
+  application:
+    name: common-platform-webhooks-mgmt-test
+  
+  # WebFlux Configuration
+  webflux:
+    base-path: /
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # Redis Configuration (for Spring Data Redis)
+  data:
+    redis:
+      # These will be overridden by test containers via @DynamicPropertySource
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 10s
+      connect-timeout: 10s
+      ssl:
+        enabled: false
+
+
+
+# Server Configuration
+server:
+  port: 0  # Random port for tests
+
+# Firefly Webhook Configuration
+firefly:
+  webhooks:
+    destination:
+      prefix: ""
+      suffix: ""
+      use-provider-as-topic: true
+      custom: ""
+
+    # Security Configuration for Tests
+    security:
+      validate-payload-size: true
+      max-payload-size: 1048576  # 1MB
+      validate-provider-name: true
+      provider-name-pattern: "^[a-z0-9-]+$"
+      enable-ip-whitelist: false
+      ip-whitelist: {}  # Empty map for tests
+      enable-request-validation: true
+      allowed-methods:
+        - POST
+      require-content-type: true
+      allowed-content-types:
+        - application/json
+        - application/x-www-form-urlencoded
+
+    # Dead Letter Queue (DLQ) Configuration
+    dlq:
+      enabled: true
+      topic: webhooks.dlq
+
+    # Batching disabled for tests (for predictable behavior)
+    batching:
+      enabled: false
+
+    # Compression disabled for tests (for easier debugging)
+    compression:
+      enabled: false
+
+    # Metadata enrichment enabled for tests
+    metadata-enrichment:
+      enabled: true
+
+  # Cache Configuration
+  cache:
+    enabled: true
+    default-cache-type: REDIS
+    caffeine:
+      enabled: true
+      cache-name: "default"
+      default-ttl: 7d
+      max-size: 10000
+    redis:
+      cache-name: "default"
+      enabled: true
+      # These will be overridden by test containers via @DynamicPropertySource
+      host: localhost
+      port: 6379
+      database: 0
+      key-prefix: "firefly:webhooks:test"
+      default-ttl: 7d
+      connection-timeout: 10s
+      command-timeout: 5s
+      ssl: false
+
+# HTTP-level idempotency configuration (lib-common-web)
+idempotency:
+  header-name: X-Idempotency-Key
+  cache:
+    ttl-hours: 24
+
+  # EDA Configuration - Kafka bootstrap servers overridden by Testcontainers
+  eda:
+    enabled: true
+    default-publisher-type: KAFKA
+    metrics-enabled: true
+    health-enabled: true
+
+    # Publisher configuration - webhook platform publishes events to Kafka
+    publishers:
+      kafka:
+        default:
+          enabled: true
+          # Bootstrap servers will be overridden by test containers
+          bootstrap-servers: localhost:9092
+          default-topic: events
+          properties:
+            acks: all
+            retries: 1
+            compression.type: snappy
+
+    # Consumer configuration - test worker consumes webhook events
+    # In production, separate worker applications would consume these events
+    # Topics are now automatically discovered from @EventListener annotations
+    # No need to configure topics manually - they are determined dynamically
+    consumer:
+      enabled: true
+      group-id: webhook-worker-test
+      kafka:
+        default:
+          enabled: true
+          # Bootstrap servers will be overridden by test containers
+          bootstrap-servers: localhost:9092
+          auto-offset-reset: earliest  # Start from beginning for tests
+          properties:
+            enable.auto.commit: true
+            auto.commit.interval.ms: 1000
+            metadata.max.age.ms: 1000  # Refresh metadata frequently for tests
+
+# Logging Configuration
+logging:
+  level:
+    root: WARN
+    org.fireflyframework.webhooks: INFO
+    org.fireflyframework.common.eda: WARN
+    org.fireflyframework.common.cache: WARN
+    org.apache.kafka: ERROR
+    org.testcontainers: WARN
+    org.springframework: WARN
+    io.lettuce: ERROR
+    reactor.netty: ERROR
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} : %msg%n"

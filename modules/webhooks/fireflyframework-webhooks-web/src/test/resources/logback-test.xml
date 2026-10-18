@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Simple console appender for tests - NO JSON -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%15.15t] %-40.40logger{39} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Application loggers - Keep only essential INFO messages -->
+    <logger name="org.fireflyframework.webhooks.web.controllers" level="INFO" />
+    <logger name="org.fireflyframework.webhooks.core.services" level="INFO" />
+
+    <!-- Suppress expected error logs in tests (signature validation failures, etc.) -->
+    <logger name="org.fireflyframework.webhooks.processor.listener" level="OFF" />
+    <logger name="org.fireflyframework.webhooks.integration.services" level="OFF" />
+    <logger name="org.fireflyframework.common.eda.listener" level="OFF" />
+
+    <logger name="org.fireflyframework.webhooks" level="WARN" />
+    <logger name="org.fireflyframework.common.eda" level="ERROR" />
+    <logger name="org.fireflyframework.common.cache" level="ERROR" />
+    <logger name="org.fireflyframework.common.eventsourcing" level="ERROR" />
+    
+    <!-- Third-party loggers -->
+    <logger name="org.apache.kafka" level="ERROR" />
+    <logger name="org.testcontainers" level="WARN" />
+    <logger name="org.springframework" level="WARN" />
+    <logger name="io.lettuce" level="ERROR" />
+    <logger name="reactor.netty" level="ERROR" />
+</configuration>
+

@@ -1,0 +1,54 @@
+# Java/Maven standard ignores
+
+# Maven build directories (including nested modules)
+**/target/
+
+# Maven release/versions plugin backup files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and JVM crash dumps
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Java build outputs
+*.class
+*.jar
+*.war
+*.ear
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Test reports (usually inside target/ but included for clarity)
+**/surefire-reports/
+**/failsafe-reports/
+
+# Environment files
+.env
+.env.*

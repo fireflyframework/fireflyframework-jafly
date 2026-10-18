@@ -1,0 +1,363 @@
+spring:
+  application:
+    name: common-platform-webhooks-mgmt
+
+  # Allow bean definition overriding for lib-common-cache Redis configuration
+  main:
+    allow-bean-definition-overriding: true
+
+  # Lifecycle Configuration
+  lifecycle:
+    timeout-per-shutdown-phase: 30s  # Wait up to 30s for graceful shutdown
+
+  # WebFlux Configuration
+  webflux:
+    base-path: /
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # Redis Configuration (for Spring Boot's health check and auto-configuration)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: ${REDIS_PASSWORD:}
+      username: ${REDIS_USERNAME:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      timeout: 10s
+
+  # RabbitMQ Configuration (disable auto-configuration if not used)
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  http2:
+    enabled: ${SERVER_HTTP2_ENABLED:true}
+  shutdown: graceful  # Enable graceful shutdown
+
+# Management & Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      # Enable liveness and readiness probes
+      probes:
+        enabled: true
+  health:
+    # Disable RabbitMQ health check if RabbitMQ is not running
+    rabbit:
+      enabled: ${RABBITMQ_HEALTH_ENABLED:false}
+    # Redis health check will use spring.data.redis configuration
+    redis:
+      enabled: ${REDIS_HEALTH_ENABLED:true}
+    # Enable liveness and readiness indicators
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+  # Micrometer / Metrics Configuration
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        webhooks.processing.time: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:local}
+
+  # Distributed Tracing Configuration
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}  # Sample 100% of requests (adjust for production)
+
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+# Firefly Webhook Configuration
+firefly:
+  cqrs:
+    enabled: false
+
+  webhooks:
+    # Destination Configuration for Message Queue Topics/Queues
+    # The destination is built using: {prefix}{provider-name}{suffix}
+    destination:
+      # Prefix to add before the provider name (optional)
+      # Example: "webhooks." results in "webhooks.stripe"
+      prefix: ${FIREFLY_WEBHOOKS_DESTINATION_PREFIX:}
+
+      # Suffix to add after the provider name (optional)
+      # Example: ".received" results in "stripe.received"
+      suffix: ${FIREFLY_WEBHOOKS_DESTINATION_SUFFIX:}
+
+      # Whether to use provider name as the topic/queue name (default: true)
+      # When true: topic = {prefix}{provider-name}{suffix}
+      # When false: topic = {prefix}{suffix}
+      # Examples:
+      #   - Default (provider name only): "stripe", "paypal", "twilio"
+      #   - With prefix "webhooks.": "webhooks.stripe", "webhooks.paypal"
+      #   - With prefix and suffix "webhooks." + ".received": "webhooks.stripe.received"
+      use-provider-as-topic: ${FIREFLY_WEBHOOKS_DESTINATION_USE_PROVIDER_AS_TOPIC:true}
+
+      # Custom destination (overrides all other settings)
+      # If set, all webhooks go to this single destination regardless of provider
+      # Example: "webhooks.all" - all providers publish to the same topic
+      custom: ${FIREFLY_WEBHOOKS_DESTINATION_CUSTOM:}
+
+    # Security Configuration
+    security:
+      # Payload size validation
+      validate-payload-size: ${FIREFLY_WEBHOOKS_SECURITY_VALIDATE_PAYLOAD_SIZE:true}
+      max-payload-size: ${FIREFLY_WEBHOOKS_SECURITY_MAX_PAYLOAD_SIZE:1048576}  # 1MB in bytes
+
+      # Provider name validation
+      validate-provider-name: ${FIREFLY_WEBHOOKS_SECURITY_VALIDATE_PROVIDER_NAME:true}
+      provider-name-pattern: ${FIREFLY_WEBHOOKS_SECURITY_PROVIDER_NAME_PATTERN:^[a-z0-9-]+$}  # Lowercase alphanumeric and hyphens
+
+      # IP whitelisting (optional) - supports exact IPs and CIDR notation
+      enable-ip-whitelist: ${FIREFLY_WEBHOOKS_SECURITY_ENABLE_IP_WHITELIST:false}
+      ip-whitelist: {}
+        # Example configuration (supports exact IPs and CIDR notation):
+        # stripe:
+        #   - "54.187.174.169"      # Exact IP
+        #   - "54.187.205.235"      # Exact IP
+        # github:
+        #   - "192.30.252.0/22"     # CIDR notation
+        #   - "185.199.108.0/22"    # CIDR notation
+        # paypal:
+        #   - "173.0.82.0/24"       # CIDR notation
+        # Environment variable format (JSON):
+        # FIREFLY_WEBHOOKS_SECURITY_IP_WHITELIST='{"stripe":["54.187.174.169"],"github":["192.30.252.0/22"]}'
+
+      # HTTP-level idempotency
+      enable-http-idempotency: ${FIREFLY_WEBHOOKS_SECURITY_ENABLE_HTTP_IDEMPOTENCY:true}
+      http-idempotency-ttl-seconds: ${FIREFLY_WEBHOOKS_SECURITY_HTTP_IDEMPOTENCY_TTL_SECONDS:86400}  # 24 hours
+
+      # Request validation
+      enable-request-validation: ${FIREFLY_WEBHOOKS_SECURITY_ENABLE_REQUEST_VALIDATION:true}
+      allowed-methods:
+        - POST
+      require-content-type: ${FIREFLY_WEBHOOKS_SECURITY_REQUIRE_CONTENT_TYPE:true}
+      allowed-content-types:
+        - application/json
+        - application/x-www-form-urlencoded
+
+    # Dead Letter Queue (DLQ) Configuration
+    dlq:
+      # Enable/disable DLQ for rejected webhooks
+      enabled: ${FIREFLY_WEBHOOKS_DLQ_ENABLED:true}
+
+      # Kafka topic for rejected webhooks
+      topic: ${FIREFLY_WEBHOOKS_DLQ_TOPIC:webhooks.dlq}
+
+    # Retry Configuration (for webhook processing)
+    retry:
+      # Global defaults for all providers
+      defaults:
+        max-attempts: ${FIREFLY_WEBHOOKS_RETRY_MAX_ATTEMPTS:3}
+        initial-delay: ${FIREFLY_WEBHOOKS_RETRY_INITIAL_DELAY:PT1S}  # 1 second
+        max-delay: ${FIREFLY_WEBHOOKS_RETRY_MAX_DELAY:PT30S}  # 30 seconds
+        multiplier: ${FIREFLY_WEBHOOKS_RETRY_MULTIPLIER:2.0}  # Exponential backoff multiplier
+        enable-jitter: ${FIREFLY_WEBHOOKS_RETRY_ENABLE_JITTER:true}
+        jitter-factor: ${FIREFLY_WEBHOOKS_RETRY_JITTER_FACTOR:0.5}  # 0.0 to 1.0
+        retry-on-timeout: ${FIREFLY_WEBHOOKS_RETRY_ON_TIMEOUT:true}
+        retry-on-connection-error: ${FIREFLY_WEBHOOKS_RETRY_ON_CONNECTION_ERROR:true}
+        retry-on-server-error: ${FIREFLY_WEBHOOKS_RETRY_ON_SERVER_ERROR:true}
+        retry-on-client-error: ${FIREFLY_WEBHOOKS_RETRY_ON_CLIENT_ERROR:false}
+
+      # Per-provider overrides (optional)
+      providers: {}
+        # Example:
+        # stripe:
+        #   max-attempts: 5
+        #   initial-delay: PT2S
+        # paypal:
+        #   max-attempts: 3
+        #   initial-delay: PT1S
+
+    # Batching Configuration (for improved throughput)
+    batching:
+      # Enable/disable webhook batching
+      enabled: ${FIREFLY_WEBHOOKS_BATCHING_ENABLED:false}
+
+      # Maximum number of events in a batch
+      max-batch-size: ${FIREFLY_WEBHOOKS_BATCHING_MAX_BATCH_SIZE:100}
+
+      # Maximum time to wait before flushing a batch
+      max-wait-time: ${FIREFLY_WEBHOOKS_BATCHING_MAX_WAIT_TIME:PT1S}  # 1 second
+
+      # Size of the internal buffer for pending events
+      buffer-size: ${FIREFLY_WEBHOOKS_BATCHING_BUFFER_SIZE:1000}
+
+      # Per-provider batching overrides (optional)
+      providers: {}
+        # Example:
+        # stripe:
+        #   max-batch-size: 200
+        #   max-wait-time: PT2S
+
+    # Compression Configuration (for large payloads)
+    compression:
+      # Enable/disable payload compression
+      enabled: ${FIREFLY_WEBHOOKS_COMPRESSION_ENABLED:false}
+
+      # Minimum payload size (in bytes) to trigger compression
+      min-size: ${FIREFLY_WEBHOOKS_COMPRESSION_MIN_SIZE:1024}  # 1KB
+
+      # Compression algorithm (GZIP, ZSTD, LZ4)
+      algorithm: ${FIREFLY_WEBHOOKS_COMPRESSION_ALGORITHM:GZIP}
+
+      # Compression level (1-9 for GZIP)
+      level: ${FIREFLY_WEBHOOKS_COMPRESSION_LEVEL:6}
+
+    # Metadata Enrichment Configuration
+    metadata-enrichment:
+      # Enable/disable metadata enrichment
+      enabled: ${FIREFLY_WEBHOOKS_METADATA_ENRICHMENT_ENABLED:true}
+
+  # Cache Configuration (for webhook idempotency in workers)
+  cache:
+    enabled: ${FIREFLY_CACHE_ENABLED:true}
+    default-cache-type: ${FIREFLY_CACHE_TYPE:REDIS}  # REDIS for distributed workers, CAFFEINE for single instance
+    metrics-enabled: true
+    health-enabled: true
+    stats-enabled: true
+
+    # Caffeine (in-memory) cache configuration
+    caffeine:
+      enabled: true
+      cache-name: "webhook-idempotency"
+      key-prefix: "firefly:webhooks"
+      maximum-size: 10000
+      expire-after-write: 1h
+      record-stats: true
+
+    # Redis (distributed) cache configuration
+    redis:
+      enabled: ${FIREFLY_REDIS_ENABLED:true}
+      cache-name: "webhook-idempotency"
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: ${REDIS_PASSWORD:}
+      username: ${REDIS_USERNAME:}
+      connection-timeout: 10s
+      command-timeout: 5s
+      key-prefix: "firefly:webhooks"
+      default-ttl: 7d  # Keep processed event markers for 7 days
+      max-pool-size: 8
+      min-pool-size: 2
+      ssl: ${REDIS_SSL:false}
+
+  # EDA Configuration
+  eda:
+    enabled: true
+    default-publisher-type: ${FIREFLY_EDA_PUBLISHER_TYPE:KAFKA}
+    default-serialization-format: ${FIREFLY_EDA_SERIALIZATION_FORMAT:json}
+    metrics-enabled: ${FIREFLY_EDA_METRICS_ENABLED:true} # Enabled for tests
+    health-enabled: ${FIREFLY_EDA_HEALTH_ENABLED:true}
+
+    # Publishers Configuration
+    publishers:
+      enabled: true
+      kafka:
+        default:
+          enabled: true
+          bootstrap-servers: ${FIREFLY_KAFKA_BOOTSTRAP_SERVERS}
+          properties:
+            acks: all
+            retries: 3
+            compression.type: snappy
+            max.in.flight.requests.per.connection: 5
+            enable.idempotence: true
+            linger.ms: 10
+            batch.size: 16384
+            buffer.memory: 33554432
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker Configuration
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50  # Open circuit if 50% of calls fail
+        slow-call-rate-threshold: 50  # Open circuit if 50% of calls are slow
+        slow-call-duration-threshold: 5s  # Call is slow if > 5s
+        wait-duration-in-open-state: 30s  # Wait 30s before half-open
+        permitted-number-of-calls-in-half-open-state: 5  # Allow 5 calls in half-open
+        minimum-number-of-calls: 10  # Need 10 calls before calculating rates
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20  # Use last 20 calls for rate calculation
+        record-exceptions:
+          - java.lang.Exception
+    instances:
+      webhookKafkaPublisher:
+        base-config: default
+        register-health-indicator: true
+
+  # Rate Limiter Configuration
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 100  # Allow 100 requests
+        limit-refresh-period: 1s  # Per second
+        timeout-duration: 500ms  # Wait max 500ms for permission
+    instances: {}
+      # Provider-specific rate limiters will be created dynamically
+      # IP-specific rate limiters will be created dynamically
+
+  # Time Limiter Configuration
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s  # Timeout after 10 seconds
+        cancel-running-future: true
+    instances:
+      webhookKafkaPublisher:
+        base-config: default
+
+# OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: true
+  packages-to-scan: org.fireflyframework.webhooks.web.controllers
+  paths-to-match: /api/**
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.fireflyframework.webhooks: DEBUG
+    org.fireflyframework.common.eda: DEBUG
+    org.fireflyframework.common.eventsourcing: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
