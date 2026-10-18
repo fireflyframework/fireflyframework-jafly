@@ -1,0 +1,1 @@
+<p>Hello ${name}!</p><p>Company: ${companyName}</p>

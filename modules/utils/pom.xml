@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.fireflyframework</groupId>
+        <artifactId>fireflyframework-parent</artifactId>
+        <version>26.07.06</version>
+        <relativePath/>
+    </parent>
+
+    <artifactId>fireflyframework-utils</artifactId>
+    <version>26.07.06</version>
+    <packaging>jar</packaging>
+
+    <name>Firefly Framework - Utils</name>
+    <description>Utility classes for PDF generation, templating, and common operations</description>
+
+    <dependencies>
+        <!-- Firefly Kernel (foundational: exceptions, shared abstractions) -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-kernel</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- FreeMarker Template Engine -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.34</version>
+        </dependency>
+
+        <!-- Flying Saucer for PDF generation -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf-openpdf</artifactId>
+            <version>9.3.2</version>
+        </dependency>
+
+        <!-- SLF4J API for logging (version managed by Spring Boot BOM) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Testing (version managed by Spring Boot BOM) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
