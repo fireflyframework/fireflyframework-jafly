@@ -1,0 +1,122 @@
+# Sample configuration file showing Firefly Cache Library properties
+# This configuration demonstrates all available options
+
+firefly:
+  cache:
+    # Global cache settings
+    enabled: true
+    default-cache-type: CAFFEINE  # Options: CAFFEINE, REDIS, AUTO, NOOP
+    default-cache-name: "default"
+    default-serialization-format: "json"
+    default-timeout: PT5S
+    
+    # Monitoring and metrics
+    metrics-enabled: true
+    health-enabled: true  
+    stats-enabled: true
+    
+    # Individual cache configurations
+    caches:
+      default:
+        type: CAFFEINE
+        default-ttl: PT1H
+        enabled: true
+        serialization-format: "json"
+      
+      user-cache:
+        type: REDIS
+        default-ttl: PT30M
+        enabled: true
+        serialization-format: "json"
+        
+      session-cache:
+        type: AUTO  # Will select based on availability
+        default-ttl: PT15M
+        enabled: true
+        
+    # Caffeine-specific configuration
+    caffeine:
+      default:
+        enabled: true
+        maximum-size: 1000
+        expire-after-write: PT1H
+        expire-after-access: # Optional - no expiry by access time
+        refresh-after-write: # Optional - no refresh
+        record-stats: true
+        weak-keys: false
+        weak-values: false
+        soft-values: false
+        
+      user-cache:
+        enabled: true
+        maximum-size: 5000
+        expire-after-write: PT2H
+        record-stats: true
+        
+    # Redis-specific configuration  
+    redis:
+      default:
+        enabled: true
+        host: "localhost"
+        port: 6379
+        database: 0
+        username: # Optional
+        password: # Optional
+        connection-timeout: PT10S
+        command-timeout: PT5S
+        key-prefix: "firefly:cache"
+        default-ttl: PT1H
+        enable-keyspace-notifications: false
+        max-pool-size: 8
+        min-pool-size: 0
+        ssl: false
+        properties:
+          # Additional Redis properties can go here
+          
+      user-cache:
+        enabled: true
+        host: "redis-cluster.example.com"
+        port: 6379
+        database: 1
+        key-prefix: "firefly:user"
+        default-ttl: PT30M
+        max-pool-size: 16
+        
+      session-cache:
+        enabled: true
+        host: "localhost"
+        port: 6379
+        database: 2
+        key-prefix: "firefly:session"
+        default-ttl: PT15M
+
+# Example of different environments
+---
+spring:
+  profiles: development
+  
+firefly:
+  cache:
+    default-cache-type: CAFFEINE  # Use in-memory cache for development
+    metrics-enabled: false  # Disable metrics in dev
+    caffeine:
+      default:
+        maximum-size: 100  # Smaller cache for development
+        record-stats: false
+
+---
+spring:
+  profiles: production
+  
+firefly:
+  cache:
+    default-cache-type: REDIS  # Use Redis in production
+    metrics-enabled: true
+    health-enabled: true
+    redis:
+      default:
+        host: ${REDIS_HOST:localhost}
+        port: ${REDIS_PORT:6379}
+        password: ${REDIS_PASSWORD:}
+        max-pool-size: ${REDIS_POOL_SIZE:16}
+        ssl: true

@@ -1,0 +1,2 @@
+org.fireflyframework.cache.config.CacheAutoConfiguration
+org.fireflyframework.cache.observability.CacheObservabilityAutoConfiguration
