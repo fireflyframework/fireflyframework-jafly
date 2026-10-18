@@ -1,0 +1,3 @@
+org.fireflyframework.cqrs.config.CqrsAutoConfiguration
+org.fireflyframework.cqrs.config.CqrsActuatorAutoConfiguration
+org.fireflyframework.cqrs.config.CqrsEdaAutoConfiguration
