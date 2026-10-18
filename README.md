@@ -19,11 +19,37 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/Code_license-Apache_2.0-855414?style=flat-square" alt="Code license: Apache 2.0"></a>
 </p>
 
-Jafly adds application libraries to Spring Boot, WebFlux, and Reactor. Use its command and query buses to structure operations, then add coordination, messaging, security, or provider adapters where your service needs them.
+## The layers between Spring Boot and your business rules
 
-The framework parent and BOM manage compatible module versions. The platform uses Spring Boot 4.1.1, Spring Cloud 2025.1.3, and Java 25.
+Jafly is the Java framework in Framework by Firefly. It brings command and query buses, saga and TCC coordination, event transports, service clients, policy-based security, and observability to applications built with Spring Boot, WebFlux, and Reactor.
 
-The [first service tutorial](docs/site/getting-started.md) builds a customer onboarding service with command and query handlers, then tests it over HTTP. See [installation](docs/site/installation.md) for the current source version and registry setup.
+Spring continues to host your application, route HTTP requests, manage dependencies, and provide data access. Jafly connects application operations and provider adapters through shared contracts. Your team writes the business rules and chooses authorization, transaction boundaries, and recovery behavior.
+
+Choose the modules your service needs. The parent and independent BOM keep their versions together, while starters assemble dependencies for core, domain, data, or application services. The current platform uses Java 25, Spring Boot 4.1.1, and Spring Cloud 2025.1.3.
+
+The [first service tutorial](docs/site/getting-started.md) follows a customer onboarding application from HTTP input through a command handler, storage, and a query handler. Its source and tests live in this repository. It uses in-memory storage so you can run it without a database or broker; the module guides explain the next infrastructure choices.
+
+## What Jafly adds
+
+The documentation follows the same eight capability areas as [Jafly on Framework by Firefly](https://fireflyframework.org/frameworks/java/).
+
+| Capability | What you can build with it |
+| --- | --- |
+| [Security and identity](docs/site/modules/index.md#security-and-identity) | Map JWTs to principals, protect methods and routes, and connect identity and policy providers through shared ports. |
+| [Business operations](docs/site/modules/index.md#business-operations) | Dispatch commands and queries to typed handlers, apply configured validation and authorization, and evaluate business rules. |
+| [External services](docs/site/modules/index.md#external-services) | Call REST, SOAP, and gRPC services, send notifications, manage callbacks, and connect to the separate Agentic runtime. |
+| [Event-driven integration](docs/site/modules/index.md#event-driven-integration) | Publish and consume through Spring events, Kafka, RabbitMQ, or PostgreSQL; receive webhooks with provider-specific processing. |
+| [Domain and data](docs/site/modules/index.md#domain-and-data) | Use reactive PostgreSQL access, filtering and pagination, query caches, content storage, and optional event sourcing. |
+| [Business coordination](docs/site/modules/index.md#business-coordination) | Coordinate saga steps and compensations, try-confirm-cancel participants, and workflows with explicit application recovery policies. |
+| [Service operations](docs/site/modules/index.md#service-operations) | Configure metrics, traces, health checks, HTTP conventions, and shared configuration for your services. |
+| [Team-wide architecture](docs/site/modules/index.md#team-wide-architecture) | Adopt the parent or BOM, service-layer starters, shared kernel contracts, and plugin interfaces across a team's applications. |
+
+Use the [module catalog](docs/site/modules/index.md) to choose a library and find its configuration and examples. Read the [architecture guide](docs/site/architecture.md) before deciding which responsibilities belong in your handlers or provider adapters.
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/site/assets/diagrams/request-flow-narrow.svg">
+  <img src="docs/site/assets/diagrams/request-flow.svg" alt="An onboarding request reaches the command bus and application handler, then returns a result. Event publishing and query-cache invalidation require their own configuration." width="100%">
+</picture>
 
 ## Start with the source
 
@@ -48,18 +74,6 @@ Install the framework locally before consuming the development train from a sepa
 ```
 
 Windows users can use `mvnw.cmd`. See [installation](docs/site/installation.md) for prerequisites and setup troubleshooting, or the [first application tutorial](docs/site/getting-started.md) for a complete small application POM.
-
-## Choose your building blocks
-
-| Responsibility | Components |
-| --- | --- |
-| Application structure | [Kernel](docs/site/modules/kernel.md), [CQRS](docs/site/modules/cqrs.md), [orchestration](docs/site/modules/orchestration.md), [event sourcing](docs/site/modules/eventsourcing.md), role-specific starters |
-| Messaging and integration | [EDA](docs/site/modules/eda.md), Kafka, RabbitMQ, PostgreSQL, [HTTP client](docs/site/modules/client.md), callbacks, webhooks, agentic bridge |
-| Data and content | [R2DBC](docs/site/modules/r2dbc.md), cache stores, [ECM](docs/site/modules/ecm.md), content storage and e-signature adapters |
-| Security | API, SPI, core, WebFlux, resource server, method policy, identity providers, and authorization adapters |
-| Delivery and operations | Notifications and providers, observability, validation, configuration, and application/domain/data/core starters |
-
-Use the [module catalog](docs/site/modules/index.md) to choose a library and find its configuration and examples. Read the [architecture guide](docs/site/architecture.md) before deciding which responsibilities belong in your handlers or provider adapters.
 
 ## Add Jafly to an application
 
