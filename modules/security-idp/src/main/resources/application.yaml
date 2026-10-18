@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: fireflyframework-security-idp
+    version: 1.0.0
+    description: Identity Provider Adapter
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.flywaydb: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: testing
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: INFO
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: INFO
+    org.springframework: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
