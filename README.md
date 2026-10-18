@@ -1,3 +1,5 @@
+> **Moved to [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/eda).** Active Java development, builds, issues and releases are consolidated in [fireflyframework-jafly](https://github.com/fireflyframework/fireflyframework-jafly). Maven artifact coordinates are preserved. This repository retains the original history and release records.
+
 # Firefly Framework - Event-Driven Architecture (EDA)
 
 [![CI](https://github.com/fireflyframework/fireflyframework-eda/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-eda/actions/workflows/ci.yml)
