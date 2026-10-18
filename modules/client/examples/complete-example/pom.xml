@@ -7,7 +7,7 @@
 
     <groupId>org.fireflyframework.example</groupId>
     <artifactId>complete-example</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Common Client - Complete Example</name>
@@ -21,7 +21,7 @@
     </parent>
 
     <properties>
-        <fireflyframework.version>26.10.18</fireflyframework.version>
+        <fireflyframework.version>26.10.19</fireflyframework.version>
         <java.version>25</java.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>

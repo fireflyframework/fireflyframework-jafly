@@ -31,7 +31,7 @@ An opinionated Spring Boot starter for building data-processing microservices wi
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
     <relativePath/>
 </parent>
 
@@ -39,7 +39,7 @@ An opinionated Spring Boot starter for building data-processing microservices wi
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-starter-data</artifactId>
-        <version>26.10.18</version>
+        <version>26.10.19</version>
     </dependency>
 </dependencies>
 ```

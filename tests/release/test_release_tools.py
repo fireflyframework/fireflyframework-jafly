@@ -75,7 +75,7 @@ class ReleaseToolsTests(unittest.TestCase):
 
     def test_rejects_tag_different_from_pom(self):
         with self.assertRaisesRegex(ValueError, 'tag'):
-            self.tools.check_reactor(self.root, 'v26.10.18')
+            self.tools.check_reactor(self.root, 'v99.01.01')
 
     def test_rejects_snapshot_for_final_and_final_for_snapshot_job(self):
         with self.assertRaisesRegex(ValueError, 'SNAPSHOT'):

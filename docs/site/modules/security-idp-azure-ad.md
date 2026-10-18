@@ -24,7 +24,7 @@ Connect applicant or reviewer identity operations to the configured Entra ID or 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-idp-azure-ad</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

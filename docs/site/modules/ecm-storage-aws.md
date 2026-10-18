@@ -24,7 +24,7 @@ Store an applicant's supporting document in Amazon S3 through the ECM content po
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-storage-aws</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

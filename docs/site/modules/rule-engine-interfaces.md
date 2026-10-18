@@ -24,7 +24,7 @@ Choose the request DTO for plain YAML, encoded YAML, or a stored onboarding rule
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine-interfaces</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

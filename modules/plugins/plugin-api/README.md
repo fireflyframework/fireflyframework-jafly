@@ -20,7 +20,7 @@ Define a host extension contract for an onboarding check and implement it in an 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>plugin-api</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

@@ -24,7 +24,7 @@ If the onboarding deployment already supplies a Hazelcast instance, this provide
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache-hazelcast</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.18</version>
+        <version>26.10.19</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-web</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Web</name>

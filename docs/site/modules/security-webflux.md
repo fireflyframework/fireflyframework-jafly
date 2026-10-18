@@ -24,7 +24,7 @@ Project the authenticated reviewer into the framework principal and connect URL 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-webflux</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

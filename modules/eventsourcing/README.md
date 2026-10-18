@@ -20,7 +20,7 @@ If the product needs application history as the source of truth, model submitted
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eventsourcing</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

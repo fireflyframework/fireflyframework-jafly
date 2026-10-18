@@ -20,7 +20,7 @@ The onboarding service may need an authorized outbound call to a protected partn
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-oauth2-client</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

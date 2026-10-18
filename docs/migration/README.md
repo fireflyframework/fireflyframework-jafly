@@ -8,7 +8,7 @@ The organization inventory contained 93 repositories. The Java migration include
 
 `pom.xml` is an aggregation POM. `build/parent/pom.xml` supplies consumer build/dependency management; `build/bom/pom.xml` is independent. The parent does not import its own BOM, avoiding a model-resolution cycle. Framework dependency versions in the public parent use `fireflyframework.version`, so an application version such as `1.0.0` does not accidentally change its framework dependencies. The BOM now includes the previously omitted `fireflyframework-security-bff`.
 
-A single concrete `26.10.18` version identifies development. The version updater validates the monthly CalVer train (`YY.MM.PP`, with `PP` as the release counter) and all input XML before writing, updates framework project/parent/dependency properties, preserves external dependency versions, and ignores generated `target` directories. Existing release versions are never overwritten.
+A single concrete `26.10.19` version identifies development. The version updater validates the monthly CalVer train (`YY.MM.PP`, with `PP` as the release counter) and all input XML before writing, updates framework project/parent/dependency properties, preserves external dependency versions, and ignores generated `target` directories. Existing release versions are never overwritten.
 
 ## Boot 4 compatibility
 

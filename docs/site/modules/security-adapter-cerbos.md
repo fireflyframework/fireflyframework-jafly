@@ -24,7 +24,7 @@ A reviewer action can be checked against Cerbos when this adapter is the configu
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-adapter-cerbos</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

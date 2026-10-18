@@ -7,19 +7,19 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.18</version>
+        <version>26.10.19</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-idp-internal-db</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - IDP - Internal Database Implementation</name>
     <description>Internal database-based implementation of the Firefly IDP Adapter using R2DBC</description>
 
     <properties>
-        <fireflyframework-security-idp.version>26.10.18</fireflyframework-security-idp.version>
+        <fireflyframework-security-idp.version>26.10.19</fireflyframework-security-idp.version>
         <jjwt.version>0.13.0</jjwt.version>
     </properties>
 

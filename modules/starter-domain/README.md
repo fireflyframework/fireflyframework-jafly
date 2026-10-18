@@ -20,7 +20,7 @@ Use this dependency bundle when application submission/review grows into a domai
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-domain</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

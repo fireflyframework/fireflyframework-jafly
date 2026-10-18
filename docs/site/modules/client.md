@@ -24,7 +24,7 @@ The service may call a document-verification partner during a later onboarding s
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-client</artifactId>
-    <version>26.10.18</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 
