@@ -1,0 +1,98 @@
+/*
+ * Copyright 2024-2026 Firefly Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.data.examples.enricher;
+
+import org.fireflyframework.data.enrichment.EnricherMetadata;
+import org.fireflyframework.data.event.EnrichmentEventPublisher;
+import org.fireflyframework.data.examples.dto.CompanyProfileDTO;
+import org.fireflyframework.data.examples.dto.FinancialDataResponse;
+import org.fireflyframework.data.model.EnrichmentRequest;
+import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobTracingService;
+import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
+import org.fireflyframework.data.service.DataEnricher;
+import reactor.core.publisher.Mono;
+
+/**
+ * Example enricher that demonstrates using DataEnricher with a REST provider.
+ * This is a working example used in documentation and tests.
+ *
+ * <p>In a real implementation, you would inject a RestClient from fireflyframework-client
+ * to call the actual provider API. This example simulates the provider response.</p>
+ */
+@EnricherMetadata(
+    providerName = "Financial Data Provider",
+    type = "company-profile",
+    description = "Enriches company data with financial and corporate information",
+    version = "2.1.0",
+    tags = {"test", "example"}
+)
+public class FinancialDataEnricher
+        extends DataEnricher<CompanyProfileDTO, FinancialDataResponse, CompanyProfileDTO> {
+    
+    public FinancialDataEnricher(
+            JobTracingService tracingService,
+            JobMetricsService metricsService,
+            ResiliencyDecoratorService resiliencyService,
+            EnrichmentEventPublisher eventPublisher) {
+        super(tracingService, metricsService, resiliencyService, eventPublisher, CompanyProfileDTO.class);
+    }
+    
+    @Override
+    protected Mono<FinancialDataResponse> fetchProviderData(EnrichmentRequest request) {
+        // Automatic validation with fluent API
+        String companyId = request.requireParam("companyId");
+        
+        // In a real implementation, you would use RestClient:
+        // return restClient.get("/companies/{id}", FinancialDataResponse.class)
+        //     .withPathParam("id", companyId)
+        //     .execute();
+        
+        // For this example, simulate a provider response
+        FinancialDataResponse response = FinancialDataResponse.builder()
+                .id(companyId)
+                .businessName("Acme Corporation")
+                .primaryAddress("123 Business St, New York, NY 10001")
+                .sector("Technology")
+                .totalEmployees(500)
+                .revenue(50000000.0)
+                .ein("12-3456789")
+                .websiteUrl("https://www.acme-corp.example")
+                .build();
+        
+        return Mono.just(response);
+    }
+    
+    @Override
+    protected CompanyProfileDTO mapToTarget(FinancialDataResponse providerData) {
+        // Simple mapping - strategy is applied automatically!
+        return CompanyProfileDTO.builder()
+                .companyId(providerData.getId())
+                .name(providerData.getBusinessName())
+                .registeredAddress(providerData.getPrimaryAddress())
+                .industry(providerData.getSector())
+                .employeeCount(providerData.getTotalEmployees())
+                .annualRevenue(providerData.getRevenue())
+                .taxId(providerData.getEin())
+                .website(providerData.getWebsiteUrl())
+                .build();
+    }
+
+    // No need to implement getProviderName(), getSupportedEnrichmentTypes(), etc.
+    // They are read automatically from @EnricherMetadata annotation!
+}
+

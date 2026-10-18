@@ -1,0 +1,260 @@
+/*
+ * Copyright 2024-2026 Firefly Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.data.integration;
+
+import org.fireflyframework.data.config.DataConfiguration;
+import org.fireflyframework.data.config.JobOrchestrationProperties;
+import org.fireflyframework.data.event.JobEventPublisher;
+import org.fireflyframework.data.health.JobOrchestratorHealthIndicator;
+import org.fireflyframework.data.mapper.JobResultMapperRegistry;
+import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobTracingService;
+import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Integration test for Spring Boot auto-configuration.
+ * Tests that all auto-configured beans are properly created and configured.
+ */
+@SpringBootTest(classes = AutoConfigurationIntegrationTest.TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@TestPropertySource(properties = {
+        "spring.application.name=test-app",
+        "spring.main.allow-bean-definition-overriding=true",
+        "firefly.data.orchestration.enabled=true",
+        "firefly.data.orchestration.orchestrator-type=MOCK",
+        "firefly.data.orchestration.publish-job-events=true",
+        "firefly.data.orchestration.job-events-topic=test-job-events",
+        "firefly.data.orchestration.default-timeout=PT1H",
+        "firefly.data.orchestration.max-retries=3",
+        "firefly.data.orchestration.retry-delay=PT5S",
+        "firefly.data.orchestration.airflow.base-url=http://test-airflow:8080",
+        "firefly.data.orchestration.airflow.username=test-user",
+        "firefly.data.orchestration.airflow.password=test-pass",
+        "firefly.data.orchestration.airflow.dag-id-prefix=test_data_job",
+        "firefly.data.orchestration.observability.tracing-enabled=true",
+        "firefly.data.orchestration.observability.metrics-enabled=true",
+        "firefly.data.orchestration.observability.metric-prefix=test.firefly.data.job",
+        "firefly.data.orchestration.health-check.enabled=true",
+        "firefly.data.orchestration.health-check.timeout=PT5S",
+        "firefly.data.eda.enabled=false",
+        "firefly.data.cqrs.enabled=false",
+        "firefly.data.orchestration-engine.enabled=false"
+})
+class AutoConfigurationIntegrationTest {
+
+    @Configuration
+    @EnableConfigurationProperties({
+            JobOrchestrationProperties.class,
+            DataConfiguration.class
+    })
+    static class TestConfig {
+
+        @Bean
+        public MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
+        }
+
+        @Bean
+        public ObservationRegistry observationRegistry() {
+            return ObservationRegistry.create();
+        }
+
+        @Bean
+        public ApplicationEventPublisher applicationEventPublisher() {
+            return Mockito.mock(ApplicationEventPublisher.class);
+        }
+
+        @Bean
+        public org.fireflyframework.eda.publisher.EventPublisherFactory eventPublisherFactory() {
+            return Mockito.mock(org.fireflyframework.eda.publisher.EventPublisherFactory.class);
+        }
+
+        @Bean
+        public JobEventPublisher jobEventPublisher(ApplicationEventPublisher eventPublisher, JobOrchestrationProperties properties) {
+            return new JobEventPublisher(eventPublisher, properties);
+        }
+
+        @Bean
+        public JobMetricsService jobMetricsService(MeterRegistry meterRegistry, JobOrchestrationProperties properties) {
+            return new JobMetricsService(meterRegistry, properties);
+        }
+
+        @Bean
+        public JobTracingService jobTracingService(ObservationRegistry observationRegistry, JobOrchestrationProperties properties) {
+            return new JobTracingService(observationRegistry, properties);
+        }
+
+        @Bean
+        public ResiliencyDecoratorService resiliencyDecoratorService(JobOrchestrationProperties properties) {
+            return new ResiliencyDecoratorService(properties);
+        }
+
+        @Bean
+        public JobResultMapperRegistry jobResultMapperRegistry() {
+            return new JobResultMapperRegistry();
+        }
+
+        @Bean
+        public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
+            return new JobOrchestratorHealthIndicator(properties);
+        }
+    }
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired(required = false)
+    private JobOrchestrationProperties jobOrchestrationProperties;
+
+    @Autowired(required = false)
+    private DataConfiguration dataConfiguration;
+
+    @Test
+    void contextLoads() {
+        assertNotNull(applicationContext);
+    }
+
+    @Test
+    void jobOrchestrationProperties_ShouldBeLoadedWithCorrectValues() {
+        assertNotNull(jobOrchestrationProperties);
+        assertTrue(jobOrchestrationProperties.isEnabled());
+        assertEquals("MOCK", jobOrchestrationProperties.getOrchestratorType());
+        assertTrue(jobOrchestrationProperties.isPublishJobEvents());
+        assertEquals("test-job-events", jobOrchestrationProperties.getJobEventsTopic());
+        assertEquals(Duration.ofHours(1), jobOrchestrationProperties.getDefaultTimeout());
+        assertEquals(3, jobOrchestrationProperties.getMaxRetries());
+        assertEquals(Duration.ofSeconds(5), jobOrchestrationProperties.getRetryDelay());
+
+        // Test Airflow config
+        assertNotNull(jobOrchestrationProperties.getAirflow());
+        assertEquals("http://test-airflow:8080", jobOrchestrationProperties.getAirflow().getBaseUrl());
+        assertEquals("test-user", jobOrchestrationProperties.getAirflow().getUsername());
+        assertEquals("test-pass", jobOrchestrationProperties.getAirflow().getPassword());
+        assertEquals("test_data_job", jobOrchestrationProperties.getAirflow().getDagIdPrefix());
+
+        // Test observability config
+        assertNotNull(jobOrchestrationProperties.getObservability());
+        assertTrue(jobOrchestrationProperties.getObservability().isTracingEnabled());
+        assertTrue(jobOrchestrationProperties.getObservability().isMetricsEnabled());
+        assertEquals("test.firefly.data.job", jobOrchestrationProperties.getObservability().getMetricPrefix());
+
+        // Test health check config
+        assertNotNull(jobOrchestrationProperties.getHealthCheck());
+        assertTrue(jobOrchestrationProperties.getHealthCheck().isEnabled());
+        assertEquals(Duration.ofSeconds(5), jobOrchestrationProperties.getHealthCheck().getTimeout());
+    }
+
+    @Test
+    void dataConfiguration_ShouldBeLoadedWithCorrectValues() {
+        assertNotNull(dataConfiguration);
+
+        // EDA and CQRS are disabled in this test to avoid bean conflicts
+        assertFalse(dataConfiguration.getEda().isEnabled());
+        assertFalse(dataConfiguration.getCqrs().isEnabled());
+        assertFalse(dataConfiguration.getOrchestrationEngine().isEnabled());
+
+        // Orchestration is nested in dataConfiguration
+        assertNotNull(dataConfiguration.getOrchestration());
+        assertTrue(dataConfiguration.getOrchestration().isEnabled());
+    }
+
+    @Test
+    void jobEventPublisher_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("jobEventPublisher"));
+        JobEventPublisher jobEventPublisher = applicationContext.getBean(JobEventPublisher.class);
+        assertNotNull(jobEventPublisher);
+    }
+
+    @Test
+    void jobMetricsService_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("jobMetricsService"));
+        JobMetricsService jobMetricsService = applicationContext.getBean(JobMetricsService.class);
+        assertNotNull(jobMetricsService);
+    }
+
+    @Test
+    void jobTracingService_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("jobTracingService"));
+        JobTracingService jobTracingService = applicationContext.getBean(JobTracingService.class);
+        assertNotNull(jobTracingService);
+    }
+
+    @Test
+    void resiliencyDecoratorService_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("resiliencyDecoratorService"));
+        ResiliencyDecoratorService resiliencyService = applicationContext.getBean(ResiliencyDecoratorService.class);
+        assertNotNull(resiliencyService);
+    }
+
+    @Test
+    void jobResultMapperRegistry_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("jobResultMapperRegistry"));
+        JobResultMapperRegistry mapperRegistry = applicationContext.getBean(JobResultMapperRegistry.class);
+        assertNotNull(mapperRegistry);
+    }
+
+    @Test
+    void jobOrchestratorHealthIndicator_ShouldBeCreated() {
+        assertTrue(applicationContext.containsBean("jobOrchestratorHealthIndicator"));
+        JobOrchestratorHealthIndicator healthIndicator = applicationContext.getBean("jobOrchestratorHealthIndicator", JobOrchestratorHealthIndicator.class);
+        assertNotNull(healthIndicator);
+    }
+
+    @Test
+    void allBeansAreProperlyConfigured() {
+        // Verify that all auto-configured beans are present
+        String[] expectedBeans = {
+            "jobEventPublisher",
+            "jobMetricsService", 
+            "jobTracingService",
+            "resiliencyDecoratorService",
+            "jobResultMapperRegistry",
+            "jobOrchestratorHealthIndicator"
+        };
+
+        for (String beanName : expectedBeans) {
+            assertTrue(applicationContext.containsBean(beanName), 
+                "Bean '" + beanName + "' should be present in context");
+        }
+    }
+
+    @Test
+    void configurationsAreConsistent() {
+        // Verify that the orchestration properties in DataConfiguration match JobOrchestrationProperties
+        assertNotNull(dataConfiguration);
+        assertNotNull(jobOrchestrationProperties);
+        
+        assertEquals(jobOrchestrationProperties.isEnabled(), 
+                    dataConfiguration.getOrchestration().isEnabled());
+    }
+}

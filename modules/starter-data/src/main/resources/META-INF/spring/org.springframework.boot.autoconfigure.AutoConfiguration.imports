@@ -1,0 +1,10 @@
+org.fireflyframework.data.config.EdaAutoConfiguration
+org.fireflyframework.data.config.CqrsAutoConfiguration
+org.fireflyframework.data.config.JobOrchestrationAutoConfiguration
+org.fireflyframework.data.config.OrchestrationAutoConfiguration
+org.fireflyframework.data.config.ObservabilityAutoConfiguration
+org.fireflyframework.data.resiliency.ResiliencyAutoConfiguration
+org.fireflyframework.data.config.PersistenceAutoConfiguration
+org.fireflyframework.data.config.DataEnrichmentAutoConfiguration
+org.fireflyframework.data.config.DataQualityAutoConfiguration
+org.fireflyframework.data.config.DataLineageAutoConfiguration
