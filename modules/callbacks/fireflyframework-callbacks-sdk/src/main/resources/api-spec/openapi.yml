@@ -1,0 +1,1198 @@
+openapi: 3.0.1
+info:
+  title: common-platform-callbacks-mgmt API
+  description: common-platform-callbacks-mgmt API Documentation
+  contact:
+    name: Development Team
+    url: https://getfirefly.io
+    email: developers@getfirefly.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+  - url: http://localhost:7979
+    description: Local Development Server
+tags:
+  - name: Callback Configurations
+    description: Manage callback configurations for webhook dispatching
+  - name: Callback Executions
+    description: View callback execution history and status
+  - name: Authorized Domains
+    description: Manage authorized callback domains
+  - name: Event Subscriptions
+    description: Manage event subscriptions for dynamic callback routing
+paths:
+  /api/v1/event-subscriptions/{id}:
+    get:
+      tags:
+        - Event Subscriptions
+      summary: Get subscription by ID
+      description: Returns a specific event subscription
+      operationId: findById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscriptionDTO'
+        '404':
+          description: Subscription not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Event Subscriptions
+      summary: Update subscription
+      description: Updates an existing event subscription
+      operationId: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventSubscriptionDTO'
+        required: true
+      responses:
+        '200':
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscriptionDTO'
+        '400':
+          description: Invalid request
+        '404':
+          description: Subscription not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Event Subscriptions
+      summary: Delete subscription
+      description: Deletes an event subscription
+      operationId: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subscription deleted successfully
+        '404':
+          description: Subscription not found
+        '500':
+          description: Internal server error
+  /api/v1/callback-configurations/{id}:
+    get:
+      tags:
+        - Callback Configurations
+      summary: Get configuration by ID
+      description: Returns a specific callback configuration
+      operationId: findById_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Configuration found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackConfigurationDTO'
+        '404':
+          description: Configuration not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Callback Configurations
+      summary: Update configuration
+      description: Updates an existing callback configuration
+      operationId: update_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallbackConfigurationDTO'
+        required: true
+      responses:
+        '200':
+          description: Configuration updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackConfigurationDTO'
+        '400':
+          description: Invalid request
+        '404':
+          description: Configuration not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Callback Configurations
+      summary: Delete configuration
+      description: Deletes a callback configuration
+      operationId: delete_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Configuration deleted successfully
+        '404':
+          description: Configuration not found
+        '500':
+          description: Internal server error
+  /api/v1/authorized-domains/{id}:
+    put:
+      tags:
+        - Authorized Domains
+      summary: Update domain
+      description: Updates an authorized domain
+      operationId: update_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedDomainDTO'
+        required: true
+      responses:
+        '200':
+          description: Domain updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedDomainDTO'
+        '400':
+          description: Invalid request
+        '404':
+          description: Domain not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Authorized Domains
+      summary: Delete domain
+      description: Deletes an authorized domain
+      operationId: delete_2
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: domain
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Domain deleted successfully
+        '404':
+          description: Domain not found
+        '500':
+          description: Internal server error
+  /api/v1/event-subscriptions/filter:
+    post:
+      tags:
+        - Event Subscriptions
+      summary: Filter event subscriptions
+      description: Filters and paginates event subscriptions based on the provided criteria
+      operationId: filterSubscriptions
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestEventSubscriptionDTO'
+        required: true
+      responses:
+        '200':
+          description: Successfully retrieved filtered subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+        '400':
+          description: Invalid filter request
+        '500':
+          description: Internal server error
+  /api/v1/event-subscriptions:
+    post:
+      tags:
+        - Event Subscriptions
+      summary: Create event subscription
+      description: Creates a new event subscription
+      operationId: create
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventSubscriptionDTO'
+        required: true
+      responses:
+        '201':
+          description: Subscription created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscriptionDTO'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+  /api/v1/callback-executions/filter:
+    post:
+      tags:
+        - Callback Executions
+      summary: Filter callback executions
+      description: Filters and paginates callback executions based on the provided criteria
+      operationId: filterExecutions
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestCallbackExecutionDTO'
+        required: true
+      responses:
+        '200':
+          description: Successfully retrieved filtered executions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+        '400':
+          description: Invalid filter request
+        '500':
+          description: Internal server error
+  /api/v1/callback-configurations/filter:
+    post:
+      tags:
+        - Callback Configurations
+      summary: Filter callback configurations
+      description: Filters and paginates callback configurations based on the provided criteria
+      operationId: filterConfigurations
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestCallbackConfigurationDTO'
+        required: true
+      responses:
+        '200':
+          description: Successfully retrieved filtered configurations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+        '400':
+          description: Invalid filter request
+        '500':
+          description: Internal server error
+  /api/v1/callback-configurations:
+    post:
+      tags:
+        - Callback Configurations
+      summary: Create callback configuration
+      description: Creates a new callback configuration
+      operationId: create_1
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallbackConfigurationDTO'
+        required: true
+      responses:
+        '201':
+          description: Configuration created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackConfigurationDTO'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+  /api/v1/authorized-domains/{domain}/verify:
+    post:
+      tags:
+        - Authorized Domains
+      summary: Verify domain
+      description: Marks a domain as verified
+      operationId: verify
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: verificationMethod
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Domain verified successfully
+        '404':
+          description: Domain not found
+        '500':
+          description: Internal server error
+  /api/v1/authorized-domains/filter:
+    post:
+      tags:
+        - Authorized Domains
+      summary: Filter authorized domains
+      description: Filters and paginates authorized domains based on the provided criteria
+      operationId: filterDomains
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestAuthorizedDomainDTO'
+        required: true
+      responses:
+        '200':
+          description: Successfully retrieved filtered domains
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+        '400':
+          description: Invalid filter request
+        '500':
+          description: Internal server error
+  /api/v1/authorized-domains:
+    post:
+      tags:
+        - Authorized Domains
+      summary: Create authorized domain
+      description: Authorizes a new domain for callbacks
+      operationId: create_2
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedDomainDTO'
+        required: true
+      responses:
+        '201':
+          description: Domain created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedDomainDTO'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+  /api/v1/callback-executions/{id}:
+    get:
+      tags:
+        - Callback Executions
+      summary: Get execution by ID
+      description: Returns a specific callback execution
+      operationId: findById_1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackExecutionDTO'
+  /api/v1/callback-executions/recent:
+    get:
+      tags:
+        - Callback Executions
+      summary: List recent executions
+      description: Returns recent executions for a configuration
+      operationId: findRecent
+      parameters:
+        - name: configurationId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: duration
+          in: query
+          required: false
+          schema:
+            type: string
+            default: PT24H
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallbackExecutionDTO'
+  /api/v1/callback-executions/pending-retries:
+    get:
+      tags:
+        - Callback Executions
+      summary: List pending retries
+      description: Returns executions pending retry
+      operationId: findPendingRetries
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallbackExecutionDTO'
+  /api/v1/callback-executions/by-status:
+    get:
+      tags:
+        - Callback Executions
+      summary: List by status
+      description: Returns executions with a specific status
+      operationId: findByStatus
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - IN_PROGRESS
+              - SUCCESS
+              - FAILED_RETRYING
+              - FAILED_PERMANENT
+              - SKIPPED
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallbackExecutionDTO'
+  /api/v1/callback-executions/by-configuration/{configurationId}:
+    get:
+      tags:
+        - Callback Executions
+      summary: List by configuration
+      description: Returns executions for a specific configuration
+      operationId: findByConfiguration
+      parameters:
+        - name: configurationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallbackExecutionDTO'
+  /api/v1/callback-executions:
+    get:
+      tags:
+        - Callback Executions
+      summary: List all executions
+      description: Returns all callback executions
+      operationId: findAll
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallbackExecutionDTO'
+components:
+  schemas:
+    EventSubscriptionDTO:
+      required:
+        - connectionConfig
+        - messagingSystemType
+        - name
+        - topicOrQueue
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          maxLength: 2000
+          minLength: 0
+          type: string
+        messagingSystemType:
+          maxLength: 50
+          minLength: 1
+          type: string
+        connectionConfig:
+          type: object
+          additionalProperties:
+            type: string
+        topicOrQueue:
+          maxLength: 500
+          minLength: 1
+          type: string
+        consumerGroupId:
+          maxLength: 255
+          minLength: 0
+          type: string
+        active:
+          type: boolean
+        consumerProperties:
+          type: object
+          additionalProperties:
+            type: string
+        eventTypePatterns:
+          type: array
+          items:
+            type: string
+        maxConcurrentConsumers:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+        pollingIntervalMs:
+          maximum: 60000
+          minimum: 100
+          type: integer
+          format: int32
+        tenantId:
+          maxLength: 100
+          minLength: 0
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+        lastMessageAt:
+          type: string
+          format: date-time
+        totalMessagesReceived:
+          minimum: 0
+          type: integer
+          format: int64
+        totalMessagesFailed:
+          minimum: 0
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          maxLength: 255
+          minLength: 0
+          type: string
+        updatedBy:
+          maxLength: 255
+          minLength: 0
+          type: string
+    CallbackConfigurationDTO:
+      required:
+        - httpMethod
+        - name
+        - status
+        - subscribedEventTypes
+        - url
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          maxLength: 2000
+          minLength: 0
+          type: string
+        url:
+          maxLength: 2048
+          minLength: 0
+          pattern: ^https?://.*
+          type: string
+        httpMethod:
+          type: string
+          enum:
+            - POST
+            - PUT
+            - PATCH
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - PAUSED
+            - DISABLED
+            - FAILED
+        subscribedEventTypes:
+          maxItems: 2147483647
+          minItems: 1
+          type: array
+          items:
+            type: string
+        customHeaders:
+          type: object
+          additionalProperties:
+            type: string
+        secret:
+          maxLength: 500
+          minLength: 0
+          type: string
+        signatureEnabled:
+          type: boolean
+        signatureHeader:
+          maxLength: 100
+          minLength: 0
+          type: string
+        maxRetries:
+          maximum: 10
+          minimum: 0
+          type: integer
+          format: int32
+        retryDelayMs:
+          maximum: 300000
+          minimum: 100
+          type: integer
+          format: int32
+        retryBackoffMultiplier:
+          maximum: 10
+          exclusiveMaximum: false
+          minimum: 1
+          exclusiveMinimum: false
+          type: number
+          format: double
+        timeoutMs:
+          maximum: 300000
+          minimum: 1000
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        tenantId:
+          maxLength: 100
+          minLength: 0
+          type: string
+        filterExpression:
+          maxLength: 1000
+          minLength: 0
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+        failureThreshold:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+        failureCount:
+          minimum: 0
+          type: integer
+          format: int32
+        lastSuccessAt:
+          type: string
+          format: date-time
+        lastFailureAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          maxLength: 255
+          minLength: 0
+          type: string
+        updatedBy:
+          maxLength: 255
+          minLength: 0
+          type: string
+    AuthorizedDomainDTO:
+      required:
+        - domain
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        domain:
+          maxLength: 255
+          minLength: 1
+          type: string
+        organization:
+          maxLength: 255
+          minLength: 0
+          type: string
+        contactEmail:
+          maxLength: 255
+          minLength: 0
+          type: string
+        verified:
+          type: boolean
+        verificationMethod:
+          maxLength: 50
+          minLength: 0
+          type: string
+        verificationToken:
+          maxLength: 500
+          minLength: 0
+          type: string
+        verifiedAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+        allowedPaths:
+          type: array
+          items:
+            type: string
+        maxCallbacksPerMinute:
+          maximum: 10000
+          minimum: 1
+          type: integer
+          format: int32
+        ipWhitelist:
+          type: array
+          items:
+            type: string
+        requireHttps:
+          type: boolean
+        tenantId:
+          maxLength: 100
+          minLength: 0
+          type: string
+        notes:
+          maxLength: 2000
+          minLength: 0
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+        expiresAt:
+          type: string
+          format: date-time
+        lastCallbackAt:
+          type: string
+          format: date-time
+        totalCallbacks:
+          minimum: 0
+          type: integer
+          format: int64
+        totalFailed:
+          minimum: 0
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        authorizedBy:
+          maxLength: 255
+          minLength: 0
+          type: string
+    FilterRequestEventSubscriptionDTO:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties:
+            type: object
+        search:
+          type: string
+    PaginationResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    FilterRequestCallbackExecutionDTO:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties:
+            type: object
+        search:
+          type: string
+    FilterRequestCallbackConfigurationDTO:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties:
+            type: object
+        search:
+          type: string
+    FilterRequestAuthorizedDomainDTO:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties:
+            type: object
+        search:
+          type: string
+    CallbackExecutionDTO:
+      required:
+        - status
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        configurationId:
+          type: string
+          format: uuid
+        eventType:
+          maxLength: 255
+          minLength: 0
+          type: string
+        sourceEventId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - PENDING
+            - IN_PROGRESS
+            - SUCCESS
+            - FAILED_RETRYING
+            - FAILED_PERMANENT
+            - SKIPPED
+        requestPayload:
+          type: object
+          additionalProperties:
+            type: object
+        responseStatusCode:
+          maximum: 599
+          minimum: 100
+          type: integer
+          format: int32
+        responseBody:
+          maxLength: 10000
+          minLength: 0
+          type: string
+        requestHeaders:
+          type: object
+          additionalProperties:
+            type: string
+        responseHeaders:
+          type: object
+          additionalProperties:
+            type: string
+        attemptNumber:
+          minimum: 0
+          type: integer
+          format: int32
+        maxAttempts:
+          maximum: 10
+          minimum: 0
+          type: integer
+          format: int32
+        errorMessage:
+          maxLength: 2000
+          minLength: 0
+          type: string
+        errorStackTrace:
+          maxLength: 10000
+          minLength: 0
+          type: string
+        requestDurationMs:
+          minimum: 0
+          type: integer
+          format: int64
+        nextRetryAt:
+          type: string
+          format: date-time
+        executedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties:
+            type: object

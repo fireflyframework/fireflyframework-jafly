@@ -1,0 +1,70 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  
+  application:
+    name: common-platform-callbacks-mgmt-test
+  
+  r2dbc:
+    url: r2dbc:tc:postgresql:///testdb?TC_IMAGE_TAG=16-alpine
+    username: test
+    password: test
+  
+  # Flyway needs JDBC URL, will be set dynamically in test
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Firefly Callbacks Configuration
+firefly:
+  callbacks:
+    # listener configuration removed - now using dynamic listeners from database
+    
+    dispatcher:
+      thread-pool-size: 5
+      default-timeout-ms: 5000
+      follow-redirects: false
+    
+    circuit-breaker:
+      failure-rate-threshold: 50
+      sliding-window-size: 10
+      wait-duration-in-open-state-ms: 1000
+    
+    retry:
+      max-attempts: 2
+      initial-delay-ms: 100
+      max-delay-ms: 1000
+      multiplier: 2.0
+  
+  # EDA Consumer Configuration
+  eda:
+    consumer:
+      enabled: true
+      group-id: test-consumer-group
+    consumers:
+      kafka:
+        default:
+          enabled: true
+          bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+          properties:
+            auto.offset.reset: earliest
+            enable.auto.commit: false
+    
+logging:
+  level:
+    org.fireflyframework.callbacks: DEBUG
+    org.fireflyframework.common.eda: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    org.testcontainers: INFO

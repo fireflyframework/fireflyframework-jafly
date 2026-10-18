@@ -1,0 +1,209 @@
+spring:
+  application:
+    name: common-platform-callbacks-mgmt
+
+  # Allow bean definition overriding for lib-common-eda
+  main:
+    allow-bean-definition-overriding: true
+
+  # Lifecycle Configuration
+  lifecycle:
+    timeout-per-shutdown-phase: 30s  # Wait up to 30s for graceful shutdown
+
+  # WebFlux Configuration
+  webflux:
+    base-path: /
+
+  # R2DBC Configuration
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:callbacks_db}
+    username: ${DB_USERNAME:firefly}
+    password: ${DB_PASSWORD:firefly}
+    pool:
+      initial-size: 10
+      max-size: 50
+      max-idle-time: 30m
+
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  http2:
+    enabled: ${SERVER_HTTP2_ENABLED:true}
+  shutdown: graceful  # Enable graceful shutdown
+
+# Management & Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      # Enable liveness and readiness probes
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    # Enable liveness and readiness indicators
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+  # Micrometer / Metrics Configuration
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        callbacks.processing.time: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:local}
+
+  # Distributed Tracing Configuration (OpenTelemetry)
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}  # Sample 100% of requests (adjust for production)
+
+  # OpenTelemetry Configuration
+  otlp:
+    tracing:
+      endpoint: ${MANAGEMENT_OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}  # OTLP HTTP endpoint
+
+# Firefly Configuration
+firefly:
+  # Callbacks Configuration
+  callbacks:
+    # Event listener configuration - topics loaded dynamically from DB
+    listener:
+      # Comma-separated list of topics to listen to
+      # This is populated at startup from EventSubscriptions in database
+      # Format: topic1,topic2,topic3 or use wildcards: *, customer.*, etc.
+      topics: ${CALLBACK_LISTENER_TOPICS:*}
+      group-id: ${CALLBACK_LISTENER_GROUP_ID:callbacks-mgmt-consumer}
+
+    # Dispatcher configuration
+    dispatcher:
+      # Thread pool for HTTP callbacks
+      thread-pool-size: ${CALLBACK_DISPATCHER_THREADS:20}
+      # Default timeout for HTTP requests (ms)
+      default-timeout-ms: ${CALLBACK_DEFAULT_TIMEOUT:30000}
+      # Whether to follow redirects
+      follow-redirects: ${CALLBACK_FOLLOW_REDIRECTS:false}
+
+    # Circuit breaker configuration
+    circuit-breaker:
+      failure-rate-threshold: ${CALLBACK_CB_FAILURE_RATE:50}
+      slow-call-rate-threshold: ${CALLBACK_CB_SLOW_CALL_RATE:50}
+      slow-call-duration-threshold-ms: ${CALLBACK_CB_SLOW_DURATION:10000}
+      sliding-window-size: ${CALLBACK_CB_WINDOW_SIZE:100}
+      minimum-number-of-calls: ${CALLBACK_CB_MIN_CALLS:10}
+      wait-duration-in-open-state-ms: ${CALLBACK_CB_WAIT_DURATION:60000}
+
+    # Retry configuration
+    retry:
+      max-attempts: ${CALLBACK_RETRY_MAX_ATTEMPTS:3}
+      initial-delay-ms: ${CALLBACK_RETRY_INITIAL_DELAY:1000}
+      max-delay-ms: ${CALLBACK_RETRY_MAX_DELAY:60000}
+      multiplier: ${CALLBACK_RETRY_MULTIPLIER:2.0}
+
+    # Security
+    signature:
+      algorithm: ${CALLBACK_SIGNATURE_ALGORITHM:HmacSHA256}
+      header-name: ${CALLBACK_SIGNATURE_HEADER:X-Firefly-Signature}
+
+  # EDA Configuration
+  eda:
+    enabled: true
+    default-serialization-format: ${FIREFLY_EDA_SERIALIZATION_FORMAT:json}
+    metrics-enabled: ${FIREFLY_EDA_METRICS_ENABLED:true}
+    health-enabled: ${FIREFLY_EDA_HEALTH_ENABLED:true}
+
+    # Consumers Configuration
+    consumer:
+      enabled: true
+      # Kafka Consumer (Primary)
+      kafka:
+        default:
+          enabled: true
+          bootstrap-servers: ${FIREFLY_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+          properties:
+            group.id: ${KAFKA_CONSUMER_GROUP:callbacks-mgmt-consumer}
+            auto.offset.reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
+            enable.auto.commit: ${KAFKA_AUTO_COMMIT:false}
+            max.poll.records: ${KAFKA_MAX_POLL_RECORDS:100}
+            session.timeout.ms: 30000
+            heartbeat.interval.ms: 10000
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker Configuration
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50  # Open circuit if 50% of calls fail
+        slow-call-rate-threshold: 50  # Open circuit if 50% of calls are slow
+        slow-call-duration-threshold: 5s  # Call is slow if > 5s
+        wait-duration-in-open-state: 30s  # Wait 30s before half-open
+        permitted-number-of-calls-in-half-open-state: 5  # Allow 5 calls in half-open
+        minimum-number-of-calls: 10  # Need 10 calls before calculating rates
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20  # Use last 20 calls for rate calculation
+        record-exceptions:
+          - java.lang.Exception
+    instances:
+      callbackDispatcher:
+        base-config: default
+        register-health-indicator: true
+
+  # Time Limiter Configuration
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s  # Timeout after 10 seconds
+        cancel-running-future: true
+    instances:
+      callbackDispatcher:
+        base-config: default
+
+# OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: true
+  packages-to-scan: org.fireflyframework.callbacks.web.controller
+  paths-to-match: /api/**
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.fireflyframework.callbacks: DEBUG
+    org.fireflyframework.common.eda: DEBUG
+    org.springframework.data.r2dbc: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
