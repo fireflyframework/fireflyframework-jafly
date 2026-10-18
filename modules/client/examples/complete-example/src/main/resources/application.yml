@@ -1,0 +1,83 @@
+# Firefly Common Client - Complete Example Configuration
+
+spring:
+  application:
+    name: firefly-example-app
+
+# Firefly Service Client Configuration
+firefly:
+  service-client:
+    # Environment: DEVELOPMENT, STAGING, PRODUCTION
+    environment: DEVELOPMENT
+    
+    # REST Client Configuration
+    rest:
+      default-timeout: 30s
+      max-connections: 100
+      logging-enabled: true
+    
+    # gRPC Client Configuration
+    grpc:
+      default-timeout: 30s
+      use-plaintext-by-default: true
+    
+    # SOAP Client Configuration
+    soap:
+      default-timeout: 60s
+      wsdl-cache-enabled: true
+      wsdl-cache-expiration: 1h
+    
+    # Circuit Breaker Configuration
+    circuit-breaker:
+      failure-rate-threshold: 50.0
+      minimum-number-of-calls: 10
+      sliding-window-size: 20
+      wait-duration-in-open-state: 60s
+    
+    # Security Configuration
+    security:
+      tls-enabled: false
+      # Uncomment for production with TLS
+      # trust-store-path: ${TRUST_STORE_PATH}
+      # trust-store-password: ${TRUST_STORE_PASSWORD}
+      # key-store-path: ${KEY_STORE_PATH}
+      # key-store-password: ${KEY_STORE_PASSWORD}
+
+# OAuth2 Configuration (for OAuth2ExampleService)
+oauth2:
+  token-endpoint: https://auth.example.com/oauth/token
+  client-id: demo-client
+  client-secret: demo-secret
+
+# Spring Boot Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.fireflyframework.client: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Server Configuration
+server:
+  port: 8080
+

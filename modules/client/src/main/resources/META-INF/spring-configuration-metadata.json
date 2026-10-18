@@ -1,0 +1,193 @@
+{
+  "groups": [
+    {
+      "name": "firefly.service-client",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "Configuration properties for Firefly Service Client framework."
+    },
+    {
+      "name": "firefly.service-client.rest",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties$Rest",
+      "sourceType": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "REST client configuration properties."
+    },
+    {
+      "name": "firefly.service-client.grpc",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties$Grpc",
+      "sourceType": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "gRPC client configuration properties."
+    },
+    {
+      "name": "firefly.service-client.soap",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties$Soap",
+      "sourceType": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "SOAP client configuration properties."
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties$CircuitBreaker",
+      "sourceType": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "Circuit breaker configuration properties."
+    },
+    {
+      "name": "firefly.service-client.security",
+      "type": "org.fireflyframework.client.config.ServiceClientProperties$Security",
+      "sourceType": "org.fireflyframework.client.config.ServiceClientProperties",
+      "description": "Security configuration properties."
+    }
+  ],
+  "properties": [
+    {
+      "name": "firefly.service-client.environment",
+      "type": "java.lang.String",
+      "description": "Environment name (DEVELOPMENT, STAGING, PRODUCTION).",
+      "defaultValue": "DEVELOPMENT"
+    },
+    {
+      "name": "firefly.service-client.rest.default-timeout",
+      "type": "java.time.Duration",
+      "description": "Default timeout for REST requests.",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "firefly.service-client.rest.max-connections",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of HTTP connections.",
+      "defaultValue": 100
+    },
+    {
+      "name": "firefly.service-client.rest.logging-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable request/response logging for REST clients.",
+      "defaultValue": false
+    },
+    {
+      "name": "firefly.service-client.grpc.default-timeout",
+      "type": "java.time.Duration",
+      "description": "Default timeout for gRPC requests.",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "firefly.service-client.grpc.use-plaintext-by-default",
+      "type": "java.lang.Boolean",
+      "description": "Use plaintext (no TLS) for gRPC connections by default.",
+      "defaultValue": true
+    },
+    {
+      "name": "firefly.service-client.soap.default-timeout",
+      "type": "java.time.Duration",
+      "description": "Default timeout for SOAP requests.",
+      "defaultValue": "60s"
+    },
+    {
+      "name": "firefly.service-client.soap.wsdl-cache-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable WSDL caching.",
+      "defaultValue": true
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker.failure-rate-threshold",
+      "type": "java.lang.Double",
+      "description": "Failure rate threshold percentage (0-100) to open circuit.",
+      "defaultValue": 50.0
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker.minimum-number-of-calls",
+      "type": "java.lang.Integer",
+      "description": "Minimum number of calls before calculating failure rate.",
+      "defaultValue": 10
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker.sliding-window-size",
+      "type": "java.lang.Integer",
+      "description": "Size of the sliding window for failure rate calculation.",
+      "defaultValue": 20
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker.wait-duration-in-open-state",
+      "type": "java.time.Duration",
+      "description": "Wait duration in open state before transitioning to half-open.",
+      "defaultValue": "60s"
+    },
+    {
+      "name": "firefly.service-client.security.tls-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable TLS/SSL for service clients.",
+      "defaultValue": false
+    },
+    {
+      "name": "firefly.service-client.security.trust-store-path",
+      "type": "java.lang.String",
+      "description": "Path to the trust store file."
+    },
+    {
+      "name": "firefly.service-client.security.trust-store-password",
+      "type": "java.lang.String",
+      "description": "Password for the trust store."
+    },
+    {
+      "name": "firefly.service-client.security.key-store-path",
+      "type": "java.lang.String",
+      "description": "Path to the key store file (for mTLS)."
+    },
+    {
+      "name": "firefly.service-client.security.key-store-password",
+      "type": "java.lang.String",
+      "description": "Password for the key store."
+    }
+  ],
+  "hints": [
+    {
+      "name": "firefly.service-client.environment",
+      "values": [
+        {
+          "value": "DEVELOPMENT",
+          "description": "Development environment with verbose logging."
+        },
+        {
+          "value": "STAGING",
+          "description": "Staging environment for pre-production testing."
+        },
+        {
+          "value": "PRODUCTION",
+          "description": "Production environment with optimized settings."
+        }
+      ]
+    },
+    {
+      "name": "firefly.service-client.rest.default-timeout",
+      "values": [
+        {
+          "value": "10s",
+          "description": "10 seconds - for fast APIs"
+        },
+        {
+          "value": "30s",
+          "description": "30 seconds - default timeout"
+        },
+        {
+          "value": "60s",
+          "description": "60 seconds - for slow APIs"
+        }
+      ]
+    },
+    {
+      "name": "firefly.service-client.circuit-breaker.failure-rate-threshold",
+      "values": [
+        {
+          "value": "25.0",
+          "description": "25% - aggressive circuit breaking"
+        },
+        {
+          "value": "50.0",
+          "description": "50% - balanced (default)"
+        },
+        {
+          "value": "75.0",
+          "description": "75% - lenient circuit breaking"
+        }
+      ]
+    }
+  ]
+}
+
