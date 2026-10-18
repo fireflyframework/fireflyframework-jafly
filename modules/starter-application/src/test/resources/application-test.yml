@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: lib-common-application-test
+  main:
+    banner-mode: off
+    
+firefly:
+  application:
+    security:
+      enabled: true
+      use-security-center: false
+    context:
+      cache-enabled: false
+      cache-ttl: 60
+    metadata:
+      auto-discover: true
+
+logging:
+  level:
+    org.fireflyframework.application: DEBUG
+    org.springframework: WARN

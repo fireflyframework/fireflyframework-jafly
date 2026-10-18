@@ -1,0 +1,215 @@
+/*
+ * Copyright 2024-2026 Firefly Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.common.application.config;
+
+import org.fireflyframework.common.application.actuator.FireflyApplicationInfoContributor;
+import org.fireflyframework.common.application.aop.SecurityAspect;
+import org.fireflyframework.common.application.context.AppMetadata;
+import org.fireflyframework.common.application.health.ApplicationLayerHealthIndicator;
+import org.fireflyframework.common.application.resolver.ConfigResolver;
+import org.fireflyframework.common.application.resolver.ContextResolver;
+import org.fireflyframework.common.application.resolver.DefaultConfigResolver;
+import org.fireflyframework.common.application.resolver.DefaultContextResolver;
+import org.fireflyframework.common.application.security.DefaultSecurityAuthorizationService;
+import org.fireflyframework.common.application.security.EndpointSecurityRegistry;
+import org.fireflyframework.common.application.security.JwtClaimsRoleExtractor;
+import org.fireflyframework.common.application.security.SecurityAuthorizationService;
+import org.fireflyframework.security.spi.SecurityContextPort;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+/**
+ * Auto-configuration for the Application Layer.
+ * Automatically registers beans and enables AOP for security annotations.
+ *
+ * <p>This configuration is automatically loaded by Spring Boot when the library
+ * is on the classpath.</p>
+ *
+ * <p>Infrastructure Features Enabled:</p>
+ * <ul>
+ *   <li>Security AOP (@Secure annotation processing)</li>
+ *   <li>Context Resolution (ContextResolver, ConfigResolver)</li>
+ *   <li>Caching (via lib-common-cache)</li>
+ *   <li>CQRS Support (via lib-common-cqrs)</li>
+ *   <li>Event-Driven Architecture (via lib-common-eda)</li>
+ *   <li>Health Checks (ApplicationLayerHealthIndicator)</li>
+ *   <li>Structured Logging (JSON logging via logback-spring.xml)</li>
+ *   <li>Banner (Firefly Application Layer banner)</li>
+ * </ul>
+ *
+ * <p>The request context is projected from the <strong>validated</strong> security principal
+ * exposed by the {@code fireflyframework-security} platform ({@link SecurityContextPort}). When a
+ * {@link SecurityContextPort} bean is present the library wires a {@link DefaultContextResolver};
+ * otherwise an application may contribute its own {@link ContextResolver}.</p>
+ *
+ * @author Firefly Development Team
+ * @since 1.0.0
+ */
+@AutoConfiguration
+@EnableConfigurationProperties(ApplicationLayerProperties.class)
+@EnableAspectJAutoProxy
+@EnableCaching
+@Slf4j
+public class ApplicationLayerAutoConfiguration {
+
+    public ApplicationLayerAutoConfiguration() {
+        log.info("========================================");
+        log.info("Initializing Firefly Application Layer");
+        log.info("Library: lib-common-application");
+        log.info("Layer: Business Process Orchestration");
+        log.info("Features: Context, Security, Config, Cache, CQRS, EDA");
+        log.info("========================================");
+    }
+
+    /**
+     * Creates the endpoint security registry bean.
+     *
+     * @return EndpointSecurityRegistry instance
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public EndpointSecurityRegistry endpointSecurityRegistry() {
+        log.info("Creating EndpointSecurityRegistry bean");
+        return new EndpointSecurityRegistry();
+    }
+
+    /**
+     * Creates the JWT claims role extractor bean.
+     * Extracts roles and permissions from JWT token claims using configurable paths.
+     *
+     * @param properties the application layer properties
+     * @return JwtClaimsRoleExtractor instance
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public JwtClaimsRoleExtractor jwtClaimsRoleExtractor(ApplicationLayerProperties properties) {
+        log.info("Creating JwtClaimsRoleExtractor bean (rolesPath={}, permissionsPath={})",
+                properties.getSecurity().getJwtRolesClaimPath(),
+                properties.getSecurity().getJwtPermissionsClaimPath());
+        return new JwtClaimsRoleExtractor(
+                properties.getSecurity().getJwtRolesClaimPath(),
+                properties.getSecurity().getJwtPermissionsClaimPath());
+    }
+
+    /**
+     * Banner configuration bean.
+     * Ensures the Firefly Application Layer banner is displayed.
+     *
+     * @return ApplicationLayerBannerConfig instance
+     */
+    @ConditionalOnMissingBean
+    @Bean
+    @ConditionalOnProperty(name = "firefly.application.banner.enabled", matchIfMissing = true)
+    public ApplicationLayerBannerConfig applicationLayerBannerConfig() {
+        log.debug("Enabling Firefly Application Layer banner");
+        return new ApplicationLayerBannerConfig();
+    }
+
+    /**
+     * Creates the Application Layer health indicator bean.
+     *
+     * @return ApplicationLayerHealthIndicator instance
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ApplicationLayerHealthIndicator applicationLayerHealthIndicator() {
+        log.info("Creating ApplicationLayerHealthIndicator bean");
+        return new ApplicationLayerHealthIndicator();
+    }
+
+    /**
+     * Creates the security aspect bean for processing @Secure annotations.
+     *
+     * @param authorizationService the security authorization service
+     * @param endpointSecurityRegistry the endpoint security registry
+     * @return SecurityAspect instance
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public SecurityAspect securityAspect(SecurityAuthorizationService authorizationService,
+                                         EndpointSecurityRegistry endpointSecurityRegistry,
+                                         ApplicationLayerProperties properties) {
+        log.info("Creating SecurityAspect bean (enforce={})", properties.getSecurity().isEnforce());
+        return new SecurityAspect(authorizationService, endpointSecurityRegistry, properties);
+    }
+
+    /**
+     * Creates the default context resolver bean.
+     *
+     * <p>Wired only when a {@link SecurityContextPort} bean is available (typically contributed by the
+     * {@code fireflyframework-security} platform). The resolver projects the request context from the
+     * validated security principal — no trusted transport header is read.</p>
+     *
+     * @param securityContextPort the platform-provided accessor for the current validated principal
+     * @return DefaultContextResolver instance
+     */
+    @Bean
+    @ConditionalOnBean(SecurityContextPort.class)
+    @ConditionalOnMissingBean(ContextResolver.class)
+    public DefaultContextResolver defaultContextResolver(SecurityContextPort securityContextPort) {
+        log.info("Creating DefaultContextResolver bean (backed by SecurityContextPort)");
+        return new DefaultContextResolver(securityContextPort);
+    }
+
+    /**
+     * Creates the default config resolver bean.
+     *
+     * @return DefaultConfigResolver instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(ConfigResolver.class)
+    public DefaultConfigResolver defaultConfigResolver() {
+        log.info("Creating DefaultConfigResolver bean");
+        return new DefaultConfigResolver();
+    }
+
+    /**
+     * Creates the default security authorization service bean.
+     *
+     * <p>Authorization is evaluated solely from the roles and permissions already resolved into the
+     * {@link org.fireflyframework.common.application.context.AppContext}.</p>
+     *
+     * @return DefaultSecurityAuthorizationService instance
+     */
+    @Bean
+    @ConditionalOnMissingBean(SecurityAuthorizationService.class)
+    public DefaultSecurityAuthorizationService defaultSecurityAuthorizationService() {
+        log.info("Creating DefaultSecurityAuthorizationService bean");
+        return new DefaultSecurityAuthorizationService();
+    }
+
+    /**
+     * Creates the Firefly application info contributor bean for the actuator info endpoint.
+     *
+     * @param appMetadata the application metadata
+     * @return FireflyApplicationInfoContributor instance
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public FireflyApplicationInfoContributor fireflyApplicationInfoContributor(AppMetadata appMetadata) {
+        log.info("Creating FireflyApplicationInfoContributor bean");
+        return new FireflyApplicationInfoContributor(appMetadata);
+    }
+
+}

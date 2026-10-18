@@ -1,0 +1,40 @@
+# Firefly Application Layer Configuration
+# This configuration file provides defaults for lib-common-application
+
+# Cache Configuration (using lib-common-cache)
+firefly:
+  cache:
+    enabled: true
+    default-cache-type: CAFFEINE  # Use in-memory cache by default (Redis available if dependencies present)
+    metrics-enabled: true
+    health-enabled: true
+    
+    # Caffeine (in-memory) configuration
+    caffeine:
+      cache-name: application-layer
+      enabled: true
+      key-prefix: "firefly:application"  # Prefix for all cache keys (follows Firefly naming conventions)
+      maximum-size: 1000                 # Maximum number of cached configurations
+      expire-after-write: PT1H           # Tenant configs expire after 1 hour
+      record-stats: true                 # Enable cache statistics
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    defaults:
+      enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    org.fireflyframework.common.application: INFO
+    org.fireflyframework.cache: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
