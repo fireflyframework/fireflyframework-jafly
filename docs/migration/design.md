@@ -1,0 +1,25 @@
+# Jafly monorepo migration design
+
+User instruction: migrate everything autonomously. Audit scope is the 93 repositories returned by the authenticated GitHub organization inventory. Move the 63 Java framework repositories (86 POM files including examples) into fireflyframework-jafly; retain separate Python, PHP, Agentic, Go, Rust, .NET, frontend frameworks and ecosystem products.
+
+## Architecture and compatibility
+
+Use a Maven 3.9 reactor at the repository root. Keep the published org.fireflyframework group and every existing artifactId, package, resource, test, license and notice. Put standalone parent and BOM at build/parent and build/bom; put 61 other source repositories at modules/<repository name without fireflyframework->. Preserve their internal multimodule layouts and examples. Root aggregator is org.fireflyframework:fireflyframework-jafly:pom. Standalone parent never imports a BOM that references child artifacts; independent BOM is safe for clients that keep another parent. Copy the framework catalog into parent dependencyManagement using a dedicated concrete fireflyframework.version property, not consuming application's project.version. BOM independently manages every publishable library including security-bff; examples are excluded from publication, not import.
+
+Use one concrete release-train version, initially 26.10.17-SNAPSHOT, preserving established padded CalVer. No rewriting existing 26.07.06 releases. A tested version update tool updates all local framework project/parent/internal dependency versions and the shared property. Release requires exact tag v<version>, non-SNAPSHOT version, successful full verification, deterministic publication inventory. Keep Maven 3 and Java 25; do not mix a toolchain migration into this work.
+
+## History and completeness
+
+Clone source mirrors without shallow history. Import each pinned default branch using an unsquashed subtree merge, preserving original commit identities and ancestry. Keep namespaced original branches and tags (legacy/<repository>/<ref>) in destination. Record source default branch, HEAD, all ref objects and source-to-destination path mapping in docs/migration/source-manifest.json. Before any edits verify imported trees byte-for-byte including executable/symlink modes. Preserve original repo metadata/issues/PR/release pointers in migration evidence; these GitHub records remain at their original URLs. Never delete source repositories or tags. Preserve non-default branches under legacy rather than merging divergent/unreviewed code into main.
+
+## Build and CI
+
+Resolve every local parent via correct relativePath and every internal artifact through the reactor; do not depend on previously published GitHub Packages for internal build inputs. Root validation includes complete reactor discovery, dependency/version/BOM coverage checks, import integrity accounting, unit tests and integration tests. Keep all source content; obsolete nested workflows remain historical and inert. Root is the only authoritative active Java CI/release entry point. CI runs for PR, push and dispatch, with an always-running required check, JDK25, Maven cache, explicit test report upload and no path-skipped required workflow. First establish full reactor verify before optimization. Release workflows verify the same commit, attach source/Javadoc/JAR/POM manifest and checksums, deploy full reactor to GitHub Packages, deploy and confirm Central independently, and create immutable release without delete/recreate or accepting uncertain publication as success. Secrets are inherited organization credentials by name; never access secret values or vault content. Do not trigger stable publication until actual build and credential preflight pass.
+
+## Cutover
+
+Create new repository with existing source visibility and license. Publish verified code and all historical refs; verify remote SHA, source commit reachability, tags, inventory, CI and clean external consumer (BOM import and parent inheritance) from fresh local artifact repository. Update organization Java orchestrator, CLI repository/DAG definitions, organization profile, website/book/tooling active source references that need it. Preserve older links and compatibility coordinates. Switch old Java default-branch workflows to explicit migration notices/redirected CI only after destination verification; stop duplicate publication. Source archives are optional after accepted cutover, never used to hide failures. Record source drift and do a final comparison before cutover. Rollback keeps old refs/workflows reachable and current released artifacts immutable.
+
+## Completion evidence
+
+Report source import completeness, tests/build, workflow lint, independent review, remote ref proof, live Actions, artifact publication and downstream cutover separately. Do not claim Maven Central publication without exact public artifact downloads/digests. Known pre-existing failures are investigated and fixed within migration scope or named as blockers. No databases/services modified.
