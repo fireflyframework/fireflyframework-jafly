@@ -95,3 +95,10 @@ class MigrationContractTest(unittest.TestCase):
     def test_consumer_parent_does_not_add_runtime_libraries(self):
         parent = read(ROOT / 'build/parent/pom.xml')
         self.assertEqual([], parent.findall('m:dependencies/m:dependency', NS), 'A build-management parent must not force runtime libraries into every consumer and foundation module')
+
+    def test_parent_and_bom_publish_the_same_framework_catalog(self):
+        catalogs = []
+        for name in ['parent', 'bom']:
+            pom = read(ROOT / 'build' / name / 'pom.xml')
+            catalogs.append({(value(d, 'artifactId'), value(d, 'version'), value(d, 'type') or 'jar') for d in pom.findall('m:dependencyManagement/m:dependencies/m:dependency', NS) if value(d, 'groupId') == 'org.fireflyframework'})
+        self.assertEqual(catalogs[0], catalogs[1], 'The consumer parent and independent BOM must select the same framework artifacts')
