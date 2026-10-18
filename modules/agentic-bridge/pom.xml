@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.fireflyframework</groupId>
+        <artifactId>fireflyframework-parent</artifactId>
+        <version>26.07.06</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-agentic-bridge</artifactId>
+    <version>26.07.06</version>
+    <packaging>pom</packaging>
+
+    <name>Firefly Framework - Agentic Bridge</name>
+    <description>Reactive Java integration layer between the Firefly Framework (Spring Boot, WebFlux, Reactor)
+        and fireflyframework-agentic, the Python GenAI metaframework. Provides typed REST/SSE/WebSocket clients,
+        Kafka/RabbitMQ/Redis publishers, conversation management, observability, and Spring Boot
+        auto-configuration for first-class Java to agent integration.</description>
+
+    <url>https://github.com/fireflyframework/fireflyframework-agentic-bridge</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Firefly Software Foundation</name>
+            <email>dev@fireflyframework.org</email>
+            <organization>Firefly Software Foundation</organization>
+            <organizationUrl>https://fireflyframework.org</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/fireflyframework/fireflyframework-agentic-bridge.git</connection>
+        <developerConnection>scm:git:ssh://github.com:fireflyframework/fireflyframework-agentic-bridge.git</developerConnection>
+        <url>https://github.com/fireflyframework/fireflyframework-agentic-bridge</url>
+    </scm>
+
+    <modules>
+        <module>fireflyframework-agentic-bridge-core</module>
+        <module>fireflyframework-agentic-bridge-autoconfigure</module>
+        <module>fireflyframework-agentic-bridge-starter</module>
+        <module>fireflyframework-agentic-bridge-samples</module>
+    </modules>
+
+    <properties>
+        <reactor-kafka.version>1.3.23</reactor-kafka.version>
+        <reactor-rabbitmq.version>1.5.6</reactor-rabbitmq.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Reactor Kafka and RabbitMQ (versions not in Spring Boot BOM) -->
+            <dependency>
+                <groupId>io.projectreactor.kafka</groupId>
+                <artifactId>reactor-kafka</artifactId>
+                <version>${reactor-kafka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor.rabbitmq</groupId>
+                <artifactId>reactor-rabbitmq</artifactId>
+                <version>${reactor-rabbitmq.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

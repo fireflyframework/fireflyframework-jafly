@@ -1,0 +1,20 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 26.04.01)'
+        required: true
+        type: string
+jobs:
+  release:
+    uses: fireflyframework/.github/.github/workflows/java-release.yml@main
+    permissions:
+      packages: write
+      contents: write
+    with:
+      java-version: '25'
+    secrets: inherit

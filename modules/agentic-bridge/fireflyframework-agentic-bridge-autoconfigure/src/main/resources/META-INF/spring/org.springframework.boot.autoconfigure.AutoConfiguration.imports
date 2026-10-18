@@ -1,0 +1,2 @@
+org.fireflyframework.agentic.bridge.autoconfigure.AgenticBridgeAutoConfiguration
+org.fireflyframework.agentic.bridge.autoconfigure.AgenticBridgeHealthAutoConfiguration

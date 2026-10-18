@@ -1,0 +1,33 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: fireflyframework-agentic-bridge-sample
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+firefly:
+  agentic-bridge:
+    enabled: true
+    primary:
+      name: primary
+      base-url: ${AGENTIC_BASE_URL:http://localhost:8000}
+      response-timeout: 60s
+      auth:
+        type: ${AGENTIC_AUTH_TYPE:NONE}
+        api-key: ${AGENTIC_API_KEY:}
+        token: ${AGENTIC_TOKEN:}
+      retry:
+        max-attempts: 3
+        initial-backoff: 250ms
+      circuit-breaker:
+        enabled: false
+    publishers: {}

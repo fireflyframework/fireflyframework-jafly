@@ -1,0 +1,44 @@
+# Build output
+target/
+build/
+out/
+**/target/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.apt_generated/
+.apt_generated_tests/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.log.gz
+logs/
+hs_err_pid*.log
+replay_pid*.log
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
+dependency-reduced-pom.xml
+
+# Local environment
+.env
+.env.local
+*.local
+
+# Local test artefacts
+**/test-output/
+**/.surefire-reports/
