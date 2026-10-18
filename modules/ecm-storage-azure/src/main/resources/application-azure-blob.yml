@@ -1,0 +1,28 @@
+# Firefly ECM Azure Blob Adapter Configuration
+# Example configuration for the Azure Blob Storage provider
+
+firefly:
+  ecm:
+    enabled: true
+    adapter-type: azure-blob
+    adapter:
+      azure-blob:
+        account-name: ${AZURE_ACCOUNT_NAME}
+        container-name: ${AZURE_CONTAINER_NAME:documents}
+        # One of the following auth options
+        # account-key: ${AZURE_ACCOUNT_KEY}
+        # connection-string: ${AZURE_CONNECTION_STRING}
+        # sas-token: ${AZURE_SAS_TOKEN}
+        # managed-identity: true
+        endpoint: ${AZURE_BLOB_ENDPOINT:}
+        path-prefix: ${AZURE_PATH_PREFIX:documents/}
+        enable-versioning: ${AZURE_ENABLE_VERSIONING:true}
+        access-tier: ${AZURE_ACCESS_TIER:Hot}
+        max-retries: ${AZURE_MAX_RETRIES:3}
+        timeout-seconds: ${AZURE_TIMEOUT_SECONDS:30}
+        block-size: ${AZURE_BLOCK_SIZE:4194304}
+        block-upload-threshold: ${AZURE_BLOCK_UPLOAD_THRESHOLD:268435456}
+        enable-encryption: ${AZURE_ENABLE_ENCRYPTION:true}
+        encryption-key-url: ${AZURE_ENCRYPTION_KEY_URL:}
+        enable-soft-delete: ${AZURE_ENABLE_SOFT_DELETE:true}
+        soft-delete-retention-days: ${AZURE_SOFT_DELETE_RETENTION_DAYS:7}
