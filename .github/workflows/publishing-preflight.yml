@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       require-cross-repository-token:
-        description: Require a classic token for retained GitHub Maven package homes
+        description: Require the configured Jafly Maven publishing token
         type: boolean
         default: true
 permissions:

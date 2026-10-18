@@ -87,7 +87,7 @@ class MappedPublishingTests(unittest.TestCase):
                 metadata = f'''<metadata><groupId>{project['groupId']}</groupId><artifactId>{project['artifactId']}</artifactId><version>{project['version']}</version><versioning><snapshot><timestamp>20261018.123456</timestamp><buildNumber>7</buildNumber></snapshot><snapshotVersions>{''.join(versions)}</snapshotVersions></versioning></metadata>'''
                 (self.root / home['repository'] / base / 'maven-metadata.xml').write_text(metadata)
 
-    def test_all84_homes_match_existing_package_associations(self):
+    def test_all84_bootstrap_homes_retain_captured_association_digest(self):
         self.assertEqual(len(self.homes['artifacts']), 84)
         self.assertEqual(m.validate_homes(PROJECTS, self.homes), self.homes['artifacts'])
         self.assertEqual(len(m.validate_inventory(PROJECTS, self.inventory)), 312)
@@ -124,7 +124,7 @@ class MappedPublishingTests(unittest.TestCase):
         self.assertTrue(all('-20261018.123456-7' in row['remotePath'] for row in proof))
         self.assertTrue(all('-SNAPSHOT/' in path for path in server.requests))
 
-    def test_final_release_all312_files_use_original_mapped_homes(self):
+    def test_final_release_all312_files_use_reviewed_package_homes(self):
         projects = copy.deepcopy(PROJECTS)
         for project in projects: project['version'] = project['version'].removesuffix('-SNAPSHOT')
         inventory = fixture_inventory(projects)
@@ -310,7 +310,7 @@ class MappedPublishingTests(unittest.TestCase):
     def test_maven_nonzero_fails_and_synthetic_token_is_redacted(self):
         plan = self.small_plan()
         fake = 'SYNTHETIC_TEST_CREDENTIAL_ONLY'
-        with patch.dict(os.environ, {'JAFLY_PACKAGES_TOKEN':fake, 'GITHUB_ACTOR':'test-actor', 'MAVEN_ARGS':'-X'}, clear=True), patch.object(m.subprocess, 'run') as run:
+        with patch.dict(os.environ, {'JAFLY_PACKAGES_TOKEN':fake, 'GITHUB_ACTOR':'test-actor', 'MAVEN_ARGS':'-X'}, clear=True), patch.object(m.subprocess, 'run') as run, patch.object(m, 'preflight_associations', return_value=[]):
             encoded = m.base64.b64encode(('test-actor:' + fake).encode()).decode()
             run.return_value = subprocess.CompletedProcess([], 1, 'HTTP 422 '+fake+' Basic '+encoded, '')
             with self.assertRaisesRegex(ValueError, 'failed'):

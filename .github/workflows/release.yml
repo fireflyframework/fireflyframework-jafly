@@ -66,7 +66,7 @@ jobs:
           chmod 700 "$GNUPGHOME"
           printf '%s' "$GPG_PRIVATE_KEY" | base64 --decode | gpg --batch --import
       - name: Verify full reactor before deployment
-        run: ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" clean install
+        run: ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" -Dtest.serialization.protobuf=true -Dtest.serialization.avro=true clean install
       - name: Test all maintained standalone examples before publication
         run: bash scripts/verify_examples.sh -Dmaven.repo.local="$MAVEN_REPO"
       - name: Package and freeze the verified GitHub artifacts
@@ -78,7 +78,7 @@ jobs:
           mkdir -p target
           cp "$RUNNER_TEMP/github-stage/github-manifest.json" target/github-manifest.json
           cp "$RUNNER_TEMP/github-stage/package-homes.json" target/package-homes.json
-      - name: Deploy the frozen files to the retained GitHub package homes
+      - name: Deploy the frozen files to the Jafly Maven repository
         env:
           JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
           JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
