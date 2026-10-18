@@ -1,0 +1,226 @@
+spring:
+  application:
+    name: common-platform-rule-engine
+    version: 1.0.0
+    description: Rule Engine Core Application
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+
+  r2dbc:
+    pool:
+      # Connection pool sizing for high-load scenarios
+      initial-size: 10                    # Start with more connections ready
+      max-size: 50                        # Increased from 10 to handle high load
+      min-idle: 5                         # Minimum idle connections to maintain
+      max-idle-time: 15m                  # Reduced from 30m for faster cleanup
+      max-acquire-time: 60s               # Maximum time to wait for a connection
+      max-life-time: 30m                  # Maximum connection lifetime
+      max-create-connection-time: 10s     # Maximum time to create a new connection
+      validation-query: SELECT 1
+      # Connection validation settings
+      validation-depth: LOCAL             # Validate connections locally
+      acquire-retry: 3                    # Retry connection acquisition
+      # Metrics and monitoring
+      register-jmx: true                  # Enable JMX monitoring
+    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslMode=${DB_SSL_MODE}&preparedStatementCacheQueries=256&preparedStatementCacheSizeMiB=5&tcpKeepAlive=true&tcpNoDelay=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslMode=${DB_SSL_MODE}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  threads:
+    virtual:
+      enabled: true
+
+# Firefly Rule Engine Configuration
+firefly:
+  rules:
+    cache:
+      # Cache provider: CAFFEINE (default) or REDIS
+      provider: CAFFEINE
+
+      # Caffeine Configuration (Default - High Performance Local Cache)
+      caffeine:
+        ast-cache:
+          maximum-size: 1000
+          expire-after-write: 2h
+          expire-after-access: 30m
+        constants-cache:
+          maximum-size: 500
+          expire-after-write: 15m
+          expire-after-access: 5m
+        rule-definitions-cache:
+          maximum-size: 200
+          expire-after-write: 10m
+          expire-after-access: 3m
+        validation-cache:
+          maximum-size: 100
+          expire-after-write: 5m
+          expire-after-access: 2m
+
+      # Redis Configuration (Optional - Distributed Cache)
+      # Uncomment and configure when using Redis cache
+      # redis:
+      #   host: ${REDIS_HOST:localhost}
+      #   port: ${REDIS_PORT:6379}
+      #   password: ${REDIS_PASSWORD:}
+      #   database: ${REDIS_DATABASE:0}
+      #   timeout: 5s
+      #   ttl:
+      #     ast-cache: 2h
+      #     constants-cache: 15m
+      #     rule-definitions-cache: 10m
+      #     validation-cache: 5m
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tagsSorter: alpha
+    operationsSorter: method
+    docExpansion: none
+    filter: true
+  packages-to-scan: org.fireflyframework.rules.web.controllers
+  paths-to-match: /api/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # Development environment - smaller pool for local development
+  r2dbc:
+    pool:
+      initial-size: 5
+      max-size: 15
+      min-idle: 2
+      max-idle-time: 10m
+      max-acquire-time: 30s
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.flywaydb: DEBUG
+    io.r2dbc.pool: DEBUG  # Enable pool logging for development
+
+---
+spring:
+  config:
+    activate:
+      on-profile: testing
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: INFO
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # Production environment - optimized for high load
+  r2dbc:
+    pool:
+      initial-size: 20
+      max-size: 100
+      min-idle: 10
+      max-idle-time: 20m
+      max-acquire-time: 90s
+      max-life-time: 45m
+      acquire-retry: 5
+
+# Production cache settings - larger caches for better performance
+firefly:
+  rules:
+    cache:
+      # For production, consider using Redis for distributed caching
+      # provider: REDIS
+      caffeine:
+        ast-cache:
+          maximum-size: 2000
+          expire-after-write: 4h
+          expire-after-access: 1h
+        constants-cache:
+          maximum-size: 1000
+          expire-after-write: 30m
+          expire-after-access: 10m
+        rule-definitions-cache:
+          maximum-size: 500
+          expire-after-write: 20m
+          expire-after-access: 5m
+        validation-cache:
+          maximum-size: 300
+          expire-after-write: 15m
+          expire-after-access: 5m
+
+      # Production Redis configuration example
+      # Uncomment when using Redis in production
+      # redis:
+      #   host: ${REDIS_HOST:redis-cluster.example.com}
+      #   port: ${REDIS_PORT:6379}
+      #   password: ${REDIS_PASSWORD}
+      #   database: ${REDIS_DATABASE:0}
+      #   timeout: 5s
+      #   ttl:
+      #     ast-cache: 4h
+      #     constants-cache: 30m
+      #     rule-definitions-cache: 20m
+      #     validation-cache: 15m
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: INFO
+    org.springframework: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

@@ -1,0 +1,2297 @@
+openapi: 3.0.1
+info:
+  title: common-platform-rule-engine
+  description: Rule Engine Core Application
+  contact:
+    name: Firefly Software Foundation
+    email: dev@getfirefly.io
+  version: 1.0.0
+servers:
+  - url: http://core.getfirefly.io/rules
+    description: Development Environment
+  - url: /
+    description: Local Development Environment
+tags:
+  - name: YAML DSL Validation
+    description: Static code analysis and validation for YAML DSL rules
+  - name: Batch Rules Evaluation
+    description: High-performance batch processing operations for evaluating multiple rules
+  - name: Audit Trails
+    description: Operations for querying audit trail records
+  - name: Rule Definitions
+    description: Operations for managing YAML DSL rule definitions
+  - name: Rules Evaluation
+    description: Operations for evaluating YAML DSL rules against input data
+  - name: Constants
+    description: System constants management API. Constants use UPPER_CASE_WITH_UNDERSCORES naming convention and are automatically loaded in YAML DSL rules.
+paths:
+  /api/v1/rules/definitions/{id}:
+    get:
+      tags:
+        - Rule Definitions
+      summary: Get a rule definition by ID
+      description: Retrieve a specific rule definition by its ID
+      operationId: getRuleDefinitionById
+      parameters:
+        - name: id
+          in: path
+          description: Rule definition ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rule definition retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '404':
+          description: Rule definition not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+    put:
+      tags:
+        - Rule Definitions
+      summary: Update a rule definition
+      description: Update an existing YAML DSL rule definition with validation
+      operationId: updateRuleDefinition
+      parameters:
+        - name: id
+          in: path
+          description: Rule definition ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleDefinitionDTO'
+        required: true
+      responses:
+        '200':
+          description: Rule definition updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '400':
+          description: Invalid rule definition or validation failed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '404':
+          description: Rule definition not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+    delete:
+      tags:
+        - Rule Definitions
+      summary: Delete a rule definition
+      description: Delete a rule definition by ID
+      operationId: deleteRuleDefinition
+      parameters:
+        - name: id
+          in: path
+          description: Rule definition ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Rule definition deleted successfully
+        '404':
+          description: Rule definition not found
+        '500':
+          description: Internal server error
+  /api/v1/constants/{constantId}:
+    get:
+      tags:
+        - Constants
+      summary: Get constant by ID
+      description: Retrieve a system constant by its ID
+      operationId: getConstantById
+      parameters:
+        - name: constantId
+          in: path
+          description: Constant ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Constant retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConstantDTO'
+        '404':
+          description: Constant not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Constants
+      summary: Update a constant
+      description: Update an existing system constant
+      operationId: updateConstant
+      parameters:
+        - name: constantId
+          in: path
+          description: Constant ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstantDTO'
+        required: true
+      responses:
+        '200':
+          description: Constant updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConstantDTO'
+        '400':
+          description: Invalid constant data
+        '404':
+          description: Constant not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Constants
+      summary: Delete a constant
+      description: Delete a system constant by ID
+      operationId: deleteConstant
+      parameters:
+        - name: constantId
+          in: path
+          description: Constant ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Constant deleted successfully
+        '404':
+          description: Constant not found
+        '500':
+          description: Internal server error
+  /api/v1/validation/yaml:
+    post:
+      tags:
+        - YAML DSL Validation
+      summary: Validate YAML DSL Rule
+      description: |
+        Performs comprehensive static analysis and validation of a YAML DSL rule.
+        Acts as a static code analyzer to catch syntax errors, naming convention violations,
+        dependency issues, logic problems, and provide optimization suggestions.
+
+        This endpoint helps developers:
+        - Catch errors before deployment
+        - Ensure naming convention compliance
+        - Detect order-of-operations issues (like the bug we just fixed!)
+        - Optimize rule performance
+        - Follow best practices
+      operationId: validateYaml
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: YAML DSL content and validation options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateYamlRequest'
+            examples:
+              Basic Credit Scoring Rule:
+                description: A simple credit scoring rule with proper naming conventions
+                value:
+                  yamlContent: |-
+                    name: Credit Score Assessment
+                    description: Evaluate credit worthiness based on score and income
+                    version: 1.0.0
+                    inputs:
+                      - creditScore
+                      - annualIncome
+                      - employmentYears
+                      - existingDebt
+                    when:
+                      - creditScore at_least MIN_CREDIT_SCORE
+                      - annualIncome at_least 50000
+                      - employmentYears at_least 2
+                    then:
+                      - calculate debt_to_income as existingDebt / annualIncome
+                      - set is_eligible to true
+                      - set approval_tier to "STANDARD"
+                    else:
+                      - set is_eligible to false
+                      - set approval_tier to "DECLINED"
+                    output:
+                      is_eligible: is_eligible
+                      approval_tier: approval_tier
+                      debt_to_income: debt_to_income
+                  includeSuggestions: true
+                  includeMetrics: true
+              Rule with Issues:
+                description: A rule with various validation issues to demonstrate error detection
+                value:
+                  yamlContent: |-
+                    name: Bad Rule with Naming Issues
+                    inputs:
+                      - CREDIT_SCORE
+                      - annual_income
+                      - employment_years
+                    when:
+                      - CREDIT_SCORE at_least 650
+                      - debt_to_income less_than 0.4
+                    then:
+                      - calculate DEBT_RATIO as monthlyDebt / annual_income
+                      - set FINAL_DECISION to "APPROVED"
+                  categories:
+                    - SYNTAX
+                    - NAMING
+                    - DEPENDENCIES
+                  minSeverity: WARNING
+        required: true
+      responses:
+        '200':
+          description: Validation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Invalid request (empty YAML, too large, etc.)
+          content:
+            application/json: {}
+        '500':
+          description: Internal server error during validation
+          content:
+            application/json: {}
+  /api/v1/rules/evaluate/plain:
+    post:
+      tags:
+        - Rules Evaluation
+      summary: Evaluate plain YAML rules definition
+      description: Evaluate a plain (non-base64) YAML DSL rules definition against provided input data. Input variables must use camelCase (creditScore, annualIncome), computed variables will be in snake_case (debt_to_income, is_eligible), and constants use UPPER_CASE (MIN_CREDIT_SCORE). This endpoint accepts YAML content directly without base64 encoding.
+      operationId: evaluateRulesPlain
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlainYamlEvaluationRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Rules evaluated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '400':
+          description: Invalid rules definition, input data, or naming convention violations
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+  /api/v1/rules/evaluate/direct:
+    post:
+      tags:
+        - Rules Evaluation
+      summary: Evaluate base64-encoded YAML rules definition
+      description: Evaluate a base64-encoded YAML DSL rules definition against provided input data. Input variables must use camelCase (creditScore, annualIncome), computed variables will be in snake_case (debt_to_income, is_eligible), and constants use UPPER_CASE (MIN_CREDIT_SCORE).
+      operationId: evaluateRulesDirect
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RulesEvaluationRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Rules evaluated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '400':
+          description: Invalid rules definition, input data, or naming convention violations
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+  /api/v1/rules/evaluate/by-code:
+    post:
+      tags:
+        - Rules Evaluation
+      summary: Evaluate stored rule definition by code
+      description: Evaluate a stored YAML DSL rule definition by its code against provided input data. Input variables must use camelCase naming convention. Returns computed variables in snake_case format.
+      operationId: evaluateRuleByCode
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleEvaluationByCodeRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Rules evaluated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '400':
+          description: Invalid input data or naming convention violations
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '404':
+          description: Rule definition not found or inactive
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+  /api/v1/rules/definitions:
+    post:
+      tags:
+        - Rule Definitions
+      summary: Create a new rule definition
+      description: 'Create and store a new YAML DSL rule definition with comprehensive validation. YAML content must follow naming conventions: camelCase for inputs (creditScore, annualIncome), snake_case for computed variables (debt_to_income, is_eligible), UPPER_CASE for constants (MIN_CREDIT_SCORE).'
+      operationId: createRuleDefinition
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleDefinitionDTO'
+        required: true
+      responses:
+        '201':
+          description: Rule definition created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '400':
+          description: Invalid rule definition, validation failed, or naming convention violations
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '409':
+          description: Rule definition with the same code already exists
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+  /api/v1/rules/definitions/validate:
+    post:
+      tags:
+        - Rule Definitions
+      summary: Validate a YAML DSL rule definition
+      description: Validate YAML DSL content without storing it. Checks syntax, naming conventions (camelCase inputs, snake_case computed, UPPER_CASE constants), dependencies, logic, and best practices.
+      operationId: validateRuleDefinition
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              description: 'YAML DSL content to validate. Must follow naming conventions: camelCase for inputs, snake_case for computed variables, UPPER_CASE for constants.'
+        required: true
+      responses:
+        '200':
+          description: Validation completed (check response for validation results)
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Invalid YAML content or malformed request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+  /api/v1/rules/definitions/filter:
+    post:
+      tags:
+        - Rule Definitions
+      summary: Get all rule definitions
+      description: Retrieve rule definitions with optional filtering and pagination
+      operationId: filterRuleDefinitions
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestRuleDefinitionDTO'
+        required: true
+      responses:
+        '200':
+          description: Rule definitions retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseRuleDefinitionDTO'
+        '400':
+          description: Invalid filter criteria
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseRuleDefinitionDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseRuleDefinitionDTO'
+  /api/v1/rules/batch/validate:
+    post:
+      tags:
+        - Batch Rules Evaluation
+      summary: Validate batch evaluation request
+      description: Validate the structure and content of a batch evaluation request without executing it. Checks request format, rule codes, input data structure, and batch configuration options.
+      operationId: validateBatchRequest
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRulesEvaluationRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '400':
+          description: Invalid request structure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error during validation
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+  /api/v1/rules/batch/evaluate:
+    post:
+      tags:
+        - Batch Rules Evaluation
+      summary: Evaluate multiple rules in batch
+      description: Process multiple rule evaluations concurrently in a single request. Provides comprehensive error handling, performance metrics, and configurable concurrency limits. Input variables must use camelCase naming convention.
+      operationId: evaluateBatch
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRulesEvaluationRequestDTO'
+        required: true
+      responses:
+        '200':
+          description: Batch evaluation completed (may include partial failures)
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '400':
+          description: Invalid batch request structure or parameters
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error during batch processing
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+  /api/v1/constants:
+    post:
+      tags:
+        - Constants
+      summary: Create a new constant
+      description: Create a new system constant with UPPER_CASE_WITH_UNDERSCORES naming convention. Constants are automatically loaded in YAML DSL rules when referenced.
+      operationId: createConstant
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstantDTO'
+        required: true
+      responses:
+        '201':
+          description: Constant created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConstantDTO'
+        '400':
+          description: Invalid constant data or naming convention violation
+        '409':
+          description: Constant with the same code already exists
+        '500':
+          description: Internal server error
+  /api/v1/constants/filter:
+    post:
+      tags:
+        - Constants
+      summary: Filter constants
+      description: Retrieve constants based on filtering criteria
+      operationId: filterConstants
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequestConstantDTO'
+        required: true
+      responses:
+        '200':
+          description: Constants retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+        '400':
+          description: Invalid filter request
+        '500':
+          description: Internal server error
+  /api/v1/audit/trails:
+    post:
+      tags:
+        - Audit Trails
+      summary: Get audit trails with filtering and pagination
+      description: Retrieve audit trail records with optional filtering by operation type, entity type, user, date range, and other criteria. Supports pagination and sorting.
+      operationId: getAuditTrails
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditTrailFilterDTO'
+        required: true
+      responses:
+        '200':
+          description: Audit trails retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '400':
+          description: Invalid filter criteria
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+  /api/v1/validation/syntax:
+    get:
+      tags:
+        - YAML DSL Validation
+      summary: Quick YAML Syntax Check
+      description: |
+        Performs a quick syntax-only validation of YAML DSL content.
+        Useful for real-time validation in editors or IDEs.
+        Only checks basic YAML syntax and DSL structure, not business logic.
+      operationId: checkSyntax
+      parameters:
+        - name: yaml
+          in: query
+          description: YAML DSL content to validate (URL encoded)
+          required: true
+          schema:
+            maxLength: 50000
+            minLength: 0
+            type: string
+          example: 'name: Test Rule\ninputs: [creditScore]\nwhen: [creditScore at_least 650]\nthen: [set result to APPROVED]'
+      responses:
+        '200':
+          description: Syntax check completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json: {}
+  /api/v1/rules/definitions/by-code/{code}:
+    get:
+      tags:
+        - Rule Definitions
+      summary: Get a rule definition by code
+      description: Retrieve a specific rule definition by its unique code
+      operationId: getRuleDefinitionByCode
+      parameters:
+        - name: code
+          in: path
+          description: Rule definition code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rule definition retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '404':
+          description: Rule definition not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RuleDefinitionDTO'
+  /api/v1/rules/batch/statistics:
+    get:
+      tags:
+        - Batch Rules Evaluation
+      summary: Get batch processing statistics
+      description: Retrieve real-time statistics about batch processing performance, including throughput metrics, cache hit rates, and system resource utilization.
+      operationId: getBatchStatistics
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+  /api/v1/rules/batch/health:
+    get:
+      tags:
+        - Batch Rules Evaluation
+      summary: Get batch processing health status
+      description: Check the health and availability of the batch processing system, including system resources, cache availability, and processing capacity.
+      operationId: getHealthStatus
+      responses:
+        '200':
+          description: Health status retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+        '503':
+          description: Service unavailable or degraded
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BatchRulesEvaluationResponseDTO'
+  /api/v1/constants/code/{code}:
+    get:
+      tags:
+        - Constants
+      summary: Get constant by code
+      description: Retrieve a system constant by its unique code
+      operationId: getConstantByCode
+      parameters:
+        - name: code
+          in: path
+          description: Constant code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Constant retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConstantDTO'
+        '404':
+          description: Constant not found
+        '500':
+          description: Internal server error
+  /api/v1/audit/trails/{id}:
+    get:
+      tags:
+        - Audit Trails
+      summary: Get audit trail by ID
+      description: Retrieve a specific audit trail record by its unique identifier.
+      operationId: getAuditTrailById
+      parameters:
+        - name: id
+          in: path
+          description: Audit trail ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit trail retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuditTrailDTO'
+        '404':
+          description: Audit trail not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuditTrailDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuditTrailDTO'
+  /api/v1/audit/trails/user/{userId}:
+    get:
+      tags:
+        - Audit Trails
+      summary: Get audit trails by user
+      description: Retrieve audit trail records filtered by a specific user.
+      operationId: getAuditTrailsByUser
+      parameters:
+        - name: userId
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+          example: john.doe@company.com
+        - name: page
+          in: query
+          description: Page number (0-based)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          example: 20
+      responses:
+        '200':
+          description: Audit trails retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '400':
+          description: Invalid user ID
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+  /api/v1/audit/trails/operation/{operationType}:
+    get:
+      tags:
+        - Audit Trails
+      summary: Get audit trails by operation type
+      description: Retrieve audit trail records filtered by a specific operation type.
+      operationId: getAuditTrailsByOperationType
+      parameters:
+        - name: operationType
+          in: path
+          description: Operation type
+          required: true
+          schema:
+            type: string
+          example: RULE_DEFINITION_CREATE
+        - name: page
+          in: query
+          description: Page number (0-based)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          example: 20
+      responses:
+        '200':
+          description: Audit trails retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '400':
+          description: Invalid operation type
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseAuditTrailDTO'
+  /api/v1/audit/trails/entity/{entityId}:
+    get:
+      tags:
+        - Audit Trails
+      summary: Get recent audit trails for entity
+      description: Retrieve recent audit trail records for a specific entity (e.g., rule definition).
+      operationId: getRecentAuditTrailsForEntity
+      parameters:
+        - name: entityId
+          in: path
+          description: Entity ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 10
+          example: 10
+      responses:
+        '200':
+          description: Recent audit trails retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditTrailDTO'
+        '400':
+          description: Invalid entity ID or limit
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditTrailDTO'
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditTrailDTO'
+  /api/v1/audit/statistics:
+    get:
+      tags:
+        - Audit Trails
+      summary: Get audit trail statistics
+      description: Retrieve statistical information about audit trails including counts by operation type, success rates, and other metrics.
+      operationId: getAuditTrailStatistics
+      responses:
+        '200':
+          description: Audit trail statistics retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+  /api/v1/audit/trails/cleanup:
+    delete:
+      tags:
+        - Audit Trails
+      summary: Delete old audit trails
+      description: Delete audit trail records older than the specified retention period. This is typically used for maintenance and compliance with data retention policies.
+      operationId: deleteOldAuditTrails
+      parameters:
+        - name: retentionDays
+          in: query
+          description: Number of days to retain audit trails
+          required: true
+          schema:
+            type: integer
+            format: int32
+          example: 90
+      responses:
+        '200':
+          description: Old audit trails deleted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        '400':
+          description: Invalid retention days parameter
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        '500':
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+components:
+  schemas:
+    RuleDefinitionDTO:
+      required:
+        - code
+        - isActive
+        - name
+        - yamlContent
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the rule definition
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        code:
+          maxLength: 100
+          minLength: 3
+          pattern: ^[a-zA-Z][a-zA-Z0-9_]*$
+          type: string
+          description: Unique code identifier for the rule definition. Must start with a letter and contain only letters, numbers, and underscores.
+          example: credit_scoring_v1
+        name:
+          maxLength: 200
+          minLength: 3
+          type: string
+          description: Human-readable name for the rule definition
+          example: Credit Scoring Rule v1
+        description:
+          maxLength: 1000
+          minLength: 0
+          type: string
+          description: Detailed description of what this rule definition does
+          example: Basic credit scoring rule for loan applications. Evaluates creditworthiness based on credit score, income, and debt ratios.
+        yamlContent:
+          maxLength: 50000
+          minLength: 10
+          type: string
+          description: 'The YAML DSL content as a string. Must follow naming conventions: camelCase for inputs (creditScore, annualIncome), snake_case for computed variables (debt_to_income, is_eligible), UPPER_CASE for constants (MIN_CREDIT_SCORE).'
+          example: |-
+            name: "Credit Scoring"
+            description: "Basic credit assessment"
+
+            inputs:
+              - creditScore        # camelCase input
+              - annualIncome       # camelCase input
+              - employmentYears    # camelCase input
+
+            when:
+              - creditScore at_least MIN_CREDIT_SCORE    # UPPER_CASE constant
+              - annualIncome at_least 50000
+
+            then:
+              - calculate debt_to_income as existingDebt / annualIncome    # snake_case computed
+              - set credit_tier to "PRIME"                                # snake_case computed
+              - set is_eligible to true                                   # snake_case computed
+
+            else:
+              - set credit_tier to "STANDARD"
+              - set is_eligible to false
+
+            output:
+              credit_tier: credit_tier
+              is_eligible: is_eligible
+              debt_to_income: debt_to_income
+        version:
+          pattern: ^\d+\.\d+\.\d+$
+          type: string
+          description: Version of the rule definition for tracking changes. Must follow semantic versioning format.
+          example: 1.0.0
+        isActive:
+          type: boolean
+          description: Whether this rule definition is currently active and can be used for evaluation
+          example: true
+        tags:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Tags for categorizing and searching rule definitions (comma-separated)
+          example: credit,scoring,loan,banking
+        createdBy:
+          type: string
+          description: User who created this rule definition
+          example: john.doe
+        updatedBy:
+          type: string
+          description: User who last modified this rule definition
+          example: jane.smith
+        createdAt:
+          type: string
+          description: Timestamp when the rule definition was created
+          format: date-time
+          example: '2025-01-12T10:30:00Z'
+        updatedAt:
+          type: string
+          description: Timestamp when the rule definition was last modified
+          format: date-time
+          example: '2025-01-12T15:45:00Z'
+      description: Rule definition to create with YAML content following naming conventions
+    ConstantDTO:
+      required:
+        - code
+        - name
+        - required
+        - valueType
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the constant
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        code:
+          maxLength: 100
+          minLength: 2
+          pattern: ^[A-Z][A-Z0-9_]*$
+          type: string
+          description: Unique constant code following UPPER_CASE_WITH_UNDERSCORES convention. Used in YAML DSL rules to reference this constant.
+          example: MIN_CREDIT_SCORE
+        name:
+          maxLength: 255
+          minLength: 2
+          type: string
+          description: Human-readable name for the constant
+          example: Minimum Credit Score
+        valueType:
+          type: string
+          description: Data type of the constant value
+          example: NUMBER
+          enum:
+            - STRING
+            - NUMBER
+            - BOOLEAN
+            - DATE
+            - OBJECT
+        required:
+          type: boolean
+          description: Whether this constant must have a value for rule evaluation
+          example: true
+        description:
+          maxLength: 1000
+          minLength: 0
+          type: string
+          description: Optional description explaining the purpose of this constant
+          example: Minimum credit score required for loan approval
+        currentValue:
+          type: object
+          description: Current value of the constant. Type should match the valueType field.
+          example: 650
+        createdAt:
+          type: string
+          description: Timestamp when the constant was created
+          format: date-time
+          example: '2025-01-12T10:30:00Z'
+        updatedAt:
+          type: string
+          description: Timestamp when the constant was last updated
+          format: date-time
+          example: '2025-01-12T15:45:00Z'
+      description: System constant used in rule evaluation. Constants follow UPPER_CASE_WITH_UNDERSCORES naming convention.
+    ValidateYamlRequest:
+      required:
+        - yamlContent
+      type: object
+      properties:
+        yamlContent:
+          maxLength: 100000
+          minLength: 0
+          type: string
+        categories:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+              - SYNTAX
+              - NAMING
+              - DEPENDENCIES
+              - LOGIC
+              - PERFORMANCE
+              - BEST_PRACTICES
+        minSeverity:
+          type: string
+          enum:
+            - CRITICAL
+            - ERROR
+            - WARNING
+            - INFO
+        includeSuggestions:
+          type: boolean
+        includeMetrics:
+          type: boolean
+    ValidationIssue:
+      type: object
+      properties:
+        code:
+          type: string
+        severity:
+          type: string
+          enum:
+            - CRITICAL
+            - ERROR
+            - WARNING
+            - INFO
+        message:
+          type: string
+        description:
+          type: string
+        location:
+          $ref: '#/components/schemas/ValidationLocation'
+        suggestion:
+          type: string
+        examples:
+          type: array
+          items:
+            type: string
+    ValidationIssues:
+      type: object
+      properties:
+        syntax:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        naming:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        logic:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        performance:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        bestPractices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+    ValidationLocation:
+      type: object
+      properties:
+        section:
+          type: string
+        lineNumber:
+          type: integer
+          format: int32
+        path:
+          type: string
+        context:
+          type: string
+    ValidationMetadata:
+      type: object
+      properties:
+        validatorVersion:
+          type: string
+        validatedAt:
+          type: string
+          format: date-time
+        validationTimeMs:
+          type: integer
+          format: int64
+        ruleName:
+          type: string
+        statistics:
+          type: object
+          additionalProperties:
+            type: object
+    ValidationResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - VALID
+            - WARNING
+            - ERROR
+            - CRITICAL_ERROR
+        summary:
+          $ref: '#/components/schemas/ValidationSummary'
+        issues:
+          $ref: '#/components/schemas/ValidationIssues'
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationSuggestion'
+        metadata:
+          $ref: '#/components/schemas/ValidationMetadata'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+        valid:
+          type: boolean
+        errorSummary:
+          type: string
+    ValidationSuggestion:
+      type: object
+      properties:
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+        impact:
+          type: integer
+          format: int32
+    ValidationSummary:
+      type: object
+      properties:
+        totalIssues:
+          type: integer
+          format: int32
+        criticalErrors:
+          type: integer
+          format: int32
+        errors:
+          type: integer
+          format: int32
+        warnings:
+          type: integer
+          format: int32
+        suggestions:
+          type: integer
+          format: int32
+        qualityScore:
+          type: number
+          format: double
+    PlainYamlEvaluationRequestDTO:
+      required:
+        - inputData
+        - yamlContent
+      type: object
+      properties:
+        yamlContent:
+          maxLength: 50000
+          minLength: 10
+          type: string
+          description: 'Plain YAML DSL rules definition to evaluate. Must follow naming conventions: camelCase for inputs (creditScore, annualIncome), snake_case for computed variables (debt_to_income, is_eligible), UPPER_CASE for constants (MIN_CREDIT_SCORE).'
+          example: |-
+            name: "Credit Scoring Rule"
+            description: "Basic credit assessment for loan applications"
+
+            inputs:
+              - creditScore        # camelCase input
+              - annualIncome       # camelCase input
+              - employmentYears    # camelCase input
+              - existingDebt       # camelCase input
+
+            when:
+              - creditScore at_least MIN_CREDIT_SCORE
+              - annualIncome at_least 50000
+              - employmentYears at_least 2
+
+            then:
+              - calculate debt_to_income as existingDebt / annualIncome    # snake_case computed
+              - set is_eligible to true                                   # snake_case computed
+              - set approval_tier to "STANDARD"                          # snake_case computed
+
+            else:
+              - set is_eligible to false
+              - set approval_tier to "DECLINED"
+
+            output:
+              is_eligible: is_eligible
+              approval_tier: approval_tier
+              debt_to_income: debt_to_income
+        inputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+            example:
+              creditScore: 780
+              annualIncome: 75000
+              employmentYears: 3
+              existingDebt: 25000
+          description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+          example:
+            creditScore: 780
+            annualIncome: 75000
+            employmentYears: 3
+            existingDebt: 25000
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+            description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+            example:
+              request_id: req-123
+              source_system: loan_application
+              user_id: user-456
+              session_id: sess-789
+          description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+          example:
+            request_id: req-123
+            source_system: loan_application
+            user_id: user-456
+            session_id: sess-789
+        includeDetails:
+          type: boolean
+          description: Whether to include detailed execution information
+          example: false
+        debugMode:
+          type: boolean
+          description: Whether to enable debug mode for detailed logging
+          example: false
+      description: Evaluation request with plain YAML rules definition and camelCase input data
+    RulesEvaluationResponseDTO:
+      required:
+        - success
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the rules evaluation was successful
+          example: true
+        conditionResult:
+          type: boolean
+          description: The result of the main condition evaluation
+          example: true
+        outputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Output data generated by the rules. Contains computed variables in snake_case format (e.g., debt_to_income, credit_tier, is_eligible).
+            example:
+              credit_tier: PRIME
+              is_eligible: true
+              debt_to_income: 0.33
+              risk_score: 85
+              approval_status: APPROVED
+          description: Output data generated by the rules. Contains computed variables in snake_case format (e.g., debt_to_income, credit_tier, is_eligible).
+          example:
+            credit_tier: PRIME
+            is_eligible: true
+            debt_to_income: 0.33
+            risk_score: 85
+            approval_status: APPROVED
+        circuitBreakerTriggered:
+          type: boolean
+          description: Whether the circuit breaker was triggered
+          example: false
+        circuitBreakerMessage:
+          maxLength: 500
+          minLength: 0
+          type: string
+          description: Circuit breaker message if triggered
+          example: High risk transaction detected
+        error:
+          maxLength: 1000
+          minLength: 0
+          type: string
+          description: Error message if evaluation failed
+          example: Variable 'customer_age' not found
+        executionTimeMs:
+          minimum: 0
+          type: integer
+          description: Execution time in milliseconds
+          format: int64
+          example: 25
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+            description: Additional metadata about the evaluation
+            example:
+              rulesId: rules-123
+              rulesName: Premium Discount
+          description: Additional metadata about the evaluation
+          example:
+            rulesId: rules-123
+            rulesName: Premium Discount
+      description: Response from rules evaluation containing results and output data
+    RulesEvaluationRequestDTO:
+      required:
+        - inputData
+      type: object
+      properties:
+        rulesDefinitionBase64:
+          maxLength: 100000
+          minLength: 0
+          type: string
+          description: 'Base64 encoded YAML rules definition to evaluate. Must follow naming conventions: camelCase for inputs, snake_case for computed variables, UPPER_CASE for constants.'
+          example: bmFtZTogIkNyZWRpdCBBc3Nlc3NtZW50IgpkZXNjcmlwdGlvbjogIkJhc2ljIGNyZWRpdCBlbGlnaWJpbGl0eSBjaGVjayIKCmlucHV0czoKICAtIGNyZWRpdFNjb3JlICAgICAgIyBjYW1lbENhc2UgaW5wdXQKICAtIGFubual SW5jb21lICAgICAgIyBjYW1lbENhc2UgaW5wdXQKCndoZW46CiAgLSBjcmVkaXRTY29yZSBhdF9sZWFzdCBNSU5fQ1JFRElUX1NDT1JFICMgVVBQRVJfQ0FTRSBjb25zdGFudAogIC0gYW5udWFsSW5jb21lIGF0X2xlYXN0IDUwMDAwCgp0aGVuOgogIC0gY2FsY3VsYXRlIGRlYnRfdG9faW5jb21lIGFzIGV4aXN0aW5nRGVidCAvIGFubual SW5jb21lICMgc25ha2VfY2FzZSBjb21wdXRlZAogIC0gc2V0IGNyZWRpdF90aWVyIHRvICJQUklNRSIgICMgc25ha2VfY2FzZSBjb21wdXRlZAogIC0gc2V0IGlzX2VsaWdpYmxlIHRvIHRydWUgICMgc25ha2VfY2FzZSBjb21wdXRlZAoKZWxzZToKICAtIHNldCBjcmVkaXRfdGllciB0byAiU1RBTkRBUkQiCiAgLSBzZXQgaXNfZWxpZ2libGUgdG8gZmFsc2UKCm91dHB1dDoKICBjcmVkaXRfdGllcjogY3JlZGl0X3RpZXIKICBpc19lbGlnaWJsZTogaXNfZWxpZ2libGUKICBkZWJ0X3RvX2luY29tZTogZGVidF90b19pbmNvbWU=
+        inputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+            example:
+              creditScore: 780
+              annualIncome: 75000
+              employmentYears: 3
+              existingDebt: 25000
+              requestedAmount: 200000
+          description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+          example:
+            creditScore: 780
+            annualIncome: 75000
+            employmentYears: 3
+            existingDebt: 25000
+            requestedAmount: 200000
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+            description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+            example:
+              request_id: req-123
+              source_system: loan_application
+              user_id: user-456
+              session_id: sess-789
+          description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+          example:
+            request_id: req-123
+            source_system: loan_application
+            user_id: user-456
+            session_id: sess-789
+        includeDetails:
+          type: boolean
+          description: Whether to include detailed execution information
+          example: false
+        debugMode:
+          type: boolean
+          description: Whether to enable debug mode for detailed logging
+          example: false
+      description: Evaluation request with base64-encoded YAML rules definition and camelCase input data
+    RuleEvaluationByCodeRequestDTO:
+      required:
+        - inputData
+        - ruleDefinitionCode
+      type: object
+      properties:
+        ruleDefinitionCode:
+          pattern: ^[a-zA-Z][a-zA-Z0-9_]*$
+          type: string
+          description: Code of the stored rule definition to evaluate
+          example: credit_scoring_v1
+        inputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+            example:
+              creditScore: 780
+              annualIncome: 75000
+              employmentYears: 3
+              existingDebt: 25000
+              requestedAmount: 200000
+          description: Input data for rule evaluation. Variable names must follow camelCase convention (e.g., creditScore, annualIncome, employmentYears). These are dynamic values passed from your application.
+          example:
+            creditScore: 780
+            annualIncome: 75000
+            employmentYears: 3
+            existingDebt: 25000
+            requestedAmount: 200000
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
+            description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+            example:
+              request_id: req-123
+              source_system: loan_application
+              user_id: user-456
+              session_id: sess-789
+          description: Optional metadata for the evaluation request. Use snake_case for metadata keys.
+          example:
+            request_id: req-123
+            source_system: loan_application
+            user_id: user-456
+            session_id: sess-789
+        includeDetails:
+          type: boolean
+          description: Whether to include detailed execution information
+          example: false
+        debugMode:
+          type: boolean
+          description: Whether to enable debug mode for detailed logging
+          example: false
+      description: Evaluation request with rule code and camelCase input data
+    FilterOptions:
+      type: object
+      properties:
+        caseInsensitiveStrings:
+          type: boolean
+        includeInheritedFields:
+          type: boolean
+      description: Filter options for customizing filter behavior
+    FilterRequestRuleDefinitionDTO:
+      required:
+        - pagination
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/RuleDefinitionDTO'
+        rangeFilters:
+          $ref: '#/components/schemas/RangeFilter'
+        pagination:
+          $ref: '#/components/schemas/PaginationRequest'
+        options:
+          $ref: '#/components/schemas/FilterOptions'
+      description: Filter criteria and pagination parameters
+    PaginationRequest:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          description: The zero-based page number to retrieve.
+          format: int32
+          example: 0
+          default: 0
+        pageSize:
+          type: integer
+          description: The number of items per page.
+          format: int32
+          example: 10
+          default: 10
+        sortBy:
+          type: string
+          description: The field to sort the results by.
+          example: name
+        sortDirection:
+          type: string
+          description: The direction of sorting, either ASC or DESC.
+          example: DESC
+          default: DESC
+      description: Represents a pagination request for retrieving paginated results, including page number, size, sort field, and direction.
+    RangeFilter:
+      type: object
+      properties:
+        ranges:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RangeObject'
+          description: Map of field names to their range criteria
+      description: Represents range filters for numeric fields
+    RangeObject:
+      type: object
+      properties:
+        from:
+          type: object
+          description: Start value of the range
+        to:
+          type: object
+          description: End value of the range
+      description: Represents a range with from and to values
+    PaginationResponseRuleDefinitionDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          description: The list of items for the current page.
+          items:
+            $ref: '#/components/schemas/RuleDefinitionDTO'
+        totalElements:
+          type: integer
+          description: The total number of elements across all pages.
+          format: int64
+        totalPages:
+          type: integer
+          description: The total number of pages based on the data size and page size.
+          format: int32
+        currentPage:
+          type: integer
+          description: The current page number, typically zero-based.
+          format: int32
+      description: Represents a paginated response containing a list of items and pagination metadata.
+    BatchOptions:
+      type: object
+      properties:
+        maxConcurrency:
+          type: integer
+          description: Maximum number of concurrent evaluations
+          format: int32
+          example: 10
+        timeoutSeconds:
+          type: integer
+          description: Timeout for the entire batch operation in seconds
+          format: int32
+          example: 300
+        failFast:
+          type: boolean
+          description: Whether to fail the entire batch if any evaluation fails
+          example: false
+        returnPartialResults:
+          type: boolean
+          description: Whether to return partial results if some evaluations fail
+          example: true
+        sortByPriority:
+          type: boolean
+          description: Whether to sort requests by priority before processing
+          example: true
+        includeTimingInfo:
+          type: boolean
+          description: Whether to enable detailed timing information for each evaluation
+          example: false
+        enableCaching:
+          type: boolean
+          description: Whether to cache rule definitions during batch processing
+          example: true
+      description: Batch processing configuration options
+    BatchRulesEvaluationRequestDTO:
+      required:
+        - evaluationRequests
+      type: object
+      properties:
+        evaluationRequests:
+          maxItems: 100
+          minItems: 0
+          type: array
+          description: List of rule evaluation requests to process in batch
+          example:
+            - ruleDefinitionCode: LOAN_APPROVAL
+              inputData:
+                creditScore: 750
+            - ruleDefinitionCode: RISK_ASSESSMENT
+              inputData:
+                amount: 50000
+          items:
+            $ref: '#/components/schemas/SingleRuleEvaluationRequest'
+        globalInputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Global input data to be merged with individual request data
+            example:
+              userId: user123
+              timestamp: '2025-01-13T10:00:00Z'
+          description: Global input data to be merged with individual request data
+          example:
+            userId: user123
+            timestamp: '2025-01-13T10:00:00Z'
+        batchOptions:
+          $ref: '#/components/schemas/BatchOptions'
+      description: Batch evaluation request with multiple rule evaluation requests
+    SingleRuleEvaluationRequest:
+      required:
+        - ruleDefinitionCode
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: Unique identifier for this evaluation request within the batch
+          example: req-001
+        ruleDefinitionCode:
+          maxLength: 100
+          minLength: 1
+          type: string
+          description: Rule definition code to evaluate
+          example: LOAN_APPROVAL_RULE
+        inputData:
+          type: object
+          additionalProperties:
+            type: object
+            description: Input data for this specific rule evaluation
+            example:
+              creditScore: 750
+              income: 75000
+          description: Input data for this specific rule evaluation
+          example:
+            creditScore: 750
+            income: 75000
+        priority:
+          type: integer
+          description: Priority for this evaluation (higher numbers processed first)
+          format: int32
+          example: 1
+        continueOnError:
+          type: boolean
+          description: Whether to continue batch processing if this evaluation fails
+          example: true
+      description: Individual rule evaluation request within a batch
+      example:
+        - ruleDefinitionCode: LOAN_APPROVAL
+          inputData:
+            creditScore: 750
+        - ruleDefinitionCode: RISK_ASSESSMENT
+          inputData:
+            amount: 50000
+    BatchRulesEvaluationResponseDTO:
+      type: object
+      properties:
+        batchStatus:
+          type: string
+          description: Overall batch processing status
+          example: SUCCESS
+          enum:
+            - SUCCESS
+            - PARTIAL_SUCCESS
+            - FAILED
+            - CANCELLED
+            - IN_PROGRESS
+        evaluationResults:
+          type: array
+          description: List of individual rule evaluation results
+          items:
+            $ref: '#/components/schemas/SingleRuleEvaluationResult'
+        batchSummary:
+          $ref: '#/components/schemas/BatchSummary'
+        startTime:
+          type: string
+          description: Timestamp when batch processing started
+          format: date-time
+        endTime:
+          type: string
+          description: Timestamp when batch processing completed
+          format: date-time
+        totalProcessingTimeMs:
+          type: integer
+          description: Total processing time in milliseconds
+          format: int64
+      description: Response for batch rule evaluation operations
+    BatchSummary:
+      type: object
+      properties:
+        totalRequests:
+          type: integer
+          description: Total number of evaluation requests in the batch
+          format: int32
+        successfulEvaluations:
+          type: integer
+          description: Number of successful evaluations
+          format: int32
+        failedEvaluations:
+          type: integer
+          description: Number of failed evaluations
+          format: int32
+        skippedEvaluations:
+          type: integer
+          description: Number of skipped evaluations (due to fail-fast or other reasons)
+          format: int32
+        successRate:
+          type: number
+          description: Success rate as a percentage
+          format: double
+        averageProcessingTimeMs:
+          type: number
+          description: Average processing time per evaluation in milliseconds
+          format: double
+        minProcessingTimeMs:
+          type: integer
+          description: Minimum processing time among all evaluations in milliseconds
+          format: int64
+        maxProcessingTimeMs:
+          type: integer
+          description: Maximum processing time among all evaluations in milliseconds
+          format: int64
+        cacheHits:
+          type: integer
+          description: Number of cache hits during batch processing
+          format: int32
+        cacheMisses:
+          type: integer
+          description: Number of cache misses during batch processing
+          format: int32
+        cacheHitRate:
+          type: number
+          description: Cache hit rate as a percentage
+          format: double
+        performanceMetrics:
+          type: object
+          additionalProperties:
+            type: object
+            description: Additional performance metrics
+          description: Additional performance metrics
+      description: Batch processing summary and statistics
+    SingleRuleEvaluationResult:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: Request ID from the original request
+          example: req-001
+        ruleDefinitionCode:
+          type: string
+          description: Rule definition code that was evaluated
+          example: LOAN_APPROVAL_RULE
+        status:
+          type: string
+          description: Evaluation status for this specific rule
+          example: SUCCESS
+          enum:
+            - SUCCESS
+            - FAILED
+            - SKIPPED
+            - TIMEOUT
+        result:
+          $ref: '#/components/schemas/RulesEvaluationResponseDTO'
+        errorMessage:
+          type: string
+          description: Error message if evaluation failed
+          example: Rule definition not found
+        errorCode:
+          type: string
+          description: Error code if evaluation failed
+          example: RULE_NOT_FOUND
+        processingTimeMs:
+          type: integer
+          description: Processing time for this evaluation in milliseconds
+          format: int64
+        startTime:
+          type: string
+          description: Timestamp when this evaluation started
+          format: date-time
+        endTime:
+          type: string
+          description: Timestamp when this evaluation completed
+          format: date-time
+        priority:
+          type: integer
+          description: Priority of this evaluation request
+          format: int32
+      description: Individual rule evaluation result within a batch
+    CompilationMetadata:
+      type: object
+      properties:
+        compilerVersion:
+          type: string
+        compilationTimeMs:
+          type: integer
+          format: int64
+        astNodeCount:
+          type: integer
+          format: int32
+        warnings:
+          type: array
+          items:
+            type: string
+        optimizations:
+          type: object
+          additionalProperties:
+            type: object
+    FilterRequestConstantDTO:
+      required:
+        - pagination
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/ConstantDTO'
+        rangeFilters:
+          $ref: '#/components/schemas/RangeFilter'
+        pagination:
+          $ref: '#/components/schemas/PaginationRequest'
+        options:
+          $ref: '#/components/schemas/FilterOptions'
+      description: Generic filter request that includes both filter criteria and pagination
+    PaginationResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          description: The list of items for the current page.
+          items:
+            type: object
+            description: The list of items for the current page.
+        totalElements:
+          type: integer
+          description: The total number of elements across all pages.
+          format: int64
+        totalPages:
+          type: integer
+          description: The total number of pages based on the data size and page size.
+          format: int32
+        currentPage:
+          type: integer
+          description: The current page number, typically zero-based.
+          format: int32
+      description: Represents a paginated response containing a list of items and pagination metadata.
+    AuditTrailFilterDTO:
+      type: object
+      properties:
+        operationType:
+          type: string
+          description: Filter by operation type
+          example: RULE_DEFINITION_CREATE
+          enum:
+            - RULE_DEFINITION_CREATE
+            - RULE_DEFINITION_UPDATE
+            - RULE_DEFINITION_DELETE
+            - RULE_EVALUATION_DIRECT
+            - RULE_EVALUATION_BY_CODE
+            - RULE_EVALUATION_PLAIN
+        entityType:
+          type: string
+          description: Filter by entity type
+          example: RULE_DEFINITION
+          enum:
+            - RULE_DEFINITION
+            - RULE_EVALUATION
+        entityId:
+          type: string
+          description: Filter by entity ID
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        ruleCode:
+          type: string
+          description: Filter by rule code
+          example: credit_scoring_v1
+        userId:
+          type: string
+          description: Filter by user ID
+          example: john.doe@company.com
+        success:
+          type: boolean
+          description: Filter by success status
+          example: true
+        startDate:
+          type: string
+          description: Filter by start date (inclusive)
+          format: date-time
+        endDate:
+          type: string
+          description: Filter by end date (inclusive)
+          format: date-time
+        sessionId:
+          type: string
+          description: Filter by session ID
+        correlationId:
+          type: string
+          description: Filter by correlation ID
+        page:
+          type: integer
+          description: Page number (0-based)
+          format: int32
+          example: 0
+          default: 0
+        size:
+          type: integer
+          description: Page size
+          format: int32
+          example: 20
+          default: 20
+        sortBy:
+          type: string
+          description: Sort field
+          example: createdAt
+          default: createdAt
+        sortDirection:
+          type: string
+          description: Sort direction
+          example: DESC
+          default: DESC
+          enum:
+            - ASC
+            - DESC
+      description: Filter criteria and pagination parameters
+    AuditTrailDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audit record
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        operationType:
+          type: string
+          description: Type of operation performed
+          example: RULE_DEFINITION_CREATE
+          enum:
+            - RULE_DEFINITION_CREATE
+            - RULE_DEFINITION_UPDATE
+            - RULE_DEFINITION_DELETE
+            - RULE_EVALUATION_DIRECT
+            - RULE_EVALUATION_BY_CODE
+            - RULE_EVALUATION_PLAIN
+        entityType:
+          type: string
+          description: Type of entity being operated on
+          example: RULE_DEFINITION
+          enum:
+            - RULE_DEFINITION
+            - RULE_EVALUATION
+        entityId:
+          type: string
+          description: ID of the entity being operated on
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        ruleCode:
+          type: string
+          description: Code of the rule definition
+          example: credit_scoring_v1
+        userId:
+          type: string
+          description: User who performed the operation
+          example: john.doe@company.com
+        ipAddress:
+          type: string
+          description: IP address from which the operation was performed
+          example: 192.168.1.100
+        userAgent:
+          type: string
+          description: User agent string from the request
+        httpMethod:
+          type: string
+          description: HTTP method used
+          example: POST
+        endpoint:
+          type: string
+          description: Request endpoint
+          example: /api/v1/rules/definitions
+        requestData:
+          type: string
+          description: Request data as JSON string
+        responseData:
+          type: string
+          description: Response data as JSON string
+        statusCode:
+          type: integer
+          description: HTTP status code
+          format: int32
+          example: 201
+        success:
+          type: boolean
+          description: Whether the operation was successful
+          example: true
+        errorMessage:
+          type: string
+          description: Error message if operation failed
+        executionTimeMs:
+          type: integer
+          description: Execution time in milliseconds
+          format: int64
+          example: 150
+        metadata:
+          type: string
+          description: Additional metadata as JSON string
+        sessionId:
+          type: string
+          description: Session ID for tracking related operations
+        correlationId:
+          type: string
+          description: Correlation ID for distributed tracing
+        createdAt:
+          type: string
+          description: Timestamp when the audit record was created
+          format: date-time
+      description: Audit trail record for rule engine operations
+    PaginationResponseAuditTrailDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          description: The list of items for the current page.
+          items:
+            $ref: '#/components/schemas/AuditTrailDTO'
+        totalElements:
+          type: integer
+          description: The total number of elements across all pages.
+          format: int64
+        totalPages:
+          type: integer
+          description: The total number of pages based on the data size and page size.
+          format: int32
+        currentPage:
+          type: integer
+          description: The current page number, typically zero-based.
+          format: int32
+      description: Represents a paginated response containing a list of items and pagination metadata.

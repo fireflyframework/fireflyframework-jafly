@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: common-platform-rule-engine-test
+    version: 1.0.0-TEST
+    description: Rule Engine Test Configuration
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+
+  # Disable database for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration
+      - org.fireflyframework.common.cache.config.RedisCacheAutoConfiguration
+
+  # Disable web server for tests
+  main:
+    web-application-type: none
+    allow-bean-definition-overriding: true
+
+  # Redis configuration for testcontainers
+  data:
+    redis:
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: 1000ms
+
+# Firefly cache configuration using lib-common-cache
+firefly:
+  cache:
+    enabled: true
+    default-cache-type: CAFFEINE  # Default to Caffeine for tests
+    metrics-enabled: true
+    health-enabled: true
+    stats-enabled: true
+    caffeine:
+      cache-name: default  # Cache name for the rule engine
+      enabled: true
+      key-prefix: firefly:cache  # Prefix for all cache keys
+      maximum-size: 1000
+      expire-after-write: PT1H
+      record-stats: true
+    redis:
+      cache-name: default
+      enabled: false  # Disabled by default for tests
+      key-prefix: firefly:cache
+      host: localhost
+      port: 6379
+      database: 0
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: DEBUG
+    org.fireflyframework.rules.core.config: DEBUG
+    org.fireflyframework.rules.core.services: DEBUG
+    org.fireflyframework.common.cache: DEBUG
+    org.springframework: WARN
+    org.testcontainers: INFO
+    org.springframework.data.redis: DEBUG
