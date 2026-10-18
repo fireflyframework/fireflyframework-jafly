@@ -24,10 +24,10 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
+import org.springframework.boot.http.codec.autoconfigure.CodecsAutoConfiguration;
 import org.springframework.boot.webflux.autoconfigure.HttpHandlerAutoConfiguration;
 import org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration;
 import org.springframework.boot.webflux.autoconfigure.WebFluxAutoConfiguration;
-import org.springframework.web.reactive.config.EnableWebFlux;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -38,8 +38,8 @@ import java.lang.annotation.Target;
 /**
  * Meta-annotation that configures a minimal Spring Boot application for
  * OpenAPI spec generation. Combines {@code @SpringBootConfiguration},
- * {@code @EnableWebFlux}, and all required auto-configurations for Springdoc
- * and WebFlux into a single annotation.
+ * and the required auto-configurations for Springdoc and WebFlux into a
+ * single annotation while retaining Boot's HTTP codec configuration.
  *
  * <p>Usage in each microservice's {@code src/test/java}:
  * <pre>{@code
@@ -59,7 +59,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @SpringBootConfiguration
-@EnableWebFlux
 @ImportAutoConfiguration({
         AutoMockMissingBeansConfig.class,
         SpringDocConfiguration.class,
@@ -69,6 +68,7 @@ import java.lang.annotation.Target;
         HttpHandlerAutoConfiguration.class,
         WebFluxAutoConfiguration.class,
         Jackson2AutoConfiguration.class,
+        CodecsAutoConfiguration.class,
         SpringApplicationAdminJmxAutoConfiguration.class,
         IdempotencyOpenAPIAutoConfiguration.class
 })

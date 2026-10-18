@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """Update the concrete CalVer release train without changing third-party versions."""
 import argparse
-import datetime
 import pathlib
 import re
 import xml.etree.ElementTree as ET
 
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
-PATTERN = re.compile(r'^(\d{2})\.(\d{2})\.(\d{2})(?:-SNAPSHOT)?$')
+PATTERN = re.compile(r'^(\d{2})\.(0[1-9]|1[0-2])\.(\d{2})(?:-SNAPSHOT)?$')
 
 
 def set_version(root: pathlib.Path, version: str) -> list[pathlib.Path]:
     match = PATTERN.fullmatch(version)
     if match is None:
-        raise ValueError('Version must be YY.MM.DD or YY.MM.DD-SNAPSHOT')
-    datetime.date(2000 + int(match[1]), int(match[2]), int(match[3]))
+        raise ValueError('Version must be YY.MM.PP or YY.MM.PP-SNAPSHOT with a valid month')
     changes = {}
     for path in sorted(root.rglob('pom.xml')):
         if {'target', '.git'} & set(path.relative_to(root).parts):
@@ -32,7 +30,8 @@ def set_version(root: pathlib.Path, version: str) -> list[pathlib.Path]:
         # Only the project's own direct version, never versions in plugins or foreign parents.
         parsed = ET.fromstring(content)
         own = parsed.findtext('m:version', namespaces=NS)
-        if own:
+        group = parsed.findtext('m:groupId', namespaces=NS) or parsed.findtext('m:parent/m:groupId', namespaces=NS)
+        if own and group and (group == 'org.fireflyframework' or group.startswith('org.fireflyframework.')):
             # Temporarily mask child blocks to locate the direct project version.
             masked = re.sub(r'<(parent|dependencies|dependencyManagement|build|profiles|properties)>.*?</\1>', lambda m: ' ' * len(m[0]), content, flags=re.S)
             location = re.search(r'<version>[^<]+</version>', masked)

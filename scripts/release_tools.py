@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
-FINAL_VERSION = re.compile(r'\d{2}\.\d{2}\.\d{2}(?:-r[1-9]\d*)?')
+FINAL_VERSION = re.compile(r'\d{2}\.(?:0[1-9]|1[0-2])\.\d{2}')
 
 
 def check_reactor(root, tag=None, expected=None, snapshot=False):

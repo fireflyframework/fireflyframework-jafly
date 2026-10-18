@@ -21,12 +21,11 @@
     </parent>
 
     <properties>
+        <fireflyframework.version>26.10.17-SNAPSHOT</fireflyframework.version>
         <java.version>25</java.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Align Lombok with the framework; the Spring Boot managed version predates JDK 25/26 support -->
-        <lombok.version>1.18.42</lombok.version>
     </properties>
 
     <dependencies>

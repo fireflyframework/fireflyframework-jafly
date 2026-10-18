@@ -33,8 +33,7 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.ext.logging.LoggingFeature;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.handler.WSHandlerConstants;
 
@@ -280,18 +279,11 @@ public class SoapServiceClientImpl implements SoapClient {
     /**
      * Configures SOAP message logging interceptors for debugging.
      */
-    @SuppressWarnings("deprecation")
     private void configureMessageLogging() {
         try {
-            // Add logging interceptors for request/response
-            LoggingInInterceptor loggingIn = new LoggingInInterceptor();
-            loggingIn.setPrettyLogging(true);
-
-            LoggingOutInterceptor loggingOut = new LoggingOutInterceptor();
-            loggingOut.setPrettyLogging(true);
-
-            dynamicClient.getInInterceptors().add(loggingIn);
-            dynamicClient.getOutInterceptors().add(loggingOut);
+            LoggingFeature logging = new LoggingFeature();
+            logging.setPrettyLogging(true);
+            logging.initialize(dynamicClient, dynamicClient.getBus());
 
             log.info("SOAP message logging enabled for service '{}'", serviceName);
 

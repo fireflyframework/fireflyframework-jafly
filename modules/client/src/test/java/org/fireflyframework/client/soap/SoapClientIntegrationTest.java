@@ -52,11 +52,11 @@ class SoapClientIntegrationTest {
 
     @BeforeAll
     static void startWireMock() {
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().bindAddress("127.0.0.1").dynamicPort());
         wireMockServer.start();
-        WireMock.configureFor("localhost", wireMockServer.port());
+        WireMock.configureFor("127.0.0.1", wireMockServer.port());
 
-        baseUrl = "http://localhost:" + wireMockServer.port();
+        baseUrl = "http://127.0.0.1:" + wireMockServer.port();
         wsdlUrl = baseUrl + "/calculator.asmx?WSDL";
 
         // Setup WSDL response

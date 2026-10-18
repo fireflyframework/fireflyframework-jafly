@@ -25,7 +25,7 @@ class ErrorHandlingIntegrationTest {
 
     @BeforeAll
     static void setUpClass() {
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().bindAddress("127.0.0.1").dynamicPort());
         wireMockServer.start();
     }
 
@@ -37,7 +37,7 @@ class ErrorHandlingIntegrationTest {
     @BeforeEach
     void setUp() {
         wireMockServer.resetAll();
-        baseUrl = "http://localhost:" + wireMockServer.port();
+        baseUrl = "http://127.0.0.1:" + wireMockServer.port();
         client = ServiceClient.rest("test-service")
             .baseUrl(baseUrl)
             .build();

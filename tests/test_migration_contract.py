@@ -17,6 +17,17 @@ def value(node, name):
 
 
 class MigrationContractTest(unittest.TestCase):
+    def test_postgres_migrations_have_a_runtime_jdbc_driver(self):
+        pom = read(ROOT / 'modules/r2dbc/pom.xml')
+        drivers = [d for d in pom.findall('m:dependencies/m:dependency', NS)
+                   if value(d, 'groupId') == 'org.postgresql' and value(d, 'artifactId') == 'postgresql']
+        self.assertEqual(1, len(drivers), 'Flyway uses JDBC even when application queries use R2DBC')
+        self.assertIn(value(drivers[0], 'scope'), [None, 'compile', 'runtime'])
+
+    def test_standalone_client_example_resolves_its_framework_version(self):
+        example = read(ROOT / 'modules/client/examples/complete-example/pom.xml')
+        self.assertEqual(VERSION, value(example, 'properties/m:fireflyframework.version'))
+
     def test_every_source_is_in_the_root_reactor(self):
         self.assertTrue((ROOT / 'pom.xml').is_file(), 'Jafly root reactor is missing')
         root = read(ROOT / 'pom.xml')

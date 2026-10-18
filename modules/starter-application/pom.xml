@@ -19,6 +19,10 @@
     <description>Starter for application-layer microservices. Enables business process orchestration with context management, security, authorization, and session management.</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
         <!-- Spring Boot WebFlux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -144,6 +148,12 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Gateway's optional JSON-to-gRPC filter requires the unshaded transport. -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
             <optional>true</optional>
         </dependency>
 

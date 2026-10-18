@@ -48,9 +48,9 @@ class DynamicJsonResponseIntegrationTest {
 
     @BeforeAll
     static void setupWireMock() {
-        wireMockServer = new WireMockServer(options().dynamicPort());
+        wireMockServer = new WireMockServer(options().bindAddress("127.0.0.1").dynamicPort());
         wireMockServer.start();
-        baseUrl = "http://localhost:" + wireMockServer.port();
+        baseUrl = "http://127.0.0.1:" + wireMockServer.port();
     }
 
     @AfterAll

@@ -101,9 +101,9 @@
         <opentelemetry.version>1.62.0</opentelemetry.version>
 
         <!-- SOAP / Web Services -->
-        <cxf.version>4.1.4</cxf.version>
+        <cxf.version>4.2.4</cxf.version>
         <jaxws-rt.version>4.0.3</jaxws-rt.version>
-        <wss4j.version>3.0.2</wss4j.version>
+        <wss4j.version>4.0.2</wss4j.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <jaxb-xjc.version>4.0.6</jaxb-xjc.version>
 
@@ -409,6 +409,11 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-security</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-features-logging</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>

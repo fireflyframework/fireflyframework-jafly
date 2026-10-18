@@ -24,7 +24,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.reactive.config.EnableWebFlux;
 
 /**
  * Main application class for Firefly Webhook Management Platform.
@@ -33,7 +32,6 @@ import org.springframework.web.reactive.config.EnableWebFlux;
  * providers with message queue integration using lib-common-eda.
  */
 @SpringBootApplication
-@EnableWebFlux
 @ConfigurationPropertiesScan
 @ComponentScan(basePackages = {
         "org.fireflyframework.webhooks.web",

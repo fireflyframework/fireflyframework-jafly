@@ -48,7 +48,13 @@ def verify():
             if mode == b'100755' and not path.stat().st_mode & 0o111:
                 raise ValueError('Original executable lost its permission: ' + str(path))
             file_count += 1
-    print(f'Verified {len(sources)} exact source import trees, {sum(len(s["refs"]) for s in sources)} original refs, and {file_count} preserved files')
+    pulls = json.loads((ROOT / 'docs/migration/open-pull-heads.json').read_text())
+    for pull in pulls:
+        reference = pull['preserved_ref']
+        alternate = reference.replace('refs/heads/', 'refs/remotes/origin/', 1)
+        if refs.get(reference, refs.get(alternate)) != pull['head']:
+            raise ValueError('Original pull request head is missing or changed: ' + reference)
+    print(f'Verified {len(sources)} exact source import trees, {sum(len(s["refs"]) for s in sources)} original refs, {len(pulls)} pull request heads, and {file_count} preserved files')
 
 
 if __name__ == '__main__':
