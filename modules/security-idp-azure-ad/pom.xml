@@ -21,8 +21,7 @@
     <properties>
         <fireflyframework-security-idp.version>26.10.17-SNAPSHOT</fireflyframework-security-idp.version>
         <microsoft-graph.version>6.23.0</microsoft-graph.version>
-        <msal4j.version>1.17.2</msal4j.version>
-        <azure-identity.version>1.14.2</azure-identity.version>
+        <msal4j.version>1.23.1</msal4j.version>
     </properties>
 
     <dependencies>
@@ -51,7 +50,6 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
-            <version>${azure-identity.version}</version>
         </dependency>
 
         <!-- Spring Boot WebFlux -->

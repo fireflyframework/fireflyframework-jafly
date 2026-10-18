@@ -12,6 +12,8 @@ Use this starter at the infrastructure foundation of a service. Enable optional 
 
 Part of [Team-wide architecture](index.md#team-wide-architecture).
 
+Broker-backed messaging comes from the separate EDA transport adapters. This starter supplies no KCL consumer or AWS Glue schema-registry integration. Applications that add those SDKs must select and qualify their own SDK and protobuf combination.
+
 ## In the onboarding service
 
 A larger onboarding service may adopt this bundle for shared HTTP-client and operational settings. Compare those dependencies with the tutorial's small CQRS/WebFlux set before adding the starter.

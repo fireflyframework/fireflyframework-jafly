@@ -52,9 +52,9 @@ This subproject has no authored `src/test/java` suite. Its Maven build still val
 
 ### Managed platform and tool versions
 
-Versions below are read directly from the candidate parent POM. Spring Boot supplies additional dependency management; consult the effective POM for the complete resolved dependency set.
+Versions below are read directly from the parent POM. Spring Boot supplies additional dependency management; consult the effective POM for the complete resolved dependency set.
 
-| Property | Candidate value |
+| Property | Managed value |
 | --- | --- |
 | `java.version` | `25` |
 | `spring-boot.version` | `4.1.1` |
@@ -66,14 +66,17 @@ Versions below are read directly from the candidate parent POM. Spring Boot supp
 | `spring-cloud-azure.version` | `7.4.0` |
 | `spring-cloud-gcp.version` | `8.2.4` |
 | `maven-compiler-plugin.version` | `3.15.0` |
-| `maven-surefire-plugin.version` | `3.5.4` |
-| `maven-failsafe-plugin.version` | `3.5.4` |
-| `native-maven-plugin.version` | `0.11.4` |
+| `maven-surefire-plugin.version` | `3.6.0` |
+| `maven-failsafe-plugin.version` | `3.6.0` |
+| `native-maven-plugin.version` | `1.1.14` |
 
 ### Imported dependency platforms
 
 | BOM | Version expression |
 | --- | --- |
+| `com.fasterxml.jackson:jackson-bom` | `${jackson2-bom.version}` |
+| `tools.jackson:jackson-bom` | `${jackson-bom.version}` |
+| `org.glassfish.jersey:jersey-bom` | `${jersey.version}` |
 | `org.springframework.boot:spring-boot-dependencies` | `${spring-boot.version}` |
 | `org.springframework.cloud:spring-cloud-dependencies` | `${spring-cloud.version}` |
 | `org.testcontainers:testcontainers-bom` | `${testcontainers.version}` |
