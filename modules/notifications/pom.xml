@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.fireflyframework</groupId>
+        <artifactId>fireflyframework-parent</artifactId>
+        <version>26.07.06</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-notifications</artifactId>
+    <version>26.07.06</version>
+    <packaging>pom</packaging>
+
+    <name>Firefly Framework - Notifications Library</name>
+    <description>Ports, DTOs and application services for Notifications (email, sms, push)</description>
+
+    <modules>
+        <module>fireflyframework-notifications-core</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
