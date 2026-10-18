@@ -1,0 +1,71 @@
+name: Documentation
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - requirements-docs.txt
+      - scripts/check_docs.py
+      - scripts/generate_docs_nav.py
+      - scripts/generate_brand.mjs
+      - tests/test_docs_contract.py
+      - '**/pom.xml'
+      - .github/workflows/docs.yml
+  pull_request:
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - requirements-docs.txt
+      - scripts/check_docs.py
+      - scripts/generate_docs_nav.py
+      - scripts/generate_brand.mjs
+      - tests/test_docs_contract.py
+      - '**/pom.xml'
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jafly-docs-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Check and build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      - name: Install pinned documentation environment
+        run: python -m pip install -r requirements-docs.txt
+      - name: Check complete artifact coverage and brand provenance
+        run: |
+          python -m unittest discover -s tests -p test_docs_contract.py -v
+          python scripts/check_docs.py
+          python scripts/generate_docs_nav.py --check
+      - name: Build strict documentation site
+        run: python -m mkdocs build --strict
+      - name: Upload reviewed site artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: site
+  deploy:
+    name: Publish documentation to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Deploy verified site artifact
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

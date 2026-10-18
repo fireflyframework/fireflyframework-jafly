@@ -1,299 +1,318 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/cqrs). Build from the monorepo root with `./mvnw -pl :fireflyframework-cqrs -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Common CQRS Library](../../docs/site/assets/modules/cqrs.svg)
 
-# Firefly Framework - CQRS
+# Common CQRS Library
 
-[![CI](https://github.com/fireflyframework/fireflyframework-cqrs/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-cqrs/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Separate commands and queries with reactive dispatch, execution context, validation, and authorization hooks.
 
-> Reactive CQRS framework for Spring Boot — annotation-driven command and query buses with built-in validation, authorization, caching, metrics, and an optional CQRS/EDA bridge.
+Define command/query messages and their handlers, then invoke the appropriate bus. Configure timeouts and query caching through firefly.cqrs; use the EDA integration only when the event transport has also been configured.
 
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [How It Works](#how-it-works)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework CQRS provides a production-ready implementation of the Command Query Responsibility Segregation pattern for reactive Spring Boot microservices. It cleanly separates state-changing **commands** from read-only **queries**, routing each through a dedicated bus (`CommandBus` / `QueryBus`) to a single auto-discovered handler. Every handler is a thin class that extends a base class and implements one method — validation, authorization, metrics, tracing, error mapping, and (for queries) caching are all applied automatically around your business logic.
-
-The module is fully reactive (Project Reactor `Mono`) and integrates with the wider Firefly Framework: it builds on `fireflyframework-kernel` for shared abstractions, `fireflyframework-validators` and Jakarta Bean Validation for command/query validation, `fireflyframework-cache` for pluggable query-result caching (Caffeine, Redis, Hazelcast, JCache, or PostgreSQL — selected automatically), and `fireflyframework-observability` for metrics, tracing, and health. An optional bridge to `fireflyframework-eda` lets command results be published as domain events and lets incoming events invalidate query caches — giving you read/write eventual consistency with two annotations.
-
-An `ExecutionContext` carries cross-cutting request data — user ID, tenant ID, organization ID, session/request IDs, source, client IP, feature flags, and arbitrary properties — through the command and query pipelines, so handlers and custom authorization logic can be context- and multi-tenant-aware without polluting the command/query payloads. A `CorrelationContext` propagates correlation IDs for end-to-end distributed tracing.
-
-Where it sits in the framework: `fireflyframework-cqrs` is a domain-tier building block. Firefly microservices use it to structure their write and read paths, frequently alongside `fireflyframework-orchestration` (sagas/workflows), `fireflyframework-eventsourcing` (event-sourced aggregates), and the EDA modules for messaging. Spring Boot auto-configuration wires the buses, handler registries, validation, authorization, caching, and Actuator endpoints with zero manual setup.
-
-## Features
-
-- **Reactive `CommandBus` and `QueryBus`** with type-safe, single-handler dispatch (`send(...)` / `query(...)`), each with an `ExecutionContext` overload.
-- **Zero-boilerplate handlers** — extend `CommandHandler<C, R>` or `QueryHandler<Q, R>` and implement only `doHandle(...)`. Command/result types are auto-detected from generics via `GenericTypeResolver`.
-- **Annotation-driven registration** — `@CommandHandlerComponent` and `@QueryHandlerComponent` (meta-annotated with `@Component`) auto-register handlers and expose per-handler options (timeout, retries, metrics, tracing, validation, priority, tags, and for queries: `cacheable`, `cacheTtl`, `cacheKeyFields`, `cacheKeyPrefix`).
-- **`Command<R>` and `Query<R>` interfaces** with sensible defaults for command ID, timestamp, correlation ID, initiator, metadata, and a `getResultType()` hint.
-- **Built-in validation** — automatic Jakarta Bean Validation (`@NotNull`, `@Email`, ...) plus optional `customValidate()` for business rules, run by the bus before the handler executes (`AutoValidationProcessor`, `CommandValidationService`).
-- **Pluggable authorization** — declarative `authorize()` / `authorize(ExecutionContext)` on commands and queries, an `AuthorizationService` with metrics, optional result caching, and the `@CustomAuthorization` documentation annotation.
-- **Query-result caching** — transparent caching via `fireflyframework-cache` with a dedicated CQRS cache manager (key prefix `firefly:cqrs:queries`, `CacheType.AUTO` provider selection), smart cache-key generation, and programmatic `clearCache` / `clearAllCache`.
-- **Context-aware handlers** — `ContextAwareCommandHandler` / `ContextAwareQueryHandler` and the `doHandle(command, context)` overload for multi-tenant, user-aware processing.
-- **Fluent builders** — `CommandBuilder` and `QueryBuilder` for ad-hoc construction.
-- **CQRS/EDA bridge (optional)** — `@PublishDomainEvent` auto-publishes a command result as a domain event, and `@InvalidateCacheOn` clears the query cache when matching events arrive. Activates only when `fireflyframework-eda` is on the classpath.
-- **Observability** — `CommandMetricsService`, a CQRS Actuator endpoint (`/actuator/cqrs` with `commands`, `queries`, `handlers`, `health` selectors) and a `CqrsHealthIndicator` for `/actuator/health/cqrs`.
-- **Spring Boot auto-configuration** — `CqrsAutoConfiguration`, `CqrsActuatorAutoConfiguration`, and `CqrsEdaAutoConfiguration`, all gated by `@ConditionalOnProperty` and `@ConditionalOnMissingBean` so every bean is overridable.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- (Optional) A cache provider via `fireflyframework-cache` — Caffeine in-process by default; add a Redis/Hazelcast/JCache/PostgreSQL adapter for distributed query caching.
-- (Optional) `fireflyframework-eda` with a transport (e.g. Kafka or RabbitMQ) to enable the CQRS/EDA bridge.
+[Module guide](../../docs/site/modules/cqrs.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
 ## Installation
 
-Add the dependency. The version is managed by the Firefly Framework BOM / parent, so you normally omit `<version>`:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <!-- version managed by fireflyframework-parent / BOM -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If you are not inheriting the Firefly parent, import the BOM in your `<dependencyManagement>` (or pin the version explicitly):
+## Quick start
 
-```xml
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.fireflyframework</groupId>
-            <artifactId>fireflyframework-bom</artifactId>
-            <version>26.05.08</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-```
+The runnable example is a customer onboarding service. `POST /applications` submits an applicant's name and email through `CommandBus`; `GET /applications/{id}` reads the saved application through `QueryBus`.
 
-## Quick Start
+Use the [first-service tutorial](../../docs/site/getting-started.md) for the complete Maven project, main class, run commands, and HTTP tests. The classes here belong to that project. Its repository is an in-memory map that loses data on restart, and its query disables caching. Authentication, outbound events, and a database are later integration choices.
 
-### 1. Define a command and its handler
+### Submit a customer application
+
+[SubmitApplication.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/SubmitApplication.java):
 
 ```java
-import org.fireflyframework.cqrs.command.Command;
-import org.fireflyframework.cqrs.command.CommandHandler;
-import org.fireflyframework.cqrs.annotations.CommandHandlerComponent;
-import jakarta.validation.constraints.NotBlank;
+package com.example.jafly;
+
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
+import org.fireflyframework.cqrs.command.Command;
+
+public record SubmitApplication(String commandId, @NotBlank String applicantName,
+                                @NotBlank @Email String email) implements Command<OnboardingApplication> {
+    public SubmitApplication(String applicantName, String email) {
+        this(UUID.randomUUID().toString(), applicantName, email);
+    }
+
+    @Override
+    public String getCommandId() {
+        return commandId;
+    }
+
+    @Override
+    public Class<OnboardingApplication> getResultType() {
+        return OnboardingApplication.class;
+    }
+}
+```
+
+[SubmitApplicationHandler.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/SubmitApplicationHandler.java):
+
+```java
+package com.example.jafly;
+
+import java.util.UUID;
+import org.fireflyframework.cqrs.annotations.CommandHandlerComponent;
+import org.fireflyframework.cqrs.command.CommandHandler;
 import reactor.core.publisher.Mono;
 
-// Command: an immutable intention to change state. Jakarta constraints are validated automatically.
-public record CreateAccountCommand(
-        @NotBlank String name,
-        @Email String email) implements Command<AccountResult> {}
-
-// Handler: extend CommandHandler and implement doHandle() — that's the only boilerplate.
 @CommandHandlerComponent
-public class CreateAccountHandler extends CommandHandler<CreateAccountCommand, AccountResult> {
+public class SubmitApplicationHandler extends CommandHandler<SubmitApplication, OnboardingApplication> {
+    private final InMemoryApplicationRepository repository;
 
-    private final AccountService accountService;
-
-    public CreateAccountHandler(AccountService accountService) {
-        this.accountService = accountService;
+    public SubmitApplicationHandler(InMemoryApplicationRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    protected Mono<AccountResult> doHandle(CreateAccountCommand command) {
-        // Validation, authorization, metrics, tracing and error handling are already applied.
-        return accountService.create(command.name(), command.email());
+    protected Mono<OnboardingApplication> doHandle(SubmitApplication command) {
+        var application = new OnboardingApplication(UUID.randomUUID(), command.applicantName(), command.email());
+        return repository.save(application);
     }
 }
 ```
 
-### 2. Define a query and its handler
+### Read an application by ID
+
+[FindApplication.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/FindApplication.java):
 
 ```java
+package com.example.jafly;
+
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import org.fireflyframework.cqrs.query.Query;
-import org.fireflyframework.cqrs.query.QueryHandler;
+
+public record FindApplication(String queryId, @NotNull UUID applicationId) implements Query<OnboardingApplication> {
+    public FindApplication(UUID applicationId) {
+        this(UUID.randomUUID().toString(), applicationId);
+    }
+
+    @Override
+    public String getQueryId() {
+        return queryId;
+    }
+
+    @Override
+    public Class<OnboardingApplication> getResultType() {
+        return OnboardingApplication.class;
+    }
+
+    @Override
+    public boolean isCacheable() {
+        return false;
+    }
+}
+```
+
+[FindApplicationHandler.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/FindApplicationHandler.java):
+
+```java
+package com.example.jafly;
+
 import org.fireflyframework.cqrs.annotations.QueryHandlerComponent;
+import org.fireflyframework.cqrs.query.QueryHandler;
 import reactor.core.publisher.Mono;
 
-public record GetAccountQuery(String accountId) implements Query<AccountResult> {}
+@QueryHandlerComponent(cacheable = false)
+public class FindApplicationHandler extends QueryHandler<FindApplication, OnboardingApplication> {
+    private final InMemoryApplicationRepository repository;
 
-// Results are cached transparently for 5 minutes via fireflyframework-cache.
-@QueryHandlerComponent(cacheable = true, cacheTtl = 300)
-public class GetAccountHandler extends QueryHandler<GetAccountQuery, AccountResult> {
-
-    private final AccountService accountService;
-
-    public GetAccountHandler(AccountService accountService) {
-        this.accountService = accountService;
+    public FindApplicationHandler(InMemoryApplicationRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    protected Mono<AccountResult> doHandle(GetAccountQuery query) {
-        return accountService.findById(query.accountId());
+    protected Mono<OnboardingApplication> doHandle(FindApplication query) {
+        return repository.findById(query.applicationId());
     }
 }
 ```
 
-### 3. Dispatch from a controller
+### Store the tutorial state
+
+[OnboardingApplication.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/OnboardingApplication.java):
 
 ```java
+package com.example.jafly;
+
+import java.util.UUID;
+
+public record OnboardingApplication(UUID id, String applicantName, String email) {
+}
+```
+
+[InMemoryApplicationRepository.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/InMemoryApplicationRepository.java):
+
+```java
+package com.example.jafly;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
+
+@Repository
+public class InMemoryApplicationRepository {
+    // Tutorial data belongs to this process and is lost when the application restarts.
+    private final Map<UUID, OnboardingApplication> applications = new ConcurrentHashMap<>();
+
+    public Mono<OnboardingApplication> save(OnboardingApplication application) {
+        return Mono.fromSupplier(() -> {
+            applications.put(application.id(), application);
+            return application;
+        });
+    }
+
+    public Mono<OnboardingApplication> findById(UUID id) {
+        return Mono.defer(() -> Mono.justOrEmpty(applications.get(id)));
+    }
+}
+```
+
+### Expose the two HTTP routes
+
+[ApplicationsController.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/examples/getting-started/src/main/java/com/example/jafly/ApplicationsController.java):
+
+```java
+package com.example.jafly;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import java.net.URI;
+import java.util.UUID;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.query.QueryBus;
-import org.fireflyframework.cqrs.context.ExecutionContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/accounts")
-public class AccountController {
-
+@RequestMapping("/applications")
+public class ApplicationsController {
     private final CommandBus commandBus;
     private final QueryBus queryBus;
 
-    public AccountController(CommandBus commandBus, QueryBus queryBus) {
+    public ApplicationsController(CommandBus commandBus, QueryBus queryBus) {
         this.commandBus = commandBus;
         this.queryBus = queryBus;
     }
 
     @PostMapping
-    public Mono<AccountResult> create(@RequestBody CreateAccountCommand command) {
-        return commandBus.send(command);
+    public Mono<ResponseEntity<OnboardingApplication>> submit(@Valid @RequestBody ApplicationRequest request) {
+        return commandBus.send(new SubmitApplication(request.applicantName(), request.email()))
+                .map(application -> ResponseEntity.created(URI.create("/applications/" + application.id()))
+                        .body(application));
     }
 
     @GetMapping("/{id}")
-    public Mono<AccountResult> get(@PathVariable String id) {
-        // Pass cross-cutting context (user, tenant, feature flags) without touching the query payload.
-        ExecutionContext ctx = ExecutionContext.builder()
-                .withUserId("user-123")
-                .withTenantId("tenant-456")
-                .build();
-        return queryBus.query(new GetAccountQuery(id), ctx);
+    public Mono<ResponseEntity<OnboardingApplication>> find(@PathVariable UUID id) {
+        return queryBus.query(new FindApplication(id))
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    public record ApplicationRequest(@NotBlank String applicantName, @NotBlank @Email String email) {
     }
 }
 ```
 
-### 4. (Optional) Bridge commands and caches to EDA
+The controller returns `201 Created` with a `Location` header for a submission, `200 OK` for a known ID, `404` for an unknown ID, and `400` for invalid name/email input. The handlers use the application's concrete repository; the bus supplies dispatch and its configured processing pipeline.
 
-With `fireflyframework-eda` on the classpath, publish a command result as a domain event and keep query caches fresh:
+### Run and check the application
+
+After installing the required framework libraries, run the standalone project from the repository root:
+
+```sh
+./mvnw -f docs/examples/getting-started/pom.xml spring-boot:run
+```
+
+Submit a fictional applicant from another terminal:
+
+```sh
+curl -i -X POST http://localhost:8080/applications \
+  -H 'Content-Type: application/json' \
+  -d '{"applicantName":"Ada Lovelace","email":"ada@example.com"}'
+```
+
+Use the returned `id` in `GET /applications/{id}`. Run the project's tests with:
+
+```sh
+./mvnw -B -ntp -f docs/examples/getting-started/pom.xml verify
+```
+
+### Authorization and optional bridges
+
+The command/query interfaces allow execution by default. Protected operations need an authorization rule and trusted identity context. Jakarta annotation validation needs a `Validator` bean; the example declares the validation starter.
+
+Publishing a command result requires EDA, an `EventPublisherFactory` bean, the enabled CQRS/EDA bridge, and `@PublishDomainEvent` on the handler. Query invalidation requires a `QueryCacheAdapter` and a matching `@InvalidateCacheOn` event delivered through Spring's application-event path. Connect broker events to that local path explicitly. The onboarding tutorial configures neither bridge.
+
+These annotation declarations are API fragments for an application that has added that infrastructure:
 
 ```java
-@CommandHandlerComponent
-@PublishDomainEvent(destination = "account-events", eventType = "AccountCreated")
-public class CreateAccountHandler extends CommandHandler<CreateAccountCommand, AccountResult> { /* ... */ }
-
-@QueryHandlerComponent(cacheable = true, cacheTtl = 300)
-@InvalidateCacheOn(eventTypes = {"AccountCreated", "AccountUpdated", "AccountDeleted"})
-public class GetAccountHandler extends QueryHandler<GetAccountQuery, AccountResult> { /* ... */ }
+@PublishDomainEvent(destination = "application-events", eventType = "application.submitted")
+@InvalidateCacheOn(eventTypes = {"application.submitted", "application.reviewed"})
 ```
+
+Apply each annotation to its corresponding command or query handler. If you enable query caching, update the tutorial's query and handler cache settings and verify invalidation; its current query intentionally reads the map directly.
 
 ## Configuration
 
-All properties live under the `firefly.cqrs.*` namespace. The values below are the real defaults; you only need to set what you want to change.
+The `firefly.cqrs.authorization` namespace is bound by [AuthorizationProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/config/AuthorizationProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  cqrs:
-    enabled: true                 # master switch for the CQRS framework
-    command:
-      timeout: 30s                # default command processing timeout
-      metrics-enabled: true
-      tracing-enabled: true
-    query:
-      timeout: 15s                # default query processing timeout
-      caching-enabled: true       # enable query-result caching by default
-      cache-ttl: 15m              # default TTL for the dedicated CQRS query cache
-      metrics-enabled: true
-      tracing-enabled: true
-    eda:
-      enabled: true               # CQRS/EDA bridge (only active if fireflyframework-eda is present)
-    authorization:
-      enabled: true               # master switch for authorization checks
-      custom:
-        enabled: true
-        timeout-ms: 5000          # timeout for custom authorize() logic
-      logging:
-        enabled: true
-        log-successful: false     # only log failures/errors when false
-        log-performance: true
-        level: INFO
-      performance:
-        cache-enabled: false      # cache authorization results
-        cache-ttl-seconds: 300
-        cache-max-size: 1000
-        async-enabled: false
-```
-
-### Key properties
-
-| Property | Default | Description |
+| Setting | Java type | Source default |
 | --- | --- | --- |
-| `firefly.cqrs.enabled` | `true` | Enables/disables the entire CQRS framework. |
-| `firefly.cqrs.command.timeout` | `30s` | Default per-command processing timeout. |
-| `firefly.cqrs.query.timeout` | `15s` | Default per-query processing timeout. |
-| `firefly.cqrs.query.caching-enabled` | `true` | Turns query-result caching on/off globally. |
-| `firefly.cqrs.query.cache-ttl` | `15m` | Default TTL of the dedicated CQRS query cache. |
-| `firefly.cqrs.eda.enabled` | `true` | Enables the `@PublishDomainEvent` / `@InvalidateCacheOn` bridge (requires `fireflyframework-eda`). |
-| `firefly.cqrs.authorization.enabled` | `true` | Enables authorization on commands and queries. |
-| `firefly.cqrs.authorization.custom.timeout-ms` | `5000` | Timeout (ms) for custom `authorize()` logic. |
-| `firefly.cqrs.authorization.performance.cache-enabled` | `false` | Caches authorization decisions. |
+| `firefly.cqrs.authorization.enabled` | `boolean` | `true` |
+| `firefly.cqrs.authorization.custom` | `Custom` | `new Custom()` |
+| `firefly.cqrs.authorization.logging` | `Logging` | `new Logging()` |
+| `firefly.cqrs.authorization.performance` | `Performance` | `new Performance()` |
 
-> **Query caching note:** the actual cache provider (Caffeine, Redis, Hazelcast, JCache, or PostgreSQL) is selected by `fireflyframework-cache` via `CacheType.AUTO`. Configure the provider through `firefly.cache.*`; the legacy `firefly.cqrs.query.cache.*` keys are deprecated in favor of it.
+The `firefly.cqrs` namespace is bound by [CqrsProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/config/CqrsProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-### Actuator endpoints
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.cqrs.enabled` | `boolean` | `true` |
+| `firefly.cqrs.command` | `Command` | `new Command()` |
+| `firefly.cqrs.query` | `Query` | `new Query()` |
 
-When Spring Boot Actuator is on the classpath, expose the CQRS endpoints:
+## API overview
 
-```yaml
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, metrics, cqrs
+| Type | Contract and responsibility |
+| --- | --- |
+| [`CommandBus`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/command/CommandBus.java) | Interface for the Command Bus in CQRS architecture. |
+| [`QueryBus`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/query/QueryBus.java) | Interface for the Query Bus in CQRS architecture. |
+| [`CommandHandler`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/command/CommandHandler.java) | Base class for all command handlers in the CQRS framework. |
+| [`QueryHandler`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/query/QueryHandler.java) | Base class for all query handlers in the CQRS framework. |
+| [`ExecutionContext`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/context/ExecutionContext.java) | Execution context for CQRS commands and queries. |
+
+## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-cqrs -am verify
+./mvnw -pl :fireflyframework-cqrs -am install
 ```
 
-- `GET /actuator/cqrs` — overview (with `/commands`, `/queries`, `/handlers`, `/health` selectors)
-- `GET /actuator/health/cqrs` — CQRS framework health
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## How It Works
-
-Auto-configuration is split into three classes, registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
-
-- **`CqrsAutoConfiguration`** — wires `CommandBus`, `QueryBus`, the handler registry, validation, authorization, the dedicated `cqrsQueryCacheManager`/`QueryCacheAdapter`, the correlation context, and metrics. Gated on `firefly.cqrs.enabled=true`.
-- **`CqrsActuatorAutoConfiguration`** — registers the `CqrsMetricsEndpoint` and `CqrsHealthIndicator` when Actuator is present.
-- **`CqrsEdaAutoConfiguration`** — registers the EDA bridge (`CommandEventPublisher`, `EventDrivenCacheInvalidator`) when `fireflyframework-eda` is on the classpath and `firefly.cqrs.eda.enabled=true`.
-
-Each command/query flows through its bus: **validate → authorize → dispatch to handler → metrics & tracing**. Every bean is annotated `@ConditionalOnMissingBean`, so you can override any piece by declaring your own.
-
-## Documentation
-
-- Framework hub and module catalog: [github.com/fireflyframework](https://github.com/fireflyframework)
-- In-repo guides under [`docs/`](docs/):
-  - [Quickstart](docs/QUICKSTART.md)
-  - [Architecture](docs/ARCHITECTURE.md)
-  - [Configuration](docs/CONFIGURATION.md)
-  - [Developer Guide](docs/DEVELOPER_GUIDE.md)
-  - [Event Sourcing Integration](docs/EVENT_SOURCING_INTEGRATION.md)
-  - [Examples](docs/examples)
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/cqrs.md).

@@ -1,64 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/backoffice). Build from the monorepo root with `./mvnw -pl :fireflyframework-backoffice -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Common Backoffice Library](../../docs/site/assets/modules/backoffice.svg)
 
-# Firefly Framework - Backoffice
+# Common Backoffice Library
 
-[![CI](https://github.com/fireflyframework/fireflyframework-backoffice/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-backoffice/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Extend application-layer contexts for internal portals, impersonation, and backoffice resource controllers.
 
-> Backoffice layer library extending the application module with customer impersonation, audit trail, and enhanced security context.
+Use BackofficeContext and its resolver at the portal boundary. Keep impersonation metadata and security context explicit, and extend the abstract resource controller only for the operations your portal exposes.
 
----
+[Module guide](../../docs/site/modules/backoffice.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework Backoffice extends the application layer for internal backoffice and portal systems. It adds backoffice-specific context management, customer impersonation capabilities, enhanced security context with operator tracking, and abstract controllers tailored for administrative operations.
-
-The module provides `BackofficeContext` and `BackofficeSecurityContext` which extend the application-layer contexts with operator identity, impersonated customer tracking, and audit trail support. Abstract controllers provide standardized REST patterns for backoffice resource management.
-
-This library is designed for internal-facing microservices that require administrative capabilities, customer support workflows, and enhanced audit tracking beyond what the standard application layer provides.
-
-## Features
-
-- `BackofficeContext` with operator identity and impersonation support
-- `BackofficeSecurityContext` extending application security context
-- `AbstractBackofficeController` for standardized backoffice REST endpoints
-- `AbstractBackofficeResourceController` for resource-based CRUD operations
-- `BackofficeContextResolver` for extracting backoffice context from requests
-- `DefaultBackofficeContextResolver` with configurable header mappings
-- `BackofficeSessionContextMapper` for session-to-context mapping
-- Customer impersonation tracking and audit trail
-
-## Requirements
-
-- Java 21+
-- Spring Boot 3.x
-- Maven 3.9+
+A reviewer portal can use backoffice contexts and controller bases to expose internal application-review operations. Define reviewer permissions and any impersonation policy in the host service.
 
 ## Installation
+
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-backoffice</artifactId>
-    <version>26.02.07</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-## Quick Start
+## Quick start
+
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ```java
 import org.fireflyframework.common.backoffice.controller.AbstractBackofficeController;
@@ -80,24 +48,31 @@ public class CustomerBackofficeController extends AbstractBackofficeController {
 
 ## Configuration
 
-```yaml
-firefly:
-  backoffice:
-    context:
-      operator-header: X-Operator-Id
-      impersonation-header: X-Impersonated-Customer
+This module declares no `@ConfigurationProperties` class of its own. Use the constructor/port contracts above and the configuration of the host or related core module.
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`BackofficeContext`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/backoffice/src/main/java/org/fireflyframework/common/backoffice/context/BackofficeContext.java) | Immutable, product-agnostic backoffice context container for internal portal/backoffice requests. |
+| [`BackofficeSecurityContext`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/backoffice/src/main/java/org/fireflyframework/common/backoffice/context/BackofficeSecurityContext.java) | Immutable, product-agnostic security context for backoffice requests. |
+| [`BackofficeContextResolver`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/backoffice/src/main/java/org/fireflyframework/common/backoffice/resolver/BackofficeContextResolver.java) | Interface for resolving the `BackofficeContext` from incoming requests. |
+| [`AbstractBackofficeResourceController`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/backoffice/src/main/java/org/fireflyframework/common/backoffice/controller/AbstractBackofficeResourceController.java) | Thin, product-agnostic base for backoffice resource controllers. |
+| [`AbstractBackofficeController`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/backoffice/src/main/java/org/fireflyframework/common/backoffice/controller/AbstractBackofficeController.java) | Abstract Base Controller for Backoffice Administrative Endpoints This base class is for controllers that operate on administrative resources without requiring customer impersonation. |
+
+## Continue the application
+
+Use the [Security Method Policy guide](../../docs/site/modules/security-method-policy.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-backoffice -am verify
+./mvnw -pl :fireflyframework-backoffice -am install
 ```
 
-## Documentation
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-No additional documentation available for this project.
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/backoffice.md).

@@ -1,75 +1,33 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-test). Build from the monorepo root with `./mvnw -pl :fireflyframework-security-test -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Security Test](../../docs/site/assets/modules/security-test.svg)
 
-# Firefly Framework - Security Test
+# Security Test
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Reactor](https://img.shields.io/badge/Project%20Reactor-3.x-blue.svg)](https://projectreactor.io)
+Create test principals and deterministic policy decisions for security tests.
 
-> Test fixtures for the Firefly hexagonal security platform. Two small, dependency-light helpers — a principal factory and a configurable `PolicyDecisionPort` test double — so application and framework tests can build authenticated identities and exercise policy-enforcement wiring without standing up a real IdP or policy engine.
+Add this module with test scope and construct principals or configure the fake policy port to exercise permit, deny, and indeterminate results. Test fixtures are not production authorization adapters.
 
----
+[Module guide](../../docs/site/modules/security-test.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Where it sits in the platform](#where-it-sits-in-the-platform)
-- [Key types](#key-types)
-- [Usage](#usage)
-- [Dependencies](#dependencies)
-- [Testing](#testing)
-- [License](#license)
+Create applicant/reviewer test principals and deterministic policy outcomes for onboarding authorization tests. These fixtures do not replace a production policy source.
 
-## Overview
+## Installation
 
-This module is the **test-fixture binding** of the Firefly security platform. It exists so that test code never hand-rolls a `SecurityPrincipal`, never wrestles with the reactive security context to install an authenticated token, and never has to embed a real policy engine just to prove that a policy enforcement point (PEP) calls the policy decision point (PDP) correctly.
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
-It ships exactly two production types — `TestPrincipals` and `FakePolicyDecisionPort` — plus the test that exercises them. There is no auto-configuration, no Spring context, and no vendor SDK. The fixtures are plain factories and a hand-written test double; they compile against the platform's domain and port contracts only.
-
-Because the double records the last `(action, resource)` it was asked about and replays a predetermined `Decision`, tests can assert *that* a PEP consulted the PDP and *what* it asked, independently of any real authorization logic.
-
-## Where it sits in the platform
-
-The security platform is layered hexagonally; dependencies point inward, and test fixtures attach as an outboard, test-time adapter:
-
-```
-security-api  →  security-spi  →  security-core  →  security-webflux  →  security-test
- (ports +         (driven           (neutral          (reactive             (this module:
-  domain)          ports)            engine)            Spring Security        test doubles for
-                                                        bindings)              domain + ports)
+```xml
+<dependency>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-security-test</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
 ```
 
-- **`security-api`** defines the domain this module builds and returns: `SecurityPrincipal`, `Decision`.
-- **`security-spi`** defines the driven port this module fakes: `PolicyDecisionPort`.
-- **`security-webflux`** supplies the reactive Spring Security token, `FireflyAuthenticationToken`, which `TestPrincipals` constructs for installation into the reactive security context.
-- **This module** depends on `security-api`, `security-spi`, and `security-webflux` (plus `reactor-core`) and contributes no runtime beans — it is meant to be a `test`-scoped dependency of other modules and of applications.
+## Quick start
 
-It imports no vendor SDK and starts no Spring context.
-
-## Key types
-
-| Type | Role |
-| --- | --- |
-| `TestPrincipals` | Final factory of static helpers building `SecurityPrincipal`s and authenticated `FireflyAuthenticationToken`s for tests. |
-| `FakePolicyDecisionPort` | Configurable `PolicyDecisionPort` test double: returns a predetermined `Decision` and records the last `action`/`resource` it was asked to authorize. |
-
-`TestPrincipals` (all static, the class is non-instantiable):
-
-- `user(String subject, String... authorities)` — a `SecurityPrincipal` with the given subject and authorities.
-- `user(String subject, Set<String> authorities, Set<String> scopes)` — a principal carrying both authorities and OAuth2 scopes.
-- `authentication(String subject, String... authorities)` — an authenticated `FireflyAuthenticationToken` ready for `ReactiveSecurityContextHolder`.
-
-`FakePolicyDecisionPort`:
-
-- `permitAll()` / `denyAll(String reason)` — factory shortcuts wrapping `Decision.permit()` / `Decision.deny(reason)`.
-- `new FakePolicyDecisionPort(Decision next)` — start from an explicit decision.
-- `returning(Decision decision)` — fluently swap the decision the double will replay next.
-- `lastAction()` / `lastResource()` — read back what the last `authorize(...)` call was asked about.
-- `authorize(SecurityPrincipal, String action, String resource, Map<String,Object> context)` — the `PolicyDecisionPort` contract; records `action`/`resource` and returns `Mono.just(next)`.
-
-Domain types consumed (from `security-api`): `SecurityPrincipal`, `Decision`. Driven port faked (from `security-spi`): `PolicyDecisionPort`. Reactive token built (from `security-webflux`): `FireflyAuthenticationToken`.
-
-## Usage
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 Add the module as a `test`-scoped dependency, then build identities and inject policy decisions directly:
 
@@ -104,48 +62,30 @@ assertThat(pdp.lastResource()).isEqualTo("/api/reports");
 
 `FakePolicyDecisionPort` is mutable and `volatile`-backed, so the same instance can be reconfigured between assertions with `returning(...)`.
 
-## Dependencies
+## Configuration
 
-| Scope | Artifact | Why |
-| --- | --- | --- |
-| compile | `fireflyframework-security-api` | `SecurityPrincipal`, `Decision` |
-| compile | `fireflyframework-security-spi` | `PolicyDecisionPort` |
-| compile | `fireflyframework-security-webflux` | `FireflyAuthenticationToken` |
-| compile | `io.projectreactor:reactor-core` | `Mono` return type of `authorize(...)` |
-| test | `org.junit.jupiter:junit-jupiter`, `org.assertj:assertj-core`, `io.projectreactor:reactor-test` | the module's own self-test |
+This module declares no `@ConfigurationProperties` class of its own. Use the constructor/port contracts above and the configuration of the host or related core module.
 
-Versions are managed by the Firefly parent/BOM. Depend on it from a consuming module like:
+## API overview
 
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-security-test</artifactId>
-    <scope>test</scope>
-</dependency>
+| Type | Contract and responsibility |
+| --- | --- |
+| [`FakePolicyDecisionPort`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/FakePolicyDecisionPort.java) | A configurable `PolicyDecisionPort` test double that returns a predetermined decision and records the last request it received, so tests can assert PEP wiring without a real policy engine. |
+| [`TestPrincipals`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/TestPrincipals.java) | Factory helpers for building `SecurityPrincipal`s and `FireflyAuthenticationToken`s in tests, so application test code does not hand-roll principals or wrestle with the security context. |
+
+## Continue the application
+
+Use the [Security Method Policy guide](../../docs/site/modules/security-method-policy.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-security-test -am verify
+./mvnw -pl :fireflyframework-security-test -am install
 ```
 
-If you are not inheriting the Firefly parent, pin the version explicitly:
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-security-test</artifactId>
-    <version>26.06.01</version>
-    <scope>test</scope>
-</dependency>
-```
-
-## Testing
-
-The module ships its own unit test, `SecurityTestFixturesTest`, which exercises both fixtures as plain JUnit 5 tests (no Spring context, `StepVerifier` for the reactive call):
-
-- **`TestPrincipals`** — `user("u1", "admin").hasAuthority("admin")` is true; `authentication("u1", "admin").securityPrincipal().subject()` equals `"u1"` and the token reports `isAuthenticated()`.
-- **`FakePolicyDecisionPort`** — `permitAll().authorize(...)` emits a `granted()` `Decision` and records `lastAction()` / `lastResource()` (`read` / `doc:1`); `denyAll("nope").authorize(...)` emits a non-granted `Decision`.
-
-These fixtures themselves back the negative-path integration tests elsewhere in the platform — for example `ResourceServerIntegrationTest` in `fireflyframework-security-resource-server`, whose contributed deny rules prove the default-deny / policy-enforcement path independently of authentication.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/security-test.md).

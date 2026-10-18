@@ -1,97 +1,38 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/notifications-resend). Build from the monorepo root with `./mvnw -pl :fireflyframework-notifications-resend -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Notifications - Resend](../../docs/site/assets/modules/notifications-resend.svg)
 
-# Firefly Framework - Notifications Resend Adapter
+# Notifications - Resend
 
-[![CI](https://github.com/fireflyframework/fireflyframework-notifications-resend/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-notifications-resend/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Send email through the Resend provider adapter.
 
-> Resend email transport adapter for the Firefly Framework notifications abstraction — drop it on the classpath, set one property, and send email through the Resend API reactively.
+Add the adapter and notifications-core, configure the Resend API key/sender settings, and use the common email service contract. Provider acceptance of a request is distinct from delivery to the recipient mailbox.
 
----
+[Module guide](../../docs/site/modules/notifications-resend.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [How It Works](#how-it-works)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-`fireflyframework-notifications-resend` is a pluggable **email provider adapter** for the Firefly Framework notifications subsystem. It implements the `EmailProvider` SPI defined in `fireflyframework-notifications-core` and routes outbound email through [Resend](https://resend.com), a developer-focused transactional email API.
-
-The notifications core defines a transport-agnostic contract (`EmailProvider`, `EmailRequestDTO`, `EmailResponseDTO`) so that application and domain code never depends on a specific email vendor. This module is one of several interchangeable backends for that contract: you select it at runtime by setting `firefly.notifications.email.provider=resend`. Swapping vendors becomes a configuration change rather than a code change.
-
-The adapter is fully reactive (Project Reactor `Mono`) and builds on `fireflyframework-client`'s `RestClient`/`ServiceClient`, so it inherits the framework's HTTP client conventions (JSON content negotiation, bearer-token auth headers, and a named client instance). Auto-configuration wires everything automatically once the module is on the classpath and a Resend API key is present — there are no beans to declare by hand.
-
-Where it sits in the framework:
-
-- **Core SPI** — [`fireflyframework-notifications-core`](https://github.com/fireflyframework/fireflyframework-notifications-core) defines the `EmailProvider` interface and email DTOs this adapter implements.
-- **Sibling adapters** — other email/SMS/push providers implement the same SPIs; only one email provider is active per application, chosen by `firefly.notifications.email.provider`.
-- **HTTP client** — [`fireflyframework-client`](https://github.com/fireflyframework/fireflyframework-client) supplies the reactive `RestClient` used to call the Resend REST API.
-
-## Features
-
-- **`EmailProvider` implementation** (`ResendEmailProvider`) backed by the Resend `POST /emails` endpoint.
-- **Reactive, non-blocking** delivery returning `Mono<EmailResponseDTO>`; the blocking-friendly call is dispatched on `Schedulers.boundedElastic()`.
-- **Spring Boot auto-configuration** (`ResendAutoConfiguration`) activated by the `firefly.notifications.email.provider=resend` selector and the presence of an API key — no manual bean definitions required.
-- **Rich message support** — HTML and/or plain-text bodies, multiple `to`/`cc`/`bcc` recipients, and file attachments (automatically Base64-encoded with optional content type).
-- **Sensible `from` resolution** — uses the per-message `from` when supplied, otherwise falls back to the configured `default-from`.
-- **Resilient by default** — delivery errors are caught and surfaced as a structured `EmailResponseDTO.error(...)` rather than propagating raw exceptions.
-- **Named, secured HTTP client** — a dedicated `resend` `RestClient` is built with JSON content type and a `Bearer` authorization header derived from your API key.
-- **Override-friendly** — every auto-configured bean is `@ConditionalOnMissingBean`, so you can supply your own `RestClient` or `EmailProvider` to customize behavior.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- `fireflyframework-notifications-core` on the classpath (transitively provided by this module)
-- A [Resend](https://resend.com) account with an API key and at least one verified sending domain/address
+Resend is another email provider for application confirmations. Select it through its provider property, configure the API key, and register a core facade only when the application uses that service API.
 
 ## Installation
 
-Add the adapter alongside the notifications core. The version is managed by the Firefly parent/BOM, so you normally omit `<version>`:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications-resend</artifactId>
-    <!-- version managed by the Firefly Framework parent/BOM -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-This adapter declares a compile-scoped dependency on `fireflyframework-notifications-core` and `fireflyframework-client`, so they are pulled in transitively.
+## Quick start
 
-If your project does not inherit the Firefly parent, import the BOM in `dependencyManagement` (or pin an explicit `<version>` such as `26.05.07`):
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-```xml
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.fireflyframework</groupId>
-            <artifactId>fireflyframework-bom</artifactId>
-            <version>26.05.07</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-```
+If you use a core channel service instead of the provider SPI directly, [register the matching service implementation explicitly](../../docs/site/modules/notifications-core.md#quick-start). Provider auto-configuration does not expand the application's component scan.
 
-## Quick Start
+1. Add the dependency (see [Installation](#installation)).
 
-**1. Add the dependency** (see [Installation](#installation)).
-
-**2. Select Resend and provide credentials** in `application.yml`:
+2. Select Resend and provide credentials in `application.yml`:
 
 ```yaml
 firefly:
@@ -103,7 +44,7 @@ firefly:
       default-from: "Acme <no-reply@acme.com>"
 ```
 
-**3. Inject `EmailProvider` and send a message** — your code depends only on the core SPI, never on Resend:
+3. Inject `EmailProvider` and send a message. Your code depends only on the core SPI, never on Resend:
 
 ```java
 import org.fireflyframework.notifications.interfaces.dtos.email.v1.EmailRequestDTO;
@@ -139,48 +80,35 @@ On success the returned `EmailResponseDTO` carries the Resend message id; on fai
 
 ## Configuration
 
-All properties live under the `firefly.notifications.resend` prefix, except the provider selector which is shared by the notifications core.
+The `firefly.notifications.resend` namespace is bound by [ResendProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/properties/v1/ResendProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  notifications:
-    email:
-      provider: resend                       # required: activates this adapter
-    resend:
-      api-key: ${RESEND_API_KEY}             # required: your Resend API key (re_...)
-      default-from: "Acme <no-reply@acme.com>" # optional: fallback sender when a message omits `from`
-      base-url: https://api.resend.com        # optional: Resend API base URL (override for tests/proxies)
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.notifications.resend.api-key` | `String` | `not initialized` |
+| `firefly.notifications.resend.default-from` | `String` | `not initialized` |
+| `firefly.notifications.resend.base-url` | `String` | `"https://api.resend.com"` |
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`ResendEmailProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/core/v1/ResendEmailProvider.java) | Defines `sendEmail`, `buildPayload` operations. |
+| [`ResendProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/properties/v1/ResendProperties.java) | Carries `apiKey`, `defaultFrom`, `baseUrl` data; field constraints and defaults are declared in the linked source. |
+| [`ResendAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/config/v1/ResendAutoConfiguration.java) | Defines `resendRestClient`, `resendEmailProvider` operations. |
+
+## Continue the application
+
+Use the [Notifications Core guide](../../docs/site/modules/notifications-core.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-notifications-resend -am verify
+./mvnw -pl :fireflyframework-notifications-resend -am install
 ```
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `firefly.notifications.email.provider` | _(none)_ | Selector that activates this adapter. Must equal `resend` for the auto-configuration to apply. |
-| `firefly.notifications.resend.api-key` | _(none)_ | Resend API key used as the `Bearer` token. **Required** — the `RestClient`/`EmailProvider` beans are only created when this is present. |
-| `firefly.notifications.resend.default-from` | _(none)_ | Sender used when an `EmailRequestDTO` does not specify `from`. |
-| `firefly.notifications.resend.base-url` | `https://api.resend.com` | Base URL of the Resend REST API. Override to point at a mock server in tests. |
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-The auto-configuration is gated by two conditions: `firefly.notifications.email.provider=resend` (class-level) and the presence of `firefly.notifications.resend.api-key` (on the `RestClient` bean). If either is missing, the adapter stays inactive and another provider may take over.
-
-## How It Works
-
-1. `ResendAutoConfiguration` is imported via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` and activates when `firefly.notifications.email.provider=resend`.
-2. It builds a named `resend` `RestClient` from `ServiceClient.rest("resend")` with the configured `base-url`, JSON content type, and an `Authorization: Bearer <api-key>` header.
-3. It registers `ResendEmailProvider` as the `EmailProvider` bean (unless one is already defined).
-4. `ResendEmailProvider.sendEmail(...)` translates the `EmailRequestDTO` into the Resend JSON payload (`from`, `to`, `subject`, `html`/`text`, `cc`, `bcc`, Base64 `attachments`) and `POST`s it to `/emails`, mapping the response id into `EmailResponseDTO.success(id)`.
-
-## Documentation
-
-- Framework hub and module catalog: [Firefly Framework on GitHub](https://github.com/fireflyframework)
-- Notifications core SPI: [fireflyframework-notifications-core](https://github.com/fireflyframework/fireflyframework-notifications-core)
-- Reactive HTTP client: [fireflyframework-client](https://github.com/fireflyframework/fireflyframework-client)
-- Resend API reference: [resend.com/docs](https://resend.com/docs)
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/notifications-resend.md).

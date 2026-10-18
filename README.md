@@ -1,51 +1,69 @@
-# jafly — Firefly Framework for Java
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/site/assets/brand/jafly-banner-dark.svg">
+  <img src="docs/site/assets/brand/jafly-banner-light.svg" alt="jafly, Java framework by Firefly" width="100%">
+</picture>
 
-Java application architecture on **Spring Boot 4.1.1**, Spring Cloud 2025.1.3, Spring WebFlux and Java 25.
+<p align="center">
+  <a href="https://fireflyframework.github.io/fireflyframework-jafly/">Documentation</a> ·
+  <a href="docs/site/getting-started.md">Get started</a> ·
+  <a href="docs/site/modules/index.md">Module catalog</a> ·
+  <a href="https://fireflyframework.org">Framework by Firefly</a>
+</p>
 
-This repository consolidates the 63 Java framework repositories into one Maven reactor and one release train. Existing `org.fireflyframework` artifact names and Java packages are preserved. Python, PHP, Agentic, Go, Rust, .NET and frontend frameworks retain their own repositories.
+<p align="center">
+  <a href="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/ci.yml"><img src="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/ci.yml/badge.svg?branch=main" alt="Framework CI"></a>
+  <a href="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/docs.yml"><img src="https://github.com/fireflyframework/fireflyframework-jafly/actions/workflows/docs.yml/badge.svg?branch=main" alt="Documentation build and publication"></a>
+  <img src="https://img.shields.io/badge/Java-25-10110f?style=flat-square" alt="Java 25">
+  <img src="https://img.shields.io/badge/Spring_Boot-4.1.1-10110f?style=flat-square" alt="Spring Boot 4.1.1">
+  <img src="https://img.shields.io/badge/Maven-3.9.16-10110f?style=flat-square" alt="Maven 3.9.16 wrapper">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Code_license-Apache_2.0-855414?style=flat-square" alt="Code license: Apache 2.0"></a>
+</p>
 
-## Build
+Jafly adds application libraries to Spring Boot, WebFlux, and Reactor. Use its command and query buses to structure operations, then add coordination, messaging, security, or provider adapters where your service needs them.
 
-Requirements: JDK 25, Maven 3.9+, and Docker for container-backed integration tests.
+The framework parent and BOM manage compatible module versions. The platform uses Spring Boot 4.1.1, Spring Cloud 2025.1.3, and Java 25.
+
+The [first service tutorial](docs/site/getting-started.md) builds a customer onboarding service with command and query handlers, then tests it over HTTP. See [installation](docs/site/installation.md) for the current source version and registry setup.
+
+## Start with the source
+
+Use JDK 25, Python 3, Git, and a running Docker engine for container-backed integration tests. The checked-in wrapper downloads checksum-pinned Maven 3.9.16.
 
 ```sh
-python3 -m unittest discover -s tests -v
-mvn -B -ntp clean verify
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -B -ntp clean verify
 ```
 
-Build a module together with its prerequisites:
+Build one component together with its prerequisites:
 
 ```sh
-mvn -B -ntp -pl :fireflyframework-web -am verify
+./mvnw -B -ntp -pl :fireflyframework-cqrs -am verify
 ```
 
-Run `mvn install` before building a standalone example under `modules/client/examples/complete-example`. That example deliberately keeps its own Spring Boot parent and is outside the default framework reactor. Agentic bridge samples remain in the reactor and are not published.
+Install the framework locally before consuming the development train from a separate application:
 
-## Repository structure
-
-```text
-pom.xml                    Build aggregation; not a consumer parent
-build/parent/pom.xml       Published fireflyframework-parent
-build/bom/pom.xml          Published fireflyframework-bom
-modules/                   61 framework source repositories
-  kernel/                  Shared exceptions and foundational abstractions
-  cache*/                  Cache core and providers
-  security*/               Security API, SPI, engines and adapters
-  eda*/                    Messaging core and transports
-  ecm*/                    Content management and adapters
-  notifications*/          Notification core and transports
-  starter-*/               Core, domain, data and application starters
-  agentic-bridge/          Java integration with the Python Agentic framework
-scripts/                   Versioning and release verification
-tests/                    Monorepo and release contract tests
-docs/migration/            Original source SHAs, history map and migration evidence
+```sh
+./mvnw -B -ntp install
 ```
 
-Each imported module retains its README, documentation, resources, tests, examples and license. Multi-module components retain their internal layout. The root `.github/workflows` directory owns all active Java CI/CD; nested imported workflow files are historical and are not executed by GitHub Actions.
+Windows users can use `mvnw.cmd`. See [installation](docs/site/installation.md) for prerequisites and setup troubleshooting, or the [first application tutorial](docs/site/getting-started.md) for a complete small application POM.
 
-## Use from applications
+## Choose your building blocks
 
-Choose either the framework parent or the BOM. The parent supplies build and dependency management; the independent BOM works with an existing application parent. Keep your application's version independent of the framework version.
+| Responsibility | Components |
+| --- | --- |
+| Application structure | [Kernel](docs/site/modules/kernel.md), [CQRS](docs/site/modules/cqrs.md), [orchestration](docs/site/modules/orchestration.md), [event sourcing](docs/site/modules/eventsourcing.md), role-specific starters |
+| Messaging and integration | [EDA](docs/site/modules/eda.md), Kafka, RabbitMQ, PostgreSQL, [HTTP client](docs/site/modules/client.md), callbacks, webhooks, agentic bridge |
+| Data and content | [R2DBC](docs/site/modules/r2dbc.md), cache stores, [ECM](docs/site/modules/ecm.md), content storage and e-signature adapters |
+| Security | API, SPI, core, WebFlux, resource server, method policy, identity providers, and authorization adapters |
+| Delivery and operations | Notifications and providers, observability, validation, configuration, and application/domain/data/core starters |
+
+Use the [module catalog](docs/site/modules/index.md) to choose a library and find its configuration and examples. Read the [architecture guide](docs/site/architecture.md) before deciding which responsibilities belong in your handlers or provider adapters.
+
+## Add Jafly to an application
+
+Use the framework parent when you want its build and dependency management:
 
 ```xml
 <parent>
@@ -56,7 +74,7 @@ Choose either the framework parent or the BOM. The parent supplies build and dep
 </parent>
 ```
 
-Or import the BOM:
+Or retain your existing parent and import the independent BOM:
 
 ```xml
 <dependencyManagement>
@@ -72,29 +90,54 @@ Or import the BOM:
 </dependencyManagement>
 ```
 
-Then declare existing artifacts without repeating their version:
+Then declare the libraries you need:
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-starter-domain</artifactId>
+    <artifactId>fireflyframework-cqrs</artifactId>
 </dependency>
 ```
 
-`26.10.17-SNAPSHOT` is the migration development train. Install it locally with `mvn install`; use only a version whose publication has been verified when configuring a registry consumer. Existing published `26.07.06` coordinates remain immutable.
+The parent and BOM manage the same framework artifact versions. Your application keeps its own version and declares its runtime dependencies. Choose the parent for build management, or import the BOM to keep your existing parent. See [Maven integration details](docs/site/maven.md).
 
-## Version and release
+## Find your way around
 
-All framework artifacts use a single padded CalVer version (`YY.MM.DD`, or `YY.MM.DD-SNAPSHOT` during development). Change the train with:
-
-```sh
-python3 scripts/set_version.py 26.10.17
-python3 -m unittest discover -s tests -v
-mvn -B -ntp clean verify
+```text
+pom.xml                    Source aggregation; not a consumer parent
+build/parent/              Published fireflyframework-parent
+build/bom/                 Published fireflyframework-bom
+modules/                   61 component repositories and nested projects
+scripts/                   Version, provenance, release, and documentation tools
+tests/                     Monorepo and publishing contract tests
+docs/site/                 Documentation site and brand assets
+docs/migration/            Source history, original commit IDs, migration evidence
 ```
 
-A stable release must use the matching `vYY.MM.DD` tag. Publishing is centralized in the root release workflow and fails on build, signing, deployment or exact publication verification errors. Do not run the old individual-repository release workflows. See [migration and compatibility](docs/migration/README.md) before upgrading a Boot 3 application.
+Components retain their source, tests, examples, resources, and licenses. The standalone complete client example stays outside the default reactor; build it after local framework installation. Agentic bridge samples remain in the reactor for testing and are not published.
 
-## History
+Python, PHP, Agentic, Go, Rust, .NET, and frontend implementations retain their own repositories. The Java agentic bridge integrates with the separate Agentic runtime.
 
-[Source provenance](docs/migration/source-manifest.json) maps all 63 repositories to destination paths, original commit IDs, import commits, branches and tags. Imports preserve original commit ancestry. Historical refs are namespaced `legacy/<source-repository>/<original-ref>` to avoid collisions between the old repositories' identical release tags. Original GitHub issue, pull request and release records retain their source URLs.
+## Develop, document, and release
+
+```sh
+python3 -m unittest discover -s tests -v
+python3 -m unittest discover -s tests/release -v
+python3 scripts/release_tools.py check
+./mvnw -B -ntp clean verify
+```
+
+- [Development workflow](docs/site/development.md): focused builds, tests, and source boundaries.
+- [Documentation workflow](docs/site/documentation.md): pinned MkDocs environment, complete artifact coverage, and strict site builds.
+- [Versioning](docs/site/versioning.md): one `YY.MM.PATCH` train, with a monthly release counter.
+- [Release workflow](docs/site/releases.md): immutable matching tags and independently verified GitHub Packages/Maven Central publication.
+
+Use the workflows at the repository root for Java builds and releases. Workflows retained inside module directories belong to the imported history.
+
+## Preserved history
+
+The [source provenance manifest](docs/migration/source-manifest.json) maps all 63 repositories to destination paths, original source commits, imported branches, and tags. Original main commit IDs remain ancestors of the monorepo. Historical refs use `legacy/<source-repository>/<original-ref>` so identical original release tags do not collide.
+
+Historical GitHub issues, pull requests, and release records retain their original source URLs. See [migration and compatibility](docs/migration/README.md) for import boundaries, cutover, and rollback.
+
+Framework code is [Apache License 2.0](LICENSE). Official Jafly/Firefly artwork and the self-hosted Manrope font retain their separate [brand provenance and notices](docs/site/brand.md).

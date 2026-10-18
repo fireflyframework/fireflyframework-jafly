@@ -1,79 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/starter-domain). Build from the monorepo root with `./mvnw -pl :fireflyframework-starter-domain -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Starter Domain](../../docs/site/assets/modules/starter-domain.svg)
 
-# Firefly Framework - Domain Starter
+# Starter Domain
 
-[![CI](https://github.com/fireflyframework/fireflyframework-starter-domain/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-starter-domain/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Assemble the framework dependencies used by domain services.
 
-> Opinionated starter for domain-layer microservices — DDD patterns, CQRS, SAGA orchestration, and reactive event-driven architecture.
+Use this dependency bundle when a domain service needs the framework CQRS, orchestration, and client stack. It contains no authored production Java API of its own; the behavior comes from its dependencies and their auto-configurations.
 
----
+[Module guide](../../docs/site/modules/starter-domain.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-**Firefly Framework Domain Starter** is an opinionated Spring Boot starter for building domain-layer microservices following Domain-Driven Design (DDD) principles. This starter brings together the essential capabilities needed for implementing business logic in a reactive, event-driven architecture.
-
-Unlike a traditional library, this **starter** is designed to bootstrap domain-tier microservices with pre-configured integrations for:
-
-- **Domain-Driven Design (DDD)**: Aggregate roots, value objects, domain events, and repository patterns
-- **CQRS**: Command/query separation with handler auto-discovery and execution context propagation
-- **SAGA Orchestration**: Distributed transactions via the orchestration engine
-- **Event-Driven Architecture**: Reactive domain event publishing through Kafka, RabbitMQ, or other adapters
-- **Service Communication**: Resilient inter-service communication with circuit breakers and retries
-
-This starter automatically wires up JSON structured logging, orchestration engine integration, and observability infrastructure. It serves as the architectural foundation for domain microservices that implement core business logic while participating in distributed workflows and event streams.
-
-**When to use this starter**: Building domain-layer microservices that encapsulate business rules, coordinate distributed transactions, and emit domain events to drive downstream processing.
-
-## Features
-
-- **DDD Building Blocks**: Domain entities, aggregates, value objects, and repository abstractions
-- **CQRS Integration**: Automatic command/query bus wiring with fireflyframework-cqrs
-- **Orchestration Support**: Saga, TCC, and Workflow patterns via fireflyframework-orchestration
-- **Event-Driven Architecture**: Seamless integration with fireflyframework-eda for domain event publishing
-- **Service Client Framework**: Reactive inter-service communication with resilience patterns
-- **Observability**: JSON structured logging, metrics, and distributed tracing auto-configuration
-- **Reactive-First**: Built on Project Reactor for non-blocking I/O and backpressure handling
-- **Clean Architecture**: Enforces separation between domain logic and infrastructure concerns
-
-## Requirements
-
-- Java 21+
-- Spring Boot 3.x
-- Maven 3.9+
+Use this dependency bundle when application submission/review grows into a domain service with the included CQRS, orchestration, and client facilities. The starter adds dependencies rather than defining the product's handlers.
 
 ## Installation
+
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-domain</artifactId>
-    <version>26.02.07</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-This starter transitively includes:
-- `fireflyframework-cqrs` for command/query handling
-- `fireflyframework-eda` for event publishing
-- `fireflyframework-client` for service communication
-- `fireflyframework-orchestration` for Saga, TCC, and Workflow orchestration
-- `fireflyframework-observability` for metrics and tracing
+## Quick start
 
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ```java
 @Service
@@ -98,25 +51,21 @@ public class AccountSaga {
 
 ## Configuration
 
-```yaml
-firefly:
-  domain:
-    json-logging:
-      enabled: true
-  orchestration:
-    enabled: true
+This module has no authored configuration-properties class. Its behavior is configured through the Maven generator or the dependencies listed below.
+
+## Continue the application
+
+Use the [CQRS guide](../../docs/site/modules/cqrs.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-starter-domain -am verify
+./mvnw -pl :fireflyframework-starter-domain -am install
 ```
 
-## Documentation
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-No additional documentation available for this project.
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/starter-domain.md).

@@ -1,67 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/starter-application). Build from the monorepo root with `./mvnw -pl :fireflyframework-starter-application -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Starter Application](../../docs/site/assets/modules/starter-application.svg)
 
-# Firefly Framework - Starter Application
+# Starter Application
 
-[![CI](https://github.com/fireflyframework/fireflyframework-starter-application/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-starter-application/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Build application-layer request contexts and business process coordination.
 
-> Opinionated starter for application-layer microservices providing business process orchestration, context management, security, authorization, and session management.
+Use the application context/resolver and orchestration facilities to connect authenticated requests to domain operations. Inspect the context and security tests before customizing header or session interpretation.
 
----
+[Module guide](../../docs/site/modules/starter-application.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework Starter Application is an **opinionated starter for application-layer microservices** that orchestrate business processes across domain services. It provides a complete foundation for building application-tier microservices with enterprise-grade context management, security authorization, and session handling.
-
-This starter supplies context management (application config, security context, session context) and security authorization with annotation-driven endpoint protection. It's designed for the **application tier** in a multi-tier architecture — the orchestration layer that coordinates domain services and implements business workflows.
-
-The starter also includes abstract controllers for standardized REST endpoints, configuration caching, domain passthrough for cross-service data propagation, and SPI-based session management.
-
-## Features
-
-- `AppContext` and `AppSecurityContext` for application-wide context management
-- `@Secure` and `@RequireContext` annotations for declarative endpoint security
-- `SecurityAuthorizationService` with configurable endpoint security registry
-- Abstract controllers: `AbstractApplicationController`, `AbstractResourceController`
-- Configuration caching auto-configuration
-- Domain passthrough for cross-service data propagation
-- Session management SPI with `SessionManager` and `SessionContext`
-- Application metadata with `@FireflyApplication` annotation
-- Health indicators for application layer
-- Actuator info contributor for Firefly application metadata
-- Orchestration engine support (Saga, TCC, Workflow) via optional dependency
-
-## Requirements
-
-- Java 21+
-- Spring Boot 3.x
-- Maven 3.9+
+An application-tier onboarding API can use these request/context conventions while coordinating domain services. Populate tenant and identity values only from the service's trusted authentication boundary.
 
 ## Installation
+
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-application</artifactId>
-    <version>26.02.07</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-## Quick Start
+## Quick start
+
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ```java
 import org.fireflyframework.common.application.controller.AbstractApplicationController;
@@ -81,37 +46,37 @@ public class AccountController extends AbstractApplicationController {
 
 ## Configuration
 
-```yaml
-firefly:
-  application:
-    security:
-      enabled: true
-    config-cache:
-      enabled: true
-      ttl: 5m
-    domain-passthrough:
-      enabled: true
+The `firefly.application` namespace is bound by [ApplicationLayerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/config/ApplicationLayerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
+
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.application.security` | `Security` | `new Security()` |
+| `firefly.application.context` | `Context` | `new Context()` |
+| `firefly.application.config` | `Config` | `new Config()` |
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`AbstractApplicationController`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/controller/AbstractApplicationController.java) | Abstract Base Controller for Application-Layer Endpoints This base class is for controllers that operate on application-level resources . |
+| [`ApplicationLayerProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/config/ApplicationLayerProperties.java) | Configuration properties for the Application Layer. |
+| [`AbstractResourceController`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/controller/AbstractResourceController.java) | Abstract Base Controller for Resource Endpoints This base class is a thin, product-agnostic foundation for REST controllers. |
+| [`ConfigResolver`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/resolver/ConfigResolver.java) | Interface for resolving tenant configuration. |
+| [`ContextResolver`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/resolver/ContextResolver.java) | Resolves the product-agnostic `AppContext` for a request from the validated security context. |
+
+## Continue the application
+
+Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-starter-application -am verify
+./mvnw -pl :fireflyframework-starter-application -am install
 ```
 
-## Documentation
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-Additional documentation is available in the [docs/](docs/) directory:
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Usage Guide](docs/USAGE_GUIDE.md)
-- [Security Guide](docs/SECURITY_GUIDE.md)
-- [Security Center Integration](docs/SECURITY_CENTER_INTEGRATION.md)
-- [Api Reference](docs/API_REFERENCE.md)
-- [Cache Architecture](docs/CACHE_ARCHITECTURE.md)
-- [Example Microservice Architecture](docs/EXAMPLE_MICROSERVICE_ARCHITECTURE.md)
-- [Testing](docs/TESTING.md)
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/starter-application.md).

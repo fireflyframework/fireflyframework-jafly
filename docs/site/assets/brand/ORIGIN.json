@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/fireflyframework/brand-kit",
+  "commit": "b64a50e289b853cab54e5d59bc1b092b48c5eec4",
+  "version": "0.2.0",
+  "recipe": "node scripts/generate_brand.mjs /path/to/brand-kit",
+  "identity": "Official outlined jafly familyLogo/familyWordmark; canonical final-y amber light trail; original Firefly endorsement paths",
+  "sources": {
+    "scripts/family-identity.mjs": "4d15ec1a33719d38e9a0a595f4b5c8bfc481f886dc111e481c9595430990d2a6",
+    "scripts/type.mjs": "fbe7eafa47df529cce1dcdd342114fbf40f4f036a1bd232cc46b08a891b2646f",
+    "scripts/identity.mjs": "716ee7409f5d9c400eeccdb2171ae6ec6472d837ab61bb28e8517fc4c1ec6d56",
+    "vendor/firefly/scripts/logo.mjs": "0ab3aa2a78b48307bac75dc7faf7e12f84eb2d44c538b9a4740be9d18aec6f95",
+    "data/brand.json": "207e757449fb09f9739590d79feec61292efac98e836526443183567df16f6ad",
+    "scripts/layout.mjs": "10d3384494c2be48543758869aa6cd1352c41a58d67b8d7b65cc5fa909da980a",
+    "vendor/firefly/scripts/system/machines.mjs": "d0ecbc5ba6e09fe87e9c6ad8cfaf398151b838749f9be4a04ba3f1691b003107",
+    "vendor/firefly/scripts/system/pieces.mjs": "ab22fa20bf80d7c47f4a6d9332cb6ac4e91aa7a6f87416d8bff78d5c79f4aa32",
+    "vendor/firefly/scripts/system/architecture.mjs": "2587885208c91e7eedd7769cac2bd25600b92f671685d83544a533bbfa4205c3",
+    "vendor/firefly/scripts/system/pieces.json": "72e44ce2562b8aafdae673e7f4267183a8aab2e765d37e8c9831e55f87e7cba3",
+    "vendor/firefly/scripts/system/tokens.json": "ca58050beb77767b7fb218c575aa620eed6edbd8c40b727d15a8a8205b250dab",
+    "node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972",
+    "node_modules/@fontsource/manrope/LICENSE": "d826ab6583b12c26807d8716a545bdbbb672df04f48608a364ba9efdbe501c30",
+    "NOTICE.md": "41a01e1ddf5fae9f104635dfbaabd2bfadd165472bffc9a54599f1a3e60d6ac0"
+  },
+  "exports": {
+    "jafly-logo-dark.svg": "ac86df0a9004b57c8674b5bd121fa6e321115275a58d10839a4857388d955c87",
+    "jafly-logo-light.svg": "bdd9f2042ea76374f2aa50ac15900dcd6b935a687c7be43339be21af7a3cb85d",
+    "jafly-banner-dark.svg": "0187f69fbe5813183f29beafc35379558dddbf5f9e555cdd60842d670c4dfbb2",
+    "jafly-banner-light.svg": "b20de9062c550b350e412018baa8ace49b6df5c4bb54557ab086e76ff27f2255",
+    "jafly-wordmark-dark.svg": "e6efcfbb717811234c8ce4f018e7dee666ba1c51cbb5dde967c32462fad4106c",
+    "jafly-wordmark-light.svg": "26435f98d91476f64d310aadccd4b80f52c753787414aaa7fc1c1e9c96f93b93",
+    "framework-mark.svg": "8eaee992779f4ab2f0ee4f82b7f08493b18b6128a937ca4de066e112884ec733",
+    "Manrope-variable.woff2": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972",
+    "OFL.txt": "d826ab6583b12c26807d8716a545bdbbb672df04f48608a364ba9efdbe501c30",
+    "NOTICE.txt": "41a01e1ddf5fae9f104635dfbaabd2bfadd165472bffc9a54599f1a3e60d6ac0"
+  }
+}

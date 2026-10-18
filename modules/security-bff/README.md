@@ -1,107 +1,34 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-bff). Build from the monorepo root with `./mvnw -pl :fireflyframework-security-bff -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Security BFF](../../docs/site/assets/modules/security-bff.svg)
 
-# Firefly Framework - Security BFF
+# Security BFF
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
-[![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-brightgreen.svg)](https://spring.io/projects/spring-security)
+Handle browser OAuth2 login with server-side tokens, an opaque host cookie, CSRF protection, relay, and logout.
 
-> Secure-by-default **token-handler BFF** for Spring WebFlux. A single auto-configuration turns a reactive application (typically a Spring Cloud Gateway) into the confidential OAuth client that runs Authorization Code + PKCE server-side, keeps the user's tokens in the server-side session, and hands the browser only an opaque `__Host-` cookie — no token ever reaches the browser, and no security code is required.
+Configure the provider registration and BFF settings, then test the browser/session and XHR flows. Keep the session store and cookie deployment aligned with HTTPS and the reverse proxy; the module does not require a specific gateway product.
 
----
+[Module guide](../../docs/site/modules/security-bff.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Where it sits in the platform](#where-it-sits-in-the-platform)
-- [What it provides](#what-it-provides)
-- [Key types](#key-types)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Why not `security-oauth2-client`](#why-not-security-oauth2-client)
-- [Login & relay flow](#login--relay-flow)
-- [Testing](#testing)
-- [License](#license)
-
-## Overview
-
-This module is the **token-handler BFF binding** of the Firefly hexagonal security platform. It implements the [OAuth 2.0 for Browser-Based Apps](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps) *token-handler* pattern: the browser authenticates against a confidential server-side client, the tokens never leave the server, and the browser holds only an opaque, `HttpOnly`, `__Host-`-prefixed session cookie.
-
-It is deliberately product-agnostic and **Spring-Cloud-Gateway-agnostic**: it contributes only the security chain and a per-user, session-bound authorized-client manager. Routing, the `TokenRelay` filter and trusted-header stripping stay in the consuming application. The whole module is one `@AutoConfiguration` class (`BffSecurityAutoConfiguration`) plus a properties class. Every bean it contributes is `@ConditionalOnMissingBean`, so an application can override any single piece — the filter chain, the entry point, the logout handler, the authorized-client manager — without forking the module.
-
-## Where it sits in the platform
-
-The security platform is layered hexagonally; this module is the **edge / confidential-client binding**, a sibling of the resource-server binding:
-
-```
-security-api  →  security-spi  →  security-core  →  security-webflux  →  security-bff           →  application
- (ports +         (driven           (neutral          (reactive             (this module:             (Spring Cloud
-  domain)          ports)            engine)            Spring Security        oauth2Login token-        Gateway: routes +
-                                                        bindings)              handler chain)            TokenRelay)
-```
-
-- **This module** wires Spring Security 6's reactive `oauth2Login` into the token-handler chain and exposes a session-bound `ReactiveOAuth2AuthorizedClientManager` so a gateway `TokenRelay` can attach the logged-in user's access token downstream.
-- It pairs with **`security-resource-server`** on the other side of the call: the BFF relays a bearer token to services that this module's resource-server sibling validates.
-
-This module depends only on Spring Security's OAuth2 client + reactive web stack; it imports no vendor SDK and does not require Spring Cloud Gateway at compile time.
-
-## What it provides
-
-`BffSecurityAutoConfiguration` contributes, each gated by `@ConditionalOnMissingBean`:
-
-- **A token-handler `SecurityWebFilterChain`** (`bffSecurityWebFilterChain`):
-  - **`oauth2Login` with forced PKCE.** A `DefaultServerOAuth2AuthorizationRequestResolver` with `OAuth2AuthorizationRequestCustomizers.withPkce()` so the authorization request always carries `code_challenge` (S256) — Spring enables PKCE automatically only for *public* clients, but a confidential token-handler must still send it (required when the IdP enforces PKCE).
-  - **Default-deny authorization.** Only the configured `permit-matchers` are public; every other exchange requires authentication.
-  - **Cookie-mode CSRF.** `CookieServerCsrfTokenRepository.withHttpOnlyFalse()` so a SPA can read and echo the `XSRF-TOKEN`.
-  - **RP-initiated logout.** `OidcClientInitiatedServerLogoutSuccessHandler` clears the session and redirects to the IdP end-session endpoint.
-  - **A browser-aware entry point.** A document request (`Accept: text/html`) is redirected to start the login (`/oauth2/authorization/<registrationId>`); everything else (XHR/fetch) gets a **401** so the SPA can trigger the login navigation itself.
-- **A session-bound authorized-client manager** (`bffAuthorizedClientManager`): a `DefaultReactiveOAuth2AuthorizedClientManager` (authorization-code + refresh-token providers) that reads the token from the `ServerOAuth2AuthorizedClientRepository` (the WebSession, Redis-backed via Spring Session). A gateway `TokenRelay` uses this bean to attach the **logged-in user's** access token to downstream calls — not an M2M token.
-
-## Key types
-
-| Type | Role |
-| --- | --- |
-| `BffSecurityAutoConfiguration` | `@AutoConfiguration` entry point (`@ConditionalOnWebApplication(REACTIVE)`, `@ConditionalOnClass(ServerHttpSecurity, ReactiveClientRegistrationRepository)`); builds the token-handler `SecurityWebFilterChain` and the session-bound authorized-client manager. |
-| `BffSecurityProperties` | `@ConfigurationProperties("firefly.security.bff")` — neutral `registration-id`, public `permit-matchers`, `post-logout-redirect-uri`. |
-
-The auto-configuration is registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
-
-## Requirements
-
-- Java 21+
-- Spring Boot 3.x, Spring Security 6.x
-- A reactive web stack (Spring WebFlux); typically Spring Cloud Gateway in the consuming app for routing + `TokenRelay`
-- An OAuth2 client registration (`spring.security.oauth2.client.*`) — confidential, Authorization Code
-- A server-side session store (Spring Session; Redis in production) to hold the tokens off the browser
-- HTTPS at the edge — the `__Host-` session cookie requires `Secure`
+A browser applicant portal can keep tokens in a server-side session and present the opaque BFF cookie to the browser. Configure the OAuth registration, session storage, HTTPS cookie behavior, and CSRF flow together.
 
 ## Installation
 
-The version is managed by the Firefly parent/BOM, so you can usually omit it. Depend on it directly in the BFF/gateway application:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-bff</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If you are not inheriting the Firefly parent, pin the version explicitly:
+## Quick start
 
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-security-bff</artifactId>
-    <version>26.06.03</version>
-</dependency>
-```
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-## Quick Start
-
-With the module on the classpath and an OAuth2 client registration configured, the token-handler chain is active with **zero security code**. The consuming gateway keeps its routes and the `TokenRelay` + header-stripping filters:
+With the module on the classpath and an OAuth2 client registration configured, the token-handler chain is active with zero security code. The consuming gateway keeps its routes and the `TokenRelay` + header-stripping filters:
 
 ```yaml
 spring:
@@ -143,44 +70,39 @@ firefly:
 
 ## Configuration
 
-All keys live under `firefly.security.bff`:
+The `firefly.security.bff` namespace is bound by [BffSecurityProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffSecurityProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-| Property | Default | Description |
+| Setting | Java type | Source default |
 | --- | --- | --- |
-| `registration-id` | `idp` | Spring OAuth2 client `registration-id`. Neutral on purpose (not the provider name) so the login endpoints are `/oauth2/authorization/<id>` and `/login/oauth2/code/<id>`. |
-| `permit-matchers` | _(empty)_ | Ant-style paths served without authentication (e.g. actuator, docs). The OAuth2 login endpoints are handled by the login filter and need not be listed. |
-| `post-logout-redirect-uri` | `{baseUrl}` | Where to send the browser after an RP-initiated logout completes at the IdP. |
+| `firefly.security.bff.registration-id` | `String` | `"idp"` |
+| `firefly.security.bff.permit-matchers` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.bff.csrf-exempt-matchers` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.bff.post-logout-redirect-uri` | `String` | `"{baseUrl}"` |
+| `firefly.security.bff.xhr-aware-logout` | `boolean` | `false` |
 
-The OAuth2 client itself (provider, client-id/secret, scopes, redirect-uri) is configured with the standard `spring.security.oauth2.client.*` keys, and the session store with `spring.session.*` — this module does not duplicate them.
+## API overview
 
-## Why not `security-oauth2-client`
+| Type | Contract and responsibility |
+| --- | --- |
+| [`BffLoginHook`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffLoginHook.java) | Opt-in extension point invoked once per successful login , in the oauth2Login success handler, before the post-login redirect. |
+| [`BffSecurityProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffSecurityProperties.java) | Configuration for the token-handler BFF security chain (`BffSecurityAutoConfiguration`). |
+| [`BffRefreshTokenFailureWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffRefreshTokenFailureWebFilter.java) | Turns a dead-session token failure into a clean, actionable response. |
+| [`BffSecurityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffSecurityAutoConfiguration.java) | Defines `bffSecurityWebFilterChain`, `NegatedServerWebExchangeMatcher`, `bffAuthorizedClientManager`, `DefaultReactiveOAuth2AuthorizedClientManager` operations. |
+| [`CsrfCookieWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/CsrfCookieWebFilter.java) | Materializes the CSRF token so the `XSRF-TOKEN` cookie is actually delivered to the browser. |
 
-The framework's `security-oauth2-client` module is intentionally **not** used here. Its authorized-client manager is service/M2M-oriented (`client_credentials`); on a gateway it would hijack the `TokenRelay` and attach a **service** token instead of the logged-in **user's** token. This module fills that gap with a manager bound to the user's WebSession, which is exactly what the token-handler pattern needs.
+## Continue the application
 
-## Login & relay flow
+Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration. ## Build and validation
 
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-security-bff -am verify
+./mvnw -pl :fireflyframework-security-bff -am install
 ```
-Browser (cookie)
-  → /oauth2/authorization/<id>     → 302 to IdP /authorize (code_challenge S256)
-  → IdP login
-  → /login/oauth2/code/<id>        → server-side code→token exchange
-  → tokens stored in the WebSession (Spring Session / Redis); browser gets an opaque __Host- cookie
-  → API call (cookie, no bearer)   → TokenRelay reads the session-bound authorized client
-                                    → adds Authorization: Bearer <user access token> downstream
-```
 
-An unauthenticated document request is redirected to the IdP login; an unauthenticated XHR gets **401**. The browser never receives or stores a token.
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## Testing
-
-The module ships a structural test, `BffSecurityAutoConfigurationTest`, that boots the real auto-configuration with a **static** (non-discovery) OAuth client registration so the context starts without a live IdP, Redis or Docker (session in-memory; Redis/Session autoconfig excluded). It asserts the secure-by-default behavior:
-
-- the permit list is reachable without authentication;
-- an unauthenticated XHR call returns **401**, while a browser document request is **redirected** to `/oauth2/authorization/<id>`;
-- `oauth2Login` is wired under the neutral `registration-id` and the authorize redirect targets the IdP authorization endpoint.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/security-bff.md).

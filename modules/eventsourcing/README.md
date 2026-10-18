@@ -1,109 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/eventsourcing). Build from the monorepo root with `./mvnw -pl :fireflyframework-eventsourcing -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Common Event Sourcing Library](../../docs/site/assets/modules/eventsourcing.svg)
 
-# Firefly Framework - Event Sourcing
+# Common Event Sourcing Library
 
-[![CI](https://github.com/fireflyframework/fireflyframework-eventsourcing/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-eventsourcing/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Persist domain events, rehydrate aggregates, and manage snapshots through reactive event-store contracts.
 
-> Reactive event sourcing for Spring Boot — store domain events as the source of truth with an R2DBC event store, optimistic concurrency, snapshots, transactional outbox, and projections.
+Define events and an aggregate, then use EventStore rather than writing the aggregate state as the source of truth. Pay attention to expected versions and concurrency failures when appending events. Configure the backing store and its schema before starting the service.
 
----
+[Module guide](../../docs/site/modules/eventsourcing.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [How It Works](#how-it-works)
-- [Version Semantics](#version-semantics)
-- [Configuration](#configuration)
-- [Database Schema](#database-schema)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-`fireflyframework-eventsourcing` is a reactive Event Sourcing library for Spring Boot. Instead of persisting only the current state of an entity, an event-sourced application records every state change as an immutable domain event. The full history of events becomes the source of truth: the current state of any aggregate is derived by replaying its events. This unlocks complete audit trails, temporal ("as-of") queries, reliable integration via published events, and trivial debugging of how an entity reached its current state.
-
-The library is built entirely on Project Reactor and R2DBC, so reads and writes are non-blocking end to end. At its core is the reactive `EventStore` SPI backed by an R2DBC implementation (`R2dbcEventStore`) that provides atomic appends, optimistic concurrency control via aggregate versioning, and global-order event streaming for projections. Around this core the module layers production concerns: a snapshot store to cap replay cost, a transactional outbox for reliable event publishing, read-model projections with checkpointing, and operational hooks for metrics, health, structured logging, resilience, and multi-tenancy.
-
-Within the Firefly Framework, this module sits in the domain/persistence layer and complements the CQRS and orchestration modules. It depends on `fireflyframework-kernel` (shared exceptions and abstractions), `fireflyframework-r2dbc` (reactive database access and utilities), and `fireflyframework-eda` for outbound event publishing — the outbox relays committed events through the EDA abstraction, and the publisher transport is selected with `firefly.eventsourcing.publisher.type` (mapping to the EDA `PublisherType`, e.g. `AUTO`, `KAFKA`, `RABBITMQ`). `fireflyframework-observability` provides metrics, tracing, and health primitives, and `fireflyframework-cache` is an optional dependency used to cache snapshots. Everything is wired automatically through Spring Boot auto-configuration, so adding the dependency and pointing it at an R2DBC datasource is enough to start storing events.
-
-## Features
-
-**Core**
-- `AggregateRoot` base class with reflection-based event-handler dispatch (`on(...)` methods)
-- Reactive `EventStore` SPI backed by R2DBC (`R2dbcEventStore`); PostgreSQL, MySQL, and H2 supported
-- Optimistic concurrency control via per-aggregate versioning (`expectedVersion` on `appendEvents`)
-- `@DomainEvent` annotation for declarative event-type registration (bridges to Jackson `@JsonTypeName`)
-- `AbstractDomainEvent` with builder pattern and metadata helpers (correlationId, causationId, userId, source)
-- `StoredEventEnvelope` wraps domain events with storage metadata (global sequence, created timestamp)
-- `EventStream` with query helpers (`getEventsFromVersion`, `getEventsInRange`, `isEmpty`, `size`)
-- Rich global-order querying: `streamAllEvents`, `streamEventsByType`, `streamEventsByAggregateType`, `streamEventsByTimeRange`, `streamEventsByMetadata`
-
-**Persistence**
-- Flyway-managed schema with 8 migrations (V1–V8) for events, snapshots, outbox, and projection tables
-- `BIGSERIAL` global sequence assigned by the database — the INSERT excludes `global_sequence`
-- `TEXT` columns for `event_data` and `metadata` (database-agnostic, not JSONB)
-- Snapshot store with UPSERT semantics — PK is `(aggregate_id, aggregate_type)`, one snapshot per aggregate
-- Transactional Outbox pattern (`EventOutboxService` / `EventOutboxProcessor`) for reliable publishing with exponential-backoff retry
-
-**Projections & evolution**
-- `ProjectionService<T>` base class for read-model projections with batch or per-event processing
-- Projection checkpoint tracking (`projection_positions`) for resume-after-restart and lag-based health
-- Event upcasting for schema evolution via the `EventUpcaster` SPI (`canUpcast` / `upcast`, priority-ordered)
-
-**Operations**
-- `@EventSourcingTransactional` with configurable propagation, isolation, retry, and timeout
-- Auto-configuration chain (9 conditional configuration classes) — see the imports file below
-- Health indicators: EventStore, Outbox, Snapshot, Projection
-- Micrometer metrics via `EventStoreMetrics` and `ProjectionMetrics` (timers, counters, gauges)
-- Structured logging with MDC keys and reactive context propagation
-- Circuit breakers (eventStore, outbox, projection) via Resilience4j (off by default)
-- Multi-tenancy via `TenantContext` (off by default)
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- PostgreSQL (recommended) or any R2DBC-compatible database (MySQL, H2). The PostgreSQL, MySQL, and H2 R2DBC drivers are optional dependencies — add the one you use to the classpath.
+If the product needs application history as the source of truth, model submitted and reviewed events and rebuild state from that history. This changes the persistence design; it is more than replacing the tutorial map with a repository.
 
 ## Installation
+
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eventsourcing</artifactId>
-    <!-- Version is managed by the Firefly BOM / parent — omit when inheriting it -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If you inherit the Firefly parent (or import the BOM), the version is managed for you:
+## Quick start
 
-```xml
-<parent>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-parent</artifactId>
-    <version>26.05.08</version>
-</parent>
-```
-
-Add the R2DBC driver for your database, e.g. PostgreSQL:
-
-```xml
-<dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>r2dbc-postgresql</artifactId>
-</dependency>
-```
-
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### 1. Define domain events
 
@@ -198,169 +121,52 @@ firefly:
     event-scan-packages: "com.example.myapp"  # where @DomainEvent classes live
 ```
 
-Flyway runs the bundled V1–V8 migrations on startup to create the `events`, `snapshots`, `event_outbox`, and `projection_positions` tables.
-
-## How It Works
-
-### Command flow (write)
-
-```
-Command --> Aggregate --> [validate] --> Event(s) --> EventStore.appendEvents()
-                                                         |
-                                              +----------+-----------+
-                                              |                      |
-                                       events table            event_outbox
-                                     (BIGSERIAL seq)          (if publisher
-                                                                configured)
-```
-
-### Read flow (query)
-
-```
-EventStore.loadEventStream() --> StoredEventEnvelope[] --> aggregate.loadFromHistory()
-                                                               |
-                                                        Aggregate (current state)
-```
-
-### Auto-configuration chain
-
-Registered in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
-
-```
-R2dbcBeansAutoConfiguration
-EventStoreAutoConfiguration
-SnapshotAutoConfiguration
-EventSourcingAutoConfiguration
-EventSourcingProjectionAutoConfiguration
-EventSourcingHealthAutoConfiguration
-EventSourcingMetricsAutoConfiguration
-CircuitBreakerAutoConfiguration        (resilience, off by default)
-MultiTenancyAutoConfiguration          (off by default)
-```
-
-## Version Semantics
-
-| State                  | `AggregateRoot.version` | `expectedVersion` for `appendEvents` |
-|------------------------|:-----------------------:|:------------------------------------:|
-| New (no events yet)    | -1                      | -1                                   |
-| After 1st event        | 0                       | 0 (for next append)                  |
-| After Nth event        | N-1                     | N-1 (for next append)                |
-
-The aggregate version starts at **-1** and increments with each event applied via `applyChange()`. When calling `appendEvents`, pass the aggregate's current version as `expectedVersion` for optimistic concurrency control; a mismatch raises `ConcurrencyException`.
+Flyway runs the bundled V1-V8 migrations on startup to create the `events`, `snapshots`, `event_outbox`, and `projection_positions` tables.
 
 ## Configuration
 
-All properties live under the `firefly.eventsourcing.*` prefix (bound by `EventSourcingProperties` and `EventSourcingProjectionProperties`). The block below shows the real keys with their defaults:
+The `firefly.eventsourcing.projection` namespace is bound by [EventSourcingProjectionProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/config/EventSourcingProjectionProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  eventsourcing:
-    enabled: true                         # master switch
-    event-scan-packages: org.fireflyframework  # packages scanned for @DomainEvent
-    store:
-      type: r2dbc                         # event store backend
-      batch-size: 100
-      connection-timeout: 30s
-      query-timeout: 30s
-      validate-schemas: true
-      max-events-per-load: 1000
-    snapshot:
-      enabled: true
-      threshold: 50                       # snapshot after N events
-      check-interval: 5m
-      keep-count: 3
-      max-age: 30d
-      store-type: same                    # same | cache | ...
-    publisher:
-      enabled: true
-      type: AUTO                          # AUTO | KAFKA | RABBITMQ ... (EDA PublisherType)
-      destination-prefix: events
-      async: true
-      batch-size: 10
-      publish-timeout: 10s
-      continue-on-failure: true
-      retry:
-        enabled: true
-        max-attempts: 3
-        initial-delay: 1s
-        max-delay: 10s
-        backoff-multiplier: 2.0
-    performance:
-      buffer-size: 1000
-      metrics-enabled: true
-      health-checks-enabled: true
-      tracing-enabled: true
-      statistics-interval: 1m
-      circuit-breaker:
-        enabled: false                    # Resilience4j, opt-in
-        failure-rate-threshold: 50.0
-        minimum-number-of-calls: 10
-        sliding-window-size: 60s
-        wait-duration-in-open-state: 30s
-    projection:
-      batch-processing:
-        default-batch-size: 100
-        default-interval: 5s
-        max-batch-size: 1000
-        min-interval: 100ms
-      health-check:
-        timeout: 5s
-        max-acceptable-lag: 1000          # events behind before "unhealthy"
-        include-details: true
-        fail-on-unhealthy-projection: true
-      retry:
-        default-max-attempts: 3
-        default-delay: 1s
-        max-delay: 5m
-        backoff-multiplier: 2.0
-      metrics:
-        enabled: true
-        include-projection-tags: true
-        track-event-processing-time: true
-        enable-export: true
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.eventsourcing.projection.batch-processing` | `BatchProcessing` | `new BatchProcessing()` |
+| `firefly.eventsourcing.projection.health-check` | `HealthCheck` | `new HealthCheck()` |
+| `firefly.eventsourcing.projection.retry` | `Retry` | `new Retry()` |
+| `firefly.eventsourcing.projection.metrics` | `Metrics` | `new Metrics()` |
+
+The `firefly.eventsourcing` namespace is bound by [EventSourcingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/config/EventSourcingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
+
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.eventsourcing.enabled` | `boolean` | `true` |
+| `firefly.eventsourcing.store` | `EventStore` | `new EventStore()` |
+| `firefly.eventsourcing.snapshot` | `Snapshot` | `new Snapshot()` |
+| `firefly.eventsourcing.publisher` | `Publisher` | `new Publisher()` |
+| `firefly.eventsourcing.performance` | `Performance` | `new Performance()` |
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`EventStore`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/store/EventStore.java) | Main interface for event storage and retrieval in the event sourcing system. |
+| [`AggregateRoot`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/aggregate/AggregateRoot.java) | Base class for event-sourced aggregates that provides the foundation for implementing Domain-Driven Design aggregates with Event Sourcing. |
+| [`DomainEvent`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/annotation/DomainEvent.java) | Marks a class as a domain event and specifies its event type identifier. |
+| [`SnapshotStore`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/snapshot/SnapshotStore.java) | Interface for snapshot storage and retrieval operations. |
+| [`EventSourcingProjectionProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eventsourcing/src/main/java/org/fireflyframework/eventsourcing/config/EventSourcingProjectionProperties.java) | Configuration properties for Event Sourcing projections. |
+
+## Continue the application
+
+Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-eventsourcing -am verify
+./mvnw -pl :fireflyframework-eventsourcing -am install
 ```
 
-Key properties:
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-- `firefly.eventsourcing.enabled` — master switch for the whole library.
-- `firefly.eventsourcing.event-scan-packages` — packages scanned for `@DomainEvent` types so events deserialize to the correct class (default `org.fireflyframework`; set to your app's base package).
-- `firefly.eventsourcing.snapshot.threshold` — number of events after which a snapshot is written to cap replay cost.
-- `firefly.eventsourcing.publisher.type` — selects the EDA transport for outbox publishing (`AUTO` picks the configured EDA provider; e.g. `KAFKA`, `RABBITMQ`).
-- `firefly.eventsourcing.performance.circuit-breaker.enabled` and `multi-tenancy` are off by default; enable them only when you need the corresponding resilience or tenant-isolation behavior.
-
-## Database Schema
-
-The library ships 8 Flyway migrations (`V1`–`V8`). Key tables:
-
-| Table                  | Purpose                                | Primary key                       |
-|------------------------|----------------------------------------|-----------------------------------|
-| `events`               | Append-only event log                  | `event_id` (UUID)                 |
-| `snapshots`            | Aggregate state cache                   | `(aggregate_id, aggregate_type)`  |
-| `event_outbox`         | Transactional outbox for publishing     | `outbox_id` (UUID)                |
-| `projection_positions` | Projection checkpoint tracking          | `projection_name`                 |
-
-The `events` table uses `BIGSERIAL` for `global_sequence` — the database auto-assigns sequence numbers, so the INSERT statement omits that column. `event_data` and `metadata` are `TEXT` (database-agnostic), not JSONB. See [docs/database-schema.md](docs/database-schema.md) for full details.
-
-## Documentation
-
-- Framework docs hub & module catalog: [github.com/fireflyframework](https://github.com/fireflyframework)
-- In-repo guides under [`docs/`](docs/):
-  - [Event Sourcing Explained](docs/event-sourcing-explained.md) — concepts and comparison with CRUD
-  - [Quick Start](docs/quick-start.md) — step-by-step setup
-  - [Architecture](docs/architecture.md) — layers, auto-configuration, event flows
-  - [API Reference](docs/api-reference.md) — interfaces and classes
-  - [Configuration](docs/configuration.md) — every property with defaults
-  - [Database Schema](docs/database-schema.md) — migrations, tables, indexes, triggers
-  - [Testing](docs/testing.md) — unit, integration, and projection testing
-  - [Account Ledger Tutorial](docs/tutorial-account-ledger.md) — complete worked example
-  - [Optional Enhancements](docs/optional-enhancements.md) — circuit breakers, metrics, multi-tenancy, upcasting
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/eventsourcing.md).

@@ -1,90 +1,36 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/cache-redis). Build from the monorepo root with `./mvnw -pl :fireflyframework-cache-redis -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Cache - Redis](../../docs/site/assets/modules/cache-redis.svg)
 
-# Firefly Framework - Cache Redis
+# Cache - Redis
 
-[![CI](https://github.com/fireflyframework/fireflyframework-cache-redis/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-cache-redis/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Back the shared cache abstraction with Redis and reactive serialization.
 
-> Redis distributed-cache provider adapter for the Firefly Framework reactive cache abstraction — a non-blocking `CacheAdapter` backed by Spring Data Redis and the Lettuce reactive driver.
+Add this provider beside cache, select REDIS through the core cache settings, and supply reachable Redis connection settings. Test serialization and expiry with the integration fixtures before using shared entries across services.
 
----
+[Module guide](../../docs/site/modules/cache-redis.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-`fireflyframework-cache-redis` is a **pluggable provider adapter** for the Firefly Framework cache abstraction. It implements the `CacheAdapter` SPI defined in [`fireflyframework-cache`](https://github.com/fireflyframework/fireflyframework-cache) using Redis as a distributed backend, so application code depends only on the core abstraction while the actual cache lives in Redis.
-
-The core module ships an in-process Caffeine cache by default (`CacheType.CAFFEINE`). When you need a **distributed cache shared across multiple service instances** — to keep entries consistent behind a load balancer, survive individual pod restarts, or act as the L2 tier of a smart multi-tier cache — you add this adapter and select the `REDIS` cache type. Every operation (`get`, `put`, `putIfAbsent`, `evict`, `clear`, `exists`, `keys`, `size`, `getStats`, `getHealth`) is fully reactive and returns Project Reactor types, built on `ReactiveRedisTemplate` and Lettuce.
-
-The adapter registers itself with the core through Java's `ServiceLoader`: `RedisProvider` (a `CacheProviderFactory` listed in `META-INF/services/org.fireflyframework.cache.spi.CacheProviderFactory`) advertises `CacheType.REDIS` with priority `10` and becomes available once the Redis classes are on the classpath, a connection factory exists, and `firefly.cache.redis.enabled` is `true`. The core `CacheManagerFactory` then builds `RedisCacheAdapter` instances on demand via `RedisCacheHelper`, so no adapter beans are created prematurely and a single application can hold several independent caches. Redis infrastructure beans (`ReactiveRedisConnectionFactory`, `ReactiveRedisTemplate`) are contributed by `RedisCacheAutoConfiguration` when a Redis host is configured.
-
-Within the Firefly cache family, this is one of four provider adapters that plug into the same core SPI. The active provider is chosen with `firefly.cache.default-cache-type` (or `AUTO` for availability-based selection) in the core module:
-
-- [`fireflyframework-cache`](https://github.com/fireflyframework/fireflyframework-cache) — the abstraction (`CacheAdapter`, `FireflyCacheManager`, `CacheStats`, `CacheHealth`, `CacheType`) plus the default Caffeine provider
-- **`fireflyframework-cache-redis`** — this module: distributed Redis provider (`CacheType.REDIS`)
-- [`fireflyframework-cache-hazelcast`](https://github.com/fireflyframework/fireflyframework-cache-hazelcast) — in-memory data grid provider (`CacheType.HAZELCAST`)
-- [`fireflyframework-cache-jcache`](https://github.com/fireflyframework/fireflyframework-cache-jcache) — JSR-107 (JCache) provider (`CacheType.JCACHE`)
-- [`fireflyframework-cache-postgres`](https://github.com/fireflyframework/fireflyframework-cache-postgres) — SQL-backed provider over PostgreSQL (`CacheType.POSTGRES`)
-
-## Features
-
-- **Reactive, non-blocking** — implements the core `CacheAdapter` SPI on top of `ReactiveRedisTemplate`; no blocking calls on the request path.
-- **Distributed by design** — a shared Redis server provides a single, consistent cache across all instances of a service; works standalone or as the L2 tier of the core smart (L1+L2) cache.
-- **Rich operation set** — `get`/`get(type)`, `put`, `put` with TTL, `putIfAbsent` (atomic `SETNX`, with optional TTL), `evict`, `clear`, `exists`, `keys`, `size`, statistics and health.
-- **Per-entry and default TTL** — `put(key, value, ttl)` honours an explicit time-to-live; otherwise a configurable `default-ttl` is applied (no automatic expiry when unset).
-- **Namespaced keys** — keys are prefixed (`<key-prefix>:<cacheName>:` , default prefix `firefly:cache`) so framework entries are isolated and `clear()`/`keys()` scan only this cache.
-- **JSON value serialization** — values are serialized with the framework's `JsonCacheSerializer` / `GenericJackson2JsonRedisSerializer` and keys with `StringRedisSerializer`, producing human-readable, language-neutral entries.
-- **Statistics and health** — `getStats()` reports requests, hits, misses, puts, evictions, entry count and average load time as `CacheStats`; `getHealth()` performs a live round-trip and returns `CacheHealth` including Redis `INFO` details.
-- **On-demand adapter creation** — `RedisProvider` + `RedisCacheHelper` let the core `CacheManagerFactory` create adapters lazily, keeping Redis dependencies isolated until actually used.
-- **Auto-configuration** — `RedisCacheAutoConfiguration` wires the Lettuce-backed `ReactiveRedisConnectionFactory` and `ReactiveRedisTemplate` from Firefly cache properties; both beans are `@ConditionalOnMissingBean`, so your own definitions take precedence.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- A reachable **Redis** server (Redis 6+; connection via the Lettuce reactive driver)
+Use a Redis-backed cache when several onboarding-service instances need the same cached application data. Define expiry and status-change invalidation in the application.
 
 ## Installation
 
-Add the adapter alongside the cache core. The version is managed by the Firefly parent/BOM, so no explicit `<version>` is required when you inherit the parent.
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache-redis</artifactId>
-    <!-- version managed by fireflyframework-parent / BOM -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-This adapter declares `fireflyframework-cache` as a dependency, so adding it brings the core abstraction with it. Inherit the Firefly parent to get managed versions:
+## Quick start
 
-```xml
-<parent>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-parent</artifactId>
-    <version>26.05.08</version>
-</parent>
-```
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-## Quick Start
+1. Add the dependency (see [Installation](#installation)).
 
-**1. Add the dependency** (see [Installation](#installation)).
-
-**2. Select Redis as the cache type and enable the adapter** in `application.yml`:
+2. Select Redis as the cache type and enable the adapter in `application.yml`:
 
 ```yaml
 firefly:
@@ -98,7 +44,7 @@ firefly:
       default-ttl: PT30M
 ```
 
-**3. Inject and use the cache** through the core abstraction — your code never references Redis directly:
+3. Inject and use the cache through the core abstraction. Your code never references Redis directly:
 
 ```java
 import org.fireflyframework.cache.core.CacheAdapter;
@@ -131,62 +77,35 @@ public class ProductService {
 }
 ```
 
-Swapping providers later is a configuration change only: point `firefly.cache.default-cache-type` at another type and add that adapter's dependency — application code is untouched. With `default-cache-type: AUTO`, the framework prefers Redis when it is configured and available, then Hazelcast, JCache, Caffeine, and finally a no-op cache.
+Swapping providers later is a configuration change only: point `firefly.cache.default-cache-type` at another type and add that adapter's dependency. Application code is untouched. With `default-cache-type: AUTO`, the framework prefers Redis when it is configured and available, then Hazelcast, JCache, Caffeine, and finally a no-op cache.
 
 ## Configuration
 
-Redis properties live under `firefly.cache.redis.*` and are bound by the core `CacheProperties.RedisConfig`. Provider selection (`firefly.cache.default-cache-type`) and the master switch (`firefly.cache.enabled`) belong to the core module. The block below shows the real keys with their defaults:
+This module declares no `@ConfigurationProperties` class of its own. Use the constructor/port contracts above and the configuration of the host or related core module.
 
-```yaml
-firefly:
-  cache:
-    enabled: true                 # master switch for the cache abstraction (default: true)
-    default-cache-type: REDIS     # active provider (default: CAFFEINE)
-    redis:
-      enabled: true               # Redis provider switch (default: true; provider still needs a host + Redis on classpath)
-      cache-name: default         # logical cache name (default: default)
-      host: localhost             # Redis host (default: localhost)
-      port: 6379                  # Redis port (default: 6379)
-      database: 0                 # Redis database index (default: 0)
-      username:                   # ACL username (optional)
-      password:                   # auth password (optional)
-      key-prefix: firefly:cache   # key namespace prefix (default: firefly:cache)
-      default-ttl:                # default TTL; unset = entries never expire automatically
-      connection-timeout: PT10S   # connection timeout (default: 10s)
-      command-timeout: PT5S       # command timeout (default: 5s)
-      max-pool-size: 8            # max pooled connections (default: 8)
-      min-pool-size: 0            # min pooled connections (default: 0)
-      ssl: false                  # use TLS (rediss://) (default: false)
-      enable-keyspace-notifications: false  # subscribe to key-expiry events (default: false)
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`RedisCacheAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/adapter/redis/RedisCacheAdapter.java) | Redis-based cache adapter implementation. |
+| [`RedisProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/spi/providers/RedisProvider.java) | Defines `create` operations. |
+| [`RedisCacheConfig`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/adapter/redis/RedisCacheConfig.java) | Configuration class for Redis cache adapter. |
+| [`RedisCacheAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/config/RedisCacheAutoConfiguration.java) | Auto-configuration for Redis infrastructure beans used by fireflyframework-cache. |
+| [`RedisCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/factory/RedisCacheHelper.java) | Helper class for creating Redis cache adapters. |
+
+## Continue the application
+
+Use the [Cache guide](../../docs/site/modules/cache.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-cache-redis -am verify
+./mvnw -pl :fireflyframework-cache-redis -am install
 ```
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `firefly.cache.default-cache-type` | `CAFFEINE` | Core: active provider. Set to `REDIS` to select this adapter, or `AUTO` for availability-based selection. |
-| `firefly.cache.redis.enabled` | `true` | Whether the Redis provider may activate. The provider also needs a configured `host` and Redis on the classpath. |
-| `firefly.cache.redis.host` / `port` / `database` | `localhost` / `6379` / `0` | Redis connection coordinates. |
-| `firefly.cache.redis.username` / `password` | _(unset)_ | Optional ACL username and auth password. |
-| `firefly.cache.redis.key-prefix` | `firefly:cache` | Namespace prefix; effective key pattern is `<key-prefix>:<cacheName>:<key>`. Scopes `clear()`/`keys()`. |
-| `firefly.cache.redis.default-ttl` | _(unset)_ | TTL applied to `put` without an explicit TTL. When unset, entries do not expire automatically. ISO-8601 duration (`PT30M`). |
-| `firefly.cache.redis.connection-timeout` | `PT10S` | Lettuce connection timeout. |
-| `firefly.cache.redis.command-timeout` | `PT5S` | Lettuce command timeout. |
-| `firefly.cache.redis.max-pool-size` / `min-pool-size` | `8` / `0` | Connection-pool bounds. |
-| `firefly.cache.redis.ssl` | `false` | Enable TLS (`rediss://`). |
-| `firefly.cache.redis.enable-keyspace-notifications` | `false` | Enable Redis keyspace/expiry notifications. |
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-> Auto-configuration is conditional: `RedisCacheAutoConfiguration` only contributes the connection factory and template when `ReactiveRedisTemplate` is on the classpath, `firefly.cache.redis.enabled` is `true`, and a non-empty `firefly.cache.redis.host` is set. Both the `ReactiveRedisConnectionFactory` and `ReactiveRedisTemplate` beans are `@ConditionalOnMissingBean` — define your own to override serialization, clustering, or connection behaviour.
-
-## Documentation
-
-- Firefly Framework module catalog and architecture docs: [github.com/fireflyframework/.github](https://github.com/fireflyframework/.github/blob/main/profile/MODULE_CATALOG.md)
-- Cache SPI and core concepts: [`fireflyframework-cache`](https://github.com/fireflyframework/fireflyframework-cache)
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/cache-redis.md).

@@ -1,0 +1,198 @@
+site_name: jafly
+site_description: Build Java services with Jafly on Spring Boot. Learn the command path, choose modules, and configure providers.
+site_author: Firefly Software Foundation
+site_url: https://fireflyframework.github.io/fireflyframework-jafly/
+repo_url: https://github.com/fireflyframework/fireflyframework-jafly
+repo_name: fireflyframework-jafly
+edit_uri: edit/main/docs/site/
+docs_dir: docs/site
+site_dir: site
+strict: true
+validation:
+  links:
+    anchors: warn
+copyright: >-
+  Framework code: Apache License 2.0. Firefly and jafly identities retain their own ownership.
+theme:
+  name: material
+  language: en
+  logo: assets/brand/jafly-wordmark-dark.svg
+  favicon: assets/brand/framework-mark.svg
+  font: false
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      title: On this page
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets:
+      check_paths: true
+      base_path: ["."]
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+extra_css:
+  - stylesheets/jafly.css
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fireflyframework/fireflyframework-jafly
+      name: Jafly source code
+    - icon: material/web
+      link: https://fireflyframework.org
+      name: Framework by Firefly
+nav:
+  - Home: index.md
+  - Get started:
+      - getting-started.md
+      - installation.md
+      - examples.md
+  - Architecture:
+      - architecture.md
+      - maven.md
+      - versioning.md
+  - Modules:
+      - Catalog: modules/index.md
+      - "Security and identity":
+          - "Security API": modules/security-api.md
+          - "Security SPI": modules/security-spi.md
+          - "Security core": modules/security-core.md
+          - "Security WebFlux binding": modules/security-webflux.md
+          - "Security resource server": modules/security-resource-server.md
+          - "Security method policy": modules/security-method-policy.md
+          - "Security OAuth2 client": modules/security-oauth2-client.md
+          - "Security authorization server": modules/security-authorization-server.md
+          - "Security BFF": modules/security-bff.md
+          - "Identity provider": modules/security-idp.md
+          - "Security test": modules/security-test.md
+          - "IDP: AWS Cognito implementation": modules/security-idp-aws-cognito.md
+          - "IDP: Azure AD implementation": modules/security-idp-azure-ad.md
+          - "IDP: internal database implementation": modules/security-idp-internal-db.md
+          - "IDP Keycloak": modules/security-idp-keycloak.md
+          - "Security Cerbos adapter": modules/security-adapter-cerbos.md
+          - "Security OPA adapter": modules/security-adapter-opa.md
+          - "Security OpenFGA adapter": modules/security-adapter-openfga.md
+          - "Security R2DBC adapter": modules/security-adapter-r2dbc.md
+          - "Security Vault adapter": modules/security-adapter-vault.md
+      - "Business operations":
+          - "CQRS": modules/cqrs.md
+          - "Rule engine": modules/rule-engine.md
+          - "Rule engine interfaces": modules/rule-engine-interfaces.md
+          - "Rule engine models": modules/rule-engine-models.md
+          - "Rule engine core": modules/rule-engine-core.md
+          - "Rule engine SDK": modules/rule-engine-sdk.md
+          - "Rule engine web": modules/rule-engine-web.md
+      - "External services":
+          - "Client": modules/client.md
+          - "Client: complete example": modules/client-complete-example.md
+          - "Notifications": modules/notifications.md
+          - "Notifications core": modules/notifications-core.md
+          - "Callbacks": modules/callbacks.md
+          - "Agentic bridge": modules/agentic-bridge.md
+          - "Agentic bridge core": modules/agentic-bridge-core.md
+          - "Agentic bridge autoconfigure": modules/agentic-bridge-autoconfigure.md
+          - "Agentic bridge starter": modules/agentic-bridge-starter.md
+          - "Agentic bridge samples": modules/agentic-bridge-samples.md
+          - "Callback management platform: core": modules/callbacks-core.md
+          - "Callback management platform: interfaces": modules/callbacks-interfaces.md
+          - "Callback management platform: models": modules/callbacks-models.md
+          - "Callback management platform: SDK": modules/callbacks-sdk.md
+          - "Callback management platform: web": modules/callbacks-web.md
+          - "Notifications: Firebase": modules/notifications-firebase.md
+          - "Notifications: Resend": modules/notifications-resend.md
+          - "Notifications: SendGrid": modules/notifications-sendgrid.md
+          - "Notifications: Twilio": modules/notifications-twilio.md
+      - "Event-driven integration":
+          - "EDA": modules/eda.md
+          - "EDA: Kafka": modules/eda-kafka.md
+          - "EDA: RabbitMQ": modules/eda-rabbitmq.md
+          - "EDA: PostgreSQL": modules/eda-postgres.md
+          - "Webhooks": modules/webhooks.md
+          - "Webhook management platform: core": modules/webhooks-core.md
+          - "Webhook management platform: interfaces": modules/webhooks-interfaces.md
+          - "Webhook management platform: Java SDK": modules/webhooks-sdk.md
+          - "Webhook management platform: web application": modules/webhooks-web.md
+          - "Webhook processor framework": modules/webhooks-processor.md
+      - "Domain and data":
+          - "R2DBC": modules/r2dbc.md
+          - "Event sourcing": modules/eventsourcing.md
+          - "Cache": modules/cache.md
+          - "Enterprise content management": modules/ecm.md
+          - "Cache: Hazelcast": modules/cache-hazelcast.md
+          - "Cache: JCache": modules/cache-jcache.md
+          - "Cache: postgres": modules/cache-postgres.md
+          - "Cache: Redis": modules/cache-redis.md
+          - "ECM storage: AWS (s3)": modules/ecm-storage-aws.md
+          - "ECM storage: Azure Blob": modules/ecm-storage-azure.md
+          - "ECM eSignature: Adobe Sign": modules/ecm-esignature-adobe-sign.md
+          - "ECM eSignature: DocuSign": modules/ecm-esignature-docusign.md
+          - "ECM eSignature: Logalty": modules/ecm-esignature-logalty.md
+      - "Business coordination":
+          - "Orchestration": modules/orchestration.md
+      - "Service operations":
+          - "Observability": modules/observability.md
+          - "Web": modules/web.md
+          - "Config server": modules/config-server.md
+      - "Team-wide architecture":
+          - "Build parent": modules/parent.md
+          - "Bill of materials": modules/bom.md
+          - "Kernel": modules/kernel.md
+          - "Utils": modules/utils.md
+          - "Validators": modules/validators.md
+          - "Starter core": modules/starter-core.md
+          - "Starter domain": modules/starter-domain.md
+          - "Starter application": modules/starter-application.md
+          - "Starter data": modules/starter-data.md
+          - "Backoffice": modules/backoffice.md
+          - "Plugins": modules/plugins.md
+          - "Plugin API": modules/plugin-api.md
+          - "Plugin core": modules/plugin-core.md
+  - Contribute:
+      - development.md
+      - releases.md
+      - documentation.md
+      - brand.md

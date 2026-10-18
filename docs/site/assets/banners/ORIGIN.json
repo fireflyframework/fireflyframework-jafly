@@ -1,0 +1,17 @@
+{
+  "source": "../brand/ORIGIN.json",
+  "recipe": "scripts/generate_brand.mjs",
+  "exports": {
+    "getting-started.svg": "a22c7b05da3fe5888db04775cb324318f871f1dffea55bc909d5e37cd4704b34",
+    "installation.svg": "06b0c3fb9e9bdba8eda3cbe4c1e9e9f986fbfec3e90645e367cb7c522edd0f58",
+    "architecture.svg": "78501155601b433d9ae2de0bdbaee231ee766f9b6f660c058de54da16a54b992",
+    "maven.svg": "71b7002ec84b39a812909f00ebf2cc6d17ad4e638b54311211ddc9a0aed512ae",
+    "versioning.svg": "2310563d0dd274249885587d54662891ada6d662ded9000d0e91159e85693012",
+    "migration.svg": "b1be629ba428390fd841b4f9b22fef1f0898570eeab9a5927311003822d055de",
+    "development.svg": "1ac2d25429fbedd08dd8521d6925d6ebb585e7265a3bb51b3195ffd317e6413e",
+    "examples.svg": "4c1c3f44d3947f6c373e602b0e3315a34b8fe3539bf115e19371b192103dd9fd",
+    "releases.svg": "62e246fcb0ebb72f4f9646f3f8d518ca1f417ecca35d69b98e1180f23d1ddbd9",
+    "documentation.svg": "44e68f10f039fd5699a18e0563d2d382d659a5fa2b4719ecc8b5d9d1db7513fa",
+    "brand.svg": "3bbcb11cf08ee916469a3c0a1ae10d1611d7523e8553fc480b33b1475221dbbe"
+  }
+}

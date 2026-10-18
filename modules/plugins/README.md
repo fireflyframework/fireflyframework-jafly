@@ -1,102 +1,41 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/plugins). Build from the monorepo root with `./mvnw -pl :fireflyframework-plugins -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Common Plugins](../../docs/site/assets/modules/plugins.svg)
 
-# Firefly Framework - Plugins
+# Common Plugins
 
-[![CI](https://github.com/fireflyframework/fireflyframework-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-plugins/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Group the API and implementation of the framework plugin system.
 
-> A lightweight, framework-independent plugin system for the Firefly Framework — declare plugins and extension points with annotations, manage their lifecycle, and resolve load order with dependency-aware topological sorting.
+Depend on plugin-api when authoring a plugin or extension point, and plugin-core in the host that loads and manages plugins. The aggregator itself does not supply a standalone runtime JAR.
 
----
+[Module guide](../../docs/site/modules/plugins.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-  - [Modules](#modules)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [How It Works](#how-it-works)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
+A host may expose an extension point for product-specific onboarding checks. Plugin authors use plugin-api; the host uses plugin-core to load classes and manage their lifecycle.
 
-## Overview
+## Choose a component
 
-`fireflyframework-plugins` provides a small, deliberately simple plugin architecture for extending Firefly Framework applications. It lets host applications expose **extension points** (interfaces that plugins can implement) and lets plugins **contribute extensions** to those points, all with explicit lifecycle management (`initialize` → `start` → `stop` → `destroy`) and dependency-ordered loading.
-
-The module is intentionally **non-reactive and framework-independent**. Plugin operations (load, start, stop, unload) are discrete, synchronous state transitions, so the API uses plain Java methods and checked `PluginException`s rather than `Mono`/`Flux` and reactive error channels. The only hard dependency is [`fireflyframework-kernel`](https://github.com/fireflyframework/fireflyframework-kernel) (for the shared `FireflyException` base type) plus SLF4J for logging — meaning the plugin system can be embedded in any Java 21+ application, with or without Spring. This is a complete, simplified reimplementation of the legacy plugin manager (see [DESIGN_RATIONALE.md](DESIGN_RATIONALE.md) for the full rationale and the features that were intentionally removed).
-
-Plugins are loaded explicitly from the classpath via `PluginManager.loadPlugin(Class)` — there is no JAR/Git/hot-deploy loading and no automatic classpath scanning, which keeps the system predictable and secure. Extensions are discovered automatically from `@Extension`-annotated inner classes of each plugin and registered with the `ExtensionRegistry`, ordered by an explicit integer priority.
-
-Within the Firefly Framework, this module sits alongside the other foundational libraries (kernel, observability) and gives services a uniform way to make a subsystem pluggable without reinventing lifecycle and ordering logic. The `plugin-core` module optionally integrates with [`fireflyframework-observability`](https://github.com/fireflyframework/fireflyframework-observability) when present on the classpath.
-
-### Modules
-
-This is a multi-module Maven build. The aggregator POM (`fireflyframework-plugins`, packaging `pom`) inherits from `fireflyframework-parent` and builds two JAR submodules:
-
-| Module | Artifact | Purpose |
-|--------|----------|---------|
-| **Plugin API** | `plugin-api` | The public contract: the `@Plugin`, `@Extension`, and `@ExtensionPoint` annotations; the `Plugin`, `PluginManager`, and `ExtensionRegistry` interfaces; the `PluginMetadata`, `PluginDescriptor`, and `PluginState` models; and `PluginException`. Depend on this from any module that **defines** plugins or extension points. Its only dependency is `fireflyframework-kernel`. |
-| **Plugin Core** | `plugin-core` | The default runtime: `DefaultPluginManager` (lifecycle + extension wiring), `DefaultExtensionRegistry` (thread-safe, priority-ordered extension registry), and `PluginDependencyResolver` (topological-sort load ordering with circular/missing-dependency detection). Depend on this from the **host application** that loads and runs plugins. It has an optional dependency on `fireflyframework-observability`. |
-
-## Features
-
-- **Annotation-driven declaration** — `@Plugin` (id, name, version, description, author, dependencies), `@ExtensionPoint` (id, description), and `@Extension` (extensionPointId, priority, description).
-- **Explicit lifecycle** — every plugin implements `initialize()`, `start()`, `stop()`, and `destroy()`; the manager tracks state transitions through the `PluginState` enum (`LOADED → INITIALIZED → STARTED → STOPPED`, plus `FAILED`).
-- **`PluginManager`** — load, start, stop, and unload plugins by id; query loaded plugins and their `PluginDescriptor`s; managed init/shutdown of the manager itself. `DefaultPluginManager` is the ready-to-use implementation.
-- **`ExtensionRegistry`** — register extension points and contributed extensions, look up the highest-priority extension or all extensions for a point, and unregister. `DefaultExtensionRegistry` is backed by `ConcurrentHashMap` and `CopyOnWriteArrayList` for thread-safe concurrent reads, validates that each extension actually implements its declared point, and keeps extensions sorted by priority (highest first).
-- **Dependency resolution** — `PluginDependencyResolver` performs an O(V+E) topological sort over declared plugin dependencies, starting dependencies before dependents and throwing a clear `PluginException` on circular or missing dependencies.
-- **Automatic extension wiring** — `DefaultPluginManager` scans a plugin's `@Extension`-annotated inner classes on load and registers/unregisters them with the `ExtensionRegistry` automatically.
-- **Immutable, builder-friendly models** — `PluginMetadata` and `PluginDescriptor` are Java `record`s with validating constructors, builders, and copy-with-state helpers (`PluginDescriptor.withState(...)`).
-- **Framework-independent & non-reactive** — usable in any Java 21+ app; clear stack traces via checked `PluginException` (which extends the kernel's `FireflyException`).
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x (only if embedding in a Spring application; the library itself does not require Spring)
-- Maven 3.9+
-- No external runtime services (no broker, database, or cache required)
+| Related component | Why it belongs nearby |
+| --- | --- |
+| [Plugin API](../../docs/site/modules/plugin-api.md) | Define plugins, extension points, extension registration, and lifecycle contracts without the host implementation. |
+| [Plugin Core](../../docs/site/modules/plugin-core.md) | Load plugins, resolve dependencies, and manage extension registration in a host process. |
 
 ## Installation
 
-Versions are managed by the Firefly Framework parent/BOM — omit `<version>` when your project inherits `fireflyframework-parent` or imports the Firefly BOM.
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
-If you **define** plugins or extension points, depend on the API:
+This artifact has `pom` packaging and groups child projects. Select a concrete child JAR for the application classpath.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>plugin-api</artifactId>
-    <!-- version managed by fireflyframework-parent / BOM -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If you **host and run** plugins, depend on the core (it transitively brings in the API):
+## Quick start
 
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>plugin-core</artifactId>
-    <!-- version managed by fireflyframework-parent / BOM -->
-</dependency>
-```
-
-To let the parent manage the version, inherit it in your POM:
-
-```xml
-<parent>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-parent</artifactId>
-    <version>26.05.08</version>
-</parent>
-```
-
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### 1. Define an extension point (in the host)
 
@@ -182,29 +121,23 @@ for (PaymentProcessor p : registry.<PaymentProcessor>getExtensions("payment-proc
 manager.shutdown(); // stops, unloads, and destroys all plugins
 ```
 
-## How It Works
-
-- **Loading** — `loadPlugin(Class)` instantiates the plugin via its no-arg constructor, reads its `PluginMetadata`, records a `PluginDescriptor` in state `LOADED`, calls `initialize()` (moving it to `INITIALIZED`, or `FAILED` on error), then registers its `@Extension` inner classes.
-- **Starting** — `startPlugin(id)` first resolves declared dependencies via `PluginDependencyResolver` and starts any not-yet-started dependencies, then calls the plugin's `start()` (→ `STARTED`).
-- **Extension lookup** — extensions are validated to implement their point, stored thread-safely, and returned ordered by descending priority. `getExtension` returns the single highest-priority extension; `getExtensions` returns them all.
-- **Shutdown** — `unloadPlugin(id)` stops a running plugin, unregisters its extensions, and calls `destroy()`. `shutdown()` does this for every loaded plugin.
-
 ## Configuration
 
-This module has **no configuration properties**. It contains no Spring Boot auto-configuration and no `@ConfigurationProperties` classes — you wire a `PluginManager` (typically `DefaultPluginManager`) yourself, as a plain object or as a Spring `@Bean`, and drive it through its API. Plugin metadata (ids, versions, dependencies, extension priorities) is declared in code via annotations or the `PluginMetadata` builder, not in `application.yml`.
+This POM has no runtime configuration namespace. Configure the selected child libraries in the application that uses them.
 
-## Documentation
+## Continue the application
 
-- [DESIGN_RATIONALE.md](DESIGN_RATIONALE.md) — why the system is simple and synchronous, and which legacy features were deliberately removed.
-- [VERIFICATION.md](VERIFICATION.md) — verification notes for the reimplementation.
-- Firefly Framework module catalog and org-wide docs: [github.com/fireflyframework](https://github.com/fireflyframework).
+Use the [Plugin API guide](../../docs/site/modules/plugin-api.md) for the next part of this integration. ## Build and validation
 
-## Contributing
+Use Java 25. From the repository root, build this component with its required dependencies:
 
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-plugins -am verify
+./mvnw -pl :fireflyframework-plugins -am install
+```
 
-## License
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/plugins.md).

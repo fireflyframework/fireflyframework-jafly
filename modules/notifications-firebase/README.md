@@ -1,81 +1,36 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/notifications-firebase). Build from the monorepo root with `./mvnw -pl :fireflyframework-notifications-firebase -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Notifications - Firebase](../../docs/site/assets/modules/notifications-firebase.svg)
 
-# Firefly Framework - Notifications Firebase
+# Notifications - Firebase
 
-[![CI](https://github.com/fireflyframework/fireflyframework-notifications-firebase/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-notifications-firebase/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Send push notifications through Firebase Cloud Messaging.
 
-> Firebase Cloud Messaging (FCM) push adapter for the Firefly Framework notifications abstraction — reactive mobile and web push delivery via the Firebase Admin SDK.
+Add this adapter beside notifications-core and configure Firebase credentials/settings. Use the shared push service/request contracts rather than binding application code directly to the Firebase implementation.
 
----
+[Module guide](../../docs/site/modules/notifications-firebase.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [How It Works](#how-it-works)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-`fireflyframework-notifications-firebase` is a **pluggable push provider adapter** for the Firefly Framework notifications subsystem. It implements the `PushProvider` SPI defined in `fireflyframework-notifications-core` and delivers push notifications through [Firebase Cloud Messaging (FCM)](https://firebase.google.com/docs/cloud-messaging) using the official Firebase Admin SDK.
-
-The notifications core defines transport-agnostic provider interfaces (`PushProvider`, `EmailProvider`, `SMSProvider`) and reactive request/response DTOs. Each concrete delivery channel ships as its own thin adapter module so applications depend only on the providers they actually use. This module supplies the FCM-backed implementation, `FcmPushProvider`, and the Spring Boot auto-configuration that wires it.
-
-The adapter is **selected by configuration, not by classpath alone**. Auto-configuration activates only when `firefly.notifications.push.provider=firebase` is set, so multiple push adapters can coexist on the classpath and exactly one is chosen at runtime. When active, the module builds a `FirebaseApp` and `FirebaseMessaging` client from your service-account credentials and registers a `PushProvider` bean that the notifications core consumes — no application code changes required beyond adding the dependency and setting the selector property.
-
-### Sibling modules
-
-| Module | Channel | Provider |
-| --- | --- | --- |
-| `fireflyframework-notifications-core` | Core SPI + DTOs (`PushProvider`, `EmailProvider`, `SMSProvider`) | — |
-| **`fireflyframework-notifications-firebase`** | **Push** | **Firebase Cloud Messaging (FCM)** |
-| `fireflyframework-notifications-twilio` | SMS | Twilio |
-| `fireflyframework-notifications-sendgrid` | Email | SendGrid |
-| `fireflyframework-notifications-resend` | Email | Resend |
-
-## Features
-
-- **`PushProvider` implementation** (`FcmPushProvider`) backed by Firebase Cloud Messaging.
-- **Selector-driven auto-configuration** — activated only when `firefly.notifications.push.provider=firebase`, so it can sit alongside other push adapters without conflict.
-- **Reactive, non-blocking API** — `sendPush` returns a `Mono<PushNotificationResponse>`; the blocking FCM call is offloaded to `Schedulers.boundedElastic()`.
-- **Flexible credential resolution** — point at a service-account JSON file via `credentials-path`, or fall back to [Google Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) when none is supplied.
-- **Token-targeted delivery with data payloads** — sets FCM `title`/`body` notification fields and forwards arbitrary `data` key/value pairs from the request.
-- **Override-friendly beans** — the `FirebaseApp`, `FirebaseMessaging`, and `PushProvider` beans are all `@ConditionalOnMissingBean`, so you can supply your own client or provider.
-- **Safe FirebaseApp reuse** — reuses an existing default `FirebaseApp` if one is already initialized, avoiding duplicate-app errors.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- A Firebase project with Cloud Messaging enabled and a service-account key (JSON), or an environment configured for Google Application Default Credentials
-- `fireflyframework-notifications-core` on the classpath (transitively pulled in by this module)
+A mobile applicant portal can receive push notifications through Firebase. The application supplies the device/topic target and decides which application-status changes should trigger a message.
 
 ## Installation
 
-Add the dependency alongside the notifications core. The version is managed by the Firefly Framework BOM / parent POM, so you should not need to specify it explicitly:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications-firebase</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-This module transitively brings in `fireflyframework-notifications-core` and the `com.google.firebase:firebase-admin` SDK.
+## Quick start
 
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-**1. Add the dependencies** (core + this adapter):
+If you use a core channel service instead of the provider SPI directly, [register the matching service implementation explicitly](../../docs/site/modules/notifications-core.md#quick-start). Provider auto-configuration does not expand the application's component scan.
+
+1. Add the dependencies (core + this adapter):
 
 ```xml
 <dependencies>
@@ -90,7 +45,7 @@ This module transitively brings in `fireflyframework-notifications-core` and the
 </dependencies>
 ```
 
-**2. Select and configure the Firebase adapter** in `application.yml`:
+2. Select and configure the Firebase adapter in `application.yml`:
 
 ```yaml
 firefly:
@@ -102,7 +57,7 @@ firefly:
       project-id: my-firebase-project
 ```
 
-**3. Inject and use the `PushProvider`** — your code depends on the core SPI, not on Firebase directly:
+3. Inject and use the `PushProvider`. Your code depends on the core SPI, not on Firebase directly:
 
 ```java
 import org.fireflyframework.notifications.interfaces.dtos.push.v1.PushNotificationRequest;
@@ -139,49 +94,34 @@ On success the returned `PushNotificationResponse` carries the FCM `messageId` a
 
 ## Configuration
 
-All properties live under the `firefly.notifications.firebase` prefix (bound by `FcmProperties`). The adapter is enabled by the separate selector property `firefly.notifications.push.provider`.
+The `firefly.notifications.firebase` namespace is bound by [FcmProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/properties/v1/FcmProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  notifications:
-    push:
-      provider: firebase          # required: activates the Firebase auto-configuration
-    firebase:
-      credentials-path:           # path to service-account JSON; empty = Application Default Credentials
-      project-id:                 # Firebase / GCP project id (optional if inferable from credentials)
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.notifications.firebase.credentials-path` | `String` | `not initialized` |
+| `firefly.notifications.firebase.project-id` | `String` | `not initialized` |
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`FcmProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/properties/v1/FcmProperties.java) | Carries `credentialsPath`, `projectId` data; field constraints and defaults are declared in the linked source. |
+| [`FcmAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/config/v1/FcmAutoConfiguration.java) | Defines `firebaseApp`, `firebaseMessaging`, `fcmPushProvider` operations. |
+| [`FcmPushProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/core/v1/FcmPushProvider.java) | Defines `FcmPushProvider`, `sendPush` operations. |
+
+## Continue the application
+
+Use the [Notifications Core guide](../../docs/site/modules/notifications-core.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-notifications-firebase -am verify
+./mvnw -pl :fireflyframework-notifications-firebase -am install
 ```
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `firefly.notifications.push.provider` | _(none)_ | Selector that activates this adapter. Must equal `firebase` for the Firebase auto-configuration to apply. |
-| `firefly.notifications.firebase.credentials-path` | _(empty)_ | Filesystem path to a Firebase service-account JSON key. When blank, the adapter falls back to Google Application Default Credentials. |
-| `firefly.notifications.firebase.project-id` | _(empty)_ | Firebase / GCP project id. Set explicitly when it cannot be inferred from the credentials. |
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## How It Works
-
-`FcmAutoConfiguration` is registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` and is gated by:
-
-- `@ConditionalOnProperty(name = "firefly.notifications.push.provider", havingValue = "firebase")` — the runtime selector.
-- `@ConditionalOnClass(FirebaseMessaging.class)` — the Firebase Admin SDK must be present.
-
-When both conditions hold it contributes three beans (each `@ConditionalOnMissingBean`, so all are overridable):
-
-1. **`FirebaseApp`** — built from `credentials-path` (or Application Default Credentials) and `project-id`; an already-initialized default app is reused if present.
-2. **`FirebaseMessaging`** — obtained from the `FirebaseApp`.
-3. **`PushProvider`** — an `FcmPushProvider` wrapping the `FirebaseMessaging` client, consumed by the notifications core.
-
-## Documentation
-
-- Firefly Framework documentation hub and module catalog: [github.com/fireflyframework](https://github.com/fireflyframework)
-- Notifications core SPI: [`fireflyframework-notifications-core`](https://github.com/fireflyframework/fireflyframework-notifications)
-- Firebase Cloud Messaging: [firebase.google.com/docs/cloud-messaging](https://firebase.google.com/docs/cloud-messaging)
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/notifications-firebase.md).

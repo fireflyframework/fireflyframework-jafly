@@ -1,97 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/starter-data). Build from the monorepo root with `./mvnw -pl :fireflyframework-starter-data -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Starter Data](../../docs/site/assets/modules/starter-data.svg)
 
-# Firefly Framework - Starter Data
+# Starter Data
 
-[![CI](https://github.com/fireflyframework/fireflyframework-starter-data/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-starter-data/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Build data enrichment, job orchestration, quality, lineage, and provider operation services.
 
-> Opinionated starter for building data-processing microservices with job orchestration, data enrichment, quality gates, lineage tracking, and event-driven capabilities.
+Choose the data-job or enrichment extension points that match your use case. Configure provider access and orchestration separately; review caching, timeouts, batch behavior, and persistence for each provider workflow.
 
----
+[Module guide](../../docs/site/modules/starter-data.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework Starter Data provides a production-ready architecture for building data-processing microservices. It combines job orchestration for batch and async data processing with a data enrichment framework for third-party provider integration, all built on hexagonal architecture principles.
-
-This starter is designed for data-tier microservices that need to:
-- Execute complex, orchestrated data processing workflows
-- Integrate with external data providers (credit bureaus, financial data, business intelligence)
-- Enforce data quality rules and track data lineage across enrichment pipelines
-- Implement CQRS patterns for command/query separation
-- Build event-driven architectures with automatic event publishing
-- Support distributed transactions using Saga, TCC, and Workflow patterns
-
-## Features
-
-**Job Orchestration**
-- Async and sync execution modes with abstract controller and service base classes
-- Standardized RESTful endpoints with job execution tracking and audit trails
-- Configurable timeout enforcement per job stage
-
-**Data Enrichment**
-- Pluggable `DataEnricher` and `EnricherOperation` framework with tenant isolation
-- Enrichment discovery controller for runtime operation catalog
-- Smart enrichment controller with strategy-based routing
-- Fallback chains with primary/secondary provider failover
-- Per-provider resiliency configuration (circuit breaker, retry, rate limiter, bulkhead)
-- Enrichment caching with configurable key generation and TTL
-- Cost tracking and estimation per enrichment request
-
-**Data Quality**
-- Rule-based validation engine with configurable severity levels
-- Fail-fast and collect-all evaluation strategies
-- Built-in rules for null checks, range validation, pattern matching, and custom logic
-- Quality gate integration for enrichment pipelines
-
-**Data Lineage**
-- Automatic lineage tracking across enrichment operations
-- Pluggable `LineageTracker` with in-memory default implementation
-- Lineage records with source, destination, timestamp, and metadata
-
-**Data Transformation**
-- Reactive `DataTransformer` interface with `TransformationChain` composition
-- Built-in transformers for field mapping and computed fields
-- Custom transformer support via functional interface
-
-**Infrastructure**
-- CQRS auto-configuration for command/query integration
-- EDA auto-configuration for event-driven data processing
-- Orchestration engine integration (Saga, TCC, Workflow)
-- Observability with Micrometer metrics and distributed tracing
-- Persistence auto-configuration for job results and audit entries
-
-## Requirements
-
-- Java 25
-- Spring Boot 3.x
-- Maven 3.9+
-- PostgreSQL database (for job persistence)
+Background document enrichment or verification jobs may need the data-job and provider extension points. Implement the chosen provider operation and configure its limits; these jobs are not part of the runnable submission tutorial.
 
 ## Installation
+
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-data</artifactId>
-    <version>26.02.07</version>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-## Quick Start
+## Quick start
+
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ```java
 import org.fireflyframework.data.service.AbstractResilientDataJobService;
@@ -144,53 +79,48 @@ public class MyDataJobService extends AbstractResilientDataJobService {
 
 ## Configuration
 
-```yaml
-firefly:
-  data:
-    job-orchestration:
-      enabled: true
-      max-concurrent-jobs: 10
-    enrichment:
-      cache-enabled: true
-      cache-ttl-seconds: 300
-      operations:
-        cache-enabled: true
-        cache-ttl-seconds: 600
-    quality:
-      enabled: true
-      fail-fast: false
-    lineage:
-      enabled: true
-    persistence:
-      enabled: true
-    observability:
-      metrics-enabled: true
-      tracing-enabled: true
+The `firefly.data` namespace is bound by [DataConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/config/DataConfiguration.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
+
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.data.eda` | `EdaConfig` | `new EdaConfig()` |
+| `firefly.data.cqrs` | `CqrsConfig` | `new CqrsConfig()` |
+| `firefly.data.orchestration` | `JobOrchestrationProperties` | `new JobOrchestrationProperties()` |
+| `firefly.data.orchestration-engine` | `OrchestrationConfig` | `new OrchestrationConfig()` |
+
+The `firefly.data.enrichment` namespace is bound by [DataEnrichmentProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/config/DataEnrichmentProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
+
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.data.enrichment.enabled` | `boolean` | `true` |
+| `firefly.data.enrichment.publish-events` | `boolean` | `true` |
+| `firefly.data.enrichment.cache-enabled` | `boolean` | `false` |
+| `firefly.data.enrichment.cache-ttl-seconds` | `int` | `3600` |
+| `firefly.data.enrichment.default-timeout-seconds` | `int` | `30` |
+
+## API overview
+
+| Type | Contract and responsibility |
+| --- | --- |
+| [`DataEnrichmentProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/config/DataEnrichmentProperties.java) | Configuration properties for data enrichment. |
+| [`JobOrchestrationProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/config/JobOrchestrationProperties.java) | Configuration properties for job orchestration in fireflyframework-starter-data. |
+| [`DataEnricher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/service/DataEnricher.java) | Type-safe abstract base class for data enrichers for enrichment workflows. |
+| [`JobOrchestrator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/orchestration/port/JobOrchestrator.java) | Port interface for job orchestrators (e.g., AWS Step Functions, Azure Durable Functions, etc.). |
+| [`AbstractDataJobController`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-data/src/main/java/org/fireflyframework/data/controller/AbstractDataJobController.java) | Abstract base controller implementation that provides logging for all job lifecycle phases. |
+
+## Continue the application
+
+Use the [Client guide](../../docs/site/modules/client.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-starter-data -am verify
+./mvnw -pl :fireflyframework-starter-data -am install
 ```
 
-## Documentation
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-Comprehensive documentation is available in the [docs/](docs/) directory:
-
-- **[Documentation Index](docs/README.md)** - Full table of contents and guide overview
-- **[Architecture](docs/common/architecture.md)** - Hexagonal architecture and design patterns
-- **[Getting Started](docs/common/getting-started.md)** - Step-by-step setup guide
-- **[Configuration](docs/common/configuration.md)** - All configuration properties
-- **[Data Enrichers Guide](docs/data-enrichers/guide.md)** - Building enrichers and operations
-- **[Data Jobs Guide](docs/data-jobs/guide.md)** - Job orchestration and lifecycle
-- **[Data Quality](docs/common/data-quality.md)** - Quality rules and validation engine
-- **[Data Lineage](docs/common/data-lineage.md)** - Lineage tracking across pipelines
-- **[Data Transformation](docs/common/data-transformation.md)** - Transformation chains and field mapping
-- **[Resiliency](docs/common/resiliency.md)** - Circuit breaker, retry, and per-provider configuration
-- **[API Reference](docs/common/api-reference.md)** - REST endpoint specifications
-- **[GenAI Bridge](docs/common/genai-bridge.md)** - Integration with fireflyframework-genai
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/starter-data.md).

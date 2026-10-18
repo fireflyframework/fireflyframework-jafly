@@ -1,99 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/ecm). Build from the monorepo root with `./mvnw -pl :fireflyframework-ecm -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Enterprise Content Management Library](../../docs/site/assets/modules/ecm.svg)
 
-# Firefly Framework - Enterprise Content Management (ECM)
+# Enterprise Content Management Library
 
-[![CI](https://github.com/fireflyframework/fireflyframework-ecm/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-ecm/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Define content-management ports, adapter selection, document contracts, and resilience/observability support.
 
-> Reactive Enterprise Content Management abstraction for Spring Boot — provider-agnostic ports for document storage, e-signature, intelligent document processing, folders, security and audit, with pluggable adapters selected by configuration.
+Select the concrete storage or signature adapter required by the application and call the ECM ports. Review adapter availability and graceful-degradation behavior before assuming an optional capability is backed by a live provider.
 
----
+[Module guide](../../docs/site/modules/ecm.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Architecture](#architecture)
-- [Observability](#observability)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework ECM provides Enterprise Content Management capabilities to Spring Boot applications through a **hexagonal (port/adapter) architecture**. Your application code depends only on a stable set of reactive **port interfaces** — it never talks to a vendor SDK directly. Concrete behaviour is supplied by **adapters** that are discovered on the classpath and selected by configuration, so you can switch from a cloud provider to an on-premise system (or to a no-op test double) without touching business logic.
-
-The library is fully **reactive** (Spring WebFlux + Project Reactor): every port returns `Mono`/`Flux`, including streaming binary content via `DataBuffer`. It groups its contracts into six functional families — **document management**, **e-signature**, **intelligent document processing (IDP)**, **folder management**, **document security**, and **audit** — each guarded by an independent feature flag so you only enable (and pay the startup cost of) what you use.
-
-Adapter discovery and routing are handled by the built-in **adapter registry/selector** (`AdapterRegistry`, `AdapterSelector`) together with the `@EcmAdapter` annotation SPI. When a feature is enabled but no real adapter is present, the auto-configuration installs a **no-op fallback** (`NoOpAdapterFactory`) so the application still starts — and logs a loud warning for security-sensitive ports (permissions and document security default to *deny*). The module ships two ready-to-use built-in adapters for development and testing: an in-memory `LocalDocumentSearchAdapter` and `LocalPermissionAdapter`.
-
-This is the **ECM core** library. Provider integrations — AWS S3 and Azure Blob (storage), DocuSign and Adobe Sign (e-signature), and IDP backends such as AWS Textract, Azure Form Recognizer and Google Document AI — plug in as adapters and are selected via `firefly.ecm.adapter-type` (storage/core) and `firefly.ecm.esignature.provider` (e-signature). The client SDK versions for those providers are managed in this module's `dependencyManagement` so adapter modules stay version-aligned. It sits alongside sibling Firefly capability cores such as `fireflyframework-idp`, `fireflyframework-notifications` and the cache/EDA cores, and builds on `fireflyframework-kernel` (foundational types) and `fireflyframework-observability` (metrics, tracing, health).
-
-## Features
-
-- **Hexagonal port/adapter design** — application code depends on reactive ports; vendors plug in behind them.
-- **18 reactive port interfaces across 6 families:**
-  - *Document* — `DocumentPort` (CRUD/metadata), `DocumentContentPort` (binary store/stream), `DocumentVersionPort` (versioning), `DocumentSearchPort` (search).
-  - *E-signature* — `SignatureEnvelopePort`, `SignatureRequestPort`, `SignatureValidationPort`, `SignatureProofPort`.
-  - *IDP* — `DocumentExtractionPort` (OCR/text), `DocumentClassificationPort`, `DocumentValidationPort`, `DataExtractionPort` (structured/forms/tables).
-  - *Folder* — `FolderPort`, `FolderHierarchyPort`.
-  - *Security* — `PermissionPort`, `DocumentSecurityPort`.
-  - *Audit* — `AuditPort`.
-- **Annotation-driven adapter SPI** — declare a provider with `@EcmAdapter(type=…, supportedFeatures={…})`; the `AdapterRegistry` auto-discovers it and `AdapterSelector` routes by type/interface with fallback.
-- **Capability model** — the `AdapterFeature` enum (40+ values: `DOCUMENT_CRUD`, `CONTENT_STORAGE`, `VERSIONING`, `ESIGNATURE_ENVELOPES`, `OCR`, `TABLE_EXTRACTION`, `COMPLIANCE`, `LEGAL_HOLD`, …) plus `AdapterProfile` (`BASIC`/`STANDARD`/`ADVANCED`) describe what each adapter supports.
-- **Safe no-op fallbacks** — `NoOpAdapterFactory` keeps the app booting when an enabled feature has no real adapter; permission and security ports *deny by default* and warn.
-- **Built-in local adapters** — in-memory `LocalDocumentSearchAdapter` and `LocalPermissionAdapter` for dev/test (opt-in via properties).
-- **Fine-grained feature flags** — independently toggle document management, content storage, versioning, folders, hierarchy, permissions, security, search, auditing, e-signature and IDP.
-- **Streaming-first content** — upload/download via `byte[]` or backpressure-aware `Flux<DataBuffer>` for large files.
-- **Resilience built in** — Resilience4j circuit breaker, retry and time limiter wired for adapter calls (`ResilienceConfiguration`), plus connection timeout/pool/retry settings.
-- **Validation guardrails** — global max file size, allowed/blocked extension lists, and checksum algorithm enforced at the configuration level.
-- **First-class observability** — `EcmMetrics` publishes Micrometer counters, timers and distribution summaries (see [Observability](#observability)).
-- **Zero-config auto-configuration** — `EcmAutoConfiguration` registers everything; enabled by default via `firefly.ecm.enabled`.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- A provider adapter on the classpath for production use (e.g. AWS S3 / Azure Blob for storage, DocuSign / Adobe Sign for e-signature). Without one, enabled features fall back to no-op behaviour.
+An applicant may upload supporting documents or sign an agreement after submission. Use the content/signature ports with a real provider adapter; OCR and classification ports need an application-supplied implementation.
 
 ## Installation
 
-Add the dependency. The version is managed by the Firefly BOM/parent, so you normally omit `<version>`:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm</artifactId>
-    <!-- version managed by the Firefly BOM / fireflyframework-parent -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If your project does not inherit the Firefly parent, import the BOM in `dependencyManagement` (or pin the version explicitly):
+## Quick start
 
-```xml
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.fireflyframework</groupId>
-            <artifactId>fireflyframework-bom</artifactId>
-            <version>${firefly.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-```
-
-Then add the matching provider adapter module(s) for your storage / e-signature backend.
-
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 1. Add the dependency (above) and a provider adapter. Select it via configuration:
 
@@ -113,7 +46,7 @@ firefly:
       provider: docusign      # selects the e-signature adapter independently
 ```
 
-2. Inject the reactive ports you need — your code is provider-agnostic:
+2. Inject the reactive ports you need. Your code is provider-agnostic:
 
 ```java
 import org.fireflyframework.ecm.port.document.DocumentContentPort;
@@ -171,131 +104,39 @@ public class S3DocumentContentAdapter implements DocumentContentPort {
 
 ## Configuration
 
-All properties are bound under the `firefly.ecm` prefix (`EcmProperties`). The block below shows the real keys and their defaults:
+The `firefly.ecm` namespace is bound by [EcmProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/config/EcmProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  ecm:
-    enabled: true                 # master switch for the ECM auto-configuration
-    adapter-type:                 # storage/core adapter to select (e.g. "s3"); none by default
-    properties:                   # free-form, adapter-specific settings (Map<String,Object>)
-      # bucket-name: my-documents
-      # region: us-east-1
-
-    connection:
-      connect-timeout: PT30S      # connection establishment timeout
-      read-timeout: PT5M          # read/transfer timeout
-      max-connections: 100        # max pooled connections
-      retry-attempts: 3           # retries for transient failures
-
-    features:                     # independent capability toggles
-      document-management: true
-      content-storage: true
-      versioning: true
-      folder-management: true
-      folder-hierarchy: true
-      permissions: true
-      security: true
-      search: true
-      auditing: true
-      esignature: false           # opt-in
-      virus-scanning: false       # opt-in
-      content-extraction: false   # opt-in
-      idp: false                  # opt-in (Intelligent Document Processing)
-
-    defaults:
-      max-file-size-mb: 100
-      allowed-extensions: [pdf, doc, docx, txt, jpg, png]
-      blocked-extensions: [exe, bat, cmd, scr]
-      checksum-algorithm: SHA-256
-      default-folder: "/"
-
-    performance:
-      batch-size: 100
-      cache-enabled: true
-      cache-expiration: PT30M
-      compression-enabled: true
-
-    esignature:
-      provider:                   # e-signature adapter (e.g. "docusign", "adobe-sign")
-
-    # The two built-in local adapters are opt-in and live outside the blocks above:
-    search:
-      enabled: false              # registers LocalDocumentSearchAdapter when true
-    permissions:
-      enabled: false              # registers LocalPermissionAdapter when true
-```
-
-Key properties:
-
-| Property | Default | Purpose |
+| Setting | Java type | Source default |
 | --- | --- | --- |
-| `firefly.ecm.enabled` | `true` | Master switch. When `false`, no ECM beans are created. |
-| `firefly.ecm.adapter-type` | *(none)* | Selects the storage/core adapter by its `@EcmAdapter(type=…)`. |
-| `firefly.ecm.properties` | *(empty)* | Adapter-specific key/value settings (bucket, region, credentials, …). |
-| `firefly.ecm.esignature.provider` | *(none)* | Selects the e-signature adapter independently of `adapter-type`. |
-| `firefly.ecm.features.*` | see above | Enable/disable each capability family. `esignature` and `idp` are **off** by default; most others **on**. |
-| `firefly.ecm.defaults.*` | see above | Upload validation: size limit, allowed/blocked extensions, checksum algorithm, default folder. |
-| `firefly.ecm.connection.*` | see above | Timeouts, pool size and retry attempts for adapter connections. |
-| `firefly.ecm.performance.*` | see above | Batch size, caching and compression toggles. |
-| `firefly.ecm.search.enabled` | `false` | Registers the in-memory `LocalDocumentSearchAdapter`. |
-| `firefly.ecm.permissions.enabled` | `false` | Registers the in-memory `LocalPermissionAdapter`. |
+| `firefly.ecm.enabled` | `Boolean` | `true` |
+| `firefly.ecm.adapter-type` | `String` | `not initialized` |
+| `firefly.ecm.properties` | `Map<String, Object>` | `not initialized` |
+| `firefly.ecm.connection` | `Connection` | `new Connection()` |
+| `firefly.ecm.features` | `Features` | `new Features()` |
 
-> Security note: if `permissions` or `security` is enabled but no real adapter is found, the no-op fallback **denies by default** and logs a warning. Always configure a real adapter for production.
+## API overview
 
-## Architecture
+| Type | Contract and responsibility |
+| --- | --- |
+| [`DocumentContentPort`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/port/document/DocumentContentPort.java) | Port interface for document binary content storage and retrieval operations. |
+| [`SignatureEnvelopePort`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/port/esignature/SignatureEnvelopePort.java) | Port interface for signature envelope management operations in the Firefly ECM system. |
+| [`AdapterRegistry`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/adapter/AdapterRegistry.java) | Central registry for ECM adapter discovery, registration, and management. |
+| [`AdapterSelector`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/adapter/AdapterSelector.java) | Service responsible for selecting appropriate ECM adapters based on configuration and requirements. |
+| [`EcmProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm/src/main/java/org/fireflyframework/ecm/config/EcmProperties.java) | Configuration properties for the Firefly ECM (Enterprise Content Management) system. |
 
-```
-your application
-        │  depends only on ports (reactive interfaces)
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│ ECM core (this module)                                       │
-│                                                              │
-│  Ports:  document · esignature · idp · folder · security ·   │
-│          audit   (Mono / Flux)                               │
-│                                                              │
-│  Routing:  @EcmAdapter → AdapterRegistry → AdapterSelector   │
-│            (by adapter-type / esignature.provider)           │
-│                                                              │
-│  Fallback: NoOpAdapterFactory (deny-by-default for security) │
-│  Built-in: LocalDocumentSearchAdapter, LocalPermissionAdapter│
-└─────────────────────────────────────────────────────────────┘
-        ▲                         ▲
-        │ classpath adapters      │
-   storage adapters          e-signature / IDP adapters
-   (S3, Azure Blob, …)       (DocuSign, Adobe Sign, Textract, …)
+## Continue the application
+
+Use the [ECM Storage - AWS (S3) guide](../../docs/site/modules/ecm-storage-aws.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-ecm -am verify
+./mvnw -pl :fireflyframework-ecm -am install
 ```
 
-`EcmAutoConfiguration` registers the registry, selector, no-op factory and `EcmPortProvider`, then exposes one bean per port — each gated by its `firefly.ecm.features.*` flag and resolved through the selector with a no-op fallback.
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## Observability
-
-`EcmMetrics` (auto-configured via `EcmObservabilityAutoConfiguration`, built on `fireflyframework-observability`) publishes Micrometer meters:
-
-- `firefly.ecm.documents.operations` — counter, tagged by `operation`
-- `firefly.ecm.operation.duration` — timer, tagged by `operation`, `provider`
-- `firefly.ecm.bytes.transferred` — distribution summary of payload bytes (by `direction`, `provider`)
-- `firefly.ecm.errors` — failed operations, tagged by `operation`, `provider`
-- `firefly.ecm.signatures.completed` — successful e-signature workflows, tagged by `provider`
-
-## Documentation
-
-- Framework module catalog and docs hub: [fireflyframework on GitHub](https://github.com/fireflyframework)
-- In-repo docs ([`docs/`](docs/)):
-  - [Architecture](docs/architecture.md)
-  - [Configuration](docs/configuration.md) · [Configuration Reference](docs/configuration-reference.md)
-  - [Testing](docs/testing.md)
-  - Adapter integration guides ([`docs/adapters/`](docs/adapters)) — S3, DocuSign, Adobe Sign
-  - IDP integration guides ([`docs/idp/`](docs/idp)) — AWS Textract, Azure Form Recognizer, Google Document AI
-  - Usage examples ([`docs/examples/`](docs/examples)) — basic usage, document versioning, folder management
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/ecm.md).

@@ -1,76 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/observability). Build from the monorepo root with `./mvnw -pl :fireflyframework-observability -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Observability](../../docs/site/assets/modules/observability.svg)
 
-# Firefly Framework - Observability
+# Observability
 
-[![CI](https://github.com/fireflyframework/fireflyframework-observability/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-observability/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Provide a common metrics, tracing, health, and context-propagation foundation for framework components.
 
-> Centralized observability foundation providing unified metrics, tracing, health indicators, structured logging, and reactive context propagation for the Firefly Framework.
+Extend the metrics/health support classes where application instrumentation is needed and select exporters through configuration. A library on the classpath is only one part of observability: the host must expose endpoints and operate the chosen telemetry backend.
 
----
+[Module guide](../../docs/site/modules/observability.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Metrics Exporter Selection](#metrics-exporter-selection)
-- [Tracing Bridge Selection](#tracing-bridge-selection)
-- [Structured Logging](#structured-logging)
-- [Migration Guide](#migration-guide)
-- [Architecture](#architecture)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-Firefly Framework Observability is the centralized observability foundation for the entire Firefly ecosystem. It provides consistent abstractions for metrics, distributed tracing, health indicators, and structured logging across all framework modules and downstream microservices.
-
-The library is built on the **Micrometer Observation API** as its instrumentation abstraction, with **OpenTelemetry as the default tracing bridge** (W3C TraceContext propagation with B3 fallback). Both OpenTelemetry and Brave bridges ship on the classpath — switch between them purely via configuration, no POM changes needed.
-
-It solves the critical reactive context propagation problem by enabling `Hooks.enableAutomaticContextPropagation()`, which bridges ThreadLocal values (MDC, trace context) into Reactor Context across all thread boundaries.
-
-All framework modules extend the base classes provided here (`FireflyMetricsSupport`, `FireflyHealthIndicator`, `FireflyTracingSupport`) to ensure consistent metric naming (`firefly.{module}.{metric}`), standardized tag conventions (lowercase.dots via `MetricTags`), and reactive-safe tracing patterns. This module sits at the bottom of the framework dependency graph: CQRS, EDA, orchestration, event sourcing, cache, client, and the rest of the Firefly modules depend on it for instrumentation, and downstream microservices inherit it transitively through the Firefly starters. It contributes only abstractions, auto-configuration, and shared logback config — it never imposes a tracing backend, since the OTLP/Brave bridge and Prometheus/OTLP exporter are selected at runtime via a single property.
-
-## Features
-
-- **Metrics**: Unified naming via `MetricNaming` (`firefly.{module}.{metric}`), standard tag constants via `MetricTags`, abstract `FireflyMetricsSupport` base class with null-safe, cached, reactive-aware metric creation
-- **Tracing**: Reactive-safe `FireflyTracingSupport` wrapping Micrometer Observation API (Mono/Flux), config-based bridge selection (OpenTelemetry default, Brave fallback), W3C + B3 composite propagation
-- **Health**: Abstract `FireflyHealthIndicator` base class with error rate, latency, and connection pool thresholds, health-to-metrics bridge for Prometheus gauge exposure, Kubernetes liveness/readiness/startup probe auto-configuration
-- **Logging**: Shared `logback-firefly.xml` for structured JSON logging (Logstash encoder), automatic MDC propagation of traceId, spanId, X-Transaction-Id
-- **Reactive Context**: Automatic context propagation via `Hooks.enableAutomaticContextPropagation()` — no manual MDC management needed in reactive chains
-- **Actuator**: Default endpoint exposure, Prometheus exemplar support (metrics-to-traces linking), OTLP export for traces and metrics
-- **WebClient**: Automatic trace context propagation (W3C + B3 + X-Transaction-Id) on all outgoing HTTP requests
-- **Auto-configuration**: Spring Boot auto-configuration with `@ConditionalOnMissingBean` backoff — every bean can be overridden
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x (3.4+ for built-in structured logging)
-- Maven 3.9+
-- Spring Boot Actuator on the classpath (pulled in transitively)
-- An OTLP-compatible collector (e.g. OpenTelemetry Collector contrib, Grafana Alloy) for OTLP export, or a Prometheus scrape target — optional, only when exporting telemetry off-box
+Measure application submissions and review latency with the metrics support, and trace calls to configured providers. Telemetry export and backend access must be configured in the service deployment.
 
 ## Installation
 
-Add a single dependency — all tracing bridges, Prometheus registry, and exporters are included:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-observability</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-> Version is managed by `fireflyframework-bom`. No additional dependencies needed for tracing or metrics — everything ships on the classpath.
+## Quick start
 
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Metrics
 
@@ -141,216 +97,39 @@ public class OrderService {
 
 ## Configuration
 
-All observability settings live under the `firefly.observability` prefix:
+The `firefly.observability` namespace is bound by [FireflyObservabilityProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-```yaml
-firefly:
-  observability:
-    metrics:
-      enabled: true                        # Master switch for metrics
-      prefix: firefly                      # Default metric prefix
-      exporter: PROMETHEUS                 # PROMETHEUS (default), OTLP, or BOTH
-    tracing:
-      enabled: true                        # Master switch for tracing
-      bridge: OTEL                         # OTEL (default) or BRAVE — no POM changes needed
-      sampling-probability: 1.0            # Override in production (e.g. 0.1 for 10%)
-      propagation-type: W3C               # W3C (default) or B3
-      baggage-fields:                      # Custom baggage propagated across services
-        - X-Transaction-Id
-    health:
-      enabled: true                        # Master switch for health indicators
-      kubernetes-probes: true              # Configure liveness/readiness/startup groups
-    logging:
-      enabled: true                        # Master switch for structured logging
-      structured-format: logstash          # logstash, ecs, or gelf
-    context-propagation:
-      reactor-hooks-enabled: true          # Enable Hooks.enableAutomaticContextPropagation()
-```
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.observability.metrics` | `Metrics` | `new Metrics()` |
+| `firefly.observability.tracing` | `Tracing` | `new Tracing()` |
+| `firefly.observability.health` | `Health` | `new Health()` |
+| `firefly.observability.logging` | `Logging` | `new Logging()` |
+| `firefly.observability.context-propagation` | `ContextPropagation` | `new ContextPropagation()` |
 
-## Metrics Exporter Selection
+## API overview
 
-Both Prometheus and OTLP metrics registries ship on the classpath. An `EnvironmentPostProcessor` reads the `exporter` property at startup and enables/disables the appropriate metrics backends. **No POM changes are needed to switch exporters.**
+| Type | Contract and responsibility |
+| --- | --- |
+| [`FireflyMetricsSupport`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/metrics/FireflyMetricsSupport.java) | Abstract base class for all Firefly module metrics services. |
+| [`FireflyHealthIndicator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/health/FireflyHealthIndicator.java) | Abstract base class for all Firefly health indicators. |
+| [`FireflyObservabilityProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java) | Unified configuration properties for Firefly observability. |
+| [`FireflyObservabilityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityAutoConfiguration.java) | Master auto-configuration for Firefly Framework observability. |
+| [`FireflyObservabilityEnvironmentPostProcessor`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityEnvironmentPostProcessor.java) | Configures observability backends at startup based on Firefly properties. |
 
-| Exporter | Endpoint | Protocol | When to Use |
-|----------|----------|----------|-------------|
-| **PROMETHEUS** (default) | `/actuator/prometheus` | Pull (scrape) | Standard Prometheus/Grafana/Thanos/Mimir setups |
-| OTLP | otel-collector-contrib | Push (OTLP) | When all telemetry (traces + metrics) flows through OTel Collector |
-| BOTH | Both | Pull + Push | During migration, or when multiple backends consume metrics |
+## Continue the application
 
-### Prometheus (Default)
+Use the [Starter Core guide](../../docs/site/modules/starter-core.md) for the next part of this integration. ## Build and validation
 
-```yaml
-firefly:
-  observability:
-    metrics:
-      exporter: PROMETHEUS
-```
-
-- Exposes `/actuator/prometheus` scrape endpoint
-- Standard for Prometheus, Grafana, Thanos, Mimir
-- Zero additional infrastructure — Prometheus scrapes the endpoint directly
-
-### OTLP Push
-
-```yaml
-firefly:
-  observability:
-    metrics:
-      exporter: OTLP
-```
-
-- Pushes metrics to otel-collector-contrib via OTLP protocol
-- No scrape endpoint exposed
-- Configure the OTLP metrics endpoint via env var:
+Use Java 25. From the repository root, build this component with its required dependencies:
 
 ```bash
-OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector.monitoring:4318/v1/metrics
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-observability -am verify
+./mvnw -pl :fireflyframework-observability -am install
 ```
 
-### Both
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-```yaml
-firefly:
-  observability:
-    metrics:
-      exporter: BOTH
-```
-
-- Enables both Prometheus scrape and OTLP push simultaneously
-- Useful during migration from Prometheus to OTLP, or when multiple backends consume metrics
-
-## Tracing Bridge Selection
-
-Both OpenTelemetry and Brave tracing bridges ship on the classpath. An `EnvironmentPostProcessor` reads the `bridge` property at startup and excludes the unwanted bridge's Spring Boot auto-configuration. **No POM changes are needed to switch bridges.**
-
-### OpenTelemetry (Default)
-
-```yaml
-firefly:
-  observability:
-    tracing:
-      bridge: OTEL
-```
-
-- Uses `micrometer-tracing-bridge-otel` with OTLP export
-- W3C TraceContext propagation (with B3 fallback via composite propagator)
-- Designed for the open-source **[OpenTelemetry Collector (contrib)](https://github.com/open-telemetry/opentelemetry-collector-contrib)** (`otel/opentelemetry-collector-contrib`)
-- Compatible with Jaeger, Tempo, Grafana Alloy, Datadog, and any OTLP-compatible backend
-
-### OTLP Transport (gRPC vs HTTP)
-
-Both gRPC and HTTP/protobuf senders are on the classpath. **Default: gRPC (port 4317).** Switch via env var:
-
-| Transport | Port | Env Var | When to Use |
-|-----------|------|---------|-------------|
-| **gRPC** (default) | 4317 | `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` | Production — persistent connections, binary framing, multiplexing |
-| HTTP/protobuf | 4318 | `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` | Behind HTTP proxies/ALBs, or when gRPC is not available |
-
-```bash
-# Default — gRPC to otel-collector-contrib
-OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector.monitoring:4317
-
-# Switch to HTTP/protobuf (e.g., behind an ALB)
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector.monitoring:4318
-
-# Per-signal overrides
-OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://tempo:4317
-OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://mimir:4318/v1/metrics
-```
-
-### Brave (Zipkin Ecosystems)
-
-```yaml
-firefly:
-  observability:
-    tracing:
-      bridge: BRAVE
-```
-
-- Uses `micrometer-tracing-bridge-brave` with Zipkin reporter
-- B3 propagation (with W3C fallback via composite propagator)
-- Compatible with Zipkin-based tracing infrastructure
-- Use when migrating from legacy Zipkin/Brave-based systems
-
-## Structured Logging
-
-Include the shared logback configuration in your module's `logback-spring.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <include resource="logback-firefly.xml"/>
-
-    <root level="INFO">
-        <appender-ref ref="FIREFLY_ASYNC"/>
-    </root>
-
-    <logger name="org.fireflyframework.yourmodule" level="DEBUG"/>
-</configuration>
-```
-
-This provides:
-- JSON structured logging via Logstash encoder (production)
-- Pretty-printing with colors and trace context (dev profiles)
-- Async appender for production performance
-- Automatic MDC fields: `traceId`, `spanId`, `X-Transaction-Id`, `userId`, `correlationId`, `requestId`
-
-## Migration Guide
-
-For framework modules migrating to centralized observability:
-
-1. **Add dependency**: Replace all direct `micrometer-*`, `brave`, `opentelemetry-*`, and `logstash-logback-encoder` dependencies with `fireflyframework-observability`
-2. **Metrics**: Extend `FireflyMetricsSupport` — use `counter()`, `timer()`, `gauge()`, `timed()` from the base class instead of `Counter.builder()`, `Timer.builder()` directly
-3. **Health**: Extend `FireflyHealthIndicator` — use `addErrorRate()`, `addLatency()` for standard health response formats
-4. **Tracing**: Use `FireflyTracingSupport` for reactive-safe span management instead of manual `Observation` lifecycle
-5. **Tags**: Use constants from `MetricTags` (lowercase.dots per Micrometer conventions) — e.g. `workflow.id` not `workflowId`
-6. **MDC**: Use constants from `MdcConstants` for field names — do NOT use `MDC.put()`/`MDC.remove()` in reactive controllers; use `.contextWrite()` instead
-7. **Logback**: Replace custom `logback-spring.xml` with a thin wrapper that does `<include resource="logback-firefly.xml"/>`
-8. **DAG**: Add the edge `yourmodule -> observability` in the CLI's `graph.go`
-
-## Architecture
-
-```
-fireflyframework-observability/
-├── FireflyObservabilityAutoConfiguration          # Master auto-configuration
-├── FireflyObservabilityProperties                 # Unified @ConfigurationProperties
-├── FireflyObservabilityEnvironmentPostProcessor   # Config-based bridge + exporter selection
-├── metrics/
-│   ├── FireflyMetricsSupport                      # Abstract base for ALL module metrics
-│   ├── MetricNaming                               # Enforces firefly.{module}.{metric}
-│   ├── MetricTags                                 # Standard tag constants
-│   └── FireflyMeterRegistryCustomizer             # Common tags: app, env, instance
-├── tracing/
-│   ├── FireflyTracingSupport                      # Reactive-safe tracing (Mono/Flux)
-│   ├── FireflyBaggageConfiguration                # Standard baggage fields
-│   ├── ReactiveContextPropagationAutoConfiguration # Hooks.enableAutomaticContextPropagation()
-│   └── TracingWebClientCustomizer                 # WebClient trace context propagation
-├── health/
-│   ├── FireflyHealthIndicator                     # Abstract base for health indicators
-│   ├── HealthMetricsBridge                        # Health status → Prometheus gauge
-│   └── KubernetesProbesAutoConfiguration          # Liveness/readiness/startup probes
-├── logging/
-│   ├── MdcConstants                               # Standard MDC field names
-│   └── StructuredLoggingAutoConfiguration         # Spring Boot structured logging setup
-└── actuator/
-    ├── FireflyActuatorAutoConfiguration           # Default endpoint exposure
-    └── ExemplarsAutoConfiguration                 # Prometheus exemplar linking
-```
-
-## Documentation
-
-- [Module Catalog](https://github.com/fireflyframework/.github/blob/main/docs/MODULE_CATALOG.md) — complete reference of all Firefly Framework modules and how they fit together
-- [Getting Started Guide](https://github.com/fireflyframework/.github/blob/main/docs/GETTING_STARTED.md) — configure access, create your first project, and start building
-- [CI/CD Configuration Guide](https://github.com/fireflyframework/.github/blob/main/docs/CI_CD_GUIDE.md) — shared workflows and the release process
-- Configuration metadata: all `firefly.observability.*` keys, defaults, and value hints are published in `META-INF/additional-spring-configuration-metadata.json`, so IDEs offer auto-completion and inline docs out of the box.
-
-## Contributing
-
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/observability.md).

@@ -1,74 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-webflux). Build from the monorepo root with `./mvnw -pl :fireflyframework-security-webflux -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Security WebFlux Binding](../../docs/site/assets/modules/security-webflux.svg)
 
-# Firefly Framework - Security WebFlux Binding
+# Security WebFlux Binding
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-green.svg)](https://spring.io/projects/spring-security)
+Bind the framework principal and authorization policy to reactive Spring Security/WebFlux.
 
-> The reactive Spring Security binding for the Firefly security platform. It adapts the framework's stack-neutral ports and domain model onto Spring Security WebFlux: a principal-carrying `Authentication`, a `ReactiveSecurityContextHolder`-backed `SecurityContextPort`, and the URL policy enforcement point that turns `authorizeExchange()` into fail-closed ABAC.
+Use the principal projection and URL policy enforcement components in a reactive security chain. Configure security-core and the relevant token validation module; this binding alone is not a complete identity provider deployment.
 
----
+[Module guide](../../docs/site/modules/security-webflux.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Where it sits](#where-it-sits)
-- [Key types](#key-types)
-- [Usage](#usage)
-- [Secure-by-default behavior](#secure-by-default-behavior)
-- [Dependencies](#dependencies)
-- [Testing](#testing)
-- [License](#license)
+Project the authenticated reviewer into the framework principal and connect URL policy decisions to WebFlux. Token signature validation is configured in the resource-server module.
 
-## Overview
+## Installation
 
-`fireflyframework-security-webflux` is the layer where the framework's hexagonal security model meets Spring Security. The `api`/`spi`/`core` modules below it are deliberately free of any web stack: they speak in `SecurityPrincipal`, `Decision`, `PolicyDecisionPort` and `SecurityContextPort`, never in `Authentication`, `ServerHttpSecurity` or `ReactiveSecurityContextHolder`. This module is the single place that imports `spring-security-core` / `spring-security-web` / `spring-webflux` and bridges the two worlds, so that everything beneath it — and all application code — stays Spring-Security-agnostic.
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
-It provides three things:
-
-- A Spring `Authentication` (`FireflyAuthenticationToken`) whose principal **is** the framework's `SecurityPrincipal`, so Spring's native `hasAuthority(...)` / `hasRole(...)` keep working while application code can still recover the rich, validated principal.
-- A `SecurityContextPort` implementation (`ReactorSecurityContextAdapter`) backed by `ReactiveSecurityContextHolder`, letting services read the current principal through a port instead of importing Spring Security.
-- A reactive URL policy enforcement point (`PolicyAuthorizationManager`) that plugs into `authorizeExchange().anyExchange().access(...)` and delegates every authorization decision to the `PolicyDecisionPort`, secure-by-default and fail-closed.
-
-Consistent with the platform design (decisions D4/D10), the binding is **reactive-only** and **secure-by-default-hard**: unauthenticated requests are denied, and any error in the decision path denies rather than permits.
-
-## Where it sits
-
-The Firefly security platform is hexagonal; modules depend strictly inward:
-
-```
-security-api      driving ports + domain (SecurityPrincipal, Decision, Obligation, use-cases)
-   ▲
-security-spi      driven ports (PolicyDecisionPort, SecurityContextPort, TokenValidationPort, ...)
-   ▲
-security-core     framework-neutral engine (EmbeddedPolicyDecisionAdapter, authority normalization, authz engine)
-   ▲
-security-webflux  ◀── THIS MODULE — Spring Security WebFlux binding
-   ▲
-security-resource-server-starter   JWT / opaque resource server, issuer resolution, headers/CORS
-   ▲
-adapters          OPA / Cerbos / OpenFGA · Vault / KMS · idp providers (keycloak, cognito, azure-ad, internal-db)
+```xml
+<dependency>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-security-webflux</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
+</dependency>
 ```
 
-This module depends only on `security-api` and `security-core` (which transitively pulls `security-spi`) plus Spring Security itself. It defines no provider, no transport and no token format of its own — it is pure glue. The bearer-validation pipeline, multi-tenant issuer resolution, security headers and auto-configuration live one layer up in `security-resource-server-starter` and `security-autoconfigure`, which wire the beans this module supplies into a `SecurityWebFilterChain`. This module ships no `AutoConfiguration.imports` and no runnable `application.yaml`; its types are constructed and wired by those higher layers.
+## Quick start
 
-## Key types
-
-| Type | Package | Role |
-| --- | --- | --- |
-| `FireflyAuthenticationToken` | `...webflux.authentication` | A Spring `AbstractAuthenticationToken` whose principal is a `SecurityPrincipal`. Authorities are derived from `principal.authorities()` as `SimpleGrantedAuthority`s; `getName()` returns `principal.subject()`. Exposes `securityPrincipal()` to recover the rich principal. Marked authenticated on construction (it is only ever built from an already-validated principal). |
-| `PrincipalSupport` | `...webflux.authentication` | Stateless helper that recovers a `SecurityPrincipal` from **any** Spring `Authentication`. Prefers the principal carried by a `FireflyAuthenticationToken`; falls back to a principal already set as `getPrincipal()`; otherwise builds a minimal `SecurityPrincipal` from the authentication's name and granted authorities (so third-party / JWT `Authentication`s still project cleanly). Null-safe. |
-| `ReactorSecurityContextAdapter` | `...webflux.context` | Implements `SecurityContextPort` (SPI). Reads `ReactiveSecurityContextHolder.getContext()`, keeps only an authenticated `Authentication`, and projects it via `PrincipalSupport::extract`. Emits an empty `Mono` when there is no authenticated context. |
-| `PolicyAuthorizationManager` | `...webflux.authz` | Implements Spring's `ReactiveAuthorizationManager<AuthorizationContext>` — the URL PEP. Denies unauthenticated requests; for authenticated requests it calls `PolicyDecisionPort.authorize(...)` with the HTTP method as the `action`, the request path as the `resource`, and a `{method, path}` context map, mapping `Decision.granted()` to an `AuthorizationDecision`. |
-
-### Ports
-
-- **Implements** `org.fireflyframework.security.spi.SecurityContextPort` (via `ReactorSecurityContextAdapter`).
-- **Consumes** `org.fireflyframework.security.spi.PolicyDecisionPort` (injected into `PolicyAuthorizationManager`; satisfied by `security-core`'s `EmbeddedPolicyDecisionAdapter` by default, or by an OPA/Cerbos/OpenFGA adapter).
-- **Projects** `org.fireflyframework.security.api.domain.SecurityPrincipal` and reads `org.fireflyframework.security.api.domain.Decision`.
-
-## Usage
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 Wire the PEP into a `SecurityWebFilterChain` (normally done for you by `security-autoconfigure`):
 
@@ -90,7 +48,7 @@ SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, PolicyDec
 }
 ```
 
-Read the current principal from a service through the port — no Spring Security import required:
+Read the current principal from a service through the port. No Spring Security import required:
 
 ```java
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
@@ -116,7 +74,7 @@ public class GreetingService {
 }
 ```
 
-When you mint a principal yourself (e.g. in a custom authentication converter), wrap it so Spring authorities and the rich principal stay in sync:
+When you mint a principal yourself (e.g. In a custom authentication converter), wrap it so Spring authorities and the rich principal stay in sync:
 
 ```java
 SecurityPrincipal principal = SecurityPrincipal.builder()
@@ -126,50 +84,41 @@ SecurityPrincipal principal = SecurityPrincipal.builder()
 Authentication auth = new FireflyAuthenticationToken(principal);
 ```
 
-## Secure-by-default behavior
+## Configuration
 
-`PolicyAuthorizationManager.check(...)` is deny-biased at every branch:
+The `firefly.security.webflux.header-bridge` namespace is bound by [PrincipalHeaderBridgeProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-- **No authentication / unauthenticated** → `AuthorizationDecision(false)` (the `defaultIfEmpty` and `isAuthenticated()` filter close the gap).
-- **Authenticated, policy abstains** → permit. With `security-core`'s `EmbeddedPolicyDecisionAdapter` and no rules registered, ABAC is not in use and the decision defers to RBAC at the PEP; configured rules apply deny-overrides.
-- **Authenticated, policy denies** → `AuthorizationDecision(false)`.
-- **Policy errors / PDP unreachable** → `onErrorReturn(new AuthorizationDecision(false))` — fail-closed, never permit-on-error.
+| Setting | Java type | Source default |
+| --- | --- | --- |
+| `firefly.security.webflux.header-bridge.enabled` | `boolean` | `false` |
+| `firefly.security.webflux.header-bridge.tenant-header` | `String` | `"X-Tenant-Id"` |
+| `firefly.security.webflux.header-bridge.user-header` | `String` | `"X-User-Id"` |
+| `firefly.security.webflux.header-bridge.roles-header` | `String` | `"X-User-Roles"` |
+| `firefly.security.webflux.header-bridge.tenant-required` | `boolean` | `true` |
 
-This matches design decision D4 (secure-by-default-hard): default-deny, validated bearer upstream, fail-closed everywhere.
+## API overview
 
-## Dependencies
+| Type | Contract and responsibility |
+| --- | --- |
+| [`PrincipalHeaderBridgeProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeProperties.java) | Configuration for the principal→header bridge. |
+| [`FireflyAuthenticationToken`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/FireflyAuthenticationToken.java) | Spring Security `org.springframework.security.core.Authentication` whose principal is the framework's `SecurityPrincipal`. |
+| [`PrincipalSupport`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/PrincipalSupport.java) | Recovers a `SecurityPrincipal` from any Spring `Authentication`. |
+| [`PolicyAuthorizationManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authz/PolicyAuthorizationManager.java) | URL policy enforcement point. |
+| [`PrincipalHeaderBridgeWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeWebFilter.java) | Derives trusted internal request headers from the validated token , never from the client. |
 
-Provided by the Firefly parent/BOM (`org.fireflyframework:fireflyframework-parent`), so versions are managed for you:
+## Continue the application
 
-- `fireflyframework-security-api` — `SecurityPrincipal`, `Decision`.
-- `fireflyframework-security-core` — neutral engine, incl. `EmbeddedPolicyDecisionAdapter` (transitively brings `fireflyframework-security-spi`).
-- `spring-security-core`, `spring-security-web`, `spring-webflux` — the binding surface this module exists to adapt.
-- `slf4j-api`, `lombok` (provided).
+Use the [Security Resource Server guide](../../docs/site/modules/security-resource-server.md) for the next part of this integration. ## Build and validation
 
-It has **no** Spring Boot, provider-SDK or auto-configuration dependency; that wiring belongs to the starters above it.
-
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-security-webflux</artifactId>
-</dependency>
-```
-
-## Testing
-
-Unit-tested with JUnit 5, AssertJ, `reactor-test` (`StepVerifier`), `spring-security-test` and `spring-test` mocks — no running server, no Spring context:
-
-- `PolicyAuthorizationManagerTest` drives the PEP through `MockServerWebExchange` / `AuthorizationContext` and asserts all four decision branches: denies unauthenticated requests (`Mono.empty()`), permits an authenticated request when the `EmbeddedPolicyDecisionAdapter` abstains, denies when a `PolicyDecisionPort` returns `Decision.deny(...)`, and **fails closed** when the port emits an error.
-- `ReactorSecurityContextAdapterTest` verifies the principal is projected out of the reactive context (seeded via `ReactiveSecurityContextHolder.withAuthentication(...)`) and that `currentPrincipal()` completes empty when no security context is present.
-
-Run them with:
+Use Java 25. From the repository root, build this component with its required dependencies:
 
 ```bash
-mvn -pl fireflyframework-security-webflux test
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-security-webflux -am verify
+./mvnw -pl :fireflyframework-security-webflux -am install
 ```
 
-## License
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/security-webflux.md).

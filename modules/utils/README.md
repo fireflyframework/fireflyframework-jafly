@@ -1,79 +1,32 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/utils). Build from the monorepo root with `./mvnw -pl :fireflyframework-utils -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Utils](../../docs/site/assets/modules/utils.svg)
 
-# Firefly Framework - Utils
+# Utils
 
-[![CI](https://github.com/fireflyframework/fireflyframework-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-utils/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+Render FreeMarker templates and convert rendered content to document formats; mark filter DTO fields.
 
-> Shared utility library for the Firefly Framework — FreeMarker-powered template rendering to XHTML, PDF, and images, plus filtering annotations used across framework modules.
+Use TemplateRenderUtil for template rendering and document output, and UserFilterDTO for the filter metadata consumed by the R2DBC utilities. Keep template resources and model data under application control.
 
----
+[Module guide](../../docs/site/modules/utils.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-`fireflyframework-utils` is a lightweight, dependency-light utility library used across the Firefly Framework ecosystem. It bundles two independent capabilities that show up repeatedly in microservices but do not warrant a module of their own:
-
-1. **Document rendering** — `TemplateRenderUtil` turns [FreeMarker](https://freemarker.apache.org/) templates into well-formed XHTML and, via the [Flying Saucer](https://github.com/flyingsaucerproject/flyingsaucer) renderer backed by OpenPDF, into **PDF documents** and **raster images** (PNG/JPEG). It is the engine behind document-heavy use cases such as invoices, statements, contracts, and reports — with watermarks, encryption, metadata, bookmarks/outlines, custom fonts, template caching, shared variables, pre/post-processing hooks, and asynchronous rendering.
-2. **Filtering metadata** — the `@FilterableId` annotation marks ID fields on filter DTOs so they participate in dynamic query filtering and OpenAPI parameter generation with exact-match semantics.
-
-The module sits low in the framework's dependency graph. It depends only on `fireflyframework-kernel` (shared abstractions and exceptions) and brings FreeMarker and Flying Saucer/OpenPDF as its functional dependencies, so it can be added to any service — reactive or servlet, core/domain/experience tier — without pulling in the full framework stack. The `@FilterableId` annotation it defines is consumed at runtime by the filtering utilities in `fireflyframework-web` (`FilterUtils` for query building and `FilterParameterCustomizer` for OpenAPI/Swagger documentation).
-
-`TemplateRenderUtil` is a static-method utility — there is no Spring auto-configuration and no bean to wire. Call it directly from any service, mapper, or scheduled job.
-
-## Features
-
-**Template rendering (`TemplateRenderUtil`)**
-
-- Render FreeMarker templates from the **classpath** (`classpath:/templates`), the **filesystem** (`./templates`), or arbitrary custom `TemplateLoader`s — resolved via a `MultiTemplateLoader` in that order.
-- Render either named template **files** (`*.ftl`) or in-memory **template strings**.
-- Output to **XHTML string**, **PDF** (`OutputStream`, `File`, or `byte[]`), or **image** (`byte[]`, e.g. PNG/JPEG at a chosen width/height).
-- Automatic XHTML normalization — wraps fragments in a valid XHTML document and injects `@page` CSS for size/margins so Flying Saucer always receives well-formed input.
-- Rich `PdfOptions` builder: page size (`A4`, `LETTER`, `LEGAL`, `A3`), margins, custom font directories (TTF/OTF embedding), default font, base URI for relative resources.
-- **Watermarks** (text, opacity, font size, rotation, color), **encryption** (user/owner passwords + printing/copy/modify permissions), **document metadata** (title, author, subject, keywords, creator), and **bookmarks/outlines** (nested, page-targeted).
-- **Asynchronous** variants (`*Async`) returning `CompletableFuture`, backed by a configurable fixed thread pool.
-- **Template caching** (toggleable, with configurable max size), **shared variables** available to every template, and **pre/post-processing hooks** (`BiFunction<String, Map, String>`).
-- **Template validation** for both inline content and files, returning a list of syntax errors instead of throwing.
-
-**Filtering metadata**
-
-- `@FilterableId` — a runtime-retained field annotation that opts an `Id` field into filtering with exact-match-only semantics (no `LIKE`, no range parameters), and surfaces it as a query parameter in generated OpenAPI documentation.
-
-## Requirements
-
-- Java 21+ (Java 25 recommended)
-- Spring Boot 3.x
-- Maven 3.9+
-- No external runtime services. For TTF/OTF font embedding you provide font files; for classpath template loading place templates under `src/main/resources/templates`.
+After accepting an application, the service can render a confirmation template or generate a PDF receipt. Template data and document storage remain application choices.
 
 ## Installation
 
-Add the dependency. The version is managed by the Firefly BOM / parent POM, so you normally omit `<version>`:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-utils</artifactId>
-    <!-- version managed by the Firefly BOM / fireflyframework-parent -->
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If your project does not inherit the Firefly parent or import the BOM, pin the version explicitly to match the rest of your framework dependencies (for example `26.05.08`).
+## Quick start
 
-## Quick Start
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
 ### Render a template to HTML
 
@@ -157,35 +110,28 @@ public class UserFilterDTO {
 
 ## Configuration
 
-This module has **no Spring `@ConfigurationProperties` and no auto-configuration** — there are no `firefly.*` properties to set in `application.yml`. `TemplateRenderUtil` is configured programmatically via its static methods, which apply globally to the utility:
+This module declares no `@ConfigurationProperties` class of its own. Use the constructor/port contracts above and the configuration of the host or related core module.
 
-| Method | Purpose | Default |
-| --- | --- | --- |
-| `setTemplateCachingEnabled(boolean)` | Enable/disable in-memory template caching | enabled |
-| `setTemplateCacheMaxSize(int)` | Max number of cached compiled templates | `100` |
-| `setAsyncThreadPoolSize(int)` | Size of the async rendering thread pool | `max(2, availableProcessors())` |
-| `addSharedVariable(name, value)` | Expose a variable to every template | none |
-| `setTemplatePreProcessor(BiFunction)` | Transform template source before rendering | none |
-| `setTemplatePostProcessor(BiFunction)` | Transform rendered output after rendering | none |
-| `addTemplateLoader(TemplateLoader)` | Register an additional FreeMarker loader | classpath + `./templates` |
-| `setTemplateDirectory(String)` / `setClasspathAndFileTemplateLoaders(...)` | Override where templates are loaded from | `classpath:/templates`, then `./templates` |
+## API overview
 
-Template lookup order out of the box: `classpath:/templates`, then the working-directory `./templates` folder, then any custom loaders. FreeMarker defaults: UTF-8 encoding, `Locale.US`, and a rethrow exception handler.
+| Type | Contract and responsibility |
+| --- | --- |
+| [`TemplateRenderUtil`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/utils/src/main/java/org/fireflyframework/utils/template/TemplateRenderUtil.java) | Utility for rendering FreeMarker templates to XHTML, PDF, and images using Flying Saucer. |
+| [`FilterableId`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/utils/src/main/java/org/fireflyframework/utils/annotations/FilterableId.java) | The FilterableId annotation is used to mark ID fields that should be included in filtering operations. |
 
-Call `TemplateRenderUtil.shutdownAsyncThreadPool()` on application shutdown if you used the async APIs.
+## Continue the application
 
-## Documentation
+Use the [Notifications Core guide](../../docs/site/modules/notifications-core.md) for the next part of this integration. ## Build and validation
 
-- In-repo tutorials under [`tutorials/`](tutorials/) — a four-part series covering `TemplateRenderUtil` basics, FreeMarker syntax, PDF customization, and advanced features (caching, shared variables, hooks, async, validation, image rendering).
-- Framework documentation hub and module catalog: [github.com/fireflyframework](https://github.com/fireflyframework)
-- [FreeMarker manual](https://freemarker.apache.org/docs/) and [Flying Saucer](https://github.com/flyingsaucerproject/flyingsaucer) for template syntax and rendering specifics.
+Use Java 25. From the repository root, build this component with its required dependencies:
 
-## Contributing
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-utils -am verify
+./mvnw -pl :fireflyframework-utils -am install
+```
 
-Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our code of conduct, development process, and how to submit pull requests.
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/utils.md).

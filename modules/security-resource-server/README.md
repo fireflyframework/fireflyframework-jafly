@@ -1,113 +1,38 @@
-> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-resource-server). Build from the monorepo root with `./mvnw -pl :fireflyframework-security-resource-server -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+![Jafly. Security Resource Server](../../docs/site/assets/modules/security-resource-server.svg)
 
-# Firefly Framework - Security Resource Server
+# Security Resource Server
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
-[![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-brightgreen.svg)](https://spring.io/projects/spring-security)
+Validate signed JWT bearer tokens in a reactive resource server with hardened default security behavior.
 
-> Secure-by-default reactive OAuth2 resource server for Spring WebFlux. A single auto-configuration turns any Firefly web application into a JWT-validating resource server with a default-deny filter chain and hardened response headers — no security code required, and nothing to silently leak.
+Configure the issuer and signing-key source for the JWT authority and review the permitted routes. Combine with method-policy when application methods require Secure evaluation as well as URL authentication.
 
----
+[Module guide](../../docs/site/modules/security-resource-server.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
-## Table of Contents
+## In the onboarding service
 
-- [Overview](#overview)
-- [Where it sits in the platform](#where-it-sits-in-the-platform)
-- [What it provides](#what-it-provides)
-- [Key types](#key-types)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Request flow](#request-flow)
-- [Testing](#testing)
-- [License](#license)
-
-## Overview
-
-This module is the **resource-server binding** of the Firefly hexagonal security platform. It wires Spring Security 6's reactive OAuth2 resource server onto the framework's ports so that every inbound request must present a **signature-validated** bearer token before it reaches a controller or handler.
-
-It is deliberately product-agnostic. There is no `X-Party-Id` trusted-header shortcut, no business-role enum, and no fail-open switch. Identity comes only from a JWT whose signature, expiry, and (optionally) issuer and audience are verified in-process; authorization defaults to deny. This closes the historical gaps the platform refactor was designed to eliminate — unverified local token parsing, gateway-trusted headers, and Spring Boot's silently-leaked HTTP-Basic default chain.
-
-The whole module is one `@AutoConfiguration` class (`ResourceServerAutoConfiguration`) plus a properties class and a JWT-to-principal converter. Every bean it contributes is `@ConditionalOnMissingBean`, so an application can override any single piece — the decoder, the authority mapping, the policy engine, the filter chain — without forking the module.
-
-## Where it sits in the platform
-
-The security platform is layered hexagonally; dependencies point inward, and providers attach as outboard adapters:
-
-```
-security-api  →  security-spi  →  security-core  →  security-webflux  →  security-resource-server  →  adapters
- (ports +         (driven           (neutral          (reactive             (this module:               (Vault, KMS,
-  domain)          ports)            engine)            Spring Security        Spring Security 6           OPA, Keycloak,
-                                                        bindings)              resource-server wiring)     internal-db, …)
-```
-
-- **`security-api`** defines the domain (`SecurityPrincipal`, `Decision`, `SigningKey`) and driving ports.
-- **`security-spi`** defines the driven ports this module consumes: `KeyManagementPort`, `AuthorityMappingPort`, `PolicyDecisionPort`, `AuditEventPort`, `SecurityContextPort`.
-- **`security-core`** supplies the framework-neutral default implementations (`InMemoryKeyManagementAdapter`, `ConfigurableAuthorityMapper`, `PrincipalFactory`, `EmbeddedPolicyDecisionAdapter`, `LoggingAuditEventAdapter`).
-- **`security-webflux`** supplies the reactive Spring Security glue (`FireflyAuthenticationToken`, `PolicyAuthorizationManager`, `ReactorSecurityContextAdapter`).
-- **This module** binds all of the above into a concrete `SecurityWebFilterChain` and is delivered to applications transitively via the application starter.
-- **Adapters** (key management, policy, idp providers) replace the in-process defaults by simply contributing their own port beans.
-
-This module depends only on `security-webflux` (which transitively brings `security-core`, `-spi`, `-api`) and the Spring Security OAuth2 resource-server / JOSE artifacts. It imports no vendor SDK.
-
-## What it provides
-
-`ResourceServerAutoConfiguration` contributes, each gated by `@ConditionalOnMissingBean`:
-
-- **A verifying JWT decoder.** `NimbusReactiveJwtDecoder.withPublicKey(...)` built from the active RSA `SigningKey` resolved through `KeyManagementPort.activeSigningKey()`, pinned to `RS256`. If no RSA key resolves, the context fails to start (fail-closed) rather than booting an unprotected server.
-- **A validator chain.** A `DelegatingOAuth2TokenValidator<Jwt>` always enforcing `JwtTimestampValidator` (exp/nbf with skew), plus `JwtIssuerValidator` when `issuer` is configured and a custom audience validator when `audiences` is non-empty.
-- **Claim-to-authority mapping.** An `AuthorityMappingPort` (default `ConfigurableAuthorityMapper`) driven by configurable role/scope claim paths and authority prefix, normalizing provider-specific claims (Keycloak/Cognito/Entra) into a uniform authority/scope set.
-- **A rich principal.** `JwtToFireflyPrincipalConverter` replaces Spring's default `JwtAuthenticationToken` with a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` (built by `PrincipalFactory.fromClaims(...)`), so `@AuthenticationPrincipal SecurityPrincipal` works out of the box.
-- **A default-deny filter chain.** `fireflySecurityWebFilterChain` disables CSRF, HTTP-Basic, form-login, and logout; permits only the explicitly configured `permitMatchers`; and routes `anyExchange()` through a `PolicyAuthorizationManager` backed by `PolicyDecisionPort`. Unconfigured routes are denied.
-- **Hardened response headers** on every response: `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, a strict `Content-Security-Policy` (`default-src 'none'; frame-ancestors 'none'`), and HSTS (`includeSubDomains`, 365-day max-age).
-- **Framework defaults** for the remaining ports — `EmbeddedPolicyDecisionAdapter` (collecting any `PolicyRule` beans), `LoggingAuditEventAdapter`, and `ReactorSecurityContextAdapter` — all overridable.
-
-## Key types
-
-| Type | Role |
-| --- | --- |
-| `ResourceServerAutoConfiguration` | `@AutoConfiguration @EnableWebFluxSecurity` entry point; builds the decoder, converter, and `SecurityWebFilterChain`. |
-| `ResourceServerProperties` | `@ConfigurationProperties("firefly.security.resource-server")` — permit matchers, issuer, audiences, authority prefix, role/scope claim paths. |
-| `JwtToFireflyPrincipalConverter` | `Converter<Jwt, Mono<AbstractAuthenticationToken>>` mapping a validated `Jwt` to a `FireflyAuthenticationToken` carrying a `SecurityPrincipal`. |
-
-Ports consumed (from `security-spi`): `KeyManagementPort`, `AuthorityMappingPort`, `PolicyDecisionPort`, `AuditEventPort`, `SecurityContextPort`. Domain types (from `security-api`): `SecurityPrincipal`, `Decision`, `SigningKey`.
-
-The auto-configuration is registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
-
-## Requirements
-
-- Java 21+
-- Spring Boot 3.x, Spring Security 6.x
-- A reactive web stack (Spring WebFlux)
-- A `KeyManagementPort` that can resolve an active RSA signing key (the bundled `InMemoryKeyManagementAdapter` suffices for dev; production deployments contribute a Vault/AWS-KMS/Azure-Key-Vault adapter)
+Protect onboarding HTTP routes with JWTs from the configured identity authority. Set the external JWKS endpoint and issuer, then define which operations the applicant or reviewer may perform.
 
 ## Installation
 
-The version is managed by the Firefly parent/BOM, so you can usually omit it. In a Firefly application this module is pulled in transitively by the application starter; depend on it directly only when binding a resource server standalone:
+[Installation and version availability](../../docs/site/installation.md) explains source builds and published releases.
 
 ```xml
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-resource-server</artifactId>
+    <version>26.10.17-SNAPSHOT</version>
 </dependency>
 ```
 
-If you are not inheriting the Firefly parent, pin the version explicitly:
+## Quick start
 
-```xml
-<dependency>
-    <groupId>org.fireflyframework</groupId>
-    <artifactId>fireflyframework-security-resource-server</artifactId>
-    <version>26.06.01</version>
-</dependency>
-```
+The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-## Quick Start
+This binding configures JWT validation. Opaque-token introspection ports exist elsewhere in the security APIs, but this module does not auto-configure an opaque-token resource-server chain.
 
-With the module on the classpath, the resource server is active with **zero code** — every route is locked down. Mark public routes explicitly and read the validated principal directly:
+Set `OIDC_ISSUER` to the expected token issuer and `OIDC_JWK_SET_URI` to that provider's JWKS endpoint. For an external identity provider, configure both: `issuer` validates the `iss` claim; it does not discover signing keys. Without `jwk-set-uri`, the decoder uses the configured `KeyManagementPort` signing key instead.
+
+With the module on the classpath, the resource server is active with zero code. Every route is locked down. Mark public routes explicitly and read the validated principal directly:
 
 ```yaml
 firefly:
@@ -116,7 +41,8 @@ firefly:
       permit-matchers:
         - /actuator/health
         - /public/**
-      issuer: https://idp.example.com/realms/firefly
+      issuer: ${OIDC_ISSUER}
+      jwk-set-uri: ${OIDC_JWK_SET_URI}
       audiences:
         - firefly-api
 ```
@@ -152,45 +78,37 @@ PolicyRule denyReports() {
 
 ## Configuration
 
-All keys live under `firefly.security.resource-server`:
+The `firefly.security.resource-server` namespace is bound by [ResourceServerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
-| Property | Default | Description |
+| Setting | Java type | Source default |
 | --- | --- | --- |
-| `permit-matchers` | _(empty)_ | Ant-style path patterns served without authentication. The **only** opt-out from default-deny. |
-| `issuer` | _(none)_ | Expected `iss`; when set, a `JwtIssuerValidator` is enforced. |
-| `audiences` | _(empty)_ | Acceptable `aud` values; when non-empty, an audience validator is enforced. |
-| `authority-prefix` | `""` | Prefix applied to mapped authorities (e.g. `ROLE_`). |
-| `role-claim-paths` | _(empty)_ | Dot-path claims inspected for roles/groups (defaults cover Keycloak/Cognito/Entra). |
-| `scope-claim-paths` | _(empty)_ | Dot-path claims inspected for OAuth2 scopes. |
+| `firefly.security.resource-server.permit-matchers` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.issuer` | `String` | `not initialized` |
+| `firefly.security.resource-server.audiences` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.authority-prefix` | `String` | `""` |
+| `firefly.security.resource-server.role-claim-paths` | `List<String>` | `new ArrayList<>()` |
 
-With no configuration at all, every route requires a validated bearer token and timestamp validation is always on.
+## API overview
 
-## Request flow
+| Type | Contract and responsibility |
+| --- | --- |
+| [`ResourceServerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerAutoConfiguration.java) | Auto-configures a secure-by-default reactive OAuth2 resource server. |
+| [`ResourceServerProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java) | Configuration for the secure-by-default resource server. |
+| [`JwtToFireflyPrincipalConverter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/JwtToFireflyPrincipalConverter.java) | Converts a signature-validated `Jwt` into a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` with normalized authorities/scopes. |
 
+## Continue the application
+
+Use the [Security Method Policy guide](../../docs/site/modules/security-method-policy.md) for the next part of this integration. ## Build and validation
+
+Use Java 25. From the repository root, build this component with its required dependencies:
+
+```bash
+git clone https://github.com/fireflyframework/fireflyframework-jafly.git
+cd fireflyframework-jafly
+./mvnw -pl :fireflyframework-security-resource-server -am verify
+./mvnw -pl :fireflyframework-security-resource-server -am install
 ```
-Bearer token → fireflySecurityWebFilterChain
-   → NimbusReactiveJwtDecoder (RS256, key from KeyManagementPort)
-   → DelegatingOAuth2TokenValidator (timestamp [+ issuer] [+ audience])
-   → JwtToFireflyPrincipalConverter → FireflyAuthenticationToken(SecurityPrincipal)
-   → authorizeExchange: permitMatchers → permitAll, else PolicyAuthorizationManager (PolicyDecisionPort, default-deny)
-   → controller / handler
-```
 
-A missing or malformed token, a failed signature, an expired token, or a wrong issuer/audience yields **401**. A validated token whose policy decision is DENY (or whose route is not permitted) yields **403**. Only a validated token on an allowed route reaches the handler with **200**.
+`verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
-## Testing
-
-The module ships a `@SpringBootTest(webEnvironment = RANDOM_PORT)` integration test, `ResourceServerIntegrationTest`, that boots a real reactive server with the real auto-configuration and exercises the full filter chain over HTTP with `WebTestClient`. It signs JWTs in-test with Nimbus (`RSASSASigner`) using the active `SigningKey` from the wired `KeyManagementPort`, and asserts the secure-by-default behavior end to end:
-
-- **200** — a public route (`/public/**`) is reachable without a token; a protected route returns the `SecurityPrincipal.subject()` for a valid signed JWT.
-- **401** — a protected route with no token; an **expired** token; a **forged** token signed by an unknown key (a fresh `InMemoryKeyManagementAdapter` the server doesn't trust).
-- **403** — a route a contributed `PolicyRule` denies, even with a valid token (proving default-deny / policy enforcement is independent of authentication).
-- **Headers** — `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Content-Security-Policy` are present on responses.
-
-These mirror the platform's negative-path verification strategy: expired, forged-signature-rejected, and denied-policy paths are proven, not assumed.
-
-## License
-
-Copyright 2024-2026 Firefly Software Foundation.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+Configuration details and source references: [module guide](../../docs/site/modules/security-resource-server.md).

@@ -1,0 +1,22 @@
+{
+  "source": "../brand/ORIGIN.json",
+  "recipe": "scripts/generate_brand.mjs",
+  "exports": {
+    "reactor.svg": "f793ee06b70f78b6a7cf75b68c35e0eb765bc0fee361846a6a349e4ecbff784a",
+    "reactor-narrow.svg": "027d2074ae5417f7d1f3d655b26ef38721507c068e3c042cf8d3c26044f7e08a",
+    "request-flow.svg": "9ea2ccd325492a6a458fcc458482bd1fccfc5d9d23ccb015a01a7ee27de9ae5e",
+    "request-flow-narrow.svg": "69f0f86b934e5b0c33719d5eba269167ae45f89b042bd808df5d1c4e91637629",
+    "service-boundaries.svg": "98f1237033c953cbe71820ea813580aba6038e0e9a22a1b8002d6e03281b0a3b",
+    "service-boundaries-narrow.svg": "5e06368084727baef588cc61032f9fdc834196252e37b8d95dd23e3009f7b8e1",
+    "capability-map.svg": "9057429bf8352dc180808656609e5154c45c5b8f9f63d030bdb31ac4998a47ae",
+    "capability-map-narrow.svg": "1e3df1c59a0b4213bb395daa8967e762c46607a3eeccbd4f11f3d46d271a88fe",
+    "capability-0.svg": "24c1d2b7210e79d00824d489d8ba6dcc6a119f7c441b828c079efdeb6e16f1df",
+    "capability-1.svg": "a14d2d2678dd12794a36e47e686c395767135e2994478469911524c81fed9e50",
+    "capability-2.svg": "e96d54122110d81388be73ffd538ee2d5d988cf2e8d632432fd56f1ea3452845",
+    "capability-3.svg": "a98f8e211e85b9ccfcb0aa3303e1d946bdd592f757d538a657dcb80cf4aaeeff",
+    "capability-4.svg": "c388ec5de541b360976edebdcc835269d628e0816c924480d3bca3f80acba82d",
+    "capability-5.svg": "c842ef29300668aa67f8d011c70acdc266b41e5ca068603907577c0ae07de547",
+    "capability-6.svg": "0ce65a70aee6d25037a24543212862366d62985c3bc0f958186945ba2d816434",
+    "capability-7.svg": "6b2a91157e3aee317d49effe898f10bf8c0161a8d6c4db75352869e128064887"
+  }
+}

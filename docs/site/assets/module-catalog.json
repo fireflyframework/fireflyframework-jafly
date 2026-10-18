@@ -1,0 +1,690 @@
+[
+  {
+    "slug": "bom",
+    "title": "Bill of Materials",
+    "artifact": "fireflyframework-bom",
+    "path": "build/bom",
+    "packaging": "pom",
+    "bom_managed": false
+  },
+  {
+    "slug": "parent",
+    "title": "Build Parent",
+    "artifact": "fireflyframework-parent",
+    "path": "build/parent",
+    "packaging": "pom",
+    "bom_managed": false
+  },
+  {
+    "slug": "agentic-bridge-autoconfigure",
+    "title": "Agentic Bridge Autoconfigure",
+    "artifact": "fireflyframework-agentic-bridge-autoconfigure",
+    "path": "modules/agentic-bridge/fireflyframework-agentic-bridge-autoconfigure",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "agentic-bridge-core",
+    "title": "Agentic Bridge Core",
+    "artifact": "fireflyframework-agentic-bridge-core",
+    "path": "modules/agentic-bridge/fireflyframework-agentic-bridge-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "agentic-bridge-samples",
+    "title": "Agentic Bridge Samples",
+    "artifact": "fireflyframework-agentic-bridge-samples",
+    "path": "modules/agentic-bridge/fireflyframework-agentic-bridge-samples",
+    "packaging": "jar",
+    "bom_managed": false
+  },
+  {
+    "slug": "agentic-bridge-starter",
+    "title": "Agentic Bridge Starter",
+    "artifact": "fireflyframework-agentic-bridge-starter",
+    "path": "modules/agentic-bridge/fireflyframework-agentic-bridge-starter",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "agentic-bridge",
+    "title": "Agentic Bridge",
+    "artifact": "fireflyframework-agentic-bridge",
+    "path": "modules/agentic-bridge",
+    "packaging": "pom",
+    "bom_managed": true
+  },
+  {
+    "slug": "backoffice",
+    "title": "Common Backoffice Library",
+    "artifact": "fireflyframework-backoffice",
+    "path": "modules/backoffice",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cache",
+    "title": "Common Cache Library",
+    "artifact": "fireflyframework-cache",
+    "path": "modules/cache",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cache-hazelcast",
+    "title": "Cache - Hazelcast",
+    "artifact": "fireflyframework-cache-hazelcast",
+    "path": "modules/cache-hazelcast",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cache-jcache",
+    "title": "Cache - JCache",
+    "artifact": "fireflyframework-cache-jcache",
+    "path": "modules/cache-jcache",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cache-postgres",
+    "title": "Cache - Postgres",
+    "artifact": "fireflyframework-cache-postgres",
+    "path": "modules/cache-postgres",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cache-redis",
+    "title": "Cache - Redis",
+    "artifact": "fireflyframework-cache-redis",
+    "path": "modules/cache-redis",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks-core",
+    "title": "Callback Management Platform - Core",
+    "artifact": "fireflyframework-callbacks-core",
+    "path": "modules/callbacks/fireflyframework-callbacks-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks-interfaces",
+    "title": "Callback Management Platform - Interfaces",
+    "artifact": "fireflyframework-callbacks-interfaces",
+    "path": "modules/callbacks/fireflyframework-callbacks-interfaces",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks-models",
+    "title": "Callback Management Platform - Models",
+    "artifact": "fireflyframework-callbacks-models",
+    "path": "modules/callbacks/fireflyframework-callbacks-models",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks-sdk",
+    "title": "Callback Management Platform - SDK",
+    "artifact": "fireflyframework-callbacks-sdk",
+    "path": "modules/callbacks/fireflyframework-callbacks-sdk",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks-web",
+    "title": "Callback Management Platform - Web",
+    "artifact": "fireflyframework-callbacks-web",
+    "path": "modules/callbacks/fireflyframework-callbacks-web",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "callbacks",
+    "title": "Callbacks Library",
+    "artifact": "fireflyframework-callbacks",
+    "path": "modules/callbacks",
+    "packaging": "pom",
+    "bom_managed": true
+  },
+  {
+    "slug": "client-complete-example",
+    "title": "Common Client - Complete Example",
+    "artifact": "complete-example",
+    "path": "modules/client/examples/complete-example",
+    "packaging": "jar",
+    "bom_managed": false
+  },
+  {
+    "slug": "client",
+    "title": "Common Client Library",
+    "artifact": "fireflyframework-client",
+    "path": "modules/client",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "config-server",
+    "title": "Config Server",
+    "artifact": "fireflyframework-config-server",
+    "path": "modules/config-server",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "cqrs",
+    "title": "Common CQRS Library",
+    "artifact": "fireflyframework-cqrs",
+    "path": "modules/cqrs",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm",
+    "title": "Enterprise Content Management Library",
+    "artifact": "fireflyframework-ecm",
+    "path": "modules/ecm",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm-esignature-adobe-sign",
+    "title": "ECM eSignature - Adobe Sign",
+    "artifact": "fireflyframework-ecm-esignature-adobe-sign",
+    "path": "modules/ecm-esignature-adobe-sign",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm-esignature-docusign",
+    "title": "ECM eSignature - DocuSign",
+    "artifact": "fireflyframework-ecm-esignature-docusign",
+    "path": "modules/ecm-esignature-docusign",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm-esignature-logalty",
+    "title": "ECM eSignature - Logalty",
+    "artifact": "fireflyframework-ecm-esignature-logalty",
+    "path": "modules/ecm-esignature-logalty",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm-storage-aws",
+    "title": "ECM Storage - AWS (S3)",
+    "artifact": "fireflyframework-ecm-storage-aws",
+    "path": "modules/ecm-storage-aws",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "ecm-storage-azure",
+    "title": "ECM Storage - Azure Blob",
+    "artifact": "fireflyframework-ecm-storage-azure",
+    "path": "modules/ecm-storage-azure",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "eda",
+    "title": "Common EDA Library",
+    "artifact": "fireflyframework-eda",
+    "path": "modules/eda",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "eda-kafka",
+    "title": "EDA - Kafka",
+    "artifact": "fireflyframework-eda-kafka",
+    "path": "modules/eda-kafka",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "eda-postgres",
+    "title": "EDA - PostgreSQL",
+    "artifact": "fireflyframework-eda-postgres",
+    "path": "modules/eda-postgres",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "eda-rabbitmq",
+    "title": "EDA - RabbitMQ",
+    "artifact": "fireflyframework-eda-rabbitmq",
+    "path": "modules/eda-rabbitmq",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "eventsourcing",
+    "title": "Common Event Sourcing Library",
+    "artifact": "fireflyframework-eventsourcing",
+    "path": "modules/eventsourcing",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "kernel",
+    "title": "Kernel",
+    "artifact": "fireflyframework-kernel",
+    "path": "modules/kernel",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications-core",
+    "title": "Notifications Core",
+    "artifact": "fireflyframework-notifications-core",
+    "path": "modules/notifications/fireflyframework-notifications-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications",
+    "title": "Notifications Library",
+    "artifact": "fireflyframework-notifications",
+    "path": "modules/notifications",
+    "packaging": "pom",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications-firebase",
+    "title": "Notifications - Firebase",
+    "artifact": "fireflyframework-notifications-firebase",
+    "path": "modules/notifications-firebase",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications-resend",
+    "title": "Notifications - Resend",
+    "artifact": "fireflyframework-notifications-resend",
+    "path": "modules/notifications-resend",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications-sendgrid",
+    "title": "Notifications - SendGrid",
+    "artifact": "fireflyframework-notifications-sendgrid",
+    "path": "modules/notifications-sendgrid",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "notifications-twilio",
+    "title": "Notifications - Twilio",
+    "artifact": "fireflyframework-notifications-twilio",
+    "path": "modules/notifications-twilio",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "observability",
+    "title": "Observability",
+    "artifact": "fireflyframework-observability",
+    "path": "modules/observability",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "orchestration",
+    "title": ": Orchestration",
+    "artifact": "fireflyframework-orchestration",
+    "path": "modules/orchestration",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "plugin-api",
+    "title": "Plugin API",
+    "artifact": "plugin-api",
+    "path": "modules/plugins/plugin-api",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "plugin-core",
+    "title": "Plugin Core",
+    "artifact": "plugin-core",
+    "path": "modules/plugins/plugin-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "plugins",
+    "title": "Common Plugins",
+    "artifact": "fireflyframework-plugins",
+    "path": "modules/plugins",
+    "packaging": "pom",
+    "bom_managed": true
+  },
+  {
+    "slug": "r2dbc",
+    "title": "R2DBC",
+    "artifact": "fireflyframework-r2dbc",
+    "path": "modules/r2dbc",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine-core",
+    "title": "Rule Engine Core",
+    "artifact": "fireflyframework-rule-engine-core",
+    "path": "modules/rule-engine/fireflyframework-rule-engine-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine-interfaces",
+    "title": "Rule Engine Interfaces",
+    "artifact": "fireflyframework-rule-engine-interfaces",
+    "path": "modules/rule-engine/fireflyframework-rule-engine-interfaces",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine-models",
+    "title": "Rule Engine Models",
+    "artifact": "fireflyframework-rule-engine-models",
+    "path": "modules/rule-engine/fireflyframework-rule-engine-models",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine-sdk",
+    "title": "Rule Engine SDK",
+    "artifact": "fireflyframework-rule-engine-sdk",
+    "path": "modules/rule-engine/fireflyframework-rule-engine-sdk",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine-web",
+    "title": "Rule Engine Web",
+    "artifact": "fireflyframework-rule-engine-web",
+    "path": "modules/rule-engine/fireflyframework-rule-engine-web",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "rule-engine",
+    "title": "Rule Engine Library",
+    "artifact": "fireflyframework-rule-engine",
+    "path": "modules/rule-engine",
+    "packaging": "pom",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-adapter-cerbos",
+    "title": "Security Cerbos Adapter",
+    "artifact": "fireflyframework-security-adapter-cerbos",
+    "path": "modules/security-adapter-cerbos",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-adapter-opa",
+    "title": "Security OPA Adapter",
+    "artifact": "fireflyframework-security-adapter-opa",
+    "path": "modules/security-adapter-opa",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-adapter-openfga",
+    "title": "Security OpenFGA Adapter",
+    "artifact": "fireflyframework-security-adapter-openfga",
+    "path": "modules/security-adapter-openfga",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-adapter-r2dbc",
+    "title": "Security R2DBC Adapter",
+    "artifact": "fireflyframework-security-adapter-r2dbc",
+    "path": "modules/security-adapter-r2dbc",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-adapter-vault",
+    "title": "Security Vault Adapter",
+    "artifact": "fireflyframework-security-adapter-vault",
+    "path": "modules/security-adapter-vault",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-api",
+    "title": "Security API",
+    "artifact": "fireflyframework-security-api",
+    "path": "modules/security-api",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-authorization-server",
+    "title": "Security Authorization Server",
+    "artifact": "fireflyframework-security-authorization-server",
+    "path": "modules/security-authorization-server",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-bff",
+    "title": "Security BFF",
+    "artifact": "fireflyframework-security-bff",
+    "path": "modules/security-bff",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-core",
+    "title": "Security Core",
+    "artifact": "fireflyframework-security-core",
+    "path": "modules/security-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-idp",
+    "title": "Identity Provider",
+    "artifact": "fireflyframework-security-idp",
+    "path": "modules/security-idp",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-idp-aws-cognito",
+    "title": "IDP - AWS Cognito Implementation",
+    "artifact": "fireflyframework-security-idp-aws-cognito",
+    "path": "modules/security-idp-aws-cognito",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-idp-azure-ad",
+    "title": "IDP - Azure AD Implementation",
+    "artifact": "fireflyframework-security-idp-azure-ad",
+    "path": "modules/security-idp-azure-ad",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-idp-internal-db",
+    "title": "IDP - Internal Database Implementation",
+    "artifact": "fireflyframework-security-idp-internal-db",
+    "path": "modules/security-idp-internal-db",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-idp-keycloak",
+    "title": "IDP Keycloak",
+    "artifact": "fireflyframework-security-idp-keycloak",
+    "path": "modules/security-idp-keycloak",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-method-policy",
+    "title": "Security Method Policy",
+    "artifact": "fireflyframework-security-method-policy",
+    "path": "modules/security-method-policy",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-oauth2-client",
+    "title": "Security OAuth2 Client",
+    "artifact": "fireflyframework-security-oauth2-client",
+    "path": "modules/security-oauth2-client",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-resource-server",
+    "title": "Security Resource Server",
+    "artifact": "fireflyframework-security-resource-server",
+    "path": "modules/security-resource-server",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-spi",
+    "title": "Security SPI",
+    "artifact": "fireflyframework-security-spi",
+    "path": "modules/security-spi",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-test",
+    "title": "Security Test",
+    "artifact": "fireflyframework-security-test",
+    "path": "modules/security-test",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "security-webflux",
+    "title": "Security WebFlux Binding",
+    "artifact": "fireflyframework-security-webflux",
+    "path": "modules/security-webflux",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "starter-application",
+    "title": "Starter Application",
+    "artifact": "fireflyframework-starter-application",
+    "path": "modules/starter-application",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "starter-core",
+    "title": "Starter Core",
+    "artifact": "fireflyframework-starter-core",
+    "path": "modules/starter-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "starter-data",
+    "title": "Starter Data",
+    "artifact": "fireflyframework-starter-data",
+    "path": "modules/starter-data",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "starter-domain",
+    "title": "Starter Domain",
+    "artifact": "fireflyframework-starter-domain",
+    "path": "modules/starter-domain",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "utils",
+    "title": "Utils",
+    "artifact": "fireflyframework-utils",
+    "path": "modules/utils",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "validators",
+    "title": "Validators",
+    "artifact": "fireflyframework-validators",
+    "path": "modules/validators",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "web",
+    "title": "Web",
+    "artifact": "fireflyframework-web",
+    "path": "modules/web",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks-core",
+    "title": "Webhook Management Platform - Core",
+    "artifact": "fireflyframework-webhooks-core",
+    "path": "modules/webhooks/fireflyframework-webhooks-core",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks-interfaces",
+    "title": "Webhook Management Platform - Interfaces",
+    "artifact": "fireflyframework-webhooks-interfaces",
+    "path": "modules/webhooks/fireflyframework-webhooks-interfaces",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks-processor",
+    "title": "Webhook Processor Framework",
+    "artifact": "fireflyframework-webhooks-processor",
+    "path": "modules/webhooks/fireflyframework-webhooks-processor",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks-sdk",
+    "title": "Webhook Management Platform - Java SDK",
+    "artifact": "fireflyframework-webhooks-sdk",
+    "path": "modules/webhooks/fireflyframework-webhooks-sdk",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks-web",
+    "title": "Webhook Management Platform - Web Application",
+    "artifact": "fireflyframework-webhooks-web",
+    "path": "modules/webhooks/fireflyframework-webhooks-web",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
+    "slug": "webhooks",
+    "title": "Webhooks Library",
+    "artifact": "fireflyframework-webhooks",
+    "path": "modules/webhooks",
+    "packaging": "pom",
+    "bom_managed": true
+  }
+]
