@@ -19,8 +19,8 @@ package org.fireflyframework.webhooks.core.health;
 import org.fireflyframework.webhooks.core.resilience.ResilientWebhookProcessingService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 /**

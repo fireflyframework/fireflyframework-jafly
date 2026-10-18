@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-starter-domain</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Starter Domain</name>
@@ -35,20 +35,20 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-kernel</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Firefly Commons Validators -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-validators</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Spring AOP -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
 
         <!-- Spring Retry for resilience patterns -->
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-observability</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Lombok for reducing boilerplate code -->
@@ -102,8 +102,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -111,28 +111,28 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-orchestration</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- fireflyframework-cqrs for CQRS pattern support -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-cqrs</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- fireflyframework-client for service client support -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-client</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- fireflyframework-eda for event-driven architecture support -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-eda</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
     </dependencies>
 

@@ -23,10 +23,10 @@ import org.springdoc.webflux.core.configuration.SpringDocWebFluxConfiguration;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.reactive.HttpHandlerAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.reactive.ReactiveWebServerFactoryAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
+import org.springframework.boot.webflux.autoconfigure.HttpHandlerAutoConfiguration;
+import org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration;
+import org.springframework.boot.webflux.autoconfigure.WebFluxAutoConfiguration;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
 import java.lang.annotation.ElementType;
@@ -65,10 +65,10 @@ import java.lang.annotation.Target;
         SpringDocConfiguration.class,
         SpringDocConfigProperties.class,
         SpringDocWebFluxConfiguration.class,
-        ReactiveWebServerFactoryAutoConfiguration.class,
+        NettyReactiveWebServerAutoConfiguration.class,
         HttpHandlerAutoConfiguration.class,
         WebFluxAutoConfiguration.class,
-        JacksonAutoConfiguration.class,
+        Jackson2AutoConfiguration.class,
         SpringApplicationAdminJmxAutoConfiguration.class,
         IdempotencyOpenAPIAutoConfiguration.class
 })

@@ -1,3 +1,5 @@
+> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-idp-internal-db). Build from the monorepo root with `./mvnw -pl :fireflyframework-security-idp-internal-db -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+
 # Firefly Framework - IDP Internal Database Adapter
 
 [![CI](https://github.com/fireflyframework/fireflyframework-security-idp-internal-db/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-security-idp-internal-db/actions/workflows/ci.yml)

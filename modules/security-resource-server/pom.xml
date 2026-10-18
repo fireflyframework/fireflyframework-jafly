@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-resource-server</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Security Resource Server</name>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-security-webflux</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <dependency>
@@ -65,8 +65,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

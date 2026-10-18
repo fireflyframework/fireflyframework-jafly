@@ -22,12 +22,12 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.client.RestTemplateCustomizer;
+import org.springframework.boot.restclient.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -95,8 +95,8 @@ public class HttpClientMetricsConfig {
             }
             
             return allHealthy 
-                    ? org.springframework.boot.actuate.health.Health.up().withDetails(details).build()
-                    : org.springframework.boot.actuate.health.Health.down().withDetails(details).build();
+                    ? org.springframework.boot.health.contributor.Health.up().withDetails(details).build()
+                    : org.springframework.boot.health.contributor.Health.down().withDetails(details).build();
         };
     }
 

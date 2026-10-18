@@ -1,4 +1,7 @@
 spring:
+  http:
+    codecs:
+      preferred-json-mapper: jackson2
   application:
     name: common-platform-callbacks-mgmt
 
@@ -30,7 +33,7 @@ spring:
         enabled: true
 
   # Jackson Configuration
-  jackson:
+  jackson2:
     serialization:
       write-dates-as-timestamps: false
     deserialization:

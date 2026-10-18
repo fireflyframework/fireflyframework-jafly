@@ -17,7 +17,7 @@
 package org.fireflyframework.eda.config;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
 public class FireflyEdaRabbitMqEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
-    private static final String RABBIT_AUTO_CONFIG = "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration";
+    private static final String RABBIT_AUTO_CONFIG = "org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {

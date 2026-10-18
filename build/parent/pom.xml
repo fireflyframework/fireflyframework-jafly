@@ -6,13 +6,13 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Parent POM</name>
     <description>Parent POM for the Firefly Framework - A Spring Boot superset framework providing CQRS, EDA, transactional engine, caching, and more.</description>
 
-    <url>https://github.com/fireflyframework</url>
+    <url>https://github.com/fireflyframework/fireflyframework-jafly</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -28,13 +28,14 @@
             <organizationUrl>https://fireflyframework.org</organizationUrl>
         </developer>
     </developers>
-    <scm>
-        <connection>scm:git:git://github.com/fireflyframework/fireflyframework-parent.git</connection>
-        <developerConnection>scm:git:ssh://github.com:fireflyframework/fireflyframework-parent.git</developerConnection>
-        <url>https://github.com/fireflyframework/fireflyframework-parent</url>
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/fireflyframework/fireflyframework-jafly.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/fireflyframework/fireflyframework-jafly.git</developerConnection>
+        <url>https://github.com/fireflyframework/fireflyframework-jafly</url>
     </scm>
 
     <properties>
+        <fireflyframework.version>26.10.17-SNAPSHOT</fireflyframework.version>
         <!-- Java -->
         <java.version>25</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -54,17 +55,17 @@
         <openapi.date.library>java8</openapi.date.library>
 
         <!-- Spring Boot and Cloud -->
-        <spring-boot.version>3.5.10</spring-boot.version>
-        <spring-cloud.version>2025.0.1</spring-cloud.version>
-        <springdoc-openapi.version>2.8.15</springdoc-openapi.version>
+        <spring-boot.version>4.1.1</spring-boot.version>
+        <spring-cloud.version>2025.1.3</spring-cloud.version>
+        <springdoc-openapi.version>3.1.1</springdoc-openapi.version>
 
         <!-- Database -->
-        <postgresql.version>42.7.9</postgresql.version>
-        <r2dbc-postgresql.version>1.1.1.RELEASE</r2dbc-postgresql.version>
-<flyway.version>11.20.3</flyway.version>
+        <postgresql.version>42.7.13</postgresql.version>
+        <r2dbc-postgresql.version>1.1.2.RELEASE</r2dbc-postgresql.version>
+<flyway.version>12.4.0</flyway.version>
 
         <!-- OpenAPI -->
-        <openapi-generator.version>7.19.0</openapi-generator.version>
+        <openapi-generator.version>7.26.0</openapi-generator.version>
         <swagger-annotations.version>2.2.42</swagger-annotations.version>
 
         <!-- Mapping -->
@@ -72,10 +73,10 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
         <!-- Utils -->
-        <lombok.version>1.18.42</lombok.version>
+        <lombok.version>1.18.46</lombok.version>
 
         <!-- Testing -->
-        <testcontainers.version>1.21.4</testcontainers.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
 
         <!-- Logging -->
         <logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
@@ -84,7 +85,7 @@
         <reflections.version>0.10.2</reflections.version>
 
         <!-- Resilience -->
-        <resilience4j.version>2.3.0</resilience4j.version>
+        <resilience4j.version>2.4.0</resilience4j.version>
 
         <!-- gRPC -->
         <grpc.version>1.79.0</grpc.version>
@@ -97,7 +98,7 @@
         <janino.version>3.1.12</janino.version>
 
         <!-- OpenTelemetry -->
-        <opentelemetry.version>1.59.0</opentelemetry.version>
+        <opentelemetry.version>1.62.0</opentelemetry.version>
 
         <!-- SOAP / Web Services -->
         <cxf.version>4.1.4</cxf.version>
@@ -107,7 +108,7 @@
         <jaxb-xjc.version>4.0.6</jaxb-xjc.version>
 
         <!-- Security -->
-        <bouncycastle.version>1.77</bouncycastle.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
 
         <!-- Date/Time -->
         <threeten-extra.version>1.7.2</threeten-extra.version>
@@ -122,15 +123,15 @@
         <wiremock.version>3.13.2</wiremock.version>
 
         <!-- AWS -->
-        <aws-sdk.version>2.41.24</aws-sdk.version>
-        <amazon-kinesis-client.version>2.5.1</amazon-kinesis-client.version>
-        <spring-cloud-aws.version>3.4.2</spring-cloud-aws.version>
+        <aws-sdk.version>2.47.4</aws-sdk.version>
+        <amazon-kinesis-client.version>3.5.0</amazon-kinesis-client.version>
+        <spring-cloud-aws.version>4.2.0</spring-cloud-aws.version>
 
         <!-- Azure -->
-        <spring-cloud-azure.version>5.24.1</spring-cloud-azure.version>
+        <spring-cloud-azure.version>7.4.0</spring-cloud-azure.version>
 
         <!-- Google Cloud -->
-        <spring-cloud-gcp.version>6.5.4</spring-cloud-gcp.version>
+        <spring-cloud-gcp.version>8.2.4</spring-cloud-gcp.version>
 
         <!-- Native Image -->
         <native-maven-plugin.version>0.11.4</native-maven-plugin.version>
@@ -154,6 +155,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-spring-boot4</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
             <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -464,85 +470,426 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-observability</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-api</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-spi</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-core</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-webflux</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-resource-server</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-method-policy</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-oauth2-client</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-authorization-server</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-test</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-adapter-r2dbc</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-adapter-opa</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-adapter-openfga</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-adapter-vault</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-security-adapter-cerbos</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-oauth2-authorization-server</artifactId>
-                <version>1.5.4</version>
+                <version>7.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-kernel</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-utils</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-validators</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cache</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cache-redis</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cache-hazelcast</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cache-jcache</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cache-postgres</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-r2dbc</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-eda</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-eda-kafka</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-eda-rabbitmq</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-eda-postgres</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-cqrs</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-eventsourcing</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-orchestration</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-client</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-web</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-starter-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-starter-domain</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-starter-data</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-starter-application</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-backoffice</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm-storage-aws</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm-storage-azure</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-ecm-esignature-logalty</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-idp</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-idp-aws-cognito</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-idp-internal-db</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-idp-keycloak</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-idp-azure-ad</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-firebase</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-twilio</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-sendgrid</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-notifications-resend</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine</artifactId>
+                <version>${fireflyframework.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine-interfaces</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine-models</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine-web</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-rule-engine-sdk</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks</artifactId>
+                <version>${fireflyframework.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks-interfaces</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks-web</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks-processor</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-webhooks-sdk</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks</artifactId>
+                <version>${fireflyframework.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks-interfaces</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks-models</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks-web</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-callbacks-sdk</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-plugins</artifactId>
+                <version>${fireflyframework.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>plugin-api</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>plugin-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-config-server</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge</artifactId>
+                <version>${fireflyframework.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-core</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-autoconfigure</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-security-bff</artifactId>
+                <version>${fireflyframework.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 
     <build>
         <pluginManagement>
@@ -816,30 +1163,7 @@
                             <checksums>required</checksums>
                         </configuration>
                     </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>flatten-maven-plugin</artifactId>
-                        <version>${flatten-maven-plugin.version}</version>
-                        <configuration>
-                            <flattenMode>ossrh</flattenMode>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>flatten</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>flatten</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>flatten.clean</id>
-                                <phase>clean</phase>
-                                <goals>
-                                    <goal>clean</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
+
                 </plugins>
             </build>
         </profile>

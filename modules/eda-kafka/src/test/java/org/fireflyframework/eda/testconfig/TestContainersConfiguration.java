@@ -19,7 +19,7 @@ package org.fireflyframework.eda.testconfig;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -41,8 +41,8 @@ public class TestContainersConfiguration {
      */
     @Bean
     @ServiceConnection
-    public KafkaContainer kafkaContainer() {
-        KafkaContainer kafka = new KafkaContainer(
+    public ConfluentKafkaContainer kafkaContainer() {
+        ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(
                 DockerImageName.parse("confluentinc/cp-kafka:7.5.0")
         );
         kafka.withReuse(true);

@@ -6,7 +6,8 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-webhooks</artifactId>
-        <version>26.07.06</version>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-webhooks-web</artifactId>
@@ -32,7 +33,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-web</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Spring Boot -->
@@ -59,7 +60,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-observability</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
         <!-- Prometheus registry (provided transitively by observability as optional; declared here for runtime) -->
         <dependency>
@@ -70,7 +71,7 @@
         <!-- Resilience4j -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
         </dependency>
         <dependency>
             <groupId>io.github.resilience4j</groupId>
@@ -92,12 +93,12 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-cache</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-eda</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
         <!-- EDA Kafka adapter: active publisher (firefly.eda.default-publisher-type=KAFKA).
              Provides the firefly Kafka transport (org.fireflyframework.eda.*.kafka) and
@@ -105,14 +106,14 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-eda-kafka</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
         <!-- Cache Redis adapter: active provider (firefly.cache.default-cache-type=REDIS).
              The Redis cache PROVIDER moved out of fireflyframework-cache(core) into this module. -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-cache-redis</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Redis for distributed caching -->
@@ -125,13 +126,13 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-webhooks-processor</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <artifactId>spring-boot-starter-webflux-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -148,12 +149,12 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
+            <artifactId>testcontainers-kafka</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -169,6 +170,10 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
         </dependency>
     </dependencies>
 

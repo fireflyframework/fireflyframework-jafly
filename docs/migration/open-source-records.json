@@ -1,0 +1,86 @@
+[
+  {
+    "repository": "fireflyframework-callbacks",
+    "number": 14,
+    "title": "build(deps): bump com.fasterxml.jackson.core:jackson-databind from 2.15.2 to 2.18.9 in /fireflyframework-callbacks-sdk",
+    "url": "https://github.com/fireflyframework/fireflyframework-callbacks/pull/14",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-starter-core",
+    "number": 16,
+    "title": "Add @ConditionalOnMissingBean guard to StepEventPublisher bean",
+    "url": "https://github.com/fireflyframework/fireflyframework-starter-core/pull/16",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-webhooks",
+    "number": 14,
+    "title": "chore(deps): bump com.fasterxml.jackson.core:jackson-databind from 2.15.2 to 2.18.9 in /fireflyframework-webhooks-sdk",
+    "url": "https://github.com/fireflyframework/fireflyframework-webhooks/pull/14",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-parent",
+    "number": 25,
+    "title": "build(deps): bump org.postgresql:postgresql from 42.7.9 to 42.7.11",
+    "url": "https://github.com/fireflyframework/fireflyframework-parent/pull/25",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-parent",
+    "number": 24,
+    "title": "build(deps): bump org.bouncycastle:bcprov-jdk18on from 1.77 to 1.84",
+    "url": "https://github.com/fireflyframework/fireflyframework-parent/pull/24",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-starter-domain",
+    "number": 7,
+    "title": "Add @ConditionalOnMissingBean guard to StepEventPublisherBridge bean",
+    "url": "https://github.com/fireflyframework/fireflyframework-starter-domain/pull/7",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-observability",
+    "number": 6,
+    "title": "Tracing: zero distributed propagation (no client spans) + no error status on spans",
+    "url": "https://github.com/fireflyframework/fireflyframework-observability/issues/6",
+    "type": "issue"
+  },
+  {
+    "repository": "fireflyframework-ecm-storage-azure",
+    "number": 9,
+    "title": "Remove @Primary from ObjectMapper bean to prevent conflicts",
+    "url": "https://github.com/fireflyframework/fireflyframework-ecm-storage-azure/pull/9",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-rule-engine",
+    "number": 19,
+    "title": "chore(deps): bump com.fasterxml.jackson.core:jackson-databind from 2.15.2 to 2.18.9 in /fireflyframework-rule-engine-sdk",
+    "url": "https://github.com/fireflyframework/fireflyframework-rule-engine/pull/19",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-ecm",
+    "number": 15,
+    "title": "build(deps): bump com.fasterxml.jackson.core:jackson-core from 2.15.2 to 2.18.6",
+    "url": "https://github.com/fireflyframework/fireflyframework-ecm/pull/15",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-utils",
+    "number": 15,
+    "title": "build(deps): bump org.freemarker:freemarker from 2.3.34 to 2.3.35",
+    "url": "https://github.com/fireflyframework/fireflyframework-utils/pull/15",
+    "type": "pull-request"
+  },
+  {
+    "repository": "fireflyframework-bom",
+    "number": 26,
+    "title": "build(deps): bump org.springframework.security:spring-security-oauth2-authorization-server from 1.5.4 to 1.5.8",
+    "url": "https://github.com/fireflyframework/fireflyframework-bom/pull/26",
+    "type": "pull-request"
+  }
+]

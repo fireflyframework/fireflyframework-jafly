@@ -29,7 +29,7 @@ spring:
     virtual:
       enabled: true
 
-  jackson:
+  jackson2:
     default-property-inclusion: NON_NULL
     serialization:
       write-dates-as-timestamps: false

@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-adapter-opa</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Security OPA Adapter</name>
@@ -22,12 +22,12 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-security-api</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-security-spi</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <dependency>
@@ -62,13 +62,17 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
         </dependency>
     </dependencies>
 

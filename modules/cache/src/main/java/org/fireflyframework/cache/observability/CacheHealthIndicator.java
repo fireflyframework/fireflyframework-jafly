@@ -18,7 +18,7 @@ package org.fireflyframework.cache.observability;
 
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.observability.health.FireflyHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;

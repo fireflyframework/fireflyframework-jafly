@@ -49,7 +49,7 @@ public class HeaderPropagationExchangeFilter implements ExchangeFilterFunction {
 
             ClientRequest.Builder builder = ClientRequest.from(request);
             headers.forEach((name, value) -> {
-                if (!request.headers().containsKey(name)) {
+                if (!request.headers().containsHeader(name)) {
                     builder.header(name, value);
                 }
             });

@@ -69,7 +69,7 @@ public class TransactionFilter implements WebFilter {
 
         // Ensure the response also has the header, without overwriting
         ServerHttpResponse response = exchange.getResponse();
-        if (!response.getHeaders().containsKey(TRANSACTION_ID_HEADER)) {
+        if (!response.getHeaders().containsHeader(TRANSACTION_ID_HEADER)) {
             response.getHeaders().set(TRANSACTION_ID_HEADER, transactionId);
         }
 

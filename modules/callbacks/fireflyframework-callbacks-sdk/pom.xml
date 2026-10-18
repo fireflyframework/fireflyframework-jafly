@@ -6,7 +6,8 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-callbacks</artifactId>
-        <version>26.07.06</version>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-callbacks-sdk</artifactId>
@@ -15,13 +16,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <openapi-generator.version>7.0.1</openapi-generator.version>
         <swagger-annotations.version>2.2.15</swagger-annotations.version>
-        <jackson.version>2.15.2</jackson.version>
         <jakarta-annotation.version>2.1.1</jakarta-annotation.version>
         <generated-sources-dir>${project.build.directory}/generated-sources</generated-sources-dir>
         <jackson.databind.version>0.2.6</jackson.databind.version>
-        <jackson.dataformat.version>2.17.0</jackson.dataformat.version>
         <javax.annotation.version>1.3.2</javax.annotation.version>
     </properties>
 
@@ -42,12 +40,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>
@@ -86,7 +82,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.dataformat.version}</version>
         </dependency>
 
     </dependencies>
@@ -115,6 +110,8 @@
                             <modelPackage>com.firefly.common.callbacks.sdk.model</modelPackage>
                             <invokerPackage>com.firefly.common.callbacks.sdk.invoker</invokerPackage>
                             <configOptions>
+                                <useSpringBoot4>true</useSpringBoot4>
+                                <useJackson3>false</useJackson3>
                                 <java20>true</java20>
                                 <useTags>true</useTags>
                                 <dateLibrary>java8-localdatetime</dateLibrary>

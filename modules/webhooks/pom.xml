@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Webhooks Library</name>
@@ -33,27 +33,27 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-webhooks-interfaces</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-webhooks-core</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-webhooks-web</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-webhooks-processor</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-webhooks-sdk</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

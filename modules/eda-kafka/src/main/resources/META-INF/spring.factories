@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=org.fireflyframework.eda.config.FireflyEdaKafkaEnvironmentPostProcessor
+org.springframework.boot.EnvironmentPostProcessor=org.fireflyframework.eda.config.FireflyEdaKafkaEnvironmentPostProcessor

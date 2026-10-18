@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Rule Engine Library</name>
@@ -33,27 +33,27 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-rule-engine-interfaces</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-rule-engine-models</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-rule-engine-core</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-rule-engine-web</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-rule-engine-sdk</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

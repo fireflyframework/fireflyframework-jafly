@@ -1,4 +1,7 @@
 spring:
+  http:
+    codecs:
+      preferred-json-mapper: jackson2
   main:
     allow-bean-definition-overriding: true
   
@@ -21,7 +24,7 @@ spring:
       repositories:
         enabled: true
 
-  jackson:
+  jackson2:
     serialization:
       write-dates-as-timestamps: false
     deserialization:

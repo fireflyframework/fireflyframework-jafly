@@ -1,3 +1,5 @@
+> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/build/bom). Build from the monorepo root with `./mvnw -pl :fireflyframework-bom -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+
 # Firefly Framework - Bill of Materials (BOM)
 
 [![CI](https://github.com/fireflyframework/fireflyframework-bom/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-bom/actions/workflows/ci.yml)

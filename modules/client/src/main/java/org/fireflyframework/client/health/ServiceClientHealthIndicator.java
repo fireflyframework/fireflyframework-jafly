@@ -17,8 +17,8 @@
 package org.fireflyframework.client.health;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.ReactiveHealthIndicator;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;

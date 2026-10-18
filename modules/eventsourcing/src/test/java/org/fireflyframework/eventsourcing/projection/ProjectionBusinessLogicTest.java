@@ -72,8 +72,8 @@ class ProjectionBusinessLogicTest {
     
     @org.springframework.context.annotation.Configuration
     @org.springframework.context.annotation.Import({
-        org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration.class
+        org.springframework.boot.r2dbc.autoconfigure.R2dbcAutoConfiguration.class,
+        org.springframework.boot.data.r2dbc.autoconfigure.DataR2dbcAutoConfiguration.class
     })
     static class TestApplication {
         

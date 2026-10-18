@@ -7,19 +7,19 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-idp-azure-ad</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - IDP - Azure AD Implementation</name>
     <description>Azure AD (Entra ID and B2C) implementation of the Firefly IDP Adapter</description>
 
     <properties>
-        <fireflyframework-security-idp.version>26.07.06</fireflyframework-security-idp.version>
+        <fireflyframework-security-idp.version>26.10.17-SNAPSHOT</fireflyframework-security-idp.version>
         <microsoft-graph.version>6.23.0</microsoft-graph.version>
         <msal4j.version>1.17.2</msal4j.version>
         <azure-identity.version>1.14.2</azure-identity.version>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-security-idp</artifactId>
-            <version>${fireflyframework-security-idp.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Microsoft Graph SDK -->
@@ -90,6 +90,10 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
         </dependency>
     </dependencies>
 

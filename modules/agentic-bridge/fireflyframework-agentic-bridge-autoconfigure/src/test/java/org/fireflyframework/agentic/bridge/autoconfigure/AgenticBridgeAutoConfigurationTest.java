@@ -14,7 +14,7 @@ import org.fireflyframework.agentic.bridge.AgenticBridge;
 import org.fireflyframework.agentic.bridge.AgenticClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +23,7 @@ class AgenticBridgeAutoConfigurationTest {
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
-                    JacksonAutoConfiguration.class,
+                    Jackson2AutoConfiguration.class,
                     AgenticBridgeAutoConfiguration.class));
 
     @Test

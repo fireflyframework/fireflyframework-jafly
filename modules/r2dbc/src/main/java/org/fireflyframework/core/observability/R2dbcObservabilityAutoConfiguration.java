@@ -18,7 +18,7 @@ package org.fireflyframework.core.observability;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.r2dbc.spi.ConnectionFactory;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

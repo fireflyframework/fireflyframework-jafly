@@ -72,7 +72,7 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
         String excluded = environment.getProperty("spring.autoconfigure.exclude", "");
         assertThat(excluded)
                 .as("OTel is the default bridge, so the Brave auto-config must be excluded")
-                .contains("BraveAutoConfiguration");
+                .contains("org.springframework.boot.micrometer.tracing.brave.autoconfigure.BraveAutoConfiguration");
         assertThat(excluded).doesNotContain("OpenTelemetryTracingAutoConfiguration");
     }
 
@@ -84,8 +84,8 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         String excluded = environment.getProperty("spring.autoconfigure.exclude", "");
-        assertThat(excluded).contains("OpenTelemetryTracingAutoConfiguration");
-        assertThat(excluded).contains("OtlpTracingAutoConfiguration");
+        assertThat(excluded).contains("org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.OpenTelemetryTracingAutoConfiguration");
+        assertThat(excluded).contains("org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingAutoConfiguration");
     }
 
     @Test
@@ -118,10 +118,10 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("management.otlp.tracing.transport"))
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.transport"))
                 .as("http/protobuf must map to the HTTP transport enum, not the raw spec value")
                 .isEqualTo("http");
-        assertThat(environment.getProperty("management.otlp.tracing.endpoint"))
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.endpoint"))
                 .as("HTTP transport must move off the gRPC :4317 port to the :4318 /v1/traces path")
                 .isEqualTo("http://localhost:4318/v1/traces");
     }
@@ -133,7 +133,7 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("management.otlp.tracing.transport")).isEqualTo("http");
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.transport")).isEqualTo("http");
     }
 
     @Test
@@ -143,8 +143,8 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("management.otlp.tracing.transport")).isEqualTo("grpc");
-        assertThat(environment.getProperty("management.otlp.tracing.endpoint"))
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.transport")).isEqualTo("grpc");
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.endpoint"))
                 .as("gRPC must keep the default :4317 endpoint")
                 .isEqualTo("http://localhost:4317");
     }
@@ -155,7 +155,7 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("management.otlp.tracing.transport"))
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.transport"))
                 .as("No OTel protocol override means the YAML grpc default stands")
                 .isEqualTo("grpc");
     }
@@ -168,8 +168,8 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
-        assertThat(environment.getProperty("management.otlp.tracing.transport")).isEqualTo("http");
-        assertThat(environment.getProperty("management.otlp.tracing.endpoint"))
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.transport")).isEqualTo("http");
+        assertThat(environment.getProperty("management.opentelemetry.tracing.export.otlp.endpoint"))
                 .as("An explicit endpoint must win over the derived HTTP default")
                 .isEqualTo("http://collector.monitoring:4318");
     }

@@ -6,7 +6,8 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-callbacks</artifactId>
-        <version>26.07.06</version>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-callbacks-models</artifactId>
@@ -28,7 +29,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-r2dbc</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Database -->

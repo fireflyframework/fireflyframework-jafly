@@ -31,7 +31,7 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
  * {@code CodecsAutoConfiguration#jacksonCodecCustomizer}) and applies them to the
  * {@code ServerCodecConfigurer}. The result: the WebFlux Jackson encoder falls
  * back to a default {@code Jackson2JsonEncoder()} built from a fresh
- * {@code ObjectMapper} with default settings — no {@code spring.jackson.*}
+ * {@code ObjectMapper} with default settings — no {@code spring.jackson2.*}
  * properties applied (so {@code WRITE_DATES_AS_TIMESTAMPS=true} stays on), no
  * actuator {@code @JsonComponent} serializers, no application-specific Jackson
  * modules. Every {@code Instant} field serializes as a numeric epoch and every
@@ -42,7 +42,7 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
  * (which {@code DelegatingWebFluxConfiguration}, imported by {@code @EnableWebFlux},
  * DOES discover). This class mirrors that pattern for the experience tier but
  * builds the codec mapper from {@link Jackson2ObjectMapperBuilder} — Boot's
- * autoconfigured builder — so it picks up {@code spring.jackson.*} properties
+ * autoconfigured builder — so it picks up {@code spring.jackson2.*} properties
  * AND every Jackson module on the classpath ({@code jsr310}, {@code jdk8},
  * parameter-names, actuator {@code @JsonComponent} serializers, …) in one shot.
  */

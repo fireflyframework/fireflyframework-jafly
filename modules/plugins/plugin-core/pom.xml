@@ -7,7 +7,8 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-plugins</artifactId>
-        <version>26.07.06</version>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>plugin-core</artifactId>
@@ -20,14 +21,14 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>plugin-api</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Observability: unified metrics, tracing, health, structured logging (OTel-backed) -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-observability</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

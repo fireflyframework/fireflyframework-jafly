@@ -2,7 +2,7 @@ package org.fireflyframework.observability;
 
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -41,7 +41,7 @@ import java.util.Properties;
  * <h3>OTLP Transport Translation</h3>
  * Translates the OpenTelemetry {@code OTEL_EXPORTER_OTLP_PROTOCOL} env var
  * ({@code grpc | http/protobuf | http/json}) into Spring's
- * {@code management.otlp.tracing.transport} enum ({@code GRPC | HTTP}), moving the
+ * {@code management.opentelemetry.tracing.export.otlp.transport} enum ({@code GRPC | HTTP}), moving the
  * default endpoint to the HTTP port when HTTP is selected. See
  * {@link #configureOtlpTracingTransport}.
  * <p>
@@ -66,8 +66,8 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
     private static final String PROMETHEUS_ENABLED = "management.prometheus.metrics.export.enabled";
     private static final String OTLP_METRICS_ENABLED = "management.otlp.metrics.export.enabled";
-    private static final String OTLP_TRACING_TRANSPORT = "management.otlp.tracing.transport";
-    private static final String OTLP_TRACING_ENDPOINT = "management.otlp.tracing.endpoint";
+    private static final String OTLP_TRACING_TRANSPORT = "management.opentelemetry.tracing.export.otlp.transport";
+    private static final String OTLP_TRACING_ENDPOINT = "management.opentelemetry.tracing.export.otlp.endpoint";
 
     // --- OpenTelemetry SDK environment variables ---
     private static final String OTEL_PROTOCOL_ENV = "OTEL_EXPORTER_OTLP_PROTOCOL";
@@ -80,18 +80,13 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
     private static final String DEFAULTS_SOURCE_NAME = "fireflyObservabilityDefaults";
     private static final String DEFAULTS_YAML = "application-firefly-observability.yml";
 
-    // Spring Boot actuator auto-configuration classes for each tracing bridge.
-    // Both current (3.4+) and deprecated (pre-3.4) class names are excluded for maximum safety.
+    // Spring Boot auto-configuration classes for each tracing bridge.
     private static final String BRAVE_AUTO_CONFIG =
-            "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration";
+            "org.springframework.boot.micrometer.tracing.brave.autoconfigure.BraveAutoConfiguration";
     private static final String OTEL_TRACING_AUTO_CONFIG =
-            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration";
-    private static final String OTEL_AUTO_CONFIG_DEPRECATED =
-            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration";
+            "org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.OpenTelemetryTracingAutoConfiguration";
     private static final String OTLP_TRACING_AUTO_CONFIG =
-            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration";
-    private static final String OTLP_AUTO_CONFIG_DEPRECATED =
-            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpAutoConfiguration";
+            "org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.otlp.OtlpTracingAutoConfiguration";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -150,10 +145,9 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
 
         String toExclude;
         if ("BRAVE".equals(bridge)) {
-            // User selected Brave — exclude OTel bridge and OTLP exporter (both current and deprecated names)
+            // User selected Brave — exclude OTel bridge and OTLP exporter
             toExclude = String.join(",",
-                    OTEL_TRACING_AUTO_CONFIG, OTEL_AUTO_CONFIG_DEPRECATED,
-                    OTLP_TRACING_AUTO_CONFIG, OTLP_AUTO_CONFIG_DEPRECATED);
+                    OTEL_TRACING_AUTO_CONFIG, OTLP_TRACING_AUTO_CONFIG);
         } else {
             // Default: OTEL — exclude Brave bridge
             toExclude = BRAVE_AUTO_CONFIG;
@@ -194,7 +188,7 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
 
     /**
      * Translates the OpenTelemetry {@code OTEL_EXPORTER_OTLP_PROTOCOL} environment variable
-     * into Spring Boot's {@code management.otlp.tracing.transport} enum.
+     * into Spring Boot's {@code management.opentelemetry.tracing.export.otlp.transport} enum.
      * <p>
      * The OTel spec values are {@code grpc | http/protobuf | http/json}, but Spring's
      * {@code Transport} enum only accepts {@code GRPC | HTTP}. Binding the raw spec value

@@ -18,7 +18,7 @@ package org.fireflyframework.common.application.health;
 
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.observability.health.FireflyHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 /**
  * Health indicator for the Application Layer.

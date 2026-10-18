@@ -199,9 +199,9 @@ public class FireflyEdaAutoConfiguration {
      * coexist in the Spring context for internal framework use.
      * <p>
      * Built through Spring Boot's autoconfigured {@link Jackson2ObjectMapperBuilder},
-     * so it honours every {@code spring.jackson.*} property the application sets in
+     * so it honours every {@code spring.jackson2.*} property the application sets in
      * its {@code application.yaml} — most importantly
-     * {@code spring.jackson.serialization.write-dates-as-timestamps=false} which
+     * {@code spring.jackson2.serialization.write-dates-as-timestamps=false} which
      * makes {@link java.time.Instant} / {@link java.time.LocalDateTime} fields
      * serialize as ISO-8601 strings instead of numeric epochs in WebFlux responses.
      * The builder also auto-registers every Jackson module on the classpath

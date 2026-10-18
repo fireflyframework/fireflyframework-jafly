@@ -7,13 +7,16 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-agentic-bridge</artifactId>
-        <version>26.07.06</version>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-agentic-bridge-samples</artifactId>
     <name>Firefly Framework - Agentic Bridge Samples</name>
     <description>Runnable Spring Boot sample showcasing every transport, conversation management,
         and observability of the agentic bridge.</description>
+
+    <properties><maven.deploy.skip>true</maven.deploy.skip></properties>
 
     <dependencies>
         <dependency>
@@ -53,4 +56,14 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>maven-central</id>
+            <build><plugins><plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <configuration><skipPublishing>true</skipPublishing></configuration>
+            </plugin></plugins></build>
+        </profile>
+    </profiles>
 </project>

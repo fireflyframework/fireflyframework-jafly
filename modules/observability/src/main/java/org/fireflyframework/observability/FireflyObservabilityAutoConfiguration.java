@@ -8,6 +8,7 @@ import org.fireflyframework.observability.tracing.FireflyBaggageConfiguration;
 import org.fireflyframework.observability.tracing.FireflyTracingSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -15,7 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.HealthIndicator;
 
 /**
  * Master auto-configuration for Firefly Framework observability.
@@ -27,7 +28,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
  * Each inner configuration class is guarded by its own conditions, ensuring
  * graceful degradation when optional dependencies are absent.
  */
-@AutoConfiguration
+@AutoConfiguration(after = ObservationAutoConfiguration.class)
 @EnableConfigurationProperties(FireflyObservabilityProperties.class)
 public class FireflyObservabilityAutoConfiguration {
 

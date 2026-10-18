@@ -17,8 +17,8 @@
 package org.fireflyframework.orchestration.core.health;
 
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.ReactiveHealthIndicator;
 import reactor.core.publisher.Mono;
 
 public class OrchestrationHealthIndicator implements ReactiveHealthIndicator {

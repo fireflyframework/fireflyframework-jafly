@@ -23,8 +23,8 @@ import org.fireflyframework.data.orchestration.model.JobExecutionStatus;
 import org.fireflyframework.data.orchestration.port.JobOrchestrator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 

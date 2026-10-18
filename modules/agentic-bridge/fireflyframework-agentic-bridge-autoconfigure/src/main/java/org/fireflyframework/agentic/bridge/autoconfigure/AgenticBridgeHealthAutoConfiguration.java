@@ -11,7 +11,7 @@
 package org.fireflyframework.agentic.bridge.autoconfigure;
 
 import org.fireflyframework.agentic.bridge.AgenticBridge;
-import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Bean;
  * {@code management.health.firefly-agentic-bridge.enabled=false}.
  */
 @AutoConfiguration
-@ConditionalOnClass(name = "org.springframework.boot.actuate.health.ReactiveHealthIndicator")
+@ConditionalOnClass(name = "org.springframework.boot.health.contributor.ReactiveHealthIndicator")
 public class AgenticBridgeHealthAutoConfiguration {
 
     @Bean(name = "fireflyAgenticBridgeHealthIndicator")

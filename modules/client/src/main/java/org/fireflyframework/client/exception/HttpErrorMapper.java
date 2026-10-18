@@ -158,16 +158,16 @@ public class HttpErrorMapper {
         java.util.Map<String, String> headerMap = new java.util.HashMap<>();
         
         // Extract important headers
-        if (headers.containsKey("X-Request-ID")) {
+        if (headers.containsHeader("X-Request-ID")) {
             headerMap.put("X-Request-ID", headers.getFirst("X-Request-ID"));
         }
-        if (headers.containsKey("X-Correlation-ID")) {
+        if (headers.containsHeader("X-Correlation-ID")) {
             headerMap.put("X-Correlation-ID", headers.getFirst("X-Correlation-ID"));
         }
-        if (headers.containsKey("Retry-After")) {
+        if (headers.containsHeader("Retry-After")) {
             headerMap.put("Retry-After", headers.getFirst("Retry-After"));
         }
-        if (headers.containsKey("Content-Type")) {
+        if (headers.containsHeader("Content-Type")) {
             headerMap.put("Content-Type", headers.getFirst("Content-Type"));
         }
         

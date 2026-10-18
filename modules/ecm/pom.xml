@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-ecm</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Enterprise Content Management Library</name>
@@ -22,22 +22,16 @@
 
     <properties>
         <!-- Dependency versions for adapter modules -->
-        <aws-sdk.version>2.21.29</aws-sdk.version>
         <azure-storage-blob.version>12.23.0</azure-storage-blob.version>
         <azure-identity.version>1.10.4</azure-identity.version>
         <docusign-esign.version>4.3.0</docusign-esign.version>
-        <jackson.version>2.15.2</jackson.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <jersey.version>3.1.3</jersey.version>
         <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
         <httpclient5.version>5.2.1</httpclient5.version>
         <jjwt.version>0.11.5</jjwt.version>
-        <wiremock.version>2.35.0</wiremock.version>
 
         <!-- Plugin versions -->
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
-        <resilience4j.version>2.1.0</resilience4j.version>
     </properties>
 
     <dependencyManagement>
@@ -137,21 +131,6 @@
             </dependency>
 
             <!-- Jackson for JSON processing -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
 
             <!-- Resilience4j for fault tolerance -->
             <dependency>
@@ -182,7 +161,7 @@
         <!-- Spring AOP -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
 
         <!-- Spring Retry for resilience patterns -->
@@ -208,14 +187,14 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-kernel</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Observability (metrics, tracing, health, logging) -->
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-observability</artifactId>
-            <version>${project.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- Lombok for reducing boilerplate code -->
@@ -261,8 +240,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

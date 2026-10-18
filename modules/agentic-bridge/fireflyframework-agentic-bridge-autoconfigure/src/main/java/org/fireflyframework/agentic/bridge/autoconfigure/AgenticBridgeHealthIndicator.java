@@ -12,8 +12,8 @@ package org.fireflyframework.agentic.bridge.autoconfigure;
 
 import org.fireflyframework.agentic.bridge.AgenticBridge;
 import org.fireflyframework.agentic.bridge.health.AgenticHealth;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.ReactiveHealthIndicator;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;

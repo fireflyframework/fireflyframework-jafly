@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Agentic Bridge</name>
@@ -22,7 +22,7 @@
         Kafka/RabbitMQ/Redis publishers, conversation management, observability, and Spring Boot
         auto-configuration for first-class Java to agent integration.</description>
 
-    <url>https://github.com/fireflyframework/fireflyframework-agentic-bridge</url>
+    <url>https://github.com/fireflyframework/fireflyframework-jafly</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -39,9 +39,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/fireflyframework/fireflyframework-agentic-bridge.git</connection>
-        <developerConnection>scm:git:ssh://github.com:fireflyframework/fireflyframework-agentic-bridge.git</developerConnection>
-        <url>https://github.com/fireflyframework/fireflyframework-agentic-bridge</url>
+        <connection>scm:git:https://github.com/fireflyframework/fireflyframework-jafly.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/fireflyframework/fireflyframework-jafly.git</developerConnection>
+        <url>https://github.com/fireflyframework/fireflyframework-jafly</url>
     </scm>
 
     <modules>
@@ -62,17 +62,17 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-agentic-bridge-core</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-agentic-bridge-autoconfigure</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
-                <version>${project.version}</version>
+                <version>${fireflyframework.version}</version>
             </dependency>
 
             <!-- Reactor Kafka and RabbitMQ (versions not in Spring Boot BOM) -->

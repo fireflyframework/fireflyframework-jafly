@@ -24,7 +24,6 @@ import org.fireflyframework.ecm.port.security.DocumentSecurityPort;
 import org.fireflyframework.ecm.service.EcmPortProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.beans.factory.annotation.Autowired;

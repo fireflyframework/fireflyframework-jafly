@@ -20,8 +20,8 @@ package org.fireflyframework.core.actuator.config;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.health.HealthContributorAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.autoconfigure.contributor.HealthContributorAutoConfiguration;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -89,8 +89,8 @@ public class CacheHealthConfig {
             }
             
             return allHealthy && !cacheManagers.isEmpty()
-                    ? org.springframework.boot.actuate.health.Health.up().withDetails(details).build()
-                    : org.springframework.boot.actuate.health.Health.down().withDetails(details).build();
+                    ? org.springframework.boot.health.contributor.Health.up().withDetails(details).build()
+                    : org.springframework.boot.health.contributor.Health.down().withDetails(details).build();
         };
     }
 

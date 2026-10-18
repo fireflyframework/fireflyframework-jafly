@@ -19,8 +19,8 @@ package org.fireflyframework.eventsourcing.health;
 import org.fireflyframework.eventsourcing.projection.ProjectionHealth;
 import org.fireflyframework.eventsourcing.projection.ProjectionService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;

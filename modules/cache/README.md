@@ -1,3 +1,5 @@
+> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/cache). Build from the monorepo root with `./mvnw -pl :fireflyframework-cache -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+
 # Firefly Framework - Cache
 
 [![CI](https://github.com/fireflyframework/fireflyframework-cache/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-cache/actions/workflows/ci.yml)

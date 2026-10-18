@@ -21,7 +21,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +35,7 @@ import java.util.Map;
  * <p>Activated when the {@code firefly.agentic-bridge.enabled} property is
  * {@code true} (the default) and {@link AgenticClient} is on the classpath.</p>
  */
-@AutoConfiguration(after = JacksonAutoConfiguration.class)
+@AutoConfiguration(after = Jackson2AutoConfiguration.class)
 @ConditionalOnClass(AgenticClient.class)
 @ConditionalOnProperty(prefix = "firefly.agentic-bridge", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(AgenticBridgeProperties.class)
@@ -71,6 +71,6 @@ public class AgenticBridgeAutoConfiguration {
      * Actuator classes are on the classpath.
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.ReactiveHealthIndicator")
+    @ConditionalOnClass(name = "org.springframework.boot.health.contributor.ReactiveHealthIndicator")
     static class HealthMarker { }
 }

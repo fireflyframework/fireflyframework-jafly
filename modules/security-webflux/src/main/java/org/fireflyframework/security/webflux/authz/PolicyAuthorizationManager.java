@@ -20,6 +20,7 @@ import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.fireflyframework.security.webflux.authentication.PrincipalSupport;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
@@ -41,7 +42,7 @@ public class PolicyAuthorizationManager implements ReactiveAuthorizationManager<
     }
 
     @Override
-    public Mono<AuthorizationDecision> check(Mono<Authentication> authentication, AuthorizationContext context) {
+    public Mono<AuthorizationResult> authorize(Mono<Authentication> authentication, AuthorizationContext context) {
         ServerHttpRequest request = context.getExchange().getRequest();
         String action = request.getMethod().name();
         String resource = request.getPath().value();
@@ -51,7 +52,7 @@ public class PolicyAuthorizationManager implements ReactiveAuthorizationManager<
                 .filter(Authentication::isAuthenticated)
                 .flatMap(auth -> policyDecisionPort
                         .authorize(PrincipalSupport.extract(auth), action, resource, ctx)
-                        .map(decision -> new AuthorizationDecision(decision.granted())))
+                        .map(decision -> (AuthorizationResult) new AuthorizationDecision(decision.granted())))
                 .onErrorReturn(new AuthorizationDecision(false))
                 .defaultIfEmpty(new AuthorizationDecision(false));
     }

@@ -41,7 +41,7 @@ import java.util.List;
  * outbox, snapshot store, and projections when Actuator is on the classpath.
  */
 @AutoConfiguration
-@ConditionalOnClass(name = "org.springframework.boot.actuator.health.HealthIndicator")
+@ConditionalOnClass(name = "org.springframework.boot.health.contributor.HealthIndicator")
 @ConditionalOnProperty(prefix = "firefly.eventsourcing.performance", name = "health-checks-enabled", havingValue = "true", matchIfMissing = true)
 @Slf4j
 public class EventSourcingHealthAutoConfiguration {

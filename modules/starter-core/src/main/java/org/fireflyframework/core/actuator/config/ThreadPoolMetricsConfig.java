@@ -20,8 +20,8 @@ package org.fireflyframework.core.actuator.config;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -124,8 +124,8 @@ public class ThreadPoolMetricsConfig {
             }
             
             return allHealthy 
-                    ? org.springframework.boot.actuate.health.Health.up().withDetails(details).build()
-                    : org.springframework.boot.actuate.health.Health.down().withDetails(details).build();
+                    ? org.springframework.boot.health.contributor.Health.up().withDetails(details).build()
+                    : org.springframework.boot.health.contributor.Health.down().withDetails(details).build();
         };
     }
 

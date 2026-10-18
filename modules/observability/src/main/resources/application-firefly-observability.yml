@@ -94,13 +94,14 @@ management:
   ##   OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector.monitoring:4317  → custom collector
   ##   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://tempo:4317  → traces to Tempo directly
   ##   OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://mimir:4318/v1/metrics  → metrics to Mimir
-  otlp:
+  opentelemetry:
     tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}}
-      # grpc default. OTEL_EXPORTER_OTLP_PROTOCOL (grpc|http/protobuf|http/json) is translated to
-      # this enum (GRPC|HTTP) by FireflyObservabilityEnvironmentPostProcessor — binding the raw
-      # spec value here would fail to bind http/protobuf and crash context init.
-      transport: grpc
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}}
+          # The post-processor translates the OTel protocol into Boot's GRPC|HTTP enum.
+          transport: grpc
+  otlp:
     metrics:
       export:
         enabled: false                   # Overridden by EnvironmentPostProcessor based on exporter property

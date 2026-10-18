@@ -1,3 +1,5 @@
+> This component is part of [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/plugins). Build from the monorepo root with `./mvnw -pl :fireflyframework-plugins -am verify`. The current platform is Spring Boot 4.1.1 and Java 25; read the [Boot 4 migration guide](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/docs/migration/README.md) for changes to inherited examples and configuration.
+
 # Firefly Framework - Plugins
 
 [![CI](https://github.com/fireflyframework/fireflyframework-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-plugins/actions/workflows/ci.yml)

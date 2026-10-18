@@ -240,7 +240,7 @@ public class RequestResponseLoggingInterceptor {
             return "{}";
         }
 
-        return headers.entrySet().stream()
+        return headers.headerSet().stream()
             .map(entry -> {
                 String key = entry.getKey();
                 List<String> values = entry.getValue();

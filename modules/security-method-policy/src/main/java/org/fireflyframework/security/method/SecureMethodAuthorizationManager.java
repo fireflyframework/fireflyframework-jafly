@@ -24,6 +24,7 @@ import org.fireflyframework.security.webflux.authentication.PrincipalSupport;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import reactor.core.publisher.Mono;
@@ -54,7 +55,7 @@ public class SecureMethodAuthorizationManager implements ReactiveAuthorizationMa
     }
 
     @Override
-    public Mono<AuthorizationDecision> check(Mono<Authentication> authentication, MethodInvocation invocation) {
+    public Mono<AuthorizationResult> authorize(Mono<Authentication> authentication, MethodInvocation invocation) {
         Secure secure = resolve(invocation);
         if (secure == null) {
             return Mono.just(new AuthorizationDecision(true));
@@ -62,7 +63,7 @@ public class SecureMethodAuthorizationManager implements ReactiveAuthorizationMa
         SecureRequirement requirement = SecureRequirement.from(secure, valueResolver);
         return authentication
                 .filter(Authentication::isAuthenticated)
-                .map(auth -> new AuthorizationDecision(
+                .map(auth -> (AuthorizationResult) new AuthorizationDecision(
                         evaluator.evaluate(PrincipalSupport.extract(auth), requirement).granted()))
                 .defaultIfEmpty(new AuthorizationDecision(false));
     }

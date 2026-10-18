@@ -19,8 +19,8 @@ package org.fireflyframework.core.actuator.health;
 
 import org.fireflyframework.core.logging.LoggingUtils;
 import org.fireflyframework.core.logging.config.LoggingProperties;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import java.util.Map;
 
 /**

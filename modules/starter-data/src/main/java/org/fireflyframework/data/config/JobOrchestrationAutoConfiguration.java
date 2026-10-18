@@ -93,7 +93,7 @@ public class JobOrchestrationAutoConfiguration {
     @Bean("jobOrchestratorHealthIndicator")
     @ConditionalOnMissingBean(name = "jobOrchestratorHealthIndicator")
     @ConditionalOnProperty(name = "firefly.data.orchestration.health-check.enabled", matchIfMissing = true)
-    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
+    @ConditionalOnClass(name = "org.springframework.boot.health.contributor.HealthIndicator")
     public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
         log.debug("Creating JobOrchestratorHealthIndicator");
         return new JobOrchestratorHealthIndicator(properties);

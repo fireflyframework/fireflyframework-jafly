@@ -7,19 +7,19 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.07.06</version>
-        <relativePath/>
+        <version>26.10.17-SNAPSHOT</version>
+        <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-idp-aws-cognito</artifactId>
-    <version>26.07.06</version>
+    <version>26.10.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - IDP - AWS Cognito Implementation</name>
     <description>AWS Cognito implementation of the Firefly IDP Adapter</description>
 
     <properties>
-        <fireflyframework-security-idp.version>26.07.06</fireflyframework-security-idp.version>
+        <fireflyframework-security-idp.version>26.10.17-SNAPSHOT</fireflyframework-security-idp.version>
         <aws.sdk.version>2.41.26</aws.sdk.version>
     </properties>
 
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-security-idp</artifactId>
-            <version>${fireflyframework-security-idp.version}</version>
+            <version>${fireflyframework.version}</version>
         </dependency>
 
         <!-- AWS SDK for Cognito -->
@@ -79,14 +79,12 @@
         <!-- LocalStack for AWS emulation -->
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>localstack</artifactId>
-            <version>1.21.4</version>
+            <artifactId>testcontainers-localstack</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>1.21.4</version>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

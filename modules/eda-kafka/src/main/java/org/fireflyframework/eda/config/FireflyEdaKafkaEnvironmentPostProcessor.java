@@ -17,7 +17,7 @@
 package org.fireflyframework.eda.config;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 public class FireflyEdaKafkaEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
-    private static final String KAFKA_AUTO_CONFIG = "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration";
+    private static final String KAFKA_AUTO_CONFIG = "org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
