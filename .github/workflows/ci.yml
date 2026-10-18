@@ -49,7 +49,7 @@ jobs:
           docker info
       - name: Compile, test, and install framework libraries
         if: steps.changes.outputs.java == 'true'
-        run: ./mvnw -B -ntp clean install
+        run: ./mvnw -B -ntp -Dtest.serialization.protobuf=true -Dtest.serialization.avro=true clean install
       - name: Test all maintained standalone examples
         if: steps.changes.outputs.java == 'true'
         run: bash scripts/verify_examples.sh
