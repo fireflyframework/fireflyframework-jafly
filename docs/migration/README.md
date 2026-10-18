@@ -37,7 +37,7 @@ Organization orchestration and CLI setup use the single Jafly repository. Build,
 
 The [legacy records archive](https://github.com/fireflyframework/fireflyframework-jafly/releases/tag/legacy%2Fcollaboration-archive%2F20261018T064326Z) contains the original repository records, final refs, context-commit inventory, source bundles, checksums, and restore instructions. Immutable `legacy/<repository>/collaboration-archive/…` tags point to archive-only commits whose trees match the final source heads and whose ancestry preserves the original and reviewed commits. These tags supplement the original imported refs.
 
-Recovery starts from the documented bundles and refs. GitHub collaboration records are portable exports; they are not native destination PRs or issues. Old workflow logs and Actions artifact binaries are not included. Historical Maven binaries and their old download URLs are not guaranteed by a source-code archive. New Jafly publication must pass its live association and byte-verification gates independently.
+Follow the [tested source restoration guide](restore-legacy-sources.md) to recover the documented bundles and refs into a new repository. GitHub collaboration records are portable exports; they are not native destination PRs or issues. Old workflow logs and Actions artifact binaries are not included. Historical Maven binaries and their old download URLs are not guaranteed by a source-code archive. New Jafly publication must pass its live association and byte-verification gates independently.
 
 ## Primary references
 
