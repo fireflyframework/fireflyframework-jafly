@@ -5,9 +5,10 @@
 
 <p align="center">
   <a href="https://fireflyframework.github.io/fireflyframework-jafly/">Documentation</a> ·
-  <a href="docs/site/getting-started.md">Get started</a> ·
-  <a href="docs/site/modules/index.md">Module catalog</a> ·
-  <a href="https://fireflyframework.org">Framework by Firefly</a>
+  <a href="https://fireflyframework.github.io/fireflyframework-jafly/getting-started/">Get started</a> ·
+  <a href="https://fireflyframework.github.io/fireflyframework-jafly/modules/">Module catalog</a> ·
+  <a href="https://fireflyframework.github.io/fireflyframework-jafly/maven/">Maven</a> ·
+  <a href="https://fireflyframework.org/frameworks/java/">Framework by Firefly</a>
 </p>
 
 <p align="center">
@@ -16,7 +17,7 @@
   <img src="https://img.shields.io/badge/Java-25-10110f?style=flat-square" alt="Java 25">
   <img src="https://img.shields.io/badge/Spring_Boot-4.1.1-10110f?style=flat-square" alt="Spring Boot 4.1.1">
   <img src="https://img.shields.io/badge/Maven-3.9.16-10110f?style=flat-square" alt="Maven 3.9.16 wrapper">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Code_license-Apache_2.0-855414?style=flat-square" alt="Code license: Apache 2.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-855414?style=flat-square" alt="License: Apache 2.0"></a>
 </p>
 
 ## The layers between Spring Boot and your business rules
@@ -25,9 +26,22 @@ Jafly is the Java framework in Framework by Firefly. It brings command and query
 
 Spring continues to host your application, route HTTP requests, manage dependencies, and provide data access. Jafly connects application operations and provider adapters through shared contracts. Your team writes the business rules and chooses authorization, transaction boundaries, and recovery behavior.
 
-Choose the modules your service needs. The parent and independent BOM keep their versions together, while starters assemble dependencies for core, domain, data, or application services. The current platform uses Java 25, Spring Boot 4.1.1, and Spring Cloud 2025.1.3.
+This repository is the complete Java framework: parent POM, independent BOM, starters, and every published module live here under one Maven reactor and one documentation site. Choose the libraries your service needs; the parent and BOM keep their versions aligned. The current platform uses Java 25, Spring Boot 4.1.1, and Spring Cloud 2025.1.3.
 
-The [first service tutorial](docs/site/getting-started.md) follows a customer onboarding application from HTTP input through a command handler, storage, and a query handler. Its source and tests live in this repository. It uses in-memory storage so you can run it without a database or broker; the module guides explain the next infrastructure choices.
+## Documentation map
+
+| Start here | What you get |
+| --- | --- |
+| [Documentation site](https://fireflyframework.github.io/fireflyframework-jafly/) | Published guides, architecture, Maven, releases, and the full module catalog |
+| [Getting started](docs/site/getting-started.md) | First onboarding service: HTTP → command → storage → query |
+| [Module catalog](docs/site/modules/index.md) | Every component, grouped by capability, with configuration and examples |
+| [Architecture](docs/site/architecture.md) | Boundaries between handlers, ports, and provider adapters |
+| [Maven parent and BOM](docs/site/maven.md) | How applications consume the train |
+| [Installation](docs/site/installation.md) | JDK, Maven wrapper, Docker, and local setup |
+| [Examples and tutorials](docs/site/examples.md) | Onboarding paths and integration samples |
+| [Development](docs/site/development.md) · [Docs workflow](docs/site/documentation.md) · [Versioning](docs/site/versioning.md) · [Releases](docs/site/releases.md) | Contribute, build docs, and publish |
+
+Source-backed copies of the same pages live under [`docs/site/`](docs/site/). The MkDocs site is the preferred reading experience.
 
 ## What Jafly adds
 
@@ -44,7 +58,7 @@ The documentation follows the same eight capability areas as [Jafly on Framework
 | [Service operations](docs/site/capabilities/service-operations.md) | Configure metrics, traces, health checks, HTTP conventions, and shared configuration for your services. |
 | [Team-wide architecture](docs/site/capabilities/team-wide-architecture.md) | Adopt the parent or BOM, service-layer starters, shared kernel contracts, and plugin interfaces across a team's applications. |
 
-Use the [module catalog](docs/site/modules/index.md) to choose a library and find its configuration and examples. Read the [architecture guide](docs/site/architecture.md) before deciding which responsibilities belong in your handlers or provider adapters.
+Use the [module catalog](docs/site/modules/index.md) to pick a concrete library (for example CQRS, a Kafka EDA adapter, or a security IDP). Each catalog entry links to its guide, source tree under `modules/`, and tests.
 
 <picture>
   <source media="(max-width: 600px)" srcset="docs/site/assets/diagrams/request-flow-narrow.svg">
@@ -61,7 +75,7 @@ The tutorials follow a customer application through three separate projects. Eac
 | [Retain its event history](docs/site/guides/onboarding-event-store.md) | Append typed events to PostgreSQL, reconstruct an aggregate, reject a stale writer, and roll back an invalid batch. |
 | [Coordinate a review](docs/site/guides/onboarding-coordination.md) | Compensate a failed Saga, confirm or cancel TCC reservations, and order Workflow steps with explicit recovery. |
 
-Continue with [examples and tutorials](docs/site/examples.md) to choose the next integration. The three projects share the onboarding story; each runs independently so its failure and transaction behavior can be tested directly.
+Continue with [examples and tutorials](docs/site/examples.md) for the next integration. The three projects share the onboarding story; each runs independently so its failure and transaction behavior can be tested directly.
 
 ## Start with the source
 
@@ -116,7 +130,7 @@ Or retain your existing parent and import the independent BOM:
 </dependencyManagement>
 ```
 
-Then declare the libraries you need:
+Then declare the libraries you need (see the [module catalog](docs/site/modules/index.md) for artifact IDs):
 
 ```xml
 <dependency>
@@ -125,24 +139,25 @@ Then declare the libraries you need:
 </dependency>
 ```
 
-The parent and BOM manage the same framework artifact versions. Your application keeps its own version and declares its runtime dependencies. Choose the parent for build management, or import the BOM to keep your existing parent. See [Maven integration details](docs/site/maven.md).
+The parent and BOM manage the same framework artifact versions. Your application keeps its own version and declares its runtime dependencies. Details: [Maven integration](docs/site/maven.md).
 
-## Find your way around
+Published coordinates use `org.fireflyframework`. Stable releases go to Maven Central; development snapshots publish to the Jafly GitHub Packages repository (`maven.pkg.github.com/fireflyframework/fireflyframework-jafly`).
+
+## Repository layout
 
 ```text
-pom.xml                    Source aggregation; not a consumer parent
-build/parent/              Published fireflyframework-parent
-build/bom/                 Published fireflyframework-bom
-modules/                   61 component repositories and nested projects
-scripts/                   Version, provenance, release, and documentation tools
-tests/                     Monorepo and publishing contract tests
-docs/site/                 Documentation site and brand assets
-docs/migration/            Source history, original commit IDs, migration evidence
+pom.xml           Reactor aggregation POM (not a consumer parent)
+build/parent/     Published fireflyframework-parent
+build/bom/        Published fireflyframework-bom
+modules/          Framework components (source, tests, examples, guides)
+docs/site/        Documentation source for the published site
+scripts/          Version, release, docs, and publishing tools
+tests/            Repository contract tests
 ```
 
-Components retain their source, tests, examples, resources, and licenses. The standalone complete client example stays outside the default reactor; build it after local framework installation. Agentic bridge samples remain in the reactor for testing and are not published.
+Active CI and release workflows live at the repository root. Nested workflow files under `modules/` are inactive historical copies and are not the publishing entry point.
 
-Python, PHP, Agentic, Go, Rust, .NET, and frontend implementations retain their own repositories. The Java agentic bridge integrates with the separate Agentic runtime.
+Sibling language frameworks (pyfly, larafly, rsfly, netfly) and products such as Agentic, Forge, and Weave keep their own repositories. The [Java Agentic Bridge](modules/agentic-bridge) in this tree integrates Java services with the separate Agentic runtime.
 
 ## Develop, document, and release
 
@@ -153,17 +168,23 @@ python3 scripts/release_tools.py check
 ./mvnw -B -ntp clean verify
 ```
 
-- [Development workflow](docs/site/development.md): focused builds, tests, and source boundaries.
-- [Documentation workflow](docs/site/documentation.md): pinned MkDocs environment, complete artifact coverage, and strict site builds.
-- [Versioning](docs/site/versioning.md): one `YY.MM.PATCH` train, with a monthly release counter.
-- [Release workflow](docs/site/releases.md): immutable matching tags and independently verified GitHub Packages/Maven Central publication.
+- [Development workflow](docs/site/development.md) — focused builds, tests, and module boundaries
+- [Documentation workflow](docs/site/documentation.md) — pinned MkDocs environment and catalog completeness checks
+- [Versioning](docs/site/versioning.md) — one `YY.MM.PATCH` train
+- [Release workflow](docs/site/releases.md) — verified GitHub Packages and Maven Central publication
 
-Use the workflows at the repository root for Java builds and releases. Workflows retained inside module directories belong to the imported history.
+## License
 
-## Preserved history
+Framework source code is licensed under the [Apache License 2.0](LICENSE).
 
-The [source provenance manifest](docs/migration/source-manifest.json) maps all 63 repositories to destination paths, original source commits, imported branches, and tags. Original main commit IDs remain ancestors of the monorepo. Historical refs use `legacy/<source-repository>/<original-ref>` so identical original release tags do not collide.
+```text
+Copyright © Firefly Software Solutions Inc. and contributors
 
-The [legacy records archive](https://github.com/fireflyframework/fireflyframework-jafly/releases/tag/legacy%2Fcollaboration-archive%2F20261018T064326Z) preserves pull request conversations, reviews, release metadata, and restorable Git bundles. Additional archive tags preserve reviewed commits and the final source trees without merging them into the framework. Source repository URLs are historical identifiers after retirement. [Issue transfer records](docs/migration/issue-transfers.json) identify issues moved to Jafly. See [migration and compatibility](docs/migration/README.md) for import boundaries and recovery.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Framework code is [Apache License 2.0](LICENSE). Official Jafly/Firefly artwork and the self-hosted Manrope font retain their separate [brand provenance and notices](docs/site/brand.md).
+    http://www.apache.org/licenses/LICENSE-2.0
+```
+
+Official Jafly and Firefly artwork and the self-hosted Manrope font retain separate [brand provenance and notices](docs/site/brand.md). Those assets are not covered by the Apache 2.0 grant for the framework code.
