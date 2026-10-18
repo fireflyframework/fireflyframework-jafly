@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Shared Firefly observability logging configuration -->
+    <include resource="logback-firefly.xml"/>
+
+    <!-- Root Logger - uses shared FIREFLY_ASYNC appender from logback-firefly.xml -->
+    <root level="INFO">
+        <appender-ref ref="FIREFLY_ASYNC"/>
+    </root>
+
+    <!-- Application Loggers -->
+    <logger name="org.fireflyframework.domain" level="DEBUG"/>
+
+    <!-- Spring Loggers -->
+    <logger name="org.springframework" level="INFO"/>
+
+    <!-- Profile-specific configurations -->
+    <springProfile name="dev,local">
+        <logger name="org.fireflyframework" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod,production">
+        <logger name="org.fireflyframework.domain" level="INFO"/>
+    </springProfile>
+</configuration>
