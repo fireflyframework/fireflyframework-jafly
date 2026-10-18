@@ -26,7 +26,7 @@ Jafly is the Java framework in Framework by Firefly. It brings command and query
 
 Spring continues to host your application, route HTTP requests, manage dependencies, and provide data access. Jafly connects application operations and provider adapters through shared contracts. Your team writes the business rules and chooses authorization, transaction boundaries, and recovery behavior.
 
-This repository is the complete Java framework: parent POM, independent BOM, starters, and every published module live here under one Maven reactor and one documentation site. Choose the libraries your service needs; the parent and BOM keep their versions aligned. The current platform uses Java 25, Spring Boot 4.1.1, and Spring Cloud 2025.1.3.
+Choose the libraries your service needs; the parent and BOM keep their versions aligned. The current platform uses Java 25, Spring Boot 4.1.1, and Spring Cloud 2025.1.3.
 
 ## Documentation map
 
