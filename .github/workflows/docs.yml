@@ -2,29 +2,7 @@ name: Documentation
 on:
   push:
     branches: [main]
-    paths:
-      - README.md
-      - docs/**
-      - mkdocs.yml
-      - requirements-docs.txt
-      - scripts/check_docs.py
-      - scripts/generate_docs_nav.py
-      - scripts/generate_brand.mjs
-      - tests/test_docs_contract.py
-      - '**/pom.xml'
-      - .github/workflows/docs.yml
   pull_request:
-    paths:
-      - README.md
-      - docs/**
-      - mkdocs.yml
-      - requirements-docs.txt
-      - scripts/check_docs.py
-      - scripts/generate_docs_nav.py
-      - scripts/generate_brand.mjs
-      - tests/test_docs_contract.py
-      - '**/pom.xml'
-      - .github/workflows/docs.yml
   workflow_dispatch:
 permissions:
   contents: read

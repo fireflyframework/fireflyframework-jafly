@@ -112,13 +112,25 @@ def check_reactor(root, tag=None, expected=None, snapshot=False):
     return projects
 
 
-def check_tag_commit(root, tag):
+def check_tag_commit(root, tag, remote=None):
     if not tag.startswith('v') or not FINAL_VERSION.fullmatch(tag[1:]):
         raise ValueError('invalid release tag')
     def git(*arguments):
         return subprocess.check_output(['git', '-C', str(root), *arguments], text=True).strip()
-    if git('rev-parse', 'HEAD') != git('rev-parse', f'refs/tags/{tag}^{{commit}}'):
+    commit = git('rev-parse', 'HEAD')
+    if commit != git('rev-parse', f'refs/tags/{tag}^{{commit}}'):
         raise ValueError('release tag commit differs from checkout commit')
+    if remote is not None:
+        reference = f'refs/tags/{tag}'
+        advertised = git('ls-remote', '--exit-code', '--tags', '--', remote,
+                         reference, reference + '^{}')
+        references = {}
+        for line in advertised.splitlines():
+            sha, name = line.split()
+            references[name] = sha
+        remote_commit = references.get(reference + '^{}', references.get(reference))
+        if remote_commit != commit:
+            raise ValueError('remote release tag commit differs from checkout commit')
 
 
 def required_paths(projects, signatures=False):
@@ -171,6 +183,11 @@ def inventory_bundle(projects, bundle):
 
 
 def verify_remote(inventory, url, username=None, token=None, attempts=1, delay=0):
+    homes = Path(__file__).with_name('package-homes.json')
+    if urllib.parse.urlsplit(url).hostname == 'maven.pkg.github.com':
+        from verify_github_packages import verify_github_layout
+        projects = check_reactor(Path(__file__).resolve().parents[1], expected=86)
+        return verify_github_layout(inventory, url, projects, homes, username, token, attempts, delay)
     if attempts < 1 or delay < 0:
         raise ValueError('attempts must be positive and delay nonnegative')
     if not inventory:
@@ -204,6 +221,7 @@ def main():
     check = commands.add_parser('check')
     check.add_argument('--root', type=Path, default=Path('.'))
     check.add_argument('--tag')
+    check.add_argument('--remote', help='Require the remote tag to resolve to the checkout commit')
     check.add_argument('--snapshot', action='store_true')
     check.add_argument('--expected', type=int, default=86)
     check.add_argument('--output', type=Path)
@@ -224,8 +242,10 @@ def main():
     args = parser.parse_args()
     if args.command == 'check':
         result = check_reactor(args.root, args.tag, args.expected, args.snapshot)
+        if args.remote is not None and args.tag is None:
+            raise ValueError('--remote requires --tag')
         if args.tag:
-            check_tag_commit(args.root, args.tag)
+            check_tag_commit(args.root, args.tag, args.remote)
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, indent=2) + '\n')

@@ -1,0 +1,53 @@
+name: Check publishing configuration
+on:
+  workflow_dispatch:
+    inputs:
+      require-cross-repository-token:
+        description: Require a classic token for retained GitHub Maven package homes
+        type: boolean
+        default: true
+permissions:
+  contents: read
+jobs:
+  configuration:
+    name: Inspect configured publishing credential names
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report configuration presence without exposing values
+        env:
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          REQUIRE_CROSS_REPOSITORY_TOKEN: ${{ inputs.require-cross-repository-token }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          required = ['SONATYPE_USERNAME', 'SONATYPE_PASSWORD',
+                      'GPG_PRIVATE_KEY', 'GPG_PASSPHRASE']
+          names = ['JAFLY_PACKAGES_TOKEN', *required]
+          configured = {name: bool(os.environ.get(name)) for name in names}
+          if os.environ['REQUIRE_CROSS_REPOSITORY_TOKEN'] == 'true':
+              required.append('JAFLY_PACKAGES_TOKEN')
+          missing = [name for name in required if not configured[name]]
+          report = {'configured': configured, 'missing_required_names': missing,
+                    'qualification': 'Presence only; no registry or signing authorization proved.'}
+          Path('publishing-configuration.json').write_text(json.dumps(report, indent=2) + '\n')
+          print(json.dumps(report, indent=2))
+          if missing:
+              raise SystemExit('Publishing configuration is incomplete.')
+          PY
+      - name: Retain configuration presence report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: publishing-configuration-${{ github.run_id }}
+          path: publishing-configuration.json
+          if-no-files-found: error
+          retention-days: 14

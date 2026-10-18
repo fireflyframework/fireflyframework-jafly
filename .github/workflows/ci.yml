@@ -50,9 +50,9 @@ jobs:
       - name: Compile, test, and install framework libraries
         if: steps.changes.outputs.java == 'true'
         run: ./mvnw -B -ntp clean install
-      - name: Test the standalone onboarding application
+      - name: Test all maintained standalone examples
         if: steps.changes.outputs.java == 'true'
-        run: ./mvnw -B -ntp -f docs/examples/getting-started/pom.xml clean verify
+        run: bash scripts/verify_examples.sh
       - name: Retain test reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

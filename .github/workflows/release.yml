@@ -43,22 +43,20 @@ jobs:
           echo "GNUPGHOME=$RUNNER_TEMP/jafly-gpg" >> "$GITHUB_ENV"
       - name: Verify immutable tag and all project versions
         run: |
-          python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --output "$RUNNER_TEMP/reactor-inventory.json"
+          python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin --output "$RUNNER_TEMP/reactor-inventory.json"
           python3 -m unittest discover -s tests -v
           python3 -m unittest discover -s tests/release -v
           ./mvnw -version
           docker info
-      - name: Verify full reactor before deployment
-        run: ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" clean verify
       - name: Verify publishing credentials are configured
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          for variable in GITHUB_TOKEN SONATYPE_USERNAME SONATYPE_PASSWORD GPG_PRIVATE_KEY GPG_PASSPHRASE; do
+          for variable in JAFLY_PACKAGES_TOKEN SONATYPE_USERNAME SONATYPE_PASSWORD GPG_PRIVATE_KEY GPG_PASSPHRASE; do
             if [ -z "${!variable}" ]; then
               echo "::error::Required publishing secret $variable is unavailable"
               exit 1
@@ -67,28 +65,43 @@ jobs:
           mkdir -p "$GNUPGHOME"
           chmod 700 "$GNUPGHOME"
           printf '%s' "$GPG_PRIVATE_KEY" | base64 --decode | gpg --batch --import
-      - name: Deploy to GitHub Packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify full reactor before deployment
+        run: ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" clean install
+      - name: Test all maintained standalone examples before publication
+        run: bash scripts/verify_examples.sh -Dmaven.repo.local="$MAVEN_REPO"
+      - name: Package and freeze the verified GitHub artifacts
         run: |
-          ./mvnw -B -ntp -s .github/maven-settings.xml \
-            -Dmaven.repo.local="$MAVEN_REPO" deploy -Prelease \
-            -DdeployAtEnd=true \
-            -DaltDeploymentRepository="github::https://maven.pkg.github.com/$RELEASE_REPOSITORY"
+          ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" install -Prelease -DskipTests
+          python3 scripts/github_packages.py plan --root . \
+            --associations scripts/package-associations.jsonl \
+            --repository "$MAVEN_REPO" --output "$RUNNER_TEMP/github-stage"
+          mkdir -p target
+          cp "$RUNNER_TEMP/github-stage/github-manifest.json" target/github-manifest.json
+          cp "$RUNNER_TEMP/github-stage/package-homes.json" target/package-homes.json
+      - name: Deploy the frozen files to the retained GitHub package homes
+        env:
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+          JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
+        run: |
+          python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin
+          python3 scripts/github_packages.py execute --plan "$RUNNER_TEMP/github-stage" --maven ./mvnw
       - name: Verify every GitHub Packages artifact
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+          JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
         run: |
-          python3 scripts/release_tools.py inventory --repository "$MAVEN_REPO" --output target/github-manifest.json
-          python3 scripts/release_tools.py verify --manifest target/github-manifest.json \
-            --url "https://maven.pkg.github.com/$RELEASE_REPOSITORY" \
-            --username-env GITHUB_ACTOR --token-env GITHUB_TOKEN --attempts 12 --delay 10
+          python3 scripts/github_packages.py verify \
+            --projects "$RUNNER_TEMP/github-stage/reactor-inventory.json" \
+            --homes "$RUNNER_TEMP/github-stage/package-homes.json" \
+            --manifest target/github-manifest.json \
+            --output target/github-verification.json --attempts 12 --delay 10
       - name: Deploy and wait for Maven Central publication
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
+          python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin
           ./mvnw -B -ntp -s .github/maven-settings.xml \
             -Dmaven.repo.local="$MAVEN_REPO" deploy -Prelease,maven-central \
             -DautoPublish=true -DwaitUntil=published -DwaitMaxTime=3600 \
@@ -106,6 +119,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin
           if gh release view "$RELEASE_TAG" --repo "$RELEASE_REPOSITORY" >/dev/null 2>&1; then
             echo '::error::A release already exists; inspect its tag and assets rather than replacing it'
             exit 1
@@ -113,7 +127,8 @@ jobs:
           gh release create "$RELEASE_TAG" --repo "$RELEASE_REPOSITORY" \
             --verify-tag --title "$RELEASE_TAG" --generate-notes \
             target/release-manifest.json target/github-manifest.json \
-            target/reactor-inventory.json target/release-commit.txt
+            target/reactor-inventory.json target/release-commit.txt \
+            target/package-homes.json target/github-verification.json
           gh release view "$RELEASE_TAG" --repo "$RELEASE_REPOSITORY" \
             --json url,tagName,isDraft,targetCommitish,assets
       - name: Retain release evidence even after a failed publication
@@ -125,7 +140,11 @@ jobs:
             target/*manifest.json
             target/reactor-inventory.json
             target/release-commit.txt
+            target/package-homes.json
+            target/github-verification.json
             ${{ runner.temp }}/reactor-inventory.json
+            ${{ runner.temp }}/github-stage/*.json
+            ${{ runner.temp }}/github-stage/*maven.log
             ${{ runner.temp }}/central-bundle/
             **/target/surefire-reports/
             **/target/failsafe-reports/

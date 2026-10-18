@@ -1,6 +1,7 @@
 """Release guards reject mixed versions, substituted tags, and incomplete registries."""
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import threading
@@ -105,7 +106,6 @@ class ReleaseToolsTests(unittest.TestCase):
             self.tools.check_reactor(self.root)
 
     def test_tag_resolves_exact_commit(self):
-        import subprocess
         subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
         subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '--allow-empty', '-qm', 'Initial'], check=True)
         subprocess.run(['git', '-C', str(self.root), 'tag', 'v26.10.17'], check=True)
@@ -113,6 +113,54 @@ class ReleaseToolsTests(unittest.TestCase):
         subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '--allow-empty', '-qm', 'Different'], check=True)
         with self.assertRaisesRegex(ValueError, 'commit'):
             self.tools.check_tag_commit(self.root, 'v26.10.17')
+
+    def tagged_remote(self, directory, annotated=False):
+        directory.mkdir()
+        source, remote, runner = (directory / name for name in ('source', 'remote.git', 'runner'))
+        source.mkdir()
+        self.git(source, 'init', '-q')
+        self.git(source, 'commit', '--allow-empty', '-qm', 'Initial')
+        arguments = ['tag', 'v26.10.17']
+        if annotated:
+            arguments.extend(['-a', '-m', 'Release'])
+        self.git(source, *arguments)
+        self.git(directory, 'init', '--bare', '-q', str(remote))
+        self.git(source, 'remote', 'add', 'origin', str(remote))
+        self.git(source, 'push', 'origin', 'HEAD:main', 'refs/tags/v26.10.17')
+        self.git(directory, 'clone', '-q', '--branch', 'v26.10.17', str(remote), str(runner))
+        return source, runner
+
+    def git(self, directory, *arguments):
+        return subprocess.check_output(
+            ['git', '-C', str(directory), '-c', 'user.name=Test', '-c',
+             'user.email=test@example.org', *arguments], text=True, stderr=subprocess.DEVNULL).strip()
+
+    def test_remote_lightweight_and_annotated_tags_match_the_checkout(self):
+        for annotated in (False, True):
+            with self.subTest(annotated=annotated):
+                _, runner = self.tagged_remote(self.root / str(annotated), annotated)
+                self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+
+    def test_rejects_remote_tag_moved_after_the_runner_checkout(self):
+        source, runner = self.tagged_remote(self.root / 'moved', annotated=True)
+        self.git(source, 'commit', '--allow-empty', '-qm', 'Different')
+        self.git(source, 'tag', '-f', 'v26.10.17')
+        self.git(source, 'push', '--force', 'origin', 'refs/tags/v26.10.17')
+        self.tools.check_tag_commit(runner, 'v26.10.17')
+        with self.assertRaisesRegex(ValueError, 'remote.*commit'):
+            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+
+    def test_rejects_remote_tag_deleted_after_the_runner_checkout(self):
+        source, runner = self.tagged_remote(self.root / 'deleted')
+        self.git(source, 'push', 'origin', ':refs/tags/v26.10.17')
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
+
+    def test_rejects_unavailable_release_remote(self):
+        _, runner = self.tagged_remote(self.root / 'unavailable')
+        self.git(runner, 'remote', 'set-url', 'origin', str(self.root / 'missing.git'))
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.tools.check_tag_commit(runner, 'v26.10.17', remote='origin')
 
     def test_repository_inventory_requires_all_attachments(self):
         projects = self.tools.check_reactor(self.root)

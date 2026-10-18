@@ -18,6 +18,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+      - name: Check access configuration for the retained package homes
+        env:
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+        run: |
+          if [ -z "$JAFLY_PACKAGES_TOKEN" ]; then
+            echo '::error::JAFLY_PACKAGES_TOKEN is required for the existing Maven package homes'
+            exit 1
+          fi
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
@@ -30,22 +38,40 @@ jobs:
           ./mvnw -version
           docker info
       - name: Verify before deployment
-        run: ./mvnw -B -ntp -Dmaven.repo.local="$RUNNER_TEMP/jafly-m2" clean verify
-      - name: Publish snapshot to GitHub Packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: ./mvnw -B -ntp -Dmaven.repo.local="$RUNNER_TEMP/jafly-m2" clean install
+      - name: Test all maintained standalone examples before publication
+        run: bash scripts/verify_examples.sh -Dmaven.repo.local="$RUNNER_TEMP/jafly-m2"
+      - name: Package and freeze the verified snapshot artifacts
         run: |
-          ./mvnw -B -ntp -s .github/maven-settings.xml \
-            -Dmaven.repo.local="$RUNNER_TEMP/jafly-m2" deploy -Prelease \
-            -DdeployAtEnd=true \
-            -DaltDeploymentRepository="github::https://maven.pkg.github.com/$RELEASE_REPOSITORY"
-      - name: Retain test results
+          ./mvnw -B -ntp -Dmaven.repo.local="$RUNNER_TEMP/jafly-m2" install -Prelease -DskipTests
+          python3 scripts/github_packages.py plan --root . \
+            --associations scripts/package-associations.jsonl \
+            --repository "$RUNNER_TEMP/jafly-m2" --output "$RUNNER_TEMP/github-stage"
+      - name: Publish snapshot to the retained GitHub package homes
+        env:
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+          JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
+        run: |
+          python3 scripts/github_packages.py execute --plan "$RUNNER_TEMP/github-stage" --maven ./mvnw
+      - name: Verify every timestamped snapshot artifact independently
+        env:
+          JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
+          JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
+        run: |
+          python3 scripts/github_packages.py verify \
+            --projects "$RUNNER_TEMP/github-stage/reactor-inventory.json" \
+            --homes "$RUNNER_TEMP/github-stage/package-homes.json" \
+            --manifest "$RUNNER_TEMP/github-stage/github-manifest.json" \
+            --output "$RUNNER_TEMP/github-stage/snapshot-verification.json" \
+            --attempts 12 --delay 10
+      - name: Retain test and publication evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: snapshot-tests-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            ${{ runner.temp }}/github-stage/*.json
+            ${{ runner.temp }}/github-stage/*maven.log
             **/target/surefire-reports/
             **/target/failsafe-reports/
           if-no-files-found: warn

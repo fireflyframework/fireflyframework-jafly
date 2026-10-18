@@ -1,0 +1,511 @@
+{
+  "schema": 1,
+  "owner": "fireflyframework",
+  "associationSha256": "dd2731c76d06fe0065e9886b7c6452b0f96d0f6211d956f551f9a9622df728ff",
+  "artifacts": [
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-agentic-bridge",
+      "repository": "fireflyframework-agentic-bridge",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-agentic-bridge-autoconfigure",
+      "repository": "fireflyframework-agentic-bridge",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-agentic-bridge-core",
+      "repository": "fireflyframework-agentic-bridge",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-agentic-bridge-starter",
+      "repository": "fireflyframework-agentic-bridge",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-backoffice",
+      "repository": "fireflyframework-backoffice",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-bom",
+      "repository": "fireflyframework-bom",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cache",
+      "repository": "fireflyframework-cache",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cache-hazelcast",
+      "repository": "fireflyframework-cache-hazelcast",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cache-jcache",
+      "repository": "fireflyframework-cache-jcache",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cache-postgres",
+      "repository": "fireflyframework-cache-postgres",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cache-redis",
+      "repository": "fireflyframework-cache-redis",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks-core",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks-interfaces",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks-models",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks-sdk",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-callbacks-web",
+      "repository": "fireflyframework-callbacks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-client",
+      "repository": "fireflyframework-client",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-config-server",
+      "repository": "fireflyframework-config-server",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-cqrs",
+      "repository": "fireflyframework-cqrs",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm",
+      "repository": "fireflyframework-ecm",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm-esignature-adobe-sign",
+      "repository": "fireflyframework-ecm-esignature-adobe-sign",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm-esignature-docusign",
+      "repository": "fireflyframework-ecm-esignature-docusign",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm-esignature-logalty",
+      "repository": "fireflyframework-ecm-esignature-logalty",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm-storage-aws",
+      "repository": "fireflyframework-ecm-storage-aws",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-ecm-storage-azure",
+      "repository": "fireflyframework-ecm-storage-azure",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-eda",
+      "repository": "fireflyframework-eda",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-eda-kafka",
+      "repository": "fireflyframework-eda-kafka",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-eda-postgres",
+      "repository": "fireflyframework-eda-postgres",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-eda-rabbitmq",
+      "repository": "fireflyframework-eda-rabbitmq",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-eventsourcing",
+      "repository": "fireflyframework-eventsourcing",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-kernel",
+      "repository": "fireflyframework-kernel",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications",
+      "repository": "fireflyframework-notifications",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications-core",
+      "repository": "fireflyframework-notifications",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications-firebase",
+      "repository": "fireflyframework-notifications-firebase",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications-resend",
+      "repository": "fireflyframework-notifications-resend",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications-sendgrid",
+      "repository": "fireflyframework-notifications-sendgrid",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-notifications-twilio",
+      "repository": "fireflyframework-notifications-twilio",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-observability",
+      "repository": "fireflyframework-observability",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-orchestration",
+      "repository": "fireflyframework-orchestration",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-parent",
+      "repository": "fireflyframework-parent",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-plugins",
+      "repository": "fireflyframework-plugins",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-r2dbc",
+      "repository": "fireflyframework-r2dbc",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine-core",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine-interfaces",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine-models",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine-sdk",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-rule-engine-web",
+      "repository": "fireflyframework-rule-engine",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-adapter-cerbos",
+      "repository": "fireflyframework-security-adapter-cerbos",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-adapter-opa",
+      "repository": "fireflyframework-security-adapter-opa",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-adapter-openfga",
+      "repository": "fireflyframework-security-adapter-openfga",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-adapter-r2dbc",
+      "repository": "fireflyframework-security-adapter-r2dbc",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-adapter-vault",
+      "repository": "fireflyframework-security-adapter-vault",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-api",
+      "repository": "fireflyframework-security-api",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-authorization-server",
+      "repository": "fireflyframework-security-authorization-server",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-bff",
+      "repository": "fireflyframework-security-bff",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-core",
+      "repository": "fireflyframework-security-core",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-idp",
+      "repository": "fireflyframework-security-idp",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-idp-aws-cognito",
+      "repository": "fireflyframework-security-idp-aws-cognito",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-idp-azure-ad",
+      "repository": "fireflyframework-security-idp-azure-ad",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-idp-internal-db",
+      "repository": "fireflyframework-security-idp-internal-db",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-idp-keycloak",
+      "repository": "fireflyframework-security-idp-keycloak",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-method-policy",
+      "repository": "fireflyframework-security-method-policy",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-oauth2-client",
+      "repository": "fireflyframework-security-oauth2-client",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-resource-server",
+      "repository": "fireflyframework-security-resource-server",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-spi",
+      "repository": "fireflyframework-security-spi",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-test",
+      "repository": "fireflyframework-security-test",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-security-webflux",
+      "repository": "fireflyframework-security-webflux",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-starter-application",
+      "repository": "fireflyframework-starter-application",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-starter-core",
+      "repository": "fireflyframework-starter-core",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-starter-data",
+      "repository": "fireflyframework-starter-data",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-starter-domain",
+      "repository": "fireflyframework-starter-domain",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-utils",
+      "repository": "fireflyframework-utils",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-validators",
+      "repository": "fireflyframework-validators",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-web",
+      "repository": "fireflyframework-web",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks-core",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks-interfaces",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks-processor",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks-sdk",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "fireflyframework-webhooks-web",
+      "repository": "fireflyframework-webhooks",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "plugin-api",
+      "repository": "fireflyframework-plugins",
+      "visibility": "public"
+    },
+    {
+      "groupId": "org.fireflyframework",
+      "artifactId": "plugin-core",
+      "repository": "fireflyframework-plugins",
+      "visibility": "public"
+    }
+  ]
+}
