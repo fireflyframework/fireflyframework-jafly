@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: fireflyframework-security-idp-keycloak-impl
+    version: 1.0.0
+    description: IDP Keycloak Implementation
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+
+server:
+  port: ${SERVER_PORT:8087}
+  shutdown: graceful
+
+  address: ${SERVER_ADDRESS:localhost}
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+firefly:
+  idp:
+    keycloak:
+      server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8080}
+      realm: ${KEYCLOAK_REALM:master}
+      client-id: ${KEYCLOAK_CLIENT_ID:firefly_client}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:UPML4NfnuDh8CWbhJcOrGXqkUjgmuI1o}
+      connection-pool-size: ${KEYCLOAK_CONNECTION_POOL_SIZE:10}
+      connection-timeout: ${KEYCLOAK_CONNECTION_TIMEOUT:30000}
+      request-timeout: ${KEYCLOAK_REQUEST_TIMEOUT:60000}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.flywaydb: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: testing
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: INFO
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: INFO
+    org.springframework: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
