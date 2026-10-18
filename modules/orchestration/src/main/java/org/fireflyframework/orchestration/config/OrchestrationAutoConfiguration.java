@@ -1,0 +1,220 @@
+/*
+ * Copyright 2024-2026 Firefly Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.orchestration.config;
+
+import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
+import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
+import org.fireflyframework.orchestration.core.dlq.DeadLetterStore;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
+import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
+import org.fireflyframework.orchestration.core.observability.CompositeOrchestrationEvents;
+import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
+import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEvents;
+import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.recovery.RecoveryService;
+import org.fireflyframework.orchestration.core.scheduling.OrchestrationScheduler;
+import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessor;
+import org.fireflyframework.orchestration.core.step.StepInvoker;
+import org.fireflyframework.orchestration.core.validation.OrchestrationValidator;
+import org.fireflyframework.orchestration.saga.engine.SagaEngine;
+import org.fireflyframework.orchestration.tcc.engine.TccEngine;
+import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Main auto-configuration for the Orchestration framework.
+ *
+ * <p>Wires shared core beans used by all execution patterns (Workflow, Saga, TCC):
+ * argument resolution, step invocation, observability, persistence, DLQ,
+ * scheduling, and recovery.
+ */
+@Slf4j
+@AutoConfiguration
+@EnableConfigurationProperties(OrchestrationProperties.class)
+public class OrchestrationAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ArgumentResolver argumentResolver() {
+        return new ArgumentResolver();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public StepInvoker stepInvoker(ArgumentResolver argumentResolver) {
+        return new StepInvoker(argumentResolver);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "firefly.orchestration.validation.enabled", havingValue = "true", matchIfMissing = true)
+    public OrchestrationValidator orchestrationValidator() {
+        log.info("[orchestration] Orchestration validator initialized");
+        return new OrchestrationValidator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OrchestrationLoggerEvents orchestrationLoggerEvents() {
+        return new OrchestrationLoggerEvents();
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnMissingBean(name = "orchestrationEvents")
+    public OrchestrationEvents orchestrationEvents(List<OrchestrationEvents> allEvents,
+                                                    ObjectProvider<OrchestrationLoggerEvents> loggerEvents) {
+        List<OrchestrationEvents> delegates = allEvents.stream()
+                .filter(e -> !(e instanceof CompositeOrchestrationEvents))
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (delegates.isEmpty()) {
+            OrchestrationLoggerEvents logger = loggerEvents.getIfAvailable(OrchestrationLoggerEvents::new);
+            delegates.add(logger);
+        }
+        if (delegates.size() == 1) {
+            return delegates.get(0);
+        }
+        return new CompositeOrchestrationEvents(delegates);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ExecutionPersistenceProvider executionPersistenceProvider() {
+        log.info("[orchestration] Using in-memory persistence provider (default)");
+        return new InMemoryPersistenceProvider();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DeadLetterStore deadLetterStore() {
+        return new InMemoryDeadLetterStore();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "firefly.orchestration.dlq.enabled", havingValue = "true", matchIfMissing = true)
+    public DeadLetterService deadLetterService(DeadLetterStore store, OrchestrationEvents events) {
+        log.info("[orchestration] Dead letter queue service initialized");
+        return new DeadLetterService(store, events);
+    }
+
+    /**
+     * EDA bridge for orchestration events. When activated, every saga/workflow/TCC
+     * step or execution event is republished onto the unified
+     * {@code fireflyframework-eda} {@link org.fireflyframework.eda.publisher.EventPublisher}
+     * — typically a Kafka or RabbitMQ broker.
+     *
+     * <p>Activation requirements (all must be satisfied):
+     * <ul>
+     *   <li>{@code fireflyframework-eda} is on the classpath
+     *       (loaded via {@code @ConditionalOnClass} by FQN string to keep the eda
+     *       dependency optional);</li>
+     *   <li>An {@code EventPublisherFactory} bean has been provided by the
+     *       {@code fireflyframework-eda} auto-configuration;</li>
+     *   <li>{@code firefly.orchestration.events.enabled=true} (default {@code false}).</li>
+     * </ul>
+     *
+     * <p>When any of the above is missing, the {@link NoOpEventPublisher} below remains
+     * the active publisher and orchestration events are dropped silently — preserving
+     * backward compatibility with services that have not opted into EDA.
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.fireflyframework.eda.publisher.EventPublisherFactory")
+    @ConditionalOnBean(type = "org.fireflyframework.eda.publisher.EventPublisherFactory")
+    @ConditionalOnProperty(prefix = "firefly.orchestration.events", name = "enabled", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnMissingBean(OrchestrationEventPublisher.class)
+    public OrchestrationEventPublisher edaOrchestrationEventPublisher(
+            org.fireflyframework.eda.publisher.EventPublisherFactory publisherFactory,
+            OrchestrationProperties properties) {
+        String defaultTopic = properties.getEvents() != null ? properties.getEvents().getDefaultTopic() : null;
+        log.info("[orchestration] EDA event publisher bridge activated (defaultTopic={})", defaultTopic);
+        return new EdaOrchestrationEventPublisher(publisherFactory, defaultTopic);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(OrchestrationEventPublisher.class)
+    public OrchestrationEventPublisher orchestrationEventPublisher() {
+        log.info("[orchestration] Using no-op event publisher (default)");
+        return new NoOpEventPublisher();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OrchestrationScheduler orchestrationScheduler(OrchestrationProperties properties) {
+        int poolSize = properties.getScheduling().getThreadPoolSize();
+        log.info("[orchestration] Scheduler initialized with thread pool size: {}", poolSize);
+        return new OrchestrationScheduler(poolSize);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "firefly.orchestration.recovery.enabled", havingValue = "true", matchIfMissing = true)
+    public RecoveryService recoveryService(ExecutionPersistenceProvider persistence,
+                                           OrchestrationEvents events,
+                                           OrchestrationProperties properties) {
+        log.info("[orchestration] Recovery service initialized with stale threshold: {}",
+                properties.getRecovery().getStaleThreshold());
+        return new RecoveryService(persistence, events, properties.getRecovery().getStaleThreshold());
+    }
+
+    @Bean
+    @ConditionalOnBean(RecoveryService.class)
+    public SmartInitializingSingleton recoverySchedulingInitializer(
+            RecoveryService recoveryService, OrchestrationScheduler scheduler,
+            OrchestrationProperties properties) {
+        return () -> {
+            Duration interval = properties.getPersistence().getCleanupInterval();
+            Duration retention = properties.getPersistence().getRetentionPeriod();
+            scheduler.scheduleAtFixedRate("recovery:cleanup",
+                    () -> recoveryService.cleanupCompletedExecutions(retention).subscribe(),
+                    interval.toMillis(), interval.toMillis());
+            log.info("[orchestration] Recovery cleanup scheduled every {}", interval);
+        };
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SchedulingPostProcessor schedulingPostProcessor(ApplicationContext applicationContext,
+                                                           OrchestrationScheduler scheduler,
+                                                           ObjectProvider<SagaEngine> sagaEngine,
+                                                           ObjectProvider<TccEngine> tccEngine,
+                                                           ObjectProvider<WorkflowEngine> workflowEngine) {
+        log.info("[orchestration] Scheduling post-processor initialized");
+        return new SchedulingPostProcessor(applicationContext, scheduler,
+                sagaEngine.getIfAvailable(), tccEngine.getIfAvailable(),
+                workflowEngine.getIfAvailable());
+    }
+}
