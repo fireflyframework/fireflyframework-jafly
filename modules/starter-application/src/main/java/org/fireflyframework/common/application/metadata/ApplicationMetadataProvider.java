@@ -120,27 +120,14 @@ public class ApplicationMetadataProvider implements ApplicationListener<Applicat
         
         for (String beanName : beanNames) {
             try {
-                Object bean = applicationContext.getBean(beanName);
-                Class<?> beanClass = bean.getClass();
-                
-                // Check if class has @FireflyApplication
-                FireflyApplication annotation = beanClass.getAnnotation(FireflyApplication.class);
+                FireflyApplication annotation = applicationContext.findAnnotationOnBean(
+                        beanName, FireflyApplication.class, false);
                 if (annotation != null) {
-                    log.debug("Found @FireflyApplication on class: {}", beanClass.getName());
+                    log.debug("Found @FireflyApplication on bean: {}", beanName);
                     return annotation;
                 }
-                
-                // Check superclass (for proxied beans)
-                Class<?> superclass = beanClass.getSuperclass();
-                if (superclass != null) {
-                    annotation = superclass.getAnnotation(FireflyApplication.class);
-                    if (annotation != null) {
-                        log.debug("Found @FireflyApplication on superclass: {}", superclass.getName());
-                        return annotation;
-                    }
-                }
             } catch (Exception e) {
-                // Ignore beans that can't be retrieved
+                // Ignore beans whose metadata cannot be resolved
             }
         }
         
