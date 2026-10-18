@@ -92,7 +92,7 @@ class MigrationContractTest(unittest.TestCase):
         result = subprocess.run(['python3', str(verifier)], cwd=ROOT, capture_output=True, text=True)
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
-    def test_jackson_compatibility_uses_the_boot_managed_release_train(self):
+    def test_jackson_compatibility_uses_the_shared_managed_release_train(self):
         for path in (ROOT / 'modules').rglob('pom.xml'):
             if 'target' in path.parts:
                 continue
@@ -101,7 +101,7 @@ class MigrationContractTest(unittest.TestCase):
                 group = value(dependency, 'groupId') or ''
                 if group.startswith('com.fasterxml.jackson'):
                     with self.subTest(path=path.relative_to(ROOT), artifact=value(dependency, 'artifactId')):
-                        self.assertIsNone(value(dependency, 'version'), 'Boot coordinates the Jackson 2 compatibility modules')
+                        self.assertIsNone(value(dependency, 'version'), 'The shared parent/BOM coordinate the Jackson 2 compatibility modules')
 
     def test_consumer_parent_does_not_add_runtime_libraries(self):
         parent = read(ROOT / 'build/parent/pom.xml')

@@ -1,4 +1,4 @@
-"""Publish frozen Maven artifacts to their recorded GitHub package homes."""
+"""Publish frozen Maven artifacts using the reviewed package-home policy."""
 import argparse
 import base64
 from datetime import datetime
@@ -18,6 +18,8 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 OWNER = 'fireflyframework'
+JAFLY_REPOSITORY = 'fireflyframework-jafly'
+JAFLY_REPOSITORY_ID = 1423952543
 PLUGIN = 'org.apache.maven.plugins:maven-deploy-plugin:3.1.4:deploy-file'
 NS_URI = 'http://maven.apache.org/POM/4.0.0'
 NS = {'m': NS_URI}
@@ -70,9 +72,11 @@ def build_homes(projects, associations):
         if name not in by_name:
             raise ValueError('missing existing package home: ' + name)
         row = by_name[name]
+        if not REPO.fullmatch(row['repository']) or row['visibility'] not in ('public', 'private'):
+            raise ValueError('invalid captured package association')
         entries.append({key: project[key] for key in ('groupId', 'artifactId')} |
-                       {key: row[key] for key in ('repository', 'visibility')})
-    result = {'schema': 1, 'owner': OWNER, 'associationSha256':
+                       {'repository': JAFLY_REPOSITORY, 'visibility': row['visibility']})
+    result = {'schema': 1, 'owner': OWNER, 'publicationMode': 'jafly-bootstrap', 'associationSha256':
               hashlib.sha256(json.dumps(associations, sort_keys=True).encode()).hexdigest(),
               'artifacts': sorted(entries, key=lambda row: row['artifactId'])}
     validate_homes(projects, result)
@@ -82,6 +86,9 @@ def build_homes(projects, associations):
 def validate_homes(projects, homes):
     if homes.get('schema') != 1 or homes.get('owner') != OWNER or not SHA.fullmatch(homes.get('associationSha256', '')):
         raise ValueError('untrusted package-home schema or owner')
+    mode = homes.get('publicationMode')
+    if mode not in (None, 'jafly-bootstrap'):
+        raise ValueError('unsupported package publication mode')
     expected = {p['groupId'] + ':' + p['artifactId'] for p in publishable(projects)}
     entries = homes.get('artifacts', [])
     seen = set()
@@ -91,6 +98,8 @@ def validate_homes(projects, homes):
         key = entry['groupId'] + ':' + entry['artifactId']
         if key in seen or key not in expected or not REPO.fullmatch(entry['repository']) or entry['visibility'] not in ('public', 'private'):
             raise ValueError('invalid, duplicate or extra package home')
+        if mode == 'jafly-bootstrap' and entry['repository'] != JAFLY_REPOSITORY:
+            raise ValueError('bootstrap package association must target Jafly')
         seen.add(key)
     if seen != expected:
         raise ValueError('missing package homes')
@@ -106,7 +115,10 @@ def validate_associations(projects, homes, associations):
 def validate_canonical_homes(projects, homes, canonical=None):
     canonical = CANONICAL_HOMES if canonical is None else Path(canonical)
     committed = json.loads(canonical.read_text())
-    validate_homes(projects, committed)
+    try:
+        validate_homes(projects, committed)
+    except ValueError:
+        raise ValueError('invalid canonical package-home map') from None
     if homes != committed:
         raise ValueError('regenerated package homes differ from the canonical committed map')
 
@@ -320,6 +332,54 @@ def verify_with_retry(projects, homes, inventory, username=None, token=None,
             time.sleep(delay)
 
 
+class NoApiRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def preflight_associations(projects, homes, token):
+    entries = validate_homes(projects, homes)
+    if homes.get('publicationMode') != 'jafly-bootstrap':
+        raise ValueError('explicit Jafly bootstrap publication policy required')
+    opener = urllib.request.build_opener(NoApiRedirect())
+    proof = []
+    for entry in entries:
+        name = entry['groupId'] + '.' + entry['artifactId']
+        url = 'https://api.github.com/orgs/' + OWNER + '/packages/maven/' + urllib.parse.quote(name, safe='')
+        request = urllib.request.Request(url, headers={
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+        })
+        try:
+            with opener.open(request, timeout=60) as response:
+                data = response.read(1024 * 1024 + 1)
+        except urllib.error.HTTPError as error:
+            status = error.code
+            error.close()
+            if status == 404:
+                proof.append({'name': name, 'status': 'absent'})
+                continue
+            raise ValueError(f'HTTP {status} checking package association: {name}') from None
+        except (urllib.error.URLError, TimeoutError, OSError):
+            raise ValueError('package association read failed: ' + name) from None
+        try:
+            if len(data) > 1024 * 1024:
+                raise ValueError('oversized response')
+            package = json.loads(data)
+            repository = package.get('repository') or {}
+            if (package.get('name') != name or package.get('package_type') != 'maven'
+                    or package.get('visibility') != entry['visibility']
+                    or package.get('owner', {}).get('login') != OWNER
+                    or repository.get('full_name') != OWNER + '/' + JAFLY_REPOSITORY
+                    or repository.get('id') != JAFLY_REPOSITORY_ID):
+                raise ValueError('unexpected package identity or repository')
+        except (ValueError, TypeError, AttributeError, UnicodeError):
+            raise ValueError('conflicting or invalid package association: ' + name) from None
+        proof.append({'name': name, 'status': 'jafly-associated'})
+    return proof
+
+
 def run_batch(maven, plan, local=False):
     plan = Path(plan).resolve()
     projects = json.loads((plan / 'reactor-inventory.json').read_text())
@@ -340,6 +400,7 @@ def run_batch(maven, plan, local=False):
         token = os.environ.get('JAFLY_PACKAGES_TOKEN')
         username = os.environ.get('JAFLY_PACKAGES_USER') or os.environ.get('GITHUB_ACTOR')
         if not token or not username: raise ValueError('JAFLY_PACKAGES_TOKEN and JAFLY_PACKAGES_USER/GITHUB_ACTOR are required')
+        association_proof = preflight_associations(projects, homes, token)
         settings = '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"><servers><server><id>github-packages</id><username>${env.JAFLY_PACKAGES_USER}</username><password>${env.JAFLY_PACKAGES_TOKEN}</password></server></servers></settings>\n'
         rendered, goals = render_publisher(projects, homes, plan / 'artifacts')
     pom = plan / ('local-publisher.pom.xml' if local else 'publisher.pom.xml')
@@ -347,6 +408,8 @@ def run_batch(maven, plan, local=False):
     pom.write_text(rendered)
     settings_path.write_text(settings)
     settings_path.chmod(0o600)
+    if not local:
+        (plan / 'association-preflight.json').write_text(json.dumps(association_proof, indent=2) + '\n')
     environment = dict(os.environ)
     environment.pop('MAVEN_ARGS', None)
     if not local: environment['JAFLY_PACKAGES_USER'] = username

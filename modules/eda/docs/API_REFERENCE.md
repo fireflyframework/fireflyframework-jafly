@@ -1,6 +1,6 @@
-# API Reference
+# API reference (historical)
 
-Complete API reference for the Firefly Event Driven Architecture Library.
+This retained reference describes an earlier combined transport API. Its provider sketches, including Kinesis, do not establish implemented adapters. Use the [current EDA guide](../../../docs/site/modules/eda.md) and the separate Kafka, RabbitMQ, and PostgreSQL transport guides for supported source contracts.
 
 ---
 

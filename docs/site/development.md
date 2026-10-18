@@ -25,7 +25,7 @@ Use a short-lived feature or fix branch and open a pull request into `develop`. 
 
 `develop` carries the next snapshot train. Promote a qualified train to `main` through a pull request. `main` supplies the published documentation and final release tags. Snapshot publication is an explicit workflow dispatch from either active branch; a final release uses an immutable `vYY.MM.PP` tag whose version matches the source POMs.
 
-Imported branches and tags live under `legacy/<source-repository>/...`. They are historical references, not development targets. Keep their original commits and namespaced names intact. When work from an original pull request is still relevant, create a new branch from `develop`, port the change, and link the original conversation.
+Imported branches and tags live under `legacy/<source-repository>/...`. They are historical references, not development targets. Keep their original commits and namespaced names intact. When work from an original pull request is still relevant, create a new branch from `develop`, port the change, and cite its exported PR record in the legacy records archive.
 
 ## Verify before changing behavior
 
@@ -37,6 +37,8 @@ python3 -m unittest discover -s tests/release -v
 python3 scripts/release_tools.py check
 ./mvnw -B -ntp clean verify
 ```
+
+CI also enables the optional Avro and Protobuf serializer suites. To match that coverage locally, add `-Dtest.serialization.avro=true -Dtest.serialization.protobuf=true` to the Maven command. LocalStack Pro tests still require their provider credentials; disabled ledger context tests remain visible as skips.
 
 The Maven lifecycle runs the tests configured by each project. Check the project's Surefire/Failsafe includes, exclusions, and profiles before assuming a focused command covers every integration case.
 

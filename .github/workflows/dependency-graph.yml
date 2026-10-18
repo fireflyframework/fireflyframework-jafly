@@ -1,0 +1,44 @@
+name: Maven dependency graph
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: jafly-dependency-graph-${{ github.repository }}
+  cancel-in-progress: false
+jobs:
+  submit:
+    name: Submit the resolved reactor dependencies
+    if: github.repository == 'fireflyframework/fireflyframework-jafly' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: '**/pom.xml'
+      - name: Validate the reactor and build tools
+        run: |
+          python3 scripts/release_tools.py check
+          ./mvnw -version
+      - name: Install every reactor artifact before resolving the graph
+        run: ./mvnw -B -ntp -DskipTests clean install
+      - name: Submit the Maven dependency snapshot
+        uses: advanced-security/maven-dependency-submission-action@a64327a7329c9939cf675e458452febe1894a70c # v6.0.1
+        with:
+          directory: ${{ github.workspace }}
+          maven-args: -B -ntp -DskipTests
+          snapshot-sha: ${{ github.sha }}
+          snapshot-ref: refs/heads/main
+          correlator: jafly-maven-reactor
