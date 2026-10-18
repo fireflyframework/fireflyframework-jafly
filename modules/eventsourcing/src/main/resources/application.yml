@@ -1,0 +1,168 @@
+spring:
+  application:
+    name: fireflyframework-eventsourcing
+    version: 1.0.0-SNAPSHOT
+    description: Firefly Event Sourcing Library
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+
+  r2dbc:
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:firefly_eventsourcing}?sslMode=${DB_SSL_MODE:disable}
+    username: ${DB_USERNAME:firefly}
+    password: ${DB_PASSWORD:password}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:firefly_eventsourcing}?sslMode=${DB_SSL_MODE:disable}
+    user: ${DB_USERNAME:firefly}
+    password: ${DB_PASSWORD:password}
+
+  threads:
+    virtual:
+      enabled: true
+
+  jackson:
+    default-property-inclusion: NON_NULL
+    serialization:
+      write-dates-as-timestamps: false
+      write-durations-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+      adjust-dates-to-context-time-zone: false
+
+# Event Sourcing Configuration
+firefly:
+  eventsourcing:
+    enabled: true
+    store:
+      type: r2dbc
+      batch-size: 100
+      connection-timeout: PT30S
+      query-timeout: PT10S
+    snapshot:
+      enabled: true
+      threshold: 50
+      compression: true
+      cache:
+        enabled: true
+        max-size: 1000
+        expire-after-access: PT30M
+    publisher:
+      enabled: true
+      type: AUTO
+      batch-size: 50
+      retry:
+        max-attempts: 3
+        backoff-delay: PT1S
+    performance:
+      batch-reads: true
+      parallel-processing: true
+      connection-pooling: true
+    monitoring:
+      metrics: true
+      health-checks: true
+      tracing: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.transaction: DEBUG
+    org.flywaydb: DEBUG
+
+firefly:
+  eventsourcing:
+    performance:
+      batch-reads: false  # Disable for easier debugging
+    monitoring:
+      tracing: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    username: sa
+    password: ""
+
+  flyway:
+    enabled: false  # Managed by test setup
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: INFO
+
+firefly:
+  eventsourcing:
+    store:
+      batch-size: 10  # Smaller batches for testing
+    snapshot:
+      threshold: 5    # Lower threshold for testing
+    publisher:
+      enabled: false  # Disable for unit tests
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    org.fireflyframework: INFO
+    org.springframework: WARN
+
+firefly:
+  eventsourcing:
+    performance:
+      batch-reads: true
+      parallel-processing: true
+      connection-pooling: true
+    monitoring:
+      metrics: true
+      health-checks: true

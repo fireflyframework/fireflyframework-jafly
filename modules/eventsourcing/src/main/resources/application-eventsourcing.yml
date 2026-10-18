@@ -1,0 +1,126 @@
+# Example configuration for Firefly Event Sourcing projections
+# This file demonstrates how to configure projection behavior, health checks, and monitoring
+
+firefly:
+  eventsourcing:
+    projection:
+      # Batch processing configuration
+      batch-processing:
+        default-batch-size: 100
+        default-interval: PT5S  # 5 seconds
+        max-batch-size: 1000
+        min-interval: PT0.1S    # 100 milliseconds
+
+      # Health check configuration
+      health-check:
+        timeout: PT5S           # 5 seconds
+        max-acceptable-lag: 1000
+        include-details: true
+        fail-on-unhealthy-projection: true
+
+      # Retry configuration
+      retry:
+        default-max-attempts: 3
+        default-delay: PT1S     # 1 second
+        max-delay: PT5M         # 5 minutes
+        backoff-multiplier: 2.0
+
+      # Metrics configuration
+      metrics:
+        enabled: true
+        include-projection-tags: true
+        track-event-processing-time: true
+        percentiles: [0.5, 0.95, 0.99]
+        enable-export: true
+
+    # Circuit Breaker configuration for resilience
+    resilience:
+      circuit-breaker:
+        enabled: false  # Set to true to enable circuit breaker
+        event-store:
+          failure-rate-threshold: 50  # Open circuit at 50% failure rate
+          wait-duration-in-open-state: PT60S  # Wait 60 seconds before half-open
+          sliding-window-type: COUNT_BASED
+          sliding-window-size: 100
+          minimum-number-of-calls: 10
+        outbox:
+          failure-rate-threshold: 60
+          wait-duration-in-open-state: PT30S
+          sliding-window-type: TIME_BASED
+          sliding-window-size: 120  # 2 minutes
+          minimum-number-of-calls: 5
+        projection:
+          failure-rate-threshold: 70
+          wait-duration-in-open-state: PT45S
+          sliding-window-type: TIME_BASED
+          sliding-window-size: 300  # 5 minutes
+          minimum-number-of-calls: 5
+
+    # Distributed Tracing configuration
+    tracing:
+      enabled: false  # Set to true to enable OpenTelemetry tracing
+      service-name: firefly-eventsourcing
+      sampling-rate: 1.0  # Sample 100% of traces (adjust for production)
+
+    # Event Upcasting configuration
+    upcasting:
+      enabled: true  # Enable automatic event schema migration
+      strict-mode: false  # If true, fail on missing upcasters
+
+    # Multi-tenancy configuration
+    multitenancy:
+      enabled: false  # Set to true to enable tenant isolation
+      strict-mode: true  # If true, enforce strict tenant filtering
+      default-tenant: default
+
+# Spring Boot Actuator configuration for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,projections
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    projection:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles:
+        projection.event.processing.duration: 0.5, 0.95, 0.99
+      percentiles-histogram:
+        projection.event.processing.duration: true
+
+# Logging configuration for projections
+logging:
+  level:
+    org.fireflyframework.eventsourcing.projection: DEBUG
+    org.fireflyframework.eventsourcing.health: INFO
+    org.fireflyframework.eventsourcing.examples: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Database configuration for projections (example using PostgreSQL)
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/firefly_eventsourcing
+    username: firefly
+    password: firefly_password
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
+  
+  # Flyway configuration for database migrations
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true

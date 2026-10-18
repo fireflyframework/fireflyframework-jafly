@@ -1,0 +1,39 @@
+spring:
+  r2dbc:
+    pool:
+      enabled: true
+      initial-size: 2
+      max-size: 5
+      max-idle-time: 10m
+      validation-query: SELECT 1
+  
+  flyway:
+    enabled: false  # We use init script in Testcontainers
+  
+  # Disable WebFlux server for tests
+  main:
+    web-application-type: none
+
+# Logging configuration for tests
+logging:
+  level:
+    org.fireflyframework.eventsourcing: DEBUG
+    reactor.netty: WARN
+    io.r2dbc: DEBUG
+    org.testcontainers: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Disable JMX for tests
+spring.jmx.enabled: false
+
+# Projection configuration for tests
+firefly:
+  eventsourcing:
+    projection:
+      health-check:
+        timeout: PT2S
+        max-acceptable-lag: 100
+      metrics:
+        enabled: true
+        include-projection-tags: true
