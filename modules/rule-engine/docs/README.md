@@ -176,7 +176,7 @@ All documentation is generated from and validated against the actual codebase im
 
 ## 🔗 External Resources
 
-- GitHub Repository: [fireflyframework/fireflyframework-rule-engine](https://github.com/fireflyframework/fireflyframework-rule-engine)
+- GitHub Repository: [Rule engine module](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/rule-engine)
 - License: Apache 2.0
 - Firefly Platform: [Firefly Framework](https://firefly.software)
 

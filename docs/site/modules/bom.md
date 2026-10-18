@@ -4,7 +4,7 @@
 
 Align the versions of the 82 managed Jafly artifacts without inheriting the build parent.
 
-Import this POM in `dependencyManagement` to align component versions. Add the concrete components your application uses. The separately managed Spring Security authorization-server dependency is an upstream dependency, not another Jafly component.
+Import this POM in `dependencyManagement` to align component versions. Add the concrete components your application uses. The BOM also carries selected upstream compatibility and security constraints, including aligned Jackson 2 and Jackson 3 BOMs. These are upstream dependencies, not additional Jafly components. It does not import the complete Spring Boot or Cloud platform.
 
 | Maven artifact | Packaging | Source project |
 | --- | --- | --- |

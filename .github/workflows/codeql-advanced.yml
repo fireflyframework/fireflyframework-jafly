@@ -1,0 +1,107 @@
+name: CodeQL build-aware analysis
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '47 6 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: jafly-codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    name: Qualify CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      actions: read
+      security-events: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: manual
+          - language: python
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up the Java build toolchain
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: '**/pom.xml'
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+          tools: linked
+      - name: Compile framework sources and tests with JDK 25
+        if: matrix.language == 'java-kotlin'
+        run: |
+          ./mvnw -version
+          ./mvnw -B -ntp -DskipTests clean install
+      - name: Compile maintained standalone examples and their tests
+        if: matrix.language == 'java-kotlin'
+        run: bash scripts/verify_examples.sh -DskipTests
+      - name: Analyze without publishing scan results
+        id: analysis
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        with:
+          category: jafly-advanced/language:${{ matrix.language }}
+          output: ${{ runner.temp }}/jafly-sarif
+          upload: never
+          upload-database: false
+      - name: Retain SARIF for qualification and controlled upload
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jafly-codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/jafly-sarif/*.sarif
+          if-no-files-found: warn
+          retention-days: 14
+  upload:
+    name: Publish qualified CodeQL (${{ matrix.language }})
+    needs: analyze
+    if: vars.JAFLY_CODEQL_UPLOAD == 'enabled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, python, javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download this run's qualified SARIF
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jafly-codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/jafly-sarif
+      - name: Upload the qualified analysis
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        with:
+          sarif_file: ${{ runner.temp }}/jafly-sarif
+          category: jafly-advanced/language:${{ matrix.language }}
+          wait-for-processing: true

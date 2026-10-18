@@ -171,11 +171,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>software.amazon.kinesis</groupId>
-            <artifactId>amazon-kinesis-client</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-sqs</artifactId>
             <optional>true</optional>

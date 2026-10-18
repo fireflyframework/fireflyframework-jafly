@@ -19,11 +19,6 @@
     <name>Firefly Framework - ECM Storage - Azure Blob</name>
     <description>Azure Blob Storage adapter implementation for Firefly ECM, as a standalone provider library.</description>
 
-    <properties>
-        <azure-storage-blob.version>12.33.2</azure-storage-blob.version>
-        <azure-identity.version>1.18.2</azure-identity.version>
-    </properties>
-
     <dependencies>
         <!-- ECM Ports -->
         <dependency>
@@ -36,12 +31,10 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-blob</artifactId>
-            <version>${azure-storage-blob.version}</version>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
-            <version>${azure-identity.version}</version>
         </dependency>
 
         <!-- Spring Boot -->

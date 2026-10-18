@@ -26,7 +26,7 @@ The table describes the checked-in migration target. It does not claim that an u
 4. Point custom scripts and documentation links to `build/parent`, `build/bom`, and `modules/<component>`.
 5. Use the root CI/release workflows. Imported nested workflow files are historical and do not run from module directories.
 
-The original repository's main commit remains in the ancestry of the monorepo. Source branches/tags are retained as namespaced legacy refs. Existing issue, PR, and release records remain authoritative at their original GitHub URLs.
+The original repository's main commit remains in the ancestry of the monorepo. Source branches/tags are retained as namespaced legacy refs. Historical issue, PR, review, and release metadata is preserved in the [legacy records archive](https://github.com/fireflyframework/fireflyframework-jafly/releases/tag/legacy%2Fcollaboration-archive%2F20261018T064326Z); original source URLs serve as historical identifiers after retirement.
 
 ## Validate the Boot 4 application boundary
 
@@ -34,7 +34,7 @@ Spring APIs. Boot 4 adopts Spring Framework 7, Spring Security 7, and Jakarta EE
 
 Focused Boot modules. Auto-configuration and test APIs moved into technology-specific modules. Update imports and dependencies together; adding a dependency alone does not fix a moved Java package.
 
-Jackson compatibility. The migration preserves existing public Jackson 2 types through Boot's `spring-boot-jackson2` compatibility module and Boot-managed Jackson 2 versions. Jackson 3 can coexist. Do not mix independently pinned Jackson versions into the managed train.
+Jackson compatibility. The migration preserves existing public Jackson 2 types through Boot's `spring-boot-jackson2` compatibility module and the centrally managed Jackson 2 release train. Jackson 3 can coexist. Do not mix independently pinned Jackson versions into the managed train.
 
 For Jackson 2 configuration, review these Boot 4 settings where applicable:
 

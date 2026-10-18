@@ -60,6 +60,12 @@ Import the framework BOM into your dependency management:
 
 Declare the framework dependencies you need without repeating their version. Your existing parent or build must still configure a compatible Spring Boot/Cloud platform and Java 25 compiler. The BOM supplies Jafly's version catalog and its explicit third-party constraints; it does not import Spring Boot's or Spring Cloud's complete platform management.
 
+## Keep security constraints effective
+
+The parent and independent BOM both manage selected security fixes beyond the versions in the platform BOMs. They align the Jackson 2 and Jackson 3 families and constrain affected messaging, cache, database-authentication, template, HTTP, and provider dependencies. A managed constraint adds no runtime library by itself.
+
+Maven precedence still applies. An explicit version in your application can override a managed choice; when importing several BOMs, their order can affect selection. Check `mvn dependency:tree` and `mvn help:effective-pom` in the application after changing its platform. The parent and BOM POMs record the exact constraints for each framework train.
+
 ## Resolve the management POMs
 
 Before using the parent or BOM in a separate application, install the source locally or select a verified published version. Use `fireflyframework-parent` or `fireflyframework-bom` for application management. The checkout's root `fireflyframework-jafly` POM aggregates source builds and cannot serve as a consumer parent.
@@ -68,13 +74,13 @@ For source builds, follow [installation](installation.md). For application code 
 
 ## Read packages from GitHub
 
-Maven Central requires no additional framework repository entry. When using a version verified in GitHub Packages, the libraries retain their original package homes. GitHub documents an owner-wide URL for reading across those repositories:
+Maven Central requires no additional framework repository entry. For a version verified in GitHub Packages, resolve Jafly libraries from the framework repository:
 
 ```xml
 <repositories>
     <repository>
         <id>firefly-github</id>
-        <url>https://maven.pkg.github.com/fireflyframework/*</url>
+        <url>https://maven.pkg.github.com/fireflyframework/fireflyframework-jafly</url>
         <snapshots>
             <enabled>true</enabled>
         </snapshots>
@@ -82,7 +88,7 @@ Maven Central requires no additional framework repository entry. When using a ve
 </repositories>
 ```
 
-Configure credentials for the same `firefly-github` server ID in your local Maven settings. GitHub requires an authorized token even for public Maven packages. Keep token values out of the POM and source tree. The wildcard URL is for reading; publication uses the reviewed per-artifact repository map. See [GitHub's Maven registry instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
+Configure credentials for the same `firefly-github` server ID in your local Maven settings. GitHub requires an authorized token even for public Maven packages. Keep token values out of the POM and source tree. Publication uses the same Jafly repository, with the complete artifact catalog checked before uploading. See [GitHub's Maven registry instructions](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
 
 ## Constructor injection
 

@@ -57,14 +57,16 @@ class CompatibilityTests(unittest.TestCase):
             map_path.write_text(json.dumps(self.homes))
             self.assertEqual(tools.verify_remote(inventory, 'https://maven.pkg.github.com/fireflyframework/fireflyframework-jafly'), ['proof'])
 
-    def test_source_owned_map_can_represent_future_supported_layout(self):
+    def test_historical_exact_tag_layout_remains_readable_after_bootstrap(self):
         homes = copy.deepcopy(self.homes)
+        homes.pop('publicationMode')
+        captured = {row['name']: row['repository'] for row in ASSOCIATIONS}
         for row in homes['artifacts']:
-            row['repository'] = 'fireflyframework-jafly'
+            row['repository'] = captured[row['groupId'] + '.' + row['artifactId']]
         self.path.write_text(json.dumps(homes))
         with patch.object(m, 'verify_mapped') as verify:
             compat.verify_github_layout(self.inventory, 'https://maven.pkg.github.com/fireflyframework/fireflyframework-jafly', PROJECTS, self.path)
-            self.assertTrue(all(row['repository']=='fireflyframework-jafly' for row in verify.call_args.args[1]['artifacts']))
+            self.assertTrue(any(row['repository']=='fireflyframework-bom' for row in verify.call_args.args[1]['artifacts']))
         with self.assertRaisesRegex(ValueError, 'canonical'):
             m.validate_canonical_homes(PROJECTS, homes, Path(__file__).resolve().parents[2] / 'scripts/package-homes.json')
 

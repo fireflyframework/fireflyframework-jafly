@@ -1,3 +1,5 @@
+# Historical configuration sketch for an earlier combined messaging layer.
+# These keys do not enable current broker adapters; use the EDA module guides.
 messaging:
   # Enable or disable all messaging functionality (default: false)
   enabled: true
