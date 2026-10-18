@@ -1,0 +1,15 @@
+# Firefly ECM eSignature DocuSign Configuration
+
+firefly:
+  ecm:
+    features:
+      esignature: true
+    esignature:
+      provider: docusign
+    adapter:
+      docusign:
+        integration-key: ${DOCUSIGN_INTEGRATION_KEY}
+        user-id: ${DOCUSIGN_USER_ID}
+        account-id: ${DOCUSIGN_ACCOUNT_ID}
+        private-key: ${DOCUSIGN_PRIVATE_KEY}
+        sandbox-mode: ${DOCUSIGN_SANDBOX:false}
