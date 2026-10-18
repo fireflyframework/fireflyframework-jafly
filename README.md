@@ -1,3 +1,5 @@
+> **Moved to [jafly](https://github.com/fireflyframework/fireflyframework-jafly/tree/main/modules/security-oauth2-client).** Active Java development, builds, issues and releases are consolidated in [fireflyframework-jafly](https://github.com/fireflyframework/fireflyframework-jafly). Maven artifact coordinates are preserved. This repository retains the original history and release records.
+
 # Firefly Framework - Security OAuth2 Client
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
