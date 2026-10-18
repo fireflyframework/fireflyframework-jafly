@@ -1,0 +1,127 @@
+{
+  "properties": [
+    {
+      "name": "spring.application.name",
+      "type": "java.lang.String",
+      "description": "Application name used in OpenAPI documentation."
+    },
+    {
+      "name": "spring.application.version",
+      "type": "java.lang.String",
+      "description": "Application version used in OpenAPI documentation."
+    },
+    {
+      "name": "spring.application.description",
+      "type": "java.lang.String",
+      "description": "Application description used in OpenAPI documentation."
+    },
+    {
+      "name": "spring.application.team.name",
+      "type": "java.lang.String",
+      "description": "Team name used in OpenAPI documentation contact information."
+    },
+    {
+      "name": "spring.application.team.email",
+      "type": "java.lang.String",
+      "description": "Team email used in OpenAPI documentation contact information."
+    },
+    {
+      "name": "spring.application.team.url",
+      "type": "java.lang.String",
+      "description": "Team URL used in OpenAPI documentation contact information."
+    },
+    {
+      "name": "spring.application.license.name",
+      "type": "java.lang.String",
+      "description": "License name used in OpenAPI documentation."
+    },
+    {
+      "name": "spring.application.license.url",
+      "type": "java.lang.String",
+      "description": "License URL used in OpenAPI documentation."
+    },
+    {
+      "name": "openapi.security.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable security definitions in OpenAPI documentation."
+    },
+    {
+      "name": "openapi.servers.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable server definitions in OpenAPI documentation."
+    },
+    {
+      "name": "http-request-logging.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether HTTP request logging is enabled for auditing purposes.",
+      "defaultValue": true
+    },
+    {
+      "name": "http-request-logging.include-headers",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include request and response headers in logs.",
+      "defaultValue": true
+    },
+    {
+      "name": "http-request-logging.include-request-body",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include request body in logs.",
+      "defaultValue": false
+    },
+    {
+      "name": "http-request-logging.include-response-body",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include response body in logs.",
+      "defaultValue": false
+    },
+    {
+      "name": "http-request-logging.max-body-size",
+      "type": "java.lang.Integer",
+      "description": "Maximum size of request/response body to log in bytes.",
+      "defaultValue": 1024
+    },
+    {
+      "name": "http-request-logging.log-level",
+      "type": "java.lang.String",
+      "description": "Log level for HTTP request logging (DEBUG, INFO, WARN, ERROR).",
+      "defaultValue": "INFO"
+    },
+    {
+      "name": "http-request-logging.include-query-params",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include query parameters in logs.",
+      "defaultValue": true
+    },
+    {
+      "name": "firefly.web.conditions-report.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable the Spring Boot conditions evaluation report on application startup.",
+      "defaultValue": false
+    },
+    {
+      "name": "firefly.web.conditions-report.show-negative",
+      "type": "java.lang.Boolean",
+      "description": "Whether to show conditions that did not match (inactive auto-configurations).",
+      "defaultValue": true
+    },
+    {
+      "name": "firefly.web.conditions-report.show-details",
+      "type": "java.lang.Boolean",
+      "description": "Whether to show detailed explanations for each condition.",
+      "defaultValue": true
+    },
+    {
+      "name": "firefly.web.conditions-report.summary-only",
+      "type": "java.lang.Boolean",
+      "description": "Whether to show only a summary instead of detailed report.",
+      "defaultValue": false
+    },
+    {
+      "name": "firefly.web.conditions-report.use-colors",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use ANSI colors in console output for the conditions report.",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

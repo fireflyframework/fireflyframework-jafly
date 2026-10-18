@@ -1,0 +1,8 @@
+org.fireflyframework.web.openapi.OpenAPIAutoConfiguration
+org.fireflyframework.web.configuration.ExceptionHandlerAutoConfiguration
+org.fireflyframework.web.idempotency.config.IdempotencyAutoConfiguration
+org.fireflyframework.web.idempotency.config.IdempotencyOpenAPIAutoConfiguration
+org.fireflyframework.web.logging.config.PiiMaskingAutoConfiguration
+org.fireflyframework.web.conditions.config.ConditionsReportPropertiesAutoConfiguration
+org.fireflyframework.web.conditions.config.ConditionsReportAutoConfiguration
+org.fireflyframework.web.cors.config.CorsAutoConfiguration

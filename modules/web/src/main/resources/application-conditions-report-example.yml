@@ -1,0 +1,45 @@
+# Example configuration for enabling the Conditions Evaluation Report
+# 
+# This file demonstrates how to configure the conditions report feature
+# to see which Spring Boot auto-configurations are active in your application.
+#
+# To use this configuration, add the following to your application startup:
+#   --spring.profiles.active=conditions-report-example
+# Or copy these settings to your main application.yml file.
+
+firefly:
+  conditions-report:
+    # Enable the conditions evaluation report
+    enabled: true
+    
+    # Show configurations that did NOT activate (inactive/negative matches)
+    # Set to false if you only want to see what IS active
+    show-negative: true
+    
+    # Show detailed explanations for each configuration
+    # Set to false for a more compact output
+    show-details: true
+    
+    # Show only a summary (counts per category)
+    # Set to true for a high-level overview
+    summary-only: false
+    
+    # Use ANSI colors in console output
+    # Set to false if your console doesn't support colors
+    use-colors: true
+
+# Example: Summary-only mode (uncomment to use)
+#firefly:
+#  conditions-report:
+#    enabled: true
+#    summary-only: true
+#    use-colors: true
+
+# Example: Minimal output (only active configurations, no details)
+#firefly:
+#  conditions-report:
+#    enabled: true
+#    show-negative: false
+#    show-details: false
+#    use-colors: true
+
