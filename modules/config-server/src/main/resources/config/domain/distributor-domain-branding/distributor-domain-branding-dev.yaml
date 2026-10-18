@@ -1,0 +1,87 @@
+spring:
+  application:
+    version: 1.0.0
+    description: Distributor Domain Branding Layer Application
+    team:
+      name: Firefly Software Foundation
+      email: dev@getfirefly.io
+  threads:
+    virtual:
+      enabled: true
+
+firefly:
+  cqrs:
+    enabled: true
+    command:
+      timeout: 30s                   # Reasonable default timeout
+      metrics-enabled: true          # Observability enabled
+      tracing-enabled: true          # Distributed tracing active
+    query:
+      timeout: 15s                   # Faster timeout for read operations
+      caching-enabled: true          # Performance optimization enabled
+      cache-ttl: 15m
+  saga.performance.enabled: true
+
+  eda:
+    enabled: true
+    default-publisher-type: KAFKA
+    default-connection-id: default
+    publishers:
+      kafka:
+        default:
+          enabled: true
+          default-topic: domain-layer
+          bootstrap-servers: localhost:9092
+
+  stepevents:
+    enabled: true
+
+server:
+  address: ${SERVER_ADDRESS:localhost}
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# Clients basePath
+api-configuration:
+  common-platform.distributor-mgmt:
+    base-path: ${endpoints.distributor-mgmt}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tagsSorter: alpha
+    operationsSorter: method
+    docExpansion: none
+    filter: true
+  packages-to-scan: org.fireflyframework.domain.distributor.branding.web.controller
+  paths-to-match: /api/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    redis:
+      enabled: false
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: INFO
+    org.fireflyframework: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.flywaydb: DEBUG

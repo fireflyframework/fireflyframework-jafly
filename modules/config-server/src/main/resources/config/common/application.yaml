@@ -1,0 +1,2 @@
+endpoints:
+  distributor-mgmt: http://localhost:8082
