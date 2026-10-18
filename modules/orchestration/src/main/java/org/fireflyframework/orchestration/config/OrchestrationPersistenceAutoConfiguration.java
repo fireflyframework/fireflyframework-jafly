@@ -29,7 +29,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -48,14 +47,11 @@ import org.springframework.context.annotation.Configuration;
  * from {@link OrchestrationAutoConfiguration} is used.
  */
 @Slf4j
-// IMPORTANT: `after = DataRedisReactiveAutoConfiguration.class` is required so that
-// the @ConditionalOnBean(ReactiveRedisTemplate.class) on RedisPersistenceConfig
-// is evaluated AFTER Spring Boot has registered the ReactiveRedisTemplate bean.
-// Without it, the condition silently fails and the in-memory fallback wins even
-// when firefly.orchestration.persistence.provider=redis is set.
+// Redis must register its template before persistence conditions run.
+// Use its name so consumers without Redis can inspect this configuration.
 @AutoConfiguration(
         before = OrchestrationAutoConfiguration.class,
-        after = DataRedisReactiveAutoConfiguration.class)
+        afterName = "org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration")
 public class OrchestrationPersistenceAutoConfiguration {
 
     /**

@@ -47,6 +47,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.time.Duration;
@@ -131,37 +132,40 @@ public class OrchestrationAutoConfiguration {
         return new DeadLetterService(store, events);
     }
 
-    /**
-     * EDA bridge for orchestration events. When activated, every saga/workflow/TCC
-     * step or execution event is republished onto the unified
-     * {@code fireflyframework-eda} {@link org.fireflyframework.eda.publisher.EventPublisher}
-     * — typically a Kafka or RabbitMQ broker.
-     *
-     * <p>Activation requirements (all must be satisfied):
-     * <ul>
-     *   <li>{@code fireflyframework-eda} is on the classpath
-     *       (loaded via {@code @ConditionalOnClass} by FQN string to keep the eda
-     *       dependency optional);</li>
-     *   <li>An {@code EventPublisherFactory} bean has been provided by the
-     *       {@code fireflyframework-eda} auto-configuration;</li>
-     *   <li>{@code firefly.orchestration.events.enabled=true} (default {@code false}).</li>
-     * </ul>
-     *
-     * <p>When any of the above is missing, the {@link NoOpEventPublisher} below remains
-     * the active publisher and orchestration events are dropped silently — preserving
-     * backward compatibility with services that have not opted into EDA.
-     */
-    @Bean
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = "org.fireflyframework.eda.publisher.EventPublisherFactory")
-    @ConditionalOnBean(type = "org.fireflyframework.eda.publisher.EventPublisherFactory")
-    @ConditionalOnProperty(prefix = "firefly.orchestration.events", name = "enabled", havingValue = "true", matchIfMissing = false)
-    @ConditionalOnMissingBean(OrchestrationEventPublisher.class)
-    public OrchestrationEventPublisher edaOrchestrationEventPublisher(
-            org.fireflyframework.eda.publisher.EventPublisherFactory publisherFactory,
-            OrchestrationProperties properties) {
-        String defaultTopic = properties.getEvents() != null ? properties.getEvents().getDefaultTopic() : null;
-        log.info("[orchestration] EDA event publisher bridge activated (defaultTopic={})", defaultTopic);
-        return new EdaOrchestrationEventPublisher(publisherFactory, defaultTopic);
+    static class EdaPublisherConfiguration {
+        /**
+         * EDA bridge for orchestration events. When activated, every saga/workflow/TCC
+         * step or execution event is republished onto the unified
+         * {@code fireflyframework-eda} {@link org.fireflyframework.eda.publisher.EventPublisher}
+         * — typically a Kafka or RabbitMQ broker.
+         *
+         * <p>Activation requirements (all must be satisfied):
+         * <ul>
+         *   <li>{@code fireflyframework-eda} is on the classpath
+         *       (loaded via {@code @ConditionalOnClass} by FQN string to keep the eda
+         *       dependency optional);</li>
+         *   <li>An {@code EventPublisherFactory} bean has been provided by the
+         *       {@code fireflyframework-eda} auto-configuration;</li>
+         *   <li>{@code firefly.orchestration.events.enabled=true} (default {@code false}).</li>
+         * </ul>
+         *
+         * <p>When any of the above is missing, the {@link NoOpEventPublisher} below remains
+         * the active publisher and orchestration events are dropped silently — preserving
+         * backward compatibility with services that have not opted into EDA.
+         */
+        @Bean
+        @ConditionalOnBean(type = "org.fireflyframework.eda.publisher.EventPublisherFactory")
+        @ConditionalOnProperty(prefix = "firefly.orchestration.events", name = "enabled", havingValue = "true", matchIfMissing = false)
+        @ConditionalOnMissingBean(OrchestrationEventPublisher.class)
+        public OrchestrationEventPublisher edaOrchestrationEventPublisher(
+                org.fireflyframework.eda.publisher.EventPublisherFactory publisherFactory,
+                OrchestrationProperties properties) {
+            String defaultTopic = properties.getEvents() != null ? properties.getEvents().getDefaultTopic() : null;
+            log.info("[orchestration] EDA event publisher bridge activated (defaultTopic={})", defaultTopic);
+            return new EdaOrchestrationEventPublisher(publisherFactory, defaultTopic);
+        }
     }
 
     @Bean
