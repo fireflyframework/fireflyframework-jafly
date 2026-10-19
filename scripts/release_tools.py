@@ -161,25 +161,48 @@ def inventory_repository(projects, repository):
     return inventory
 
 
+def optional_test_jar_paths(projects, signatures=False):
+    """Classifier test jars some modules attach for inter-module test reuse."""
+    optional = set()
+    for project in projects:
+        if not project.get('publish', project['artifactId'] != 'fireflyframework-jafly'):
+            continue
+        if project.get('packaging') != 'jar':
+            continue
+        artifact, version = project['artifactId'], project['version']
+        base = f'{project["groupId"].replace(".", "/")}/{artifact}/{version}/{artifact}-{version}-tests.jar'
+        optional.add(base)
+        if signatures:
+            optional.add(base + '.asc')
+    return optional
+
+
 def inventory_bundle(projects, bundle):
     with zipfile.ZipFile(bundle) as archive:
         names = [item.filename for item in archive.infolist() if not item.is_dir()]
         if len(names) != len(set(names)):
             raise ValueError('duplicate bundle path')
         expected = required_paths(projects, signatures=True)
+        optional = optional_test_jar_paths(projects, signatures=True)
         allowed_directories = {str(PurePosixPath(path).parent) for path in expected}
+        present_optional = set()
         for name in names:
             path = PurePosixPath(name)
             if path.is_absolute() or '..' in path.parts or str(path.parent) not in allowed_directories:
                 raise ValueError(f'unexpected bundle path: {name}')
-            # Checksums are permitted, but unrelated artifact attachments are not.
+            # Checksums are permitted; optional -tests.jar classifiers are allowed when present.
             artifact_name = re.sub(r'\.(md5|sha1|sha256|sha512)$', '', name)
-            if artifact_name not in expected:
-                raise ValueError(f'unexpected bundle artifact path: {name}')
+            if artifact_name in expected:
+                continue
+            if artifact_name in optional:
+                present_optional.add(artifact_name)
+                continue
+            raise ValueError(f'unexpected bundle artifact path: {name}')
         if expected - set(names):
             raise ValueError(f'missing bundle artifacts: {sorted(expected - set(names))}')
+        selected = set(expected) | present_optional
         return [{'path': path, 'sha256': hashlib.sha256(archive.read(path)).hexdigest()}
-                for path in sorted(expected)]
+                for path in sorted(selected)]
 
 
 def verify_remote(inventory, url, username=None, token=None, attempts=1, delay=0):
