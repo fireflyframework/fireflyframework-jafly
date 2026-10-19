@@ -20,7 +20,7 @@
     <description>DocuSign eSignature adapter for Firefly ECM, as a standalone provider library.</description>
 
     <properties>
-        <docusign-esign.version>4.3.0</docusign-esign.version>
+        <docusign-esign.version>6.9.0</docusign-esign.version>
         <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     </properties>
 
