@@ -44,7 +44,7 @@ public class EurekaServiceDiscoveryClient implements ServiceDiscoveryClient {
 
     public EurekaServiceDiscoveryClient(String eurekaUrl) {
         this.eurekaUrl = eurekaUrl.endsWith("/") ? eurekaUrl.substring(0, eurekaUrl.length() - 1) : eurekaUrl;
-        this.webClient = WebClient.builder()
+        this.webClient = org.fireflyframework.client.tracing.TracingWebClients.builder()
                 .baseUrl(this.eurekaUrl)
                 .defaultHeader("Accept", "application/json")
                 .defaultHeader("Content-Type", "application/json")

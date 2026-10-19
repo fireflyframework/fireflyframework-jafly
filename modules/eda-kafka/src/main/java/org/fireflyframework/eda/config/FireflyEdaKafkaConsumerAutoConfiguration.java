@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -138,11 +139,17 @@ public class FireflyEdaKafkaConsumerAutoConfiguration {
     @ConditionalOnMissingBean(name = "fireflyEdaKafkaListenerContainerFactory")
     @ConditionalOnBean(name = "fireflyEdaKafkaConsumerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, Object> fireflyEdaKafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> fireflyEdaKafkaConsumerFactory) {
+            ConsumerFactory<String, Object> fireflyEdaKafkaConsumerFactory,
+            Environment environment) {
         log.info("Creating Kafka listener container factory from fireflyEdaKafkaConsumerFactory");
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(fireflyEdaKafkaConsumerFactory);
+        if (FireflyEdaKafkaPublisherAutoConfiguration.messagingObservationEnabled(
+                environment, "spring.kafka.listener.observation-enabled")) {
+            factory.getContainerProperties().setObservationEnabled(true);
+            log.info("Kafka listener observation enabled — CONSUMER spans continue traceparent");
+        }
         log.info("Kafka Consumer infrastructure created successfully");
         log.info("--------------------------------------------------------------------------------");
         return factory;

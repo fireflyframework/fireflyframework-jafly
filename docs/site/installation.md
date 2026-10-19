@@ -11,7 +11,7 @@ Use JDK 25 and Maven 3.9 to build a Jafly application. Choose a verified registr
 | Git | Check out the source and runnable examples |
 | Docker engine | Run the full framework's container-backed tests; the first-service application needs no external services |
 
-The tutorial uses `26.10.20-SNAPSHOT`, which you can install from source. Before using a registry, check that the selected release has verified artifacts there. A version in a source POM does not confirm publication.
+The tutorial uses `26.10.20`, which you can install from source. Before using a registry, check that the selected release has verified artifacts there. A version in a source POM does not confirm publication.
 
 ## Check the toolchain
 

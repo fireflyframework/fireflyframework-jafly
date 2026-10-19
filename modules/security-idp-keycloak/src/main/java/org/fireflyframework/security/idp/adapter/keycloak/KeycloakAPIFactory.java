@@ -40,11 +40,28 @@ public class KeycloakAPIFactory {
     }
 
     /**
+     * Joins the platform trace when observability is on the classpath, without a hard
+     * dependency on that module.
+     */
+    @SuppressWarnings("unchecked")
+    private static WebClient.Builder observe(WebClient.Builder builder) {
+        try {
+            Class<?> observed = Class.forName("org.fireflyframework.observability.tracing.ObservedClients");
+            return (WebClient.Builder) observed.getMethod("instrument", WebClient.Builder.class).invoke(null, builder);
+        } catch (ClassNotFoundException ex) {
+            return builder;
+        } catch (ReflectiveOperationException ex) {
+            log.debug("Keycloak WebClient was not instrumented: {}", ex.toString());
+            return builder;
+        }
+    }
+
+    /**
      * Provides a WebClient configured to call the Keycloak token-related endpoints.
      */
     public WebClient tokenWebClient() {
         String baseUrl = properties.serverUrl() + "realms/" + properties.realm() + "/protocol/openid-connect";
-        return WebClient.builder()
+        return observe(WebClient.builder())
                 .baseUrl(baseUrl)
                 .build();
     }

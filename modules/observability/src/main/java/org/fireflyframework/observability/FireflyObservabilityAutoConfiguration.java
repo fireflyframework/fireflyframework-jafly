@@ -4,8 +4,13 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 import org.fireflyframework.observability.health.HealthMetricsBridge;
 import org.fireflyframework.observability.metrics.FireflyMeterRegistryCustomizer;
+import org.fireflyframework.observability.tracing.ClientObservationBeanPostProcessor;
+import org.fireflyframework.observability.tracing.FeignMicrometerCapabilityFactory;
 import org.fireflyframework.observability.tracing.FireflyBaggageConfiguration;
 import org.fireflyframework.observability.tracing.FireflyTracingSupport;
+import org.fireflyframework.observability.tracing.HttpErrorStatusObservationFilter;
+import org.fireflyframework.observability.tracing.TracingRegistry;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.micrometer.observation.autoconfigure.ObservationAutoConfiguration;
@@ -14,8 +19,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationRegistryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.boot.health.contributor.HealthIndicator;
 
 /**
@@ -66,6 +73,32 @@ public class FireflyObservabilityAutoConfiguration {
         @ConditionalOnMissingBean
         FireflyBaggageConfiguration fireflyBaggageConfiguration(FireflyObservabilityProperties props) {
             return new FireflyBaggageConfiguration(props.getTracing().getBaggageFields());
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        HttpErrorStatusObservationFilter httpErrorStatusObservationFilter() {
+            return new HttpErrorStatusObservationFilter();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        ObservationRegistryCustomizer<ObservationRegistry> fireflyObservationRegistryInstaller() {
+            return TracingRegistry::install;
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        static ClientObservationBeanPostProcessor clientObservationBeanPostProcessor(Environment environment) {
+            return new ClientObservationBeanPostProcessor(environment);
+        }
+
+        @Bean
+        @ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
+        @ConditionalOnMissingBean(name = "fireflyFeignMicrometerCapability")
+        FactoryBean<Object> fireflyFeignMicrometerCapability(ObservationRegistry observationRegistry)
+                throws ClassNotFoundException {
+            return new FeignMicrometerCapabilityFactory(observationRegistry);
         }
     }
 

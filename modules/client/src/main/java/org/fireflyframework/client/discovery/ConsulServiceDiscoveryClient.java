@@ -44,7 +44,7 @@ public class ConsulServiceDiscoveryClient implements ServiceDiscoveryClient {
 
     public ConsulServiceDiscoveryClient(String consulUrl) {
         this.consulUrl = consulUrl.endsWith("/") ? consulUrl.substring(0, consulUrl.length() - 1) : consulUrl;
-        this.webClient = WebClient.builder()
+        this.webClient = org.fireflyframework.client.tracing.TracingWebClients.builder()
                 .baseUrl(this.consulUrl)
                 .defaultHeader("Accept", "application/json")
                 .defaultHeader("Content-Type", "application/json")

@@ -20,7 +20,7 @@ Protect a reactive review method on a Spring bean with the required reviewer aut
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-method-policy</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

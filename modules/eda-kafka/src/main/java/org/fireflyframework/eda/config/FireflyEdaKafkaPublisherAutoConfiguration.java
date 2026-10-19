@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -128,12 +129,23 @@ public class FireflyEdaKafkaPublisherAutoConfiguration {
     @Bean(name = "fireflyEdaKafkaTemplate")
     @ConditionalOnMissingBean(name = "fireflyEdaKafkaTemplate")
     @ConditionalOnBean(name = "fireflyEdaKafkaProducerFactory")
-    public KafkaTemplate<String, Object> fireflyEdaKafkaTemplate(ProducerFactory<String, Object> fireflyEdaKafkaProducerFactory) {
+    public KafkaTemplate<String, Object> fireflyEdaKafkaTemplate(ProducerFactory<String, Object> fireflyEdaKafkaProducerFactory,
+                                                                 Environment environment) {
         log.info("Creating KafkaTemplate from fireflyEdaKafkaProducerFactory");
         KafkaTemplate<String, Object> template = new KafkaTemplate<>(fireflyEdaKafkaProducerFactory);
+        if (messagingObservationEnabled(environment, "spring.kafka.template.observation-enabled")) {
+            template.setObservationEnabled(true);
+            log.info("Kafka producer observation enabled — PRODUCER spans and traceparent headers");
+        }
         log.info("Kafka Publisher infrastructure created successfully");
         log.info("--------------------------------------------------------------------------------");
         return template;
+    }
+
+    static boolean messagingObservationEnabled(Environment environment, String bootProperty) {
+        return environment.getProperty("firefly.observability.tracing.enabled", Boolean.class, true)
+                && environment.getProperty("firefly.observability.tracing.messaging-instrumentation", Boolean.class, true)
+                && environment.getProperty(bootProperty, Boolean.class, true);
     }
 }
 

@@ -23,6 +23,8 @@ firefly:
       bridge: OTEL                         # OTEL (default) or BRAVE — switch via config, no POM changes
       sampling-probability: 1.0            # Override in production (e.g. 0.1 for 10% sampling)
       propagation-type: W3C               # W3C (default) or B3; composite propagator always includes both
+      client-instrumentation: true         # CLIENT spans + traceparent on WebClient/RestClient/RestTemplate
+      messaging-instrumentation: true      # PRODUCER/CONSUMER spans on Kafka and RabbitMQ
       baggage-fields:
         - X-Transaction-Id
     health:
@@ -127,3 +129,18 @@ server:
 spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
+  ## Boot-managed Kafka and Rabbit clients. Host application.yml overrides these.
+  ## Framework-built templates also read the same flags before enabling observation.
+  kafka:
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
+  rabbitmq:
+    template:
+      observation-enabled: true
+    listener:
+      simple:
+        observation-enabled: true
+      direct:
+        observation-enabled: true

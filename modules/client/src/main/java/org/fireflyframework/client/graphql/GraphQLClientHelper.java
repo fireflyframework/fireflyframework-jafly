@@ -123,7 +123,7 @@ public class GraphQLClientHelper {
     }
 
     private WebClient createWebClient() {
-        return WebClient.builder()
+        return org.fireflyframework.client.tracing.TracingWebClients.builder()
             .baseUrl(endpoint)
             .defaultHeaders(headers -> {
                 headers.setContentType(MediaType.APPLICATION_JSON);

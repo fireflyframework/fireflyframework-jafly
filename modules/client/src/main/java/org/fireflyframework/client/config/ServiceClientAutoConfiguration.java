@@ -17,6 +17,7 @@
 package org.fireflyframework.client.config;
 
 import org.fireflyframework.client.ServiceClient;
+import org.fireflyframework.client.tracing.TracingWebClients;
 import org.fireflyframework.client.builder.GrpcClientBuilder;
 import org.fireflyframework.client.builder.RestClientBuilder;
 import org.fireflyframework.client.metrics.ServiceClientMetrics;
@@ -95,7 +96,7 @@ public class ServiceClientAutoConfiguration {
             httpClient = httpClient.compress(true);
         }
 
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = TracingWebClients.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(configurer -> {
                     configurer.defaultCodecs().maxInMemorySize(restConfig.getMaxInMemorySize());

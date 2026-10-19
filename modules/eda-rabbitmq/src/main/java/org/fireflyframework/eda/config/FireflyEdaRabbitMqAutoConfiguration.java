@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 
 /**
  * Firefly EDA RabbitMQ Publisher Auto-Configuration.
@@ -124,9 +125,16 @@ public class FireflyEdaRabbitMqAutoConfiguration {
     @Bean(name = "fireflyEdaRabbitTemplate")
     @ConditionalOnMissingBean(name = "fireflyEdaRabbitTemplate")
     @ConditionalOnBean(name = "fireflyEdaRabbitPublisherConnectionFactory")
-    public RabbitTemplate fireflyEdaRabbitTemplate(org.springframework.amqp.rabbit.connection.ConnectionFactory fireflyEdaRabbitPublisherConnectionFactory) {
+    public RabbitTemplate fireflyEdaRabbitTemplate(org.springframework.amqp.rabbit.connection.ConnectionFactory fireflyEdaRabbitPublisherConnectionFactory,
+                                                    Environment environment) {
         log.info("Creating RabbitTemplate from fireflyEdaRabbitPublisherConnectionFactory");
         RabbitTemplate template = new RabbitTemplate(fireflyEdaRabbitPublisherConnectionFactory);
+        if (environment.getProperty("firefly.observability.tracing.enabled", Boolean.class, true)
+                && environment.getProperty("firefly.observability.tracing.messaging-instrumentation", Boolean.class, true)
+                && environment.getProperty("spring.rabbitmq.template.observation-enabled", Boolean.class, true)) {
+            template.setObservationEnabled(true);
+            log.info("RabbitMQ producer observation enabled — PRODUCER spans and traceparent headers");
+        }
         log.info("RabbitMQ Publisher infrastructure created successfully");
         log.info("--------------------------------------------------------------------------------");
         return template;

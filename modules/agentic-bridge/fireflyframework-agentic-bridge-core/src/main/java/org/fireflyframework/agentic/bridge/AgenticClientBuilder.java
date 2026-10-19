@@ -218,7 +218,7 @@ public final class AgenticClientBuilder {
                         .addHandlerLast(new ReadTimeoutHandler(responseTimeout.toMillis(), TimeUnit.MILLISECONDS))
                         .addHandlerLast(new WriteTimeoutHandler(writeTimeout.toMillis(), TimeUnit.MILLISECONDS)));
 
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = observe(WebClient.builder())
                 .baseUrl(baseUrl)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(codecs -> {
@@ -234,7 +234,7 @@ public final class AgenticClientBuilder {
     }
 
     private WebClient customiseWebClient(WebClient existing, ObjectMapper mapper) {
-        WebClient.Builder builder = existing.mutate().baseUrl(baseUrl);
+        WebClient.Builder builder = observe(existing.mutate()).baseUrl(baseUrl);
         if (userAgent != null) {
             builder.defaultHeader("User-Agent", userAgent);
         }
@@ -247,6 +247,18 @@ public final class AgenticClientBuilder {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout.toMillis())
                 .compress(compressionEnabled);
         return new ReactorNettyWebSocketClient(httpClient);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static WebClient.Builder observe(WebClient.Builder builder) {
+        try {
+            Class<?> observed = Class.forName("org.fireflyframework.observability.tracing.ObservedClients");
+            return (WebClient.Builder) observed.getMethod("instrument", WebClient.Builder.class).invoke(null, builder);
+        } catch (ClassNotFoundException ex) {
+            return builder;
+        } catch (ReflectiveOperationException ex) {
+            return builder;
+        }
     }
 
     private static String stripTrailingSlash(String url) {

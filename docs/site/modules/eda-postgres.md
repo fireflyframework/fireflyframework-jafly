@@ -24,7 +24,7 @@ A PostgreSQL delivery table can carry application lifecycle events without a sep
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eda-postgres</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

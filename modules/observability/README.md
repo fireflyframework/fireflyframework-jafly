@@ -20,7 +20,7 @@ Measure application submissions and review latency with the metrics support, and
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-observability</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 
@@ -94,6 +94,12 @@ public class OrderService {
     }
 }
 ```
+
+## Distributed traces
+
+Outbound HTTP clients create `CLIENT` spans and send W3C `traceparent`. Kafka and RabbitMQ templates and listeners create `PRODUCER` and `CONSUMER` spans. HTTP 5xx responses and unhandled exceptions set the span status to `ERROR` and record the exception, including when an exception handler writes the response.
+
+`WebClient` instances built with `WebClient.builder()` directly are instrumented when they are Spring beans, and when framework code goes through `ObservedClients`. Set `firefly.observability.tracing.client-instrumentation=false` or `firefly.observability.tracing.messaging-instrumentation=false` to turn a side off. Spring's `spring.kafka.*` and `spring.rabbitmq.*` observation flags override the messaging default when set to false.
 
 ## Configuration
 

@@ -24,7 +24,7 @@ Use this separate servlet service when the deployment needs to issue its own OAu
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-authorization-server</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 
