@@ -20,7 +20,7 @@ Use the framework parent to adopt its build management, or import the BOM while 
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
     <relativePath/>
 </parent>
 
@@ -50,7 +50,7 @@ Import the framework BOM into your dependency management:
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-bom</artifactId>
-            <version>26.10.19</version>
+            <version>26.10.20-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

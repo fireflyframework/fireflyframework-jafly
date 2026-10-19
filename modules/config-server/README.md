@@ -20,7 +20,7 @@ When several onboarding services share centrally managed configuration, operate 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-config-server</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

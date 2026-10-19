@@ -111,7 +111,7 @@ Use the framework parent when you want its build and dependency management:
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
     <relativePath/>
 </parent>
 ```
@@ -124,7 +124,7 @@ Or retain your existing parent and import the independent BOM:
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-bom</artifactId>
-            <version>26.10.19</version>
+            <version>26.10.20-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

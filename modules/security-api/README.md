@@ -20,7 +20,7 @@ Represent an authenticated applicant or reviewer with SecurityPrincipal and eval
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-api</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 
