@@ -1309,9 +1309,11 @@
                         <version>${central-publishing-maven-plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
+                            <!-- Central Portal (not legacy OSSRH/nexus-staging). Server id matches .github/maven-settings.xml -->
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
+                            <waitMaxTime>3600</waitMaxTime>
                             <checksums>required</checksums>
                         </configuration>
                     </plugin>

@@ -207,6 +207,28 @@ class ReleaseToolsTests(unittest.TestCase):
                 archive.writestr(path, 'signed-artifact')
         self.assertEqual(len(self.tools.inventory_bundle(projects, bundle)), 12)
 
+
+    def test_bundle_inventory_allows_optional_tests_classifier(self):
+        projects = self.tools.check_reactor(self.root)
+        # Build a signed-required set plus an optional -tests.jar for a jar module.
+        jar = next(p for p in projects if p['packaging'] == 'jar' and p.get('publish', True))
+        required = self.tools.required_paths(projects, signatures=True)
+        tests = (
+            f"{jar['groupId'].replace('.', '/')}/{jar['artifactId']}/{jar['version']}/"
+            f"{jar['artifactId']}-{jar['version']}-tests.jar"
+        )
+        with tempfile.NamedTemporaryFile(suffix='.zip') as handle:
+            with zipfile.ZipFile(handle.name, 'w') as archive:
+                for path in sorted(required):
+                    archive.writestr(path, path.encode())
+                archive.writestr(tests, b'test-classes')
+                archive.writestr(tests + '.asc', b'sig')
+            inventory = self.tools.inventory_bundle(projects, handle.name)
+        paths = {row['path'] for row in inventory}
+        self.assertTrue(tests in paths)
+        self.assertTrue((tests + '.asc') in paths)
+        self.assertTrue(required.issubset(paths))
+
     def test_remote_verification_rejects_wrong_bytes_and_http_failure(self):
         import hashlib
         class Handler(BaseHTTPRequestHandler):

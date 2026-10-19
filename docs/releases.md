@@ -30,7 +30,18 @@ The Central plugin version is [0.12.0](https://central.sonatype.org/publish/publ
 
 ## Credentials and package access
 
-Set `JAFLY_PACKAGES_TOKEN` to a classic token with package-write permission and access to `fireflyframework/fireflyframework-jafly`. Set the repository variable `JAFLY_PACKAGES_USER` when the token owner differs from the workflow actor. The workflow also needs `SONATYPE_USERNAME`, `SONATYPE_PASSWORD`, `GPG_PRIVATE_KEY`, and `GPG_PASSPHRASE`; the GPG private key is base64 encoded. The built-in `GITHUB_TOKEN` creates the final GitHub Release. Configuration checks report missing names without printing values. Generated Maven settings use environment references, and publication logs redact the package token.
+Publishing uses the **Sonatype Central Portal** plugin (`central-publishing-maven-plugin` 0.12.0), not legacy OSSRH/`nexus-staging-maven-plugin`. Maven settings server id `central` maps to Portal user tokens.
+
+| Secret / variable | Purpose |
+| --- | --- |
+| `JAFLY_PACKAGES_TOKEN` | Classic PAT with `write:packages` (and repo access) for the Jafly Maven repository |
+| `JAFLY_PACKAGES_USER` (repo variable, optional) | Token owner when different from the workflow actor |
+| `SONATYPE_USERNAME` | Central Portal **username** (Portal account user token username) |
+| `SONATYPE_PASSWORD` | Central Portal **user token** password (Portal → View Account → User Token) |
+| `GPG_PRIVATE_KEY` | Base64-encoded ASCII-armored private key used to sign the aggregate bundle |
+| `GPG_PASSPHRASE` | Passphrase for that key (`MAVEN_GPG_PASSPHRASE` in the Central deploy step) |
+
+`GITHUB_TOKEN` (built-in, `contents: write`) creates the final GitHub Release after both registries verify. Run `publishing-preflight.yml` to confirm secret *names* are present; presence does not prove Portal namespace or signing-key acceptance. Generated Maven settings use environment references, and publication logs redact the package token.
 
 GitHub Maven packages are repository-scoped. The reviewed `scripts/package-homes.json` directs all 84 publishable artifacts to `fireflyframework-jafly`. Before uploading any files, the publisher checks every package through the GitHub API. An absent package can be created; an existing package must belong to Jafly. A package still associated with another repository, an inaccessible association, or an API failure stops publication before Maven starts. Changing a deployment URL does not transfer a package or preserve its old versions. The captured `scripts/package-associations.jsonl` remains historical evidence of the previous registry layout. See [GitHub package permissions](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages).
 
