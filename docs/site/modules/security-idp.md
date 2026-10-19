@@ -24,7 +24,7 @@ Manage applicant identities through IdpAdapter and a selected provider. Keep ide
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-idp</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

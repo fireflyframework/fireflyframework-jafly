@@ -24,7 +24,7 @@ Use RelationshipPort to check whether a reviewer is related to a particular appl
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-adapter-openfga</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

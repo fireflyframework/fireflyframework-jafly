@@ -20,7 +20,7 @@ Use this adapter when the onboarding host supplies a JCache CacheManager. The ap
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache-jcache</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

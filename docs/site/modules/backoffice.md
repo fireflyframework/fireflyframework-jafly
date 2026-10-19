@@ -24,7 +24,7 @@ A reviewer portal can use backoffice contexts and controller bases to expose int
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-backoffice</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

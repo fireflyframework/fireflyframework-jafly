@@ -32,7 +32,7 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks-interfaces</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

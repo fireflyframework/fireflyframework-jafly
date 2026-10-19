@@ -20,7 +20,7 @@ A browser applicant portal can keep tokens in a server-side session and present 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-bff</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

@@ -48,7 +48,7 @@ Maven Dependencies:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 
@@ -76,7 +76,7 @@ Maven Dependencies:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 
 <!-- Add Redis dependencies explicitly -->

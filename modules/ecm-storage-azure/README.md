@@ -20,7 +20,7 @@ Store an applicant's supporting document in Azure Blob Storage through the ECM c
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-storage-azure</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

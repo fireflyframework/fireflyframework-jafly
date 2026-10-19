@@ -20,7 +20,7 @@ Call a remote agent from the onboarding service when a configured assistant is n
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge-core</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

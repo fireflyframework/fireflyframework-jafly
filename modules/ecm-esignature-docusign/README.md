@@ -20,7 +20,7 @@ If onboarding includes a signed agreement, use the DocuSign adapter for the conf
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 

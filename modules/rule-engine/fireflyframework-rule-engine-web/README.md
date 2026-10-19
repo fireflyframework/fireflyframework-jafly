@@ -20,7 +20,7 @@ Run the rule service when onboarding applications evaluate rules over HTTP or ma
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine-web</artifactId>
-    <version>26.10.20-SNAPSHOT</version>
+    <version>26.10.20</version>
 </dependency>
 ```
 
