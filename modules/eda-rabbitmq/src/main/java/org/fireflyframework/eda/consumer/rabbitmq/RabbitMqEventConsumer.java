@@ -30,6 +30,8 @@ import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -71,7 +73,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true")
 @org.springframework.context.annotation.DependsOn("eventListenerProcessor")
 @Slf4j
-public class RabbitMqEventConsumer implements EventConsumer {
+public class RabbitMqEventConsumer implements EventConsumer, ApplicationContextAware {
 
     private final ConnectionFactory connectionFactory;
     private final MessageSerializer messageSerializer;
@@ -93,7 +95,28 @@ public class RabbitMqEventConsumer implements EventConsumer {
         this.eventFilters = eventFilters != null ? eventFilters : java.util.Collections.emptyList();
     }
 
+    private ApplicationContext applicationContext;
     private SimpleMessageListenerContainer listenerContainer;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    private void enableConsumerObservation(SimpleMessageListenerContainer container) {
+        if (applicationContext == null) {
+            return;
+        }
+        var environment = applicationContext.getEnvironment();
+        boolean enabled = environment.getProperty("firefly.observability.tracing.enabled", Boolean.class, true)
+                && environment.getProperty("firefly.observability.tracing.messaging-instrumentation", Boolean.class, true)
+                && environment.getProperty("spring.rabbitmq.listener.simple.observation-enabled", Boolean.class, true);
+        if (!enabled) {
+            return;
+        }
+        container.setApplicationContext(applicationContext);
+        container.setObservationEnabled(true);
+    }
     private final AtomicLong messagesConsumed = new AtomicLong(0);
     private final AtomicLong messagesProcessed = new AtomicLong(0);
     private final AtomicLong messagesFailures = new AtomicLong(0);
@@ -167,6 +190,7 @@ public class RabbitMqEventConsumer implements EventConsumer {
             // Get queue names dynamically from @EventListener annotations
             String[] queueNames = getQueueNames();
             listenerContainer.setQueueNames(queueNames);
+            enableConsumerObservation(listenerContainer);
 
             log.info("RabbitMQ event consumer configured with queues: {}", String.join(", ", queueNames));
 
@@ -258,6 +282,7 @@ public class RabbitMqEventConsumer implements EventConsumer {
                 
                 // Set queue names to listen to
                 fluxContainer.setQueueNames("test-events-queue");
+                enableConsumerObservation(fluxContainer);
                 fluxContainer.start();
                 
                 // Handle disposal
@@ -301,6 +326,7 @@ public class RabbitMqEventConsumer implements EventConsumer {
                 
                 // Set specific queues to listen to
                 fluxContainer.setQueueNames(destinations);
+                enableConsumerObservation(fluxContainer);
                 fluxContainer.start();
                 
                 sink.onDispose(() -> {

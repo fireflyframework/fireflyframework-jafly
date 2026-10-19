@@ -119,7 +119,7 @@ public class OAuth2ClientHelper {
     }
 
     private WebClient createWebClient() {
-        return WebClient.builder()
+        return org.fireflyframework.client.tracing.TracingWebClients.builder()
             .defaultHeaders(headers -> {
                 headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
                 config.defaultHeaders.forEach(headers::add);

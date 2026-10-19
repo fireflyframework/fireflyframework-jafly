@@ -46,6 +46,18 @@ class FireflyObservabilityEnvironmentPostProcessorTest {
         assertThat(environment.getProperty("management.tracing.propagation.type"))
                 .as("Trace propagation default should be composite W3C+B3")
                 .isEqualTo("W3C,B3");
+        assertThat(environment.getProperty("spring.kafka.template.observation-enabled"))
+                .as("Kafka producers must emit PRODUCER spans by default")
+                .isEqualTo("true");
+        assertThat(environment.getProperty("spring.kafka.listener.observation-enabled"))
+                .as("Kafka listeners must emit CONSUMER spans by default")
+                .isEqualTo("true");
+        assertThat(environment.getProperty("spring.rabbitmq.template.observation-enabled"))
+                .as("RabbitMQ publishers must emit PRODUCER spans by default")
+                .isEqualTo("true");
+        assertThat(environment.getProperty("firefly.observability.tracing.client-instrumentation"))
+                .as("HTTP client instrumentation must be on so traceparent is sent")
+                .isEqualTo("true");
         assertThat(environment.getProperty("server.shutdown"))
                 .as("Graceful shutdown must be on by default")
                 .isEqualTo("graceful");

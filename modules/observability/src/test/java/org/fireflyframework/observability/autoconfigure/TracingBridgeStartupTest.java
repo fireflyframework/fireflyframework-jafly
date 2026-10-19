@@ -1,7 +1,9 @@
 package org.fireflyframework.observability.autoconfigure;
 
 import io.micrometer.tracing.Tracer;
+import org.fireflyframework.observability.tracing.ClientObservationBeanPostProcessor;
 import org.fireflyframework.observability.tracing.FireflyTracingSupport;
+import org.fireflyframework.observability.tracing.HttpErrorStatusObservationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -33,6 +35,12 @@ class TracingBridgeStartupTest {
             assertThat(context.getBeansOfType(Tracer.class)).hasSize(1);
             assertThat(context.getBean(Tracer.class).getClass().getSimpleName()).isEqualTo(tracerType);
             assertThat(context.getBean(FireflyTracingSupport.class)).isNotNull();
+            assertThat(context.getBean(HttpErrorStatusObservationFilter.class))
+                    .as("5xx responses must be able to mark span status ERROR")
+                    .isNotNull();
+            assertThat(context.getBean(ClientObservationBeanPostProcessor.class))
+                    .as("client and messaging beans must be instrumented at startup")
+                    .isNotNull();
         }
     }
 

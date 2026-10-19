@@ -116,7 +116,7 @@ public class MultipartUploadHelper {
     }
 
     private WebClient createWebClient() {
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = org.fireflyframework.client.tracing.TracingWebClients.builder()
             .baseUrl(baseUrl)
             .defaultHeaders(headers -> config.defaultHeaders.forEach(headers::add));
 

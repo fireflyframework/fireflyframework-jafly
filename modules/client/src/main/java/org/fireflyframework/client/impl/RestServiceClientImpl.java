@@ -25,6 +25,8 @@ import org.fireflyframework.client.exception.RetryableError;
 import org.fireflyframework.client.exception.ServiceClientException;
 import org.fireflyframework.client.exception.ServiceSerializationException;
 import org.fireflyframework.client.exception.ErrorContext;
+import org.fireflyframework.client.tracing.TracingWebClients;
+import org.fireflyframework.observability.tracing.ObservedClients;
 import org.fireflyframework.resilience.CircuitBreakerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -112,7 +114,7 @@ public class RestServiceClientImpl implements RestClient {
         this.timeout = timeout;
         this.maxConnections = maxConnections;
         this.defaultHeaders = Map.copyOf(defaultHeaders);
-        this.webClient = webClient != null ? webClient : createDefaultWebClient();
+        this.webClient = webClient != null ? ObservedClients.instrument(webClient) : createDefaultWebClient();
         this.circuitBreakerManager = circuitBreakerManager;
         this.retryEnabled = retryEnabled;
         this.retryMaxAttempts = retryMaxAttempts;
@@ -245,7 +247,7 @@ public class RestServiceClientImpl implements RestClient {
     // ========================================
 
     private WebClient createDefaultWebClient() {
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = TracingWebClients.builder()
             .baseUrl(baseUrl);
 
         // Add default headers

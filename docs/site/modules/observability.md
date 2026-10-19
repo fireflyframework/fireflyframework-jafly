@@ -195,6 +195,8 @@ firefly:
       bridge: OTEL                         # OTEL (default) or BRAVE — no POM changes needed
       sampling-probability: 1.0            # Override in production (e.g. 0.1 for 10%)
       propagation-type: W3C               # W3C (default) or B3
+      client-instrumentation: true         # CLIENT spans and traceparent on outbound HTTP
+      messaging-instrumentation: true      # PRODUCER and CONSUMER spans on Kafka and RabbitMQ
       baggage-fields:                      # Custom baggage propagated across services
         - X-Transaction-Id
     health:
@@ -206,6 +208,8 @@ firefly:
     context-propagation:
       reactor-hooks-enabled: true          # Enable Hooks.enableAutomaticContextPropagation()
 ```
+
+Outbound HTTP calls create `CLIENT` spans and send W3C `traceparent`. Kafka and RabbitMQ create `PRODUCER` and `CONSUMER` spans. HTTP 5xx responses and unhandled exceptions set the span status to `ERROR` and record the exception. `spring.kafka.*` and `spring.rabbitmq.*` observation flags, and the two `firefly.observability.tracing` instrumentation flags, turn those sides off when set to false.
 
 ### Metrics Exporter Selection
 

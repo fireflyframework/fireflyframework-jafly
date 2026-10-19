@@ -20,6 +20,8 @@ import java.util.List;
  *       enabled: true
  *       sampling-probability: 1.0
  *       propagation-type: W3C
+ *       client-instrumentation: true
+ *       messaging-instrumentation: true
  *       baggage-fields:
  *         - X-Transaction-Id
  *     health:
@@ -97,6 +99,17 @@ public class FireflyObservabilityProperties {
         private TracingBridge bridge = TracingBridge.OTEL;
         private double samplingProbability = 1.0;
         private PropagationType propagationType = PropagationType.W3C;
+        /**
+         * When true, WebClient, RestClient, and RestTemplate beans create CLIENT spans
+         * and send W3C {@code traceparent}.
+         */
+        private boolean clientInstrumentation = true;
+        /**
+         * When true, Kafka and Rabbit templates and listeners create PRODUCER and
+         * CONSUMER spans. Spring's {@code spring.kafka.*} and {@code spring.rabbitmq.*}
+         * observation flags can still turn an individual client off.
+         */
+        private boolean messagingInstrumentation = true;
         private List<String> baggageFields = new ArrayList<>(List.of("X-Transaction-Id"));
 
         public boolean isEnabled() {
@@ -129,6 +142,22 @@ public class FireflyObservabilityProperties {
 
         public void setPropagationType(PropagationType propagationType) {
             this.propagationType = propagationType;
+        }
+
+        public boolean isClientInstrumentation() {
+            return clientInstrumentation;
+        }
+
+        public void setClientInstrumentation(boolean clientInstrumentation) {
+            this.clientInstrumentation = clientInstrumentation;
+        }
+
+        public boolean isMessagingInstrumentation() {
+            return messagingInstrumentation;
+        }
+
+        public void setMessagingInstrumentation(boolean messagingInstrumentation) {
+            this.messagingInstrumentation = messagingInstrumentation;
         }
 
         public List<String> getBaggageFields() {

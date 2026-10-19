@@ -95,6 +95,12 @@ public class OrderService {
 }
 ```
 
+## Distributed traces
+
+Outbound HTTP clients create `CLIENT` spans and send W3C `traceparent`. Kafka and RabbitMQ templates and listeners create `PRODUCER` and `CONSUMER` spans. HTTP 5xx responses and unhandled exceptions set the span status to `ERROR` and record the exception, including when an exception handler writes the response.
+
+`WebClient` instances built with `WebClient.builder()` directly are instrumented when they are Spring beans, and when framework code goes through `ObservedClients`. Set `firefly.observability.tracing.client-instrumentation=false` or `firefly.observability.tracing.messaging-instrumentation=false` to turn a side off. Spring's `spring.kafka.*` and `spring.rabbitmq.*` observation flags override the messaging default when set to false.
+
 ## Configuration
 
 The `firefly.observability` namespace is bound by [FireflyObservabilityProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.

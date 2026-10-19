@@ -25,9 +25,13 @@ import io.github.resilience4j.retry.RetryRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import io.micrometer.observation.ObservationRegistry;
+import org.fireflyframework.observability.tracing.ObservedClients;
+import org.fireflyframework.observability.tracing.TracingRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.webclient.WebClientCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -80,6 +84,7 @@ public class WebClientAutoConfiguration {
     private final BulkheadRegistry bulkheadRegistry;
     private final ObjectProvider<MeterRegistry> meterRegistryProvider;
     private final WebClientBuilderCustomizer webClientBuilderCustomizer;
+    private final ObjectProvider<WebClientCustomizer> webClientCustomizers;
 
     public WebClientAutoConfiguration(
             CircuitBreakerRegistry circuitBreakerRegistry,
@@ -87,13 +92,23 @@ public class WebClientAutoConfiguration {
             TimeLimiterRegistry timeLimiterRegistry,
             BulkheadRegistry bulkheadRegistry,
             ObjectProvider<MeterRegistry> meterRegistryProvider,
-            WebClientBuilderCustomizer webClientBuilderCustomizer) {
+            WebClientBuilderCustomizer webClientBuilderCustomizer,
+            ObjectProvider<WebClientCustomizer> webClientCustomizers,
+            ObjectProvider<ObservationRegistry> observationRegistry) {
         this.circuitBreakerRegistry = circuitBreakerRegistry;
         this.retryRegistry = retryRegistry;
         this.timeLimiterRegistry = timeLimiterRegistry;
         this.bulkheadRegistry = bulkheadRegistry;
         this.meterRegistryProvider = meterRegistryProvider;
         this.webClientBuilderCustomizer = webClientBuilderCustomizer;
+        this.webClientCustomizers = webClientCustomizers;
+        observationRegistry.ifAvailable(TracingRegistry::install);
+    }
+
+    private WebClient.Builder observedBuilder() {
+        WebClient.Builder builder = WebClient.builder();
+        webClientCustomizers.orderedStream().forEach(customizer -> customizer.customize(builder));
+        return ObservedClients.instrument(builder);
     }
 
     /**
@@ -125,7 +140,7 @@ public class WebClientAutoConfiguration {
     @ConditionalOnMissingBean
     WebClient webClient(HeaderPropagationExchangeFilter headerPropagationExchangeFilter) {
         // Create a WebClient.Builder with transaction ID + allow-listed header propagation
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = observedBuilder()
                 .filter((request, next) ->
                         Mono.deferContextual(ctx -> {
                             String transactionId = ctx.getOrDefault(TRANSACTION_ID_HEADER, null);
@@ -171,7 +186,7 @@ public class WebClientAutoConfiguration {
     @ConditionalOnMissingBean
     WebClient.Builder webClientBuilder(HeaderPropagationExchangeFilter headerPropagationExchangeFilter) {
         // Create a WebClient.Builder with transaction ID + allow-listed header propagation
-        WebClient.Builder builder = WebClient.builder()
+        WebClient.Builder builder = observedBuilder()
                 .filter((request, next) ->
                         Mono.deferContextual(ctx -> {
                             String transactionId = ctx.getOrDefault(TRANSACTION_ID_HEADER, null);
