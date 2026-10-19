@@ -24,7 +24,7 @@ After accepting an application, the service can render a confirmation template o
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-utils</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

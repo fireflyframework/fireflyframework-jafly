@@ -20,7 +20,7 @@ A rejected application and an unavailable verification partner need different er
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-kernel</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

@@ -6,13 +6,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.20</version>
+        <version>26.10.21-SNAPSHOT</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-config-server</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 
     <name>Firefly Framework - Config Server</name>
     <description>Spring Cloud Config Server for centralized configuration management across Firefly Framework microservices</description>

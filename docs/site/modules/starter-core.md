@@ -26,7 +26,7 @@ A larger onboarding service may adopt this bundle for shared HTTP-client and ope
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-core</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

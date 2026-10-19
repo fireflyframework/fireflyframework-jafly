@@ -20,7 +20,7 @@ Use the Twilio SMS provider for an onboarding message when the product has colle
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications-twilio</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 
