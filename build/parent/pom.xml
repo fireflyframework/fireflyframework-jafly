@@ -92,7 +92,7 @@
         <protobuf.version>4.33.5</protobuf.version>
 
         <!-- Serialization -->
-        <avro.version>1.12.1</avro.version>
+        <avro.version>1.12.2</avro.version>
 
         <!-- Logging -->
         <janino.version>3.1.12</janino.version>
