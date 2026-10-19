@@ -38,7 +38,7 @@ A reviewer portal may read the same application status repeatedly. Cache those r
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

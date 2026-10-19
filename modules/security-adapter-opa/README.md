@@ -20,7 +20,7 @@ Delegate an onboarding authorization decision to a configured OPA policy through
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-adapter-opa</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

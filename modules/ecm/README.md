@@ -20,7 +20,7 @@ An applicant may upload supporting documents or sign an agreement after submissi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

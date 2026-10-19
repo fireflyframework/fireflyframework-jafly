@@ -70,7 +70,7 @@ Customer initiates transfer: $500 from Account A → Account B
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-orchestration</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

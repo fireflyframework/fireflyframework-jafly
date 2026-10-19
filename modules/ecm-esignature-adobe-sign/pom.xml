@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.20</version>
+        <version>26.10.21-SNAPSHOT</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - ECM eSignature - Adobe Sign</name>

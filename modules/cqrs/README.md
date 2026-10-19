@@ -16,7 +16,7 @@ Define command/query messages and their handlers, then invoke the appropriate bu
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

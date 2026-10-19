@@ -24,7 +24,7 @@ A mobile applicant portal can receive push notifications through Firebase. The a
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-notifications-firebase</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

@@ -24,7 +24,7 @@ Protect onboarding HTTP routes with JWTs from the configured identity authority.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-resource-server</artifactId>
-    <version>26.10.20</version>
+    <version>26.10.21-SNAPSHOT</version>
 </dependency>
 ```
 

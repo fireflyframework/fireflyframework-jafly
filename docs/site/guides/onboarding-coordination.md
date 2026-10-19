@@ -24,7 +24,7 @@ Use JDK 25. The full framework installation runs provider-backed tests and needs
 ./mvnw -B -ntp -f docs/examples/onboarding-coordination/pom.xml clean verify
 ```
 
-The six tests need no database, Docker engine, message broker, or provider credentials. The project inherits the framework parent at `26.10.20` and keeps its own application version at `0.1.0-SNAPSHOT`:
+The six tests need no database, Docker engine, message broker, or provider credentials. The project inherits the framework parent at `26.10.21-SNAPSHOT` and keeps its own application version at `0.1.0-SNAPSHOT`:
 
 ```xml
 --8<-- "docs/examples/onboarding-coordination/pom.xml"
