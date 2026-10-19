@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-jafly</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
     <packaging>pom</packaging>
     <name>Jafly - Java Framework Reactor</name>
     <description>Unified Java framework build. Consumers use fireflyframework-parent or fireflyframework-bom.</description>

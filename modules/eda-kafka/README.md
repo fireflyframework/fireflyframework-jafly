@@ -20,7 +20,7 @@ Publish application lifecycle events to Kafka when a separate review worker cons
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eda-kafka</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

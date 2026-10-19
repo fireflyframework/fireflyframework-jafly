@@ -137,7 +137,7 @@ For Caffeine only (in-memory cache):
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 
@@ -146,7 +146,7 @@ For Caffeine + Redis (distributed cache):
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-plugins</artifactId>
-        <version>26.10.17-SNAPSHOT</version>
+        <version>26.10.19</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

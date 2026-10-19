@@ -20,7 +20,7 @@ Expose the verification-provider ingestion endpoint through this service after i
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks-web</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

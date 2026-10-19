@@ -12,10 +12,10 @@ class SetVersionTest(unittest.TestCase):
             root = pathlib.Path(directory)
             pom = root / 'pom.xml'
             pom.write_text('''<project xmlns="http://maven.apache.org/POM/4.0.0"><parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.07.06</version></parent><groupId>com.example</groupId><artifactId>application</artifactId><version>26.07.06</version></project>''')
-            self.tool().set_version(root, '26.10.17')
+            self.tool().set_version(root, '26.10.18')
             content = pom.read_text()
             self.assertIn('<artifactId>application</artifactId><version>26.07.06</version>', content)
-            self.assertIn('<artifactId>fireflyframework-parent</artifactId><version>26.10.17</version>', content)
+            self.assertIn('<artifactId>fireflyframework-parent</artifactId><version>26.10.18</version>', content)
 
     def tool(self):
         self.assertTrue(MODULE.exists(), 'Version updater is missing')
@@ -43,9 +43,9 @@ class SetVersionTest(unittest.TestCase):
             root = pathlib.Path(directory)
             p = root / 'pom.xml'
             p.write_text('''<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-parent</artifactId><version>26.07.06</version></parent><artifactId>example</artifactId><version>26.07.06</version><properties><fireflyframework.version>26.07.06</fireflyframework.version></properties><dependencies><dependency><groupId>org.fireflyframework</groupId><artifactId>fireflyframework-web</artifactId><version>26.07.06</version></dependency><dependency><groupId>external</groupId><artifactId>library</artifactId><version>26.07.06</version></dependency></dependencies></project>''')
-            tool.set_version(root, '26.10.17')
+            tool.set_version(root, '26.10.18')
             content = p.read_text()
-            self.assertEqual(4, content.count('26.10.17'))
+            self.assertEqual(4, content.count('26.10.18'))
             self.assertEqual(1, content.count('26.07.06'))
 
     def test_invalid_version_changes_nothing_and_target_is_ignored(self):
@@ -61,8 +61,8 @@ class SetVersionTest(unittest.TestCase):
             target = root / 'target/pom.xml'
             target.parent.mkdir()
             target.write_text('generated not XML')
-            tool.set_version(root, '26.10.17-SNAPSHOT')
-            self.assertIn('26.10.17-SNAPSHOT', p.read_text())
+            tool.set_version(root, '26.10.18-SNAPSHOT')
+            self.assertIn('26.10.18-SNAPSHOT', p.read_text())
             self.assertEqual('generated not XML', target.read_text())
 
     def test_preserves_shared_property_references_and_validates_all_files_first(self):
@@ -72,12 +72,12 @@ class SetVersionTest(unittest.TestCase):
             p = root / 'pom.xml'
             original = '<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>org.fireflyframework</groupId><version>26.07.06</version><dependencies><dependency><groupId>org.fireflyframework</groupId><artifactId>module</artifactId><version>${fireflyframework.version}</version></dependency></dependencies></project>'
             p.write_text(original)
-            tool.set_version(root, '26.10.17')
+            tool.set_version(root, '26.10.18')
             self.assertIn('${fireflyframework.version}', p.read_text())
             p.write_text(original)
             broken = root / 'z/pom.xml'
             broken.parent.mkdir()
             broken.write_text('invalid')
             with self.assertRaises(Exception):
-                tool.set_version(root, '26.10.17')
+                tool.set_version(root, '26.10.18')
             self.assertEqual(original, p.read_text())

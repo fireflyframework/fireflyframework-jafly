@@ -20,7 +20,7 @@ Create applicant/reviewer test principals and deterministic policy outcomes for 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-test</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
     <scope>test</scope>
 </dependency>
 ```

@@ -20,7 +20,7 @@ Once a submitted application must notify another service, define an application.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eda</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

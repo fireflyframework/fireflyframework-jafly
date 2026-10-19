@@ -13,7 +13,7 @@ Spring Boot service in five minutes.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

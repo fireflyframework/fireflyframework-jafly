@@ -24,7 +24,7 @@ Store revoked token IDs when the application uses PostgreSQL for that security s
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-adapter-r2dbc</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

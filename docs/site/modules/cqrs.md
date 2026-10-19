@@ -36,7 +36,7 @@ Commands and queries have different handlers and policies. The buses connect app
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

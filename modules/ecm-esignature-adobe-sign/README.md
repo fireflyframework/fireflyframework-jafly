@@ -20,7 +20,7 @@ If onboarding includes a signed agreement, use the Adobe Sign adapter for the co
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 

@@ -678,7 +678,7 @@ Add `fireflyframework-starter-data` to your `pom.xml`:
 <dependency>
   <groupId>org.fireflyframework</groupId>
   <artifactId>fireflyframework-starter-data</artifactId>
-  <version>26.10.17-SNAPSHOT</version>
+  <version>26.10.19</version>
 </dependency>
 
 <!-- Spring Boot WebFlux (required for reactive support) -->

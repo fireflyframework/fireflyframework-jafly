@@ -20,7 +20,7 @@ Use these repositories when onboarding rules and constants need a stored, versio
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine-models</artifactId>
-    <version>26.10.17-SNAPSHOT</version>
+    <version>26.10.19</version>
 </dependency>
 ```
 
