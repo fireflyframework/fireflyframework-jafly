@@ -20,7 +20,7 @@ Map the authenticated applicant/reviewer claims and evaluate the configured auth
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-core</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

@@ -20,7 +20,7 @@ Use these DTOs to configure a partner callback for application-status events. Cr
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-callbacks-interfaces</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

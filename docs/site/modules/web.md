@@ -24,7 +24,7 @@ The onboarding HTTP boundary needs consistent error responses and carefully chos
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-web</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

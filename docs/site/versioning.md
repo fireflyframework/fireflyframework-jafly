@@ -2,13 +2,13 @@
 
 ![One version train](assets/banners/versioning.svg)
 
-Jafly uses padded CalVer versions: `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The final component counts releases within the month; it does not represent a date. The current development version is `26.10.19`.
+Jafly uses padded CalVer versions: `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The final component counts releases within the month; it does not represent a date. The current development version is `26.10.20-SNAPSHOT`.
 
 ## What the version identifies
 
 A framework train covers the consumer parent, independent BOM, libraries, adapters, and component aggregators. Nested projects may inherit their effective version from a local framework parent. Internal framework dependencies select that same train; third-party libraries retain their own managed versions.
 
-An application's version remains separate. An application at `1.0.0` can use framework train `26.10.19`; the public parent/BOM use `fireflyframework.version` rather than the consumer's `${project.version}` for internal dependency management.
+An application's version remains separate. An application at `1.0.0` can use framework train `26.10.20-SNAPSHOT`; the public parent/BOM use `fireflyframework.version` rather than the consumer's `${project.version}` for internal dependency management.
 
 ## Development snapshots
 
@@ -23,7 +23,7 @@ The manual snapshot workflow publishes to GitHub Packages only after verificatio
 ## Change the train
 
 ```sh
-python3 scripts/set_version.py 26.10.19
+python3 scripts/set_version.py 26.10.20-SNAPSHOT
 python3 scripts/release_tools.py check
 python3 -m unittest discover -s tests -v
 python3 -m unittest discover -s tests/release -v
@@ -36,7 +36,7 @@ Review documentation examples and version labels with the change. The updater op
 
 ## Final releases
 
-A final POM version must match its existing immutable tag exactly: `26.10.19` corresponds to `v26.10.19`. The release workflow checks the tag against the checked-out commit and all reactor versions before publishing.
+A final POM version must match its existing immutable tag exactly: `26.10.20` corresponds to `v26.10.20`. The release workflow checks the tag against the checked-out commit and all reactor versions before publishing.
 
 The final GitHub Release is created only after both registries pass their artifact verification. A successful GitHub Packages upload followed by a Central failure is a partial publication. Keep the failure visible and follow the [release recovery guide](releases.md).
 

@@ -57,7 +57,7 @@ Requires dependency: `fireflyframework-ecm-storage-aws`
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-storage-aws</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -134,7 +134,7 @@ Requires dependency: `fireflyframework-ecm-esignature-docusign`
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-docusign</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -163,7 +163,7 @@ Requires dependency: `fireflyframework-ecm-esignature-adobe-sign`
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-adobe-sign</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

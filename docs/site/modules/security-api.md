@@ -24,7 +24,7 @@ Represent an authenticated applicant or reviewer with SecurityPrincipal and eval
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-api</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -208,7 +208,7 @@ Runtime footprint is intentionally tiny (see `pom.xml`):
 | `org.projectlombok:lombok` | provided | `@Builder` on `SecurityPrincipal`. |
 | `junit-jupiter`, `assertj-core`, `reactor-test` | test | Unit tests. |
 
-Version and parent are managed by `fireflyframework-parent` (CalVer `26.10.19`); consumers inheriting the parent/BOM can omit the version.
+Version and parent are managed by `fireflyframework-parent` (CalVer `26.10.20-SNAPSHOT`); consumers inheriting the parent/BOM can omit the version.
 
 ```xml
 <dependency>

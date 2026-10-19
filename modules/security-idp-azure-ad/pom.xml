@@ -7,19 +7,19 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.19</version>
+        <version>26.10.20-SNAPSHOT</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-idp-azure-ad</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - IDP - Azure AD Implementation</name>
     <description>Azure AD (Entra ID and B2C) implementation of the Firefly IDP Adapter</description>
 
     <properties>
-        <fireflyframework-security-idp.version>26.10.19</fireflyframework-security-idp.version>
+        <fireflyframework-security-idp.version>26.10.20-SNAPSHOT</fireflyframework-security-idp.version>
         <microsoft-graph.version>6.23.0</microsoft-graph.version>
         <msal4j.version>1.23.1</msal4j.version>
     </properties>

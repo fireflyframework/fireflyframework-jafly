@@ -22,7 +22,7 @@ A team that already has a corporate Maven parent can import this BOM into the on
         <dependency>
             <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-bom</artifactId>
-            <version>26.10.19</version>
+            <version>26.10.20-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

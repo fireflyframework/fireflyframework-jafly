@@ -24,7 +24,7 @@ If onboarding includes a signed agreement, use the Logalty adapter for the confi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-ecm-esignature-logalty</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

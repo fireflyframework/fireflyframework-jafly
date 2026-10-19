@@ -51,7 +51,7 @@ Add the required dependencies to your `pom.xml`:
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm</artifactId>
-        <version>26.10.19</version>
+        <version>26.10.20-SNAPSHOT</version>
     </dependency>
     
     <!-- Azure Blob Storage SDK -->

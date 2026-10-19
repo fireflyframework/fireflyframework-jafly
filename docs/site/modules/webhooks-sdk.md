@@ -24,7 +24,7 @@ An integration client can use the generated ingestion contract when sending prov
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks-sdk</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 

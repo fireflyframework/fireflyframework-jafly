@@ -29,7 +29,7 @@ This artifact has `pom` packaging and groups child projects. Select a concrete c
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>plugin-api</artifactId>
-    <version>26.10.19</version>
+    <version>26.10.20-SNAPSHOT</version>
 </dependency>
 ```
 
