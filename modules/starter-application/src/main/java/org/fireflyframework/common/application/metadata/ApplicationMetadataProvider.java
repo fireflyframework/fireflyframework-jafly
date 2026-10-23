@@ -112,7 +112,7 @@ public class ApplicationMetadataProvider implements ApplicationListener<Applicat
     }
     
     /**
-     * Finds @FireflyApplication annotation in the application context.
+     * Finds @FireflyApplication without initializing application beans or FactoryBean products.
      */
     private FireflyApplication findFireflyApplicationAnnotation(ApplicationContext applicationContext) {
         // Get all bean names
@@ -120,8 +120,10 @@ public class ApplicationMetadataProvider implements ApplicationListener<Applicat
         
         for (String beanName : beanNames) {
             try {
-                Object bean = applicationContext.getBean(beanName);
-                Class<?> beanClass = bean.getClass();
+                Class<?> beanClass = applicationContext.getType(beanName, false);
+                if (beanClass == null) {
+                    continue;
+                }
                 
                 // Check if class has @FireflyApplication
                 FireflyApplication annotation = beanClass.getAnnotation(FireflyApplication.class);
@@ -140,7 +142,7 @@ public class ApplicationMetadataProvider implements ApplicationListener<Applicat
                     }
                 }
             } catch (Exception e) {
-                // Ignore beans that can't be retrieved
+                // Ignore bean types that cannot be resolved without initialization
             }
         }
         

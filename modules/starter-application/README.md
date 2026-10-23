@@ -44,6 +44,10 @@ public class AccountController extends AbstractApplicationController {
 }
 ```
 
+## Application metadata discovery
+
+Application metadata discovery reads predictable bean types without creating application beans, FactoryBeans or their products. Declare the `@FireflyApplication` main class through a known bean type; the existing immediate-superclass annotation lookup is retained. An unknown product type stays untouched, with existing fallback metadata when no annotation can be resolved. This prevents metadata discovery from reentering Actuator endpoint construction. The guarantee applies to metadata discovery; other integrations retain their own registration and initialization lifecycles.
+
 ## Configuration
 
 The `firefly.application` namespace is bound by [ApplicationLayerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/starter-application/src/main/java/org/fireflyframework/common/application/config/ApplicationLayerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
