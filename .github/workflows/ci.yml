@@ -50,6 +50,9 @@ jobs:
       - name: Compile, test, and install framework libraries
         if: steps.changes.outputs.java == 'true'
         run: ./mvnw -B -ntp -Dtest.serialization.protobuf=true -Dtest.serialization.avro=true clean install
+      - name: Check generator and gRPC runtime alignment
+        if: steps.changes.outputs.java == 'true'
+        run: python3 scripts/verify_grpc_alignment.py --maven "$GITHUB_WORKSPACE/mvnw" --report target/grpc-alignment.json
       - name: Test all maintained standalone examples
         if: steps.changes.outputs.java == 'true'
         run: bash scripts/verify_examples.sh
@@ -61,5 +64,6 @@ jobs:
           path: |
             **/target/surefire-reports/
             **/target/failsafe-reports/
+            target/grpc-alignment.json
           if-no-files-found: warn
           retention-days: 14

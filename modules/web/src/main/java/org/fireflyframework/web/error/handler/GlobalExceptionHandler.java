@@ -184,7 +184,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
                 .message(maskSensitiveData(ex.getMessage()))
                 .path(exchange.getRequest().getPath().value())
                 .code(ex.getCode())
-                .metadata(ex.getMetadata());
+                .metadata(responseMetadata(ex.getMetadata()));
 
         // Add distributed tracing information
         enrichWithTracingInfo(builder, exchange);
@@ -235,7 +235,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
                         .field(error.getField())
                         .code(error.getCode())
                         .message(error.getMessage())
-                        .metadata(error.getMetadata())
+                        .metadata(responseMetadata(error.getMetadata()))
                         .build())
                 .collect(Collectors.toList());
 
@@ -249,7 +249,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
                 .traceId(UUID.randomUUID().toString())
                 .code(ex.getCode())
                 .errors(validationErrors)
-                .metadata(ex.getMetadata())
+                .metadata(responseMetadata(ex.getMetadata()))
                 .suggestion("Please check the validation errors and correct your request.")
                 .documentation(errorProperties.getDocumentationBaseUrl() != null ? errorProperties.getDocumentationBaseUrl() + "/validation" : null)
                 .build();
@@ -268,7 +268,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
     @ExceptionHandler(WebExchangeBindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     private Mono<Void> handleValidationException(ServerWebExchange exchange, WebExchangeBindException ex) {
-        log.error("Validation exception occurred: ", ex);
+        log.warn("Request validation failed with {} errors", ex.getErrorCount());
 
         // Convert Spring validation errors to our enhanced format
         List<ErrorResponse.ValidationError> validationErrors = ex.getBindingResult()
@@ -284,10 +284,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
 
                     // Add additional metadata for specific validation errors
                     if (error instanceof FieldError fieldError) {
-                        if (fieldError.getRejectedValue() != null) {
-                            metadata.put("rejectedValue", fieldError.getRejectedValue().toString());
-                            metadata.put("bindingFailure", fieldError.isBindingFailure());
-                        }
+                        metadata.put("bindingFailure", fieldError.isBindingFailure());
                     }
 
                     return ErrorResponse.ValidationError.builder()
@@ -344,7 +341,7 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
             Map<String, Object> metadata = convertedException.getMetadata();
 
             // Add metadata to the response
-            builder.metadata(metadata);
+            builder.metadata(responseMetadata(metadata));
 
             // Add suggestion from metadata if available
             if (metadata != null && metadata.containsKey("suggestion")) {
@@ -636,6 +633,24 @@ public class GlobalExceptionHandler extends FireflyMetricsSupport implements Err
             }
             typedBuilder.helpUrl(helpUrl);
         }
+    }
+
+    private Map<String, Object> responseMetadata(Map<String, Object> metadata) {
+        if (metadata == null) {
+            return null;
+        }
+        Map<String, Object> response = new HashMap<>(metadata);
+        boolean production = isProductionEnvironment();
+        if (production || !errorProperties.isIncludeDebugInfo()) {
+            for (String key : List.of("sourceClass", "sourceMethod", "sourceLine", "sourceFile", "exceptionType")) {
+                response.remove(key);
+            }
+        }
+        if (production || !errorProperties.isIncludeExceptionCause()) {
+            response.remove("causeType");
+            response.remove("causeMessage");
+        }
+        return response.isEmpty() ? null : response;
     }
 
     /**

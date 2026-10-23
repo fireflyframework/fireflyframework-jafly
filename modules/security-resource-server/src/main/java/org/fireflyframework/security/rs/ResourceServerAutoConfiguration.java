@@ -17,6 +17,7 @@
 package org.fireflyframework.security.rs;
 
 import org.fireflyframework.security.api.domain.SigningKey;
+import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.core.authority.AuthorityMappingProperties;
 import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapper;
 import org.fireflyframework.security.core.audit.LoggingAuditEventAdapter;
@@ -50,7 +51,6 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -97,8 +97,14 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public PolicyDecisionPort fireflyPolicyDecisionPort(ObjectProvider<PolicyRule> rules,
+                                                       ResourceServerProperties properties) {
+        return new EmbeddedPolicyDecisionAdapter(rules.orderedStream().toList(), properties.isStrictPolicy());
+    }
+
+    /** Preserves direct factory callers that explicitly rely on the legacy RBAC deferral. */
     public PolicyDecisionPort fireflyPolicyDecisionPort(ObjectProvider<PolicyRule> rules) {
-        return new EmbeddedPolicyDecisionAdapter(rules.orderedStream().toList());
+        return fireflyPolicyDecisionPort(rules, new ResourceServerProperties());
     }
 
     @Bean
@@ -151,7 +157,7 @@ public class ResourceServerAutoConfiguration {
 
     private static List<OAuth2TokenValidator<Jwt>> buildValidators(ResourceServerProperties properties) {
         List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
-        validators.add(new JwtTimestampValidator());
+        validators.add(AccessTokenValidators.timestamps());
         if (properties.getIssuer() != null && !properties.getIssuer().isBlank()) {
             validators.add(new JwtIssuerValidator(properties.getIssuer()));
         }
@@ -170,7 +176,14 @@ public class ResourceServerAutoConfiguration {
             PolicyDecisionPort policyDecisionPort,
             ResourceServerProperties properties) {
 
-        PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(policyDecisionPort);
+        PolicyDecisionPort urlPolicy = properties.isStrictPolicy()
+                ? (principal, action, resource, context) -> policyDecisionPort
+                        .authorize(principal, action, resource, context)
+                        .timeout(Duration.ofSeconds(5))
+                        .map(decision -> decision.obligations().isEmpty() ? decision
+                                : Decision.deny("URL enforcement cannot fulfill policy obligations"))
+                : policyDecisionPort;
+        PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(urlPolicy);
 
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)

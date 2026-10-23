@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-jafly</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
     <packaging>pom</packaging>
     <name>Jafly - Java Framework Reactor</name>
     <description>Unified Java framework build. Consumers use fireflyframework-parent or fireflyframework-bom.</description>
@@ -12,6 +12,7 @@
         <module>build/parent</module>
         <module>modules/agentic-bridge</module>
         <module>modules/backoffice</module>
+        <module>modules/batch</module>
         <module>modules/cache</module>
         <module>modules/cache-hazelcast</module>
         <module>modules/cache-jcache</module>

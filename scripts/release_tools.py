@@ -209,7 +209,7 @@ def verify_remote(inventory, url, username=None, token=None, attempts=1, delay=0
     homes = Path(__file__).with_name('package-homes.json')
     if urllib.parse.urlsplit(url).hostname == 'maven.pkg.github.com':
         from verify_github_packages import verify_github_layout
-        projects = check_reactor(Path(__file__).resolve().parents[1], expected=86)
+        projects = check_reactor(Path(__file__).resolve().parents[1], expected=87)
         return verify_github_layout(inventory, url, projects, homes, username, token, attempts, delay)
     if attempts < 1 or delay < 0:
         raise ValueError('attempts must be positive and delay nonnegative')
@@ -246,14 +246,14 @@ def main():
     check.add_argument('--tag')
     check.add_argument('--remote', help='Require the remote tag to resolve to the checkout commit')
     check.add_argument('--snapshot', action='store_true')
-    check.add_argument('--expected', type=int, default=86)
+    check.add_argument('--expected', type=int, default=87)
     check.add_argument('--output', type=Path)
     inventory = commands.add_parser('inventory')
     inventory.add_argument('--root', type=Path, default=Path('.'))
     source = inventory.add_mutually_exclusive_group(required=True)
     source.add_argument('--repository', type=Path)
     source.add_argument('--bundle', type=Path)
-    inventory.add_argument('--expected', type=int, default=86)
+    inventory.add_argument('--expected', type=int, default=87)
     inventory.add_argument('--output', type=Path, required=True)
     verify = commands.add_parser('verify')
     verify.add_argument('--manifest', type=Path, required=True)

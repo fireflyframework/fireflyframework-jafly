@@ -24,7 +24,7 @@ Operate this service if onboarding partners manage callbacks through HTTP. Confi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-callbacks-web</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

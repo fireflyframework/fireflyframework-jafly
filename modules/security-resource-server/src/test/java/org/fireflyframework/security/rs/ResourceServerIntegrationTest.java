@@ -113,6 +113,16 @@ class ResourceServerIntegrationTest {
     }
 
     @Test
+    void signedTokenWithoutExpirationIsUnauthorized() throws Exception {
+        JWTClaimsSet claims = validClaims().expirationTime(null)
+                .notBeforeTime(Date.from(Instant.now().minusSeconds(1))).build();
+        assertThat(claims.getExpirationTime()).isNull();
+        String token = signWith(keyManagementPort.activeSigningKey().block(), claims);
+        client.get().uri("/api/me").header("Authorization", "Bearer " + token)
+                .exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test
     void expiredTokenIsUnauthorized() throws Exception {
         Instant past = Instant.now().minusSeconds(3600);
         JWTClaimsSet expired = new JWTClaimsSet.Builder()

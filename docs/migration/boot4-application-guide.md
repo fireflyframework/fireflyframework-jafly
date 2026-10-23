@@ -51,6 +51,8 @@ Testcontainers. Version 2 changes Maven module names. Keep Docker available and 
 
 Provider integrations. Cloud SDK starters, Springdoc, resilience, and security integrations move with the Boot 4 generation. Verify authentication, connection configuration, and failure handling against your actual providers.
 
+gRPC generation and transport. Keep the generator's `grpc.version` aligned with every resolved `io.grpc` runtime artifact. A consumer can compile while a mixed Netty/core train fails with `AbstractMethodError` during server creation. The parent exposes the same gRPC version selected by its Boot platform. Run `python3 scripts/verify_grpc_alignment.py` from the framework checkout to resolve a real consumer graph. The script also accepts `--maven`, `--settings`, `--repository` and `--report` for an isolated build. Use `protoc` from the selected `protobuf.version`, inspect native generator architecture on the build host, and exercise a generated client over an actual owned transport. A classifier name alone does not establish that the downloaded binary runs on that architecture.
+
 ## Suggested application verification
 
 - Compile with JDK 25 and inspect the effective dependency tree.

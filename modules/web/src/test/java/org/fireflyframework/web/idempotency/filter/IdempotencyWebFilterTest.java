@@ -64,6 +64,7 @@ class IdempotencyWebFilterTest {
         // Create properties
         properties = new IdempotencyProperties();
         properties.getCache().setTtlHours(24);
+        properties.setNamespace("unit-test");
 
         // Create the filter
         idempotencyWebFilter = new IdempotencyWebFilter(properties, idempotencyCache);
@@ -108,7 +109,7 @@ class IdempotencyWebFilterTest {
     }
 
     @Test
-    void shouldNotAllowSecondRequestWithSameIdempotencyKey() {
+    void shouldNotReplayUnscopedLegacyCacheEntry() {
         // Arrange
         String idempotencyKey = "test-key-2";
 
@@ -135,17 +136,12 @@ class IdempotencyWebFilterTest {
         idempotencyWebFilter.filter(exchange, filterChain).block();
 
         // Verify that the filter chain was not called (request didn't reach the controller)
-        verify(filterChain, never()).filter(any());
-
-        // Verify that the response status is OK (from the cached response)
-        assertEquals(HttpStatus.OK, exchange.getResponse().getStatusCode());
-
-        // Verify that the response content type is APPLICATION_JSON (from the cached response)
-        assertEquals(MediaType.APPLICATION_JSON, exchange.getResponse().getHeaders().getContentType());
+        verify(filterChain, times(1)).filter(any());
+        org.junit.jupiter.api.Assertions.assertNull(exchange.getResponse().getStatusCode());
     }
 
     @Test
-    void shouldApplyIdempotencyToGetMethod() {
+    void shouldAllowSafeGetWithoutResponseReuse() {
         // Arrange
         String idempotencyKey = "test-key-3";
         MockServerHttpRequest request = MockServerHttpRequest

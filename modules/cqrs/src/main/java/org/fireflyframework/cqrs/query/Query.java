@@ -108,33 +108,22 @@ public interface Query<R> {
     }
 
     /**
-     * Cache key for this query if caching is enabled.
-     * Default implementation uses query class name and metadata hash.
-     * The cache key will be automatically prefixed with ":cqrs:" by the QueryCacheAdapter.
-     * Combined with fireflyframework-cache's "firefly:cache:{cacheName}:" prefix, final keys are:
-     * <ul>
-     *   <li>Caffeine: "firefly:cache:default::cqrs:QueryName"</li>
-     *   <li>Redis: "firefly:cache:default::cqrs:QueryName"</li>
-     * </ul>
+     * Cache key for this query, or {@code null} to execute without caching.
      *
-     * <p>The double colon (::) between the cache name and the CQRS namespace provides
-     * clear visual separation between the cache infrastructure prefix and the application-level namespace.
+     * <p>Caching requires an explicit key. A class name or metadata hash cannot
+     * identify all business inputs or the authority under which a result is read.
+     * Override this method only when the key includes every result-affecting input
+     * and the relevant trusted tenant, subject, and policy scope. Do not put raw
+     * personal data or credentials in a key. Handlers requiring current state
+     * should disable caching through {@code @QueryHandlerComponent(cacheable = false)}.
      *
-     * @return cache key (without prefix), or null to disable caching for this instance
+     * <p>The cache adapter adds its CQRS namespace to an explicitly supplied key.
+     * Existing class-name and metadata-only entries are not read by this default.
+     *
+     * @return an explicitly scoped cache key, or null by default
      */
     default String getCacheKey() {
-        if (!isCacheable()) {
-            return null;
-        }
-
-        String baseKey = this.getClass().getSimpleName();
-        Map<String, Object> metadata = getMetadata();
-
-        if (metadata != null && !metadata.isEmpty()) {
-            return baseKey + ":" + metadata.hashCode();
-        }
-
-        return baseKey;
+        return null;
     }
 
     /**

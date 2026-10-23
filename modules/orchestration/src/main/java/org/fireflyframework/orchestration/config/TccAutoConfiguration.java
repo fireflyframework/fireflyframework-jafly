@@ -64,8 +64,10 @@ public class TccAutoConfiguration {
     public TccExecutionOrchestrator tccExecutionOrchestrator(StepInvoker stepInvoker,
                                                               OrchestrationEvents events,
                                                               OrchestrationEventPublisher eventPublisher,
-                                                              ExecutionPersistenceProvider persistence) {
-        return new TccExecutionOrchestrator(stepInvoker, events, eventPublisher, persistence);
+                                                              ExecutionPersistenceProvider persistence,
+                                                              OrchestrationProperties properties) {
+        return new TccExecutionOrchestrator(stepInvoker, events, eventPublisher, persistence,
+                properties.getTcc().getPersistenceMode());
     }
 
     @Bean
@@ -76,11 +78,12 @@ public class TccAutoConfiguration {
                                 ExecutionPersistenceProvider persistence,
                                 ObjectProvider<DeadLetterService> dlqService,
                                 OrchestrationEventPublisher eventPublisher,
-                                ObjectProvider<OrchestrationTracer> tracer) {
+                                ObjectProvider<OrchestrationTracer> tracer,
+                                OrchestrationProperties properties) {
         log.info("[orchestration] TCC engine initialized");
         return new TccEngine(registry, events, orchestrator,
                 persistence, dlqService.getIfAvailable(), eventPublisher,
-                tracer.getIfAvailable());
+                tracer.getIfAvailable(), properties.getTcc().getPersistenceMode());
     }
 
     // --- TCC Composition beans ---

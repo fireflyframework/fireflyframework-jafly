@@ -23,6 +23,8 @@ import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.fireflyframework.web.idempotency.cache.FireflyCacheIdempotencyAdapter;
 import org.fireflyframework.web.idempotency.cache.IdempotencyCache;
 import org.fireflyframework.web.idempotency.filter.IdempotencyWebFilter;
+import org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolver;
+import org.fireflyframework.web.idempotency.scope.IdempotencyScopeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -141,25 +143,28 @@ public class IdempotencyAutoConfiguration {
         return new FireflyCacheIdempotencyAdapter(cacheManager, properties);
     }
 
-    /**
-     * Creates the IdempotencyWebFilter bean.
-     *
-     * <p>This filter intercepts HTTP requests and provides idempotency support
-     * for POST, PUT, and PATCH requests that include the X-Idempotency-Key header.</p>
-     *
-     * <p>This bean is only created when an IdempotencyCache bean exists.</p>
-     *
-     * @param properties the idempotency configuration properties
-     * @param cache the idempotency cache implementation
-     * @return the idempotency web filter
-     */
+    /** Supplies a trusted identity resolver; applications may replace it for their authentication stack. */
+    @Bean
+    @ConditionalOnMissingBean(IdempotencyScopeResolver.class)
+    public IdempotencyScopeResolver idempotencyScopeResolver(
+            org.springframework.beans.factory.ObjectProvider<org.fireflyframework.security.spi.TenantResolverPort> tenantResolvers) {
+        return new AuthenticatedIdempotencyScopeResolver(tenantResolvers.getIfAvailable());
+    }
+
+    /** Creates a scoped mutation-response filter after authentication and before handler invocation. */
     @Bean
     @ConditionalOnBean(IdempotencyCache.class)
     @ConditionalOnMissingBean(IdempotencyWebFilter.class)
     public IdempotencyWebFilter idempotencyWebFilter(
             IdempotencyProperties properties,
-            IdempotencyCache cache) {
-        return new IdempotencyWebFilter(properties, cache);
+            IdempotencyCache cache,
+            IdempotencyScopeResolver scopeResolver,
+            @org.springframework.beans.factory.annotation.Value("${spring.application.name:}") String applicationName,
+            org.springframework.beans.factory.ObjectProvider<org.springframework.web.reactive.HandlerMapping> mappings) {
+        if (properties.getNamespace() == null || properties.getNamespace().isBlank()) {
+            properties.setNamespace(applicationName);
+        }
+        return new IdempotencyWebFilter(properties, cache, scopeResolver, () -> mappings.orderedStream().toList());
     }
 }
 

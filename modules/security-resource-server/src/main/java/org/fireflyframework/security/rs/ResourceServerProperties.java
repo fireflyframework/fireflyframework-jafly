@@ -34,6 +34,13 @@ public class ResourceServerProperties {
     /** Ant-style path patterns that are publicly accessible without authentication. */
     private List<String> permitMatchers = new ArrayList<>();
 
+    /**
+     * Requires explicit configured policy decisions in the default embedded provider. Empty rules,
+     * empty results, and failed rules deny; permit obligations remain for the enforcing caller.
+     * False retains the legacy no-rules deferral to a separate RBAC gate.
+     */
+    private boolean strictPolicy;
+
     /** Expected token issuer ({@code iss}); when set, an issuer validator is enforced. */
     private String issuer;
 

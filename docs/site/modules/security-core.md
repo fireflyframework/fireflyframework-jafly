@@ -40,7 +40,7 @@ Map the authenticated applicant/reviewer claims and evaluate the configured auth
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-core</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -187,7 +187,7 @@ Supporting types: `SecureRequirement` (a framework-neutral view of `@Secure`, bu
 The engine is deliberately fail-closed at every decision point:
 
 - `SecureAuthorizationEvaluator`. a `null` (unauthenticated) principal is denied. Declared dimensions (roles, scopes, permissions, expression) are AND-ed; within a dimension, `requireAll*` selects ALL vs ANY (ANY by default). An empty requirement permits any authenticated principal ("require authentication"). A SpEL expression that evaluates false, or throws / is malformed, denies.
-- `EmbeddedPolicyDecisionAdapter`. deny-overrides: any rule DENY wins; rules registered but none permitting yields DENY; a rule that errors becomes INDETERMINATE (never PERMIT). With no rules registered it permits, deferring to RBAC at the PEP (ABAC simply not in use).
+- `EmbeddedPolicyDecisionAdapter`. The original constructor preserves legacy deny-overrides semantics and permits with no rules to defer to a separate RBAC gate. The `(List<PolicyRule>, boolean strict)` overload with `true` denies missing rules, failed/empty publishers, malformed decisions without an effect and explicit denials, requires an explicit permit, and retains permit obligations in rule order. Normal indeterminate abstention may coexist with an explicit permit. An enforcing caller must fulfill returned obligations or deny; a provider bean is not evidence of an institution policy. The resource-server binding selects this overload with `firefly.security.resource-server.strict-policy: true`.
 - `InMemoryKeyManagementAdapter`. flagged not-for-production; the autoconfigure layer fails closed at startup if no real key source resolves under prod profiles.
 - `CaffeineIntrospectionCache`. TTL is bounded by the token's own expiry, so a revoked-by-expiry token cannot outlive its `exp`.
 
