@@ -106,9 +106,10 @@
   {
     "id": "business-coordination",
     "title": "Business coordination",
-    "summary": "Coordinate workflows, compensating sagas, and try-confirm-cancel steps with explicit recovery and failure policies.",
+    "summary": "Coordinate workflows, compensating sagas, try-confirm-cancel steps, and restartable JDBC jobs with explicit recovery and failure policies.",
     "modules": [
-      "orchestration"
+      "orchestration",
+      "batch"
     ]
   },
   {

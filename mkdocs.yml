@@ -184,6 +184,7 @@ nav:
           - "ECM eSignature: Logalty": modules/ecm-esignature-logalty.md
       - "Business coordination":
           - "Orchestration": modules/orchestration.md
+          - "Durable batch": modules/batch.md
       - "Service operations":
           - "Observability": modules/observability.md
           - "Web": modules/web.md

@@ -1,4 +1,8 @@
+![Jafly durable batch](../../docs/site/assets/modules/batch.svg)
+
 # Native Durable Batch
+
+[Site guide](https://fireflyframework.github.io/fireflyframework-jafly/modules/batch/) · [Business coordination](https://fireflyframework.github.io/fireflyframework-jafly/capabilities/business-coordination/)
 
 Optional Spring Batch JDBC infrastructure for application-owned restartable jobs. This module uses the framework's Boot-managed Spring Batch 6.0.5, a PostgreSQL JobRepository, explicit JDBC transactions, and a bounded application-owned executor.
 

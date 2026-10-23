@@ -115,6 +115,7 @@ Coordinate eligibility checks, capacity reservations, and review steps. [Follow 
 | Component | Purpose | Role |
 | --- | --- | --- |
 | [Orchestration](orchestration.md) | Coordinate workflows, compensating sagas, and try-confirm-cancel operations in a reactive application. | application library |
+| [Durable Batch](batch.md) | Run application-owned restartable jobs with explicit JDBC transactions and PostgreSQL checkpoints. | optional persistence foundation |
 
 ## Service operations
 
