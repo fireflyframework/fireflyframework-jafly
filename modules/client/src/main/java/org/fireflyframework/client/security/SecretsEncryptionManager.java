@@ -114,7 +114,7 @@ public class SecretsEncryptionManager {
             byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
             // Combine IV and ciphertext
-            ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(checkedCombinedLength(iv.length, ciphertext.length));
             byteBuffer.put(iv);
             byteBuffer.put(ciphertext);
 
@@ -180,7 +180,7 @@ public class SecretsEncryptionManager {
         }
         String encrypted = encrypt(value);
         encryptedSecrets.put(key, encrypted);
-        log.debug("Stored encrypted secret: {}", key);
+        log.debug("Stored encrypted secret");
     }
 
     /**
@@ -192,7 +192,7 @@ public class SecretsEncryptionManager {
     public String getSecret(String key) {
         String encrypted = encryptedSecrets.get(key);
         if (encrypted == null) {
-            log.warn("Secret not found: {}", key);
+            log.warn("Secret not found");
             return null;
         }
         return decrypt(encrypted);
@@ -207,7 +207,7 @@ public class SecretsEncryptionManager {
     public boolean removeSecret(String key) {
         boolean removed = encryptedSecrets.remove(key) != null;
         if (removed) {
-            log.debug("Removed secret: {}", key);
+            log.debug("Removed secret");
         }
         return removed;
     }
@@ -265,6 +265,13 @@ public class SecretsEncryptionManager {
 
         log.info("Key rotation completed successfully");
         return newManager;
+    }
+
+    static int checkedCombinedLength(int ivLength, int ciphertextLength) {
+        if (ivLength < 0 || ciphertextLength < 0) {
+            throw new IllegalArgumentException("Lengths cannot be negative");
+        }
+        return Math.addExact(ivLength, ciphertextLength);
     }
 
     /**

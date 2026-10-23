@@ -28,6 +28,12 @@ The service may call a document-verification partner during a later onboarding s
 </dependency>
 ```
 
+## Security helper diagnostics
+
+Secret storage, missing-secret, and removal events use fixed messages without caller-supplied secret names. Successful JWT validation does not log the verified subject. A non-null subject must remain text; other shapes receive a constant `JwtValidationException` diagnostic. Missing/null subjects and the existing required-claim presence rule retain their behavior. Encryption checks the combined IV and ciphertext length before allocating its output buffer; this check does not impose a new plaintext or configured-IV size budget. The cipher format and validation APIs are unchanged.
+
+The generated-key encoding contract remains **open**: `create()` converts random bytes through ISO-8859-1 before UTF-8 key loading, while `generateMasterKey()` returns Base64 and `rotateKey(String)` expects raw 32-byte UTF-8 text. These factory/generated-key paths are not qualified by this correction. Cipher compatibility tests use an explicitly supplied 32-byte ASCII master key; production key material belongs in an application-managed secret source.
+
 ## Quick start
 
 The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided dependency and annotation processor as described in [Constructor injection](../maven.md#constructor-injection).
