@@ -22,6 +22,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -41,15 +43,59 @@ public abstract class PostgresBatchFixture {
         database.start();
         role = "batch_runtime_" + UUID.randomUUID().toString().replace("-", "");
         password = UUID.randomUUID().toString();
-        try (var connection = owner().getConnection();
-                var statement = connection.createStatement()) {
-            statement.execute(
-                    "CREATE ROLE "
-                            + role
-                            + " LOGIN NOSUPERUSER NOBYPASSRLS PASSWORD '"
-                            + password
-                            + "'");
+        try (var connection = owner().getConnection()) {
+            createRuntimeRole(connection, role, password);
         }
+    }
+
+    static void createRuntimeRole(Connection connection, String roleName, String rolePassword)
+            throws SQLException {
+        if (invalidCredential(roleName)
+                || roleName.getBytes(StandardCharsets.UTF_8).length > 63
+                || invalidCredential(rolePassword)) {
+            throw new IllegalArgumentException("Invalid runtime role credentials");
+        }
+        try {
+            try (var statement = connection.createStatement()) {
+                statement.execute(
+                        """
+                        CREATE OR REPLACE FUNCTION pg_temp.create_batch_runtime_role(role_name text, role_password text)
+                        RETURNS void
+                        LANGUAGE plpgsql
+                        SECURITY INVOKER
+                        SET search_path = pg_catalog
+                        AS $role_setup$
+                        BEGIN
+                            EXECUTE pg_catalog.format(
+                                'CREATE ROLE %I LOGIN NOSUPERUSER NOBYPASSRLS PASSWORD %L',
+                                role_name, role_password);
+                        END
+                        $role_setup$
+                        """);
+            }
+            try (var query =
+                    connection.prepareStatement("SELECT pg_temp.create_batch_runtime_role(?, ?)")) {
+                query.setString(1, roleName);
+                query.setString(2, rolePassword);
+                query.execute();
+            }
+        } catch (SQLException failure) {
+            throw new SQLException(
+                    "Runtime role provisioning failed",
+                    failure.getSQLState(),
+                    failure.getErrorCode());
+        }
+    }
+
+    private static boolean invalidCredential(String value) {
+        return value == null
+                || value.isBlank()
+                || value.indexOf('\0') >= 0
+                || value.codePoints()
+                        .anyMatch(
+                                codePoint ->
+                                        codePoint >= Character.MIN_SURROGATE
+                                                && codePoint <= Character.MAX_SURROGATE);
     }
 
     @AfterAll
@@ -82,7 +128,7 @@ public abstract class PostgresBatchFixture {
             ddl =
                     ddl.replace(
                             "CREATE SEQUENCE BATCH_JOB_INSTANCE_SEQ MAXVALUE 9223372036854775807 NO"
-                                + " CYCLE;",
+                                    + " CYCLE;",
                             "");
         try (var connection = owner().getConnection();
                 var statement = connection.createStatement()) {
