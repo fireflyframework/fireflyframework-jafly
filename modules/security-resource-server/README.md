@@ -76,6 +76,10 @@ PolicyRule denyReports() {
 }
 ```
 
+## Header bearer and browser requests
+
+The default chain uses explicit header bearer authentication and never restores authentication from a session cookie. Native Spring Security CSRF protection remains enabled with its bearer exemption: valid signed bearer unsafe requests need no CSRF token; unsafe non-bearer requests require CSRF, including allowlisted browser routes. Missing CSRF can return 403 before authentication. See the [header bearer and CSRF contract](docs/bearer-api-and-csrf.md) for transport, status and application-owned browser-chain details.
+
 ## Configuration
 
 The `firefly.security.resource-server` namespace is bound by [ResourceServerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.

@@ -54,6 +54,7 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import reactor.core.publisher.Mono;
@@ -186,7 +187,7 @@ public class ResourceServerAutoConfiguration {
         PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(urlPolicy);
 
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)

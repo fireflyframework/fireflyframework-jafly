@@ -81,6 +81,12 @@ PolicyRule denyReports() {
 }
 ```
 
+## Header bearer authentication and CSRF
+
+The default API chain authenticates protected routes through an explicit `Authorization: Bearer <token>` header and never restores authentication from a session cookie. Basic, form, query-token and token-cookie credentials are not alternate authorities. Native Spring Security CSRF protection remains enabled with its bearer exemption: legitimate signed bearer POST/PUT/PATCH/DELETE requests do not need CSRF tokens, while unsafe non-bearer requests do. A missing CSRF token can return 403 before authentication, including on explicitly allowlisted browser routes. A valid CSRF token does not authenticate a request.
+
+Applications that need session login supply their own filter chain through the existing bean-backoff seam and retain appropriate CSRF controls. CSRF state may use WebSession without making that session an API authentication authority. The [canonical header bearer and browser CSRF contract](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/docs/bearer-api-and-csrf.md) documents exact transport/status compatibility, permitted browser token delivery, and the maintained real-HTTP boundaries.
+
 ## Require an explicit current policy
 
 `firefly.security.resource-server.strict-policy: true` makes the fallback embedded policy deny when no rules are configured. A failed or empty rule publisher, or a decision without an effect, denies even when another rule permits. Normal `INDETERMINATE` results may abstain, but at least one explicit permit is required and any denial wins. The embedded provider retains permit obligations; an enforcing business boundary must fulfill them or deny access.
