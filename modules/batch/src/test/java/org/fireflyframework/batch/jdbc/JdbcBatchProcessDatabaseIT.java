@@ -71,7 +71,7 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
             connection.setSchema(selected);
             statement.execute(
                     "CREATE TABLE owned_items(run_id varchar(100) NOT NULL,item_no integer NOT"
-                        + " NULL,PRIMARY KEY(run_id,item_no))");
+                            + " NULL,PRIMARY KEY(run_id,item_no))");
             statement.execute("GRANT SELECT,INSERT ON owned_items TO " + role);
         }
         return source;
@@ -210,6 +210,86 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
                                 + Path.of(System.getProperty("durable.batch.jar")).toUri().toURL());
     }
 
+    private static boolean isNativeEmptyExecutionObservation(
+            String output, long instanceId, long version) {
+        var lines = output.lines().toList();
+        return lines.contains(
+                        "Exception in thread \"main\" java.lang.IllegalStateException: Cannot find"
+                                + " any job execution for job instance: JobInstance: id="
+                                + instanceId
+                                + ", version="
+                                + version
+                                + ", Job=[owned-checkpoint-job]")
+                && lines.contains(
+                        "\tat org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.createJobExecution(TaskExecutorJobLauncher.java:130)");
+    }
+
+    private static boolean isNativeSerializationRejection(String output) {
+        var lines = output.lines().toList();
+        return lines.contains(
+                        "Exception in thread \"main\""
+                            + " org.springframework.dao.CannotAcquireLockException:"
+                            + " PreparedStatementCallback; SQL [INSERT INTO"
+                            + " BATCH_JOB_INSTANCE(JOB_INSTANCE_ID, JOB_NAME, JOB_KEY, VERSION)")
+                && lines.contains(
+                        "Caused by: org.postgresql.util.PSQLException: ERROR: could not serialize"
+                            + " access due to read/write dependencies among transactions")
+                && lines.contains(
+                        "\tat org.springframework.batch.core.repository.dao.jdbc.JdbcJobInstanceDao.createJobInstance(JdbcJobInstanceDao.java:164)")
+                && lines.contains(
+                        "\tat org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:144)");
+    }
+
+    @Test
+    void nativeRejectionRequiresExactDiagnosticDescriptors() {
+        String observed =
+                "OWNED_READY_TO_START=true\n"
+                    + "Exception in thread \"main\" java.lang.IllegalStateException: Cannot find"
+                    + " any job execution for job instance: JobInstance: id=7, version=0,"
+                    + " Job=[owned-checkpoint-job]\n"
+                    + "\tat org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.createJobExecution(TaskExecutorJobLauncher.java:130)\n";
+        assertThat(isNativeEmptyExecutionObservation(observed, 7, 0)).isTrue();
+        for (String other :
+                List.of(
+                        observed.replace("id=7", "id=8"),
+                        observed.replace("version=0", "version=1"),
+                        observed.replace("owned-checkpoint-job", "another-job"),
+                        observed.replace("IllegalStateException", "IllegalArgumentException"),
+                        observed.replace(":130)", ":131)"),
+                        observed.replace("createJobExecution(", "otherMethod("),
+                        observed.replace("Exception in thread", "Prefix Exception in thread"),
+                        "java.lang.IllegalStateException: unrelated initialization failure")) {
+            assertThat(isNativeEmptyExecutionObservation(other, 7, 0)).isFalse();
+        }
+        String serialization =
+                "Exception in thread \"main\" org.springframework.dao.CannotAcquireLockException:"
+                    + " PreparedStatementCallback; SQL [INSERT INTO"
+                    + " BATCH_JOB_INSTANCE(JOB_INSTANCE_ID, JOB_NAME, JOB_KEY, VERSION)\n"
+                    + "\tat org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:144)\n"
+                    + "\tat org.springframework.batch.core.repository.dao.jdbc.JdbcJobInstanceDao.createJobInstance(JdbcJobInstanceDao.java:164)\n"
+                    + "Caused by: org.postgresql.util.PSQLException: ERROR: could not serialize"
+                    + " access due to read/write dependencies among transactions\n";
+        assertThat(isNativeSerializationRejection(serialization)).isTrue();
+        for (String other :
+                List.of(
+                        serialization.replace("BATCH_JOB_INSTANCE(", "ANOTHER_TABLE("),
+                        serialization.replace(
+                                "CannotAcquireLockException", "IllegalStateException"),
+                        serialization.replace(
+                                "could not serialize access due to read/write dependencies among"
+                                    + " transactions",
+                                "deadlock detected"),
+                        serialization.replace(
+                                "org.postgresql.util.PSQLException", "java.sql.SQLException"),
+                        serialization.replace(":164)", ":165)"),
+                        serialization.replace(":144)", ":145)"),
+                        serialization.replace("Exception in thread", "Prefix Exception in thread"),
+                        "org.springframework.dao.CannotAcquireLockException: unrelated lock"
+                            + " failure")) {
+            assertThat(isNativeSerializationRejection(other)).isFalse();
+        }
+    }
+
     @Test
     void simultaneousIndependentProcessesAdmitOneLiveExecutionAndOneEffectStream()
             throws Exception {
@@ -244,22 +324,34 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
         held(source, winner, winnerName);
         assertThat(loser.waitFor(10, TimeUnit.SECONDS)).isTrue();
         assertThat(loser.exitValue()).isNotZero();
-        assertThat(Files.readString(temporary.resolve(loserName + ".log")))
-                .containsAnyOf(
-                        "JobExecutionAlreadyRunningException",
-                        "DuplicateKeyException",
-                        "CannotSerializeTransactionException",
-                        "JobInstanceAlreadyExistsException",
-                        "java.lang.IllegalStateException: JobInstance must not already exist");
-        assertThat(
-                        new JdbcTemplate(source)
-                                .queryForObject(
-                                        "SELECT count(*) FROM BATCH_JOB_INSTANCE", Integer.class))
+        var jdbc = new JdbcTemplate(source);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM BATCH_JOB_INSTANCE", Integer.class))
                 .isEqualTo(1);
+        var instance =
+                jdbc.queryForMap("SELECT JOB_INSTANCE_ID,VERSION,JOB_NAME FROM BATCH_JOB_INSTANCE");
+        long instanceId = ((Number) instance.get("job_instance_id")).longValue();
+        long instanceVersion = ((Number) instance.get("version")).longValue();
+        assertThat(instance.get("job_name")).isEqualTo("owned-checkpoint-job");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM BATCH_JOB_EXECUTION", Integer.class))
+                .isEqualTo(1);
+        var execution = jdbc.queryForMap("SELECT JOB_INSTANCE_ID,STATUS FROM BATCH_JOB_EXECUTION");
+        assertThat(((Number) execution.get("job_instance_id")).longValue()).isEqualTo(instanceId);
+        assertThat(execution.get("status")).isEqualTo("STARTED");
+        String loserOutput = Files.readString(temporary.resolve(loserName + ".log"));
+        assertThat(loserOutput).doesNotContain("OWNED_EXECUTION_ID=", "OWNED_FINAL_STATUS=");
+        if (!isNativeEmptyExecutionObservation(loserOutput, instanceId, instanceVersion)
+                && !isNativeSerializationRejection(loserOutput)) {
+            assertThat(loserOutput)
+                    .containsAnyOf(
+                            "JobExecutionAlreadyRunningException",
+                            "DuplicateKeyException",
+                            "CannotSerializeTransactionException",
+                            "JobInstanceAlreadyExistsException",
+                            "java.lang.IllegalStateException: JobInstance must not already exist");
+        }
         Files.writeString(release, "owned admitted process may finish");
         success(winner, winnerName);
         assertThat(rows(source)).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        var jdbc = new JdbcTemplate(source);
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT count(*) FROM BATCH_JOB_EXECUTION WHERE STATUS='COMPLETED'",
@@ -268,7 +360,7 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT count(*) FROM BATCH_JOB_EXECUTION WHERE STATUS IN"
-                                    + " ('STARTING','STARTED','STOPPING')",
+                                        + " ('STARTING','STARTED','STOPPING')",
                                 Integer.class))
                 .isZero();
         Files.writeString(
@@ -292,7 +384,7 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
                         new JdbcTemplate(source)
                                 .queryForObject(
                                         "SELECT STATUS FROM BATCH_JOB_EXECUTION WHERE"
-                                            + " JOB_EXECUTION_ID=?",
+                                                + " JOB_EXECUTION_ID=?",
                                         String.class,
                                         originalId))
                 .isEqualTo("STARTED");
@@ -340,7 +432,7 @@ class JdbcBatchProcessDatabaseIT extends PostgresBatchFixture {
                         new JdbcTemplate(source)
                                 .queryForObject(
                                         "SELECT STATUS FROM BATCH_JOB_EXECUTION WHERE"
-                                            + " JOB_EXECUTION_ID=?",
+                                                + " JOB_EXECUTION_ID=?",
                                         String.class,
                                         originalId))
                 .isEqualTo("STOPPED");

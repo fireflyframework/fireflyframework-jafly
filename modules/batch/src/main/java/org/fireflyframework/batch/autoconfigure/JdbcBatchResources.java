@@ -20,6 +20,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.sql.DataSource;
@@ -40,7 +41,7 @@ record JdbcBatchResources(
         if (manager.getDataSource() != source) {
             throw new IllegalStateException(
                     "Durable Batch manager must own the same DataSource selected by"
-                        + " data-source-ref");
+                            + " data-source-ref");
         }
         ThreadPoolTaskExecutor executor =
                 selected(
@@ -58,7 +59,18 @@ record JdbcBatchResources(
             throw new IllegalStateException(
                     "Durable Batch task-executor-ref requires queueCapacity=0");
         }
-        if (!(executor.getThreadPoolExecutor().getRejectedExecutionHandler()
+        ThreadPoolExecutor initialized = executor.getThreadPoolExecutor();
+        if (initialized.getCorePoolSize() < 1
+                || initialized.getCorePoolSize() > 32
+                || initialized.getCorePoolSize() != initialized.getMaximumPoolSize()) {
+            throw new IllegalStateException(
+                    "Durable Batch initialized executor requires core=max in 1..32");
+        }
+        if (!(initialized.getQueue() instanceof SynchronousQueue)) {
+            throw new IllegalStateException(
+                    "Durable Batch initialized executor requires a SynchronousQueue");
+        }
+        if (!(initialized.getRejectedExecutionHandler()
                 instanceof ThreadPoolExecutor.AbortPolicy)) {
             throw new IllegalStateException("Durable Batch task-executor-ref requires AbortPolicy");
         }
