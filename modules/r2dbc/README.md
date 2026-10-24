@@ -42,6 +42,10 @@ spring:
     password: secret
 ```
 
+### Optional UTC auditing
+
+For `LocalDateTime`, `OffsetDateTime`, and `Instant` audit fields, expose `new org.fireflyframework.core.auditing.UtcOffsetDateTimeProvider(Clock.systemUTC())` as a `DateTimeProvider` bean and select its name with `@EnableR2dbcAuditing(dateTimeProviderRef = "yourBeanName")`. The injected clock is normalized to UTC. Spring Data retains create/update, immutable entity, and auditing flag behavior. This helper is opt-in; it does not enable auditing or register a bean automatically. Legacy `Date` and `Long` audit fields are unsupported by this provider.
+
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 
 ```java
