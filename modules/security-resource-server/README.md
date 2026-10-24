@@ -91,6 +91,10 @@ The `firefly.security.resource-server` namespace is bound by [ResourceServerProp
 | `firefly.security.resource-server.audiences` | `List<String>` | `new ArrayList<>()` |
 | `firefly.security.resource-server.authority-prefix` | `String` | `""` |
 | `firefly.security.resource-server.role-claim-paths` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.tenant-claim-paths` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.tenant-required` | `boolean` | `false` |
+
+Set `tenant-claim-paths: [tenant_id]` to project exactly one distinct tenant from validated token claims into `SecurityPrincipal.tenantId`; request headers are not used. The empty default preserves the existing unconfigured principal. With `tenant-required: true`, unresolved or ambiguous tenants reject authentication, and missing or invalid configured paths fail startup. Optional configured projection yields a null tenant when unresolved or ambiguous. Resolver errors reject authentication in either mode without exposing claim values.
 
 ## API overview
 

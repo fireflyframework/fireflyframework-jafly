@@ -56,6 +56,13 @@ public class ResourceServerProperties {
     /** Claim paths inspected for OAuth2 scopes. */
     private List<String> scopeClaimPaths = new ArrayList<>();
 
+    /** Signed claim dot-paths projected into the principal tenant; empty preserves single-tenant behavior. */
+    private List<String> tenantClaimPaths = new ArrayList<>();
+
+    /** Required unresolved or ambiguous tenant claims deny authentication; optional projection yields null. */
+    private boolean tenantRequired;
+
+
     /**
      * Remote JWKS endpoint of an external IdP (e.g. Keycloak), e.g.
      * {@code https://auth.example/realms/r/protocol/openid-connect/certs}. When set, the default

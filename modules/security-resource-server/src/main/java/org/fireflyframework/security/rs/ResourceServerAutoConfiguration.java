@@ -25,6 +25,7 @@ import org.fireflyframework.security.core.context.PrincipalFactory;
 import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapter;
 import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapter;
 import org.fireflyframework.security.core.policy.PolicyRule;
+import org.fireflyframework.security.core.tenant.ConfigurableTenantResolver;
 import org.fireflyframework.security.spi.AuditEventPort;
 import org.fireflyframework.security.spi.AuthorityMappingPort;
 import org.fireflyframework.security.spi.KeyManagementPort;
@@ -122,8 +123,27 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(PrincipalFactory principalFactory) {
-        return new JwtToFireflyPrincipalConverter(principalFactory);
+    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(
+            PrincipalFactory principalFactory, ResourceServerProperties properties) {
+        List<String> paths = properties.getTenantClaimPaths();
+        if (paths == null || paths.stream().anyMatch(path -> path == null || path.isBlank()
+                || java.util.Arrays.stream(path.split("\\.", -1)).anyMatch(String::isBlank))) {
+            throw new IllegalArgumentException("Valid tenant claim paths are required");
+        }
+        if (paths.isEmpty()) {
+            if (properties.isTenantRequired()) {
+                throw new IllegalArgumentException("Required tenant projection needs configured claim paths");
+            }
+            return new JwtToFireflyPrincipalConverter(principalFactory);
+        }
+        return new JwtToFireflyPrincipalConverter(principalFactory,
+                new ConfigurableTenantResolver(paths), properties.isTenantRequired());
+    }
+
+    /** Preserves direct callers that use the unconfigured single-tenant projection. */
+    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(
+            PrincipalFactory principalFactory) {
+        return fireflyJwtAuthenticationConverter(principalFactory, new ResourceServerProperties());
     }
 
     @Bean
