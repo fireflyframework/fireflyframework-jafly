@@ -180,7 +180,7 @@ public class SecretsEncryptionManager {
         }
         String encrypted = encrypt(value);
         encryptedSecrets.put(key, encrypted);
-        log.debug("Stored encrypted secret: {}", key);
+        log.debug("Stored encrypted secret");
     }
 
     /**
@@ -192,7 +192,7 @@ public class SecretsEncryptionManager {
     public String getSecret(String key) {
         String encrypted = encryptedSecrets.get(key);
         if (encrypted == null) {
-            log.warn("Secret not found: {}", key);
+            log.warn("Secret not found");
             return null;
         }
         return decrypt(encrypted);
@@ -207,7 +207,7 @@ public class SecretsEncryptionManager {
     public boolean removeSecret(String key) {
         boolean removed = encryptedSecrets.remove(key) != null;
         if (removed) {
-            log.debug("Removed secret: {}", key);
+            log.debug("Removed secret");
         }
         return removed;
     }

@@ -135,7 +135,7 @@ public class JwtValidator {
         // Validate claims
         validateClaims(claims);
 
-        log.debug("JWT validated successfully for subject: {}", claims.getSubject());
+        log.debug("JWT validated successfully");
         return claims;
     }
 

@@ -125,6 +125,10 @@ The `firefly.service-client` namespace is bound by [ServiceClientProperties.java
 | [`GrpcClient`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/client/src/main/java/org/fireflyframework/client/GrpcClient.java) | gRPC-specific service client interface with native gRPC semantics. |
 | [`ServiceClient`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/client/src/main/java/org/fireflyframework/client/ServiceClient.java) | Core interface for all service clients providing common lifecycle and health operations. |
 
+## Security diagnostics
+
+`SecretsEncryptionManager` reports storage, missing-secret, and removal outcomes without logging secret names. Successful `JwtValidator` validation does not log the JWT subject. These diagnostics remain available at their existing log levels. Keep credentials and customer identifiers out of application-supplied log messages as well.
+
 ## Continue the application
 
 Use the [Orchestration guide](../../docs/site/modules/orchestration.md) for the next part of this integration.
