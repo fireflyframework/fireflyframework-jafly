@@ -22,6 +22,12 @@ All properties are prefixed with `firefly.orchestration`.
 | `firefly.orchestration.tcc.enabled` | `boolean` | `true` | Enable TCC pattern |
 | `firefly.orchestration.tcc.default-timeout` | `Duration` | `30s` | Default TCC timeout |
 
+### TCC Persistence Acknowledgment
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `firefly.orchestration.tcc.persistence-mode` | `TccPersistenceMode` | `BEST_EFFORT` | `REQUIRED` propagates failed save acknowledgments and gates overall completion; see [TCC acknowledgment limits](tcc.md#required-persistence-acknowledgment) |
+
 ### Persistence Properties
 
 | Property | Type | Default | Description |

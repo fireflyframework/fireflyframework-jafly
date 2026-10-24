@@ -24,7 +24,10 @@ SOURCE = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('release_tools', SOURCE / 'scripts/release_tools.py')
 r = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(r)
-PROJECTS = r.check_reactor(SOURCE, expected=86)
+CURRENT_PROJECTS = r.check_reactor(SOURCE, expected=87)
+NATIVE_COORDINATE = ('org.fireflyframework', 'fireflyframework-batch')
+PROJECTS = [project for project in CURRENT_PROJECTS
+            if (project['groupId'], project['artifactId']) != NATIVE_COORDINATE]
 ASSOCIATIONS = [json.loads(line) for line in (SOURCE / 'scripts/package-associations.jsonl').read_text().splitlines()]
 
 
@@ -96,6 +99,33 @@ class MappedPublishingTests(unittest.TestCase):
             if snapshot:
                 metadata = f'''<metadata><groupId>{project['groupId']}</groupId><artifactId>{project['artifactId']}</artifactId><version>{project['version']}</version><versioning><snapshot><timestamp>20261018.123456</timestamp><buildNumber>7</buildNumber></snapshot><snapshotVersions>{''.join(versions)}</snapshotVersions></versioning></metadata>'''
                 (self.root / home['repository'] / base / 'maven-metadata.xml').write_text(metadata)
+
+    def test_current_reactor_contains_exactly_one_new_source_owned_coordinate(self):
+        current = {(p['groupId'], p['artifactId']) for p in CURRENT_PROJECTS}
+        historical = {(p['groupId'], p['artifactId']) for p in PROJECTS}
+        self.assertEqual(87, len(CURRENT_PROJECTS))
+        self.assertEqual(86, len(PROJECTS))
+        self.assertEqual({NATIVE_COORDINATE}, current - historical)
+        self.assertEqual(historical | {NATIVE_COORDINATE}, current)
+        self.assertEqual(316, len(r.required_paths(CURRENT_PROJECTS)))
+        self.assertEqual(4, len(r.required_paths(CURRENT_PROJECTS) - r.required_paths(PROJECTS)))
+
+    def test_release_cli_default_includes_source_owned_native_module(self):
+        output = self.root / 'current-reactor.json'
+        result = subprocess.run(['python3', str(SOURCE / 'scripts/release_tools.py'), 'check',
+                                 '--root', str(SOURCE), '--output', str(output)],
+                                capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(87, len(json.loads(output.read_text())))
+
+    def test_current_full_reactor_plan_fails_closed_for_unmapped_native_coordinate(self):
+        output = self.root / 'unmapped-current-plan'
+        argv = ['github_packages.py', 'plan', '--root', str(SOURCE),
+                '--repository', str(self.root / 'no-staging-repository'), '--output', str(output)]
+        with patch.object(m.sys, 'argv', argv):
+            with self.assertRaisesRegex(ValueError, 'missing existing package home: org.fireflyframework.fireflyframework-batch'):
+                m.main()
+        self.assertFalse(output.exists())
 
     def test_all84_bootstrap_homes_retain_captured_association_digest(self):
         self.assertEqual(len(self.homes['artifacts']), 84)
@@ -281,7 +311,7 @@ class MappedPublishingTests(unittest.TestCase):
         output = self.root / 'output'
         argv = ['github_packages.py', 'plan', '--root', str(SOURCE), '--associations', str(associations),
                 '--repository', str(self.root / 'missing-repository'), '--output', str(output)]
-        with patch.object(m.sys, 'argv', argv):
+        with patch.object(m.sys, 'argv', argv), patch.object(m, 'release_tools', return_value=r), patch.object(r, 'check_reactor', return_value=PROJECTS):
             with self.assertRaisesRegex(ValueError, 'canonical'):
                 m.main()
         self.assertFalse(output.exists())

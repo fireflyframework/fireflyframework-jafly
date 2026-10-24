@@ -388,8 +388,8 @@ public class ConditionsReportService {
         sb.append(line("="));
         sb.append("\n");
         
-        int totalMatched = 0;
-        int totalNotMatched = 0;
+        long totalMatched = 0;
+        long totalNotMatched = 0;
         
         for (Map.Entry<String, List<ConditionEntry>> entry : categorized.entrySet()) {
             long matched = entry.getValue().stream().filter(ConditionEntry::isMatched).count();
@@ -426,8 +426,8 @@ public class ConditionsReportService {
         sb.append(line("="));
         sb.append("\n");
         
-        int totalMatched = 0;
-        int totalNotMatched = 0;
+        long totalMatched = 0;
+        long totalNotMatched = 0;
         
         for (Map.Entry<String, List<ConditionEntry>> categoryEntry : categorized.entrySet()) {
             String category = categoryEntry.getKey();

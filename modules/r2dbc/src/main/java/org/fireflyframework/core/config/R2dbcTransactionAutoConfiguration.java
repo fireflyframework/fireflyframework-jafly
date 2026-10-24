@@ -7,6 +7,8 @@ import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 
 /**
  * Configuration class for managing R2DBC transactions in a reactive application.
@@ -25,11 +27,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
  * Bean Definitions:
  * - {@link ReactiveTransactionManager}: Configured to manage transactions for R2DBC-based reactive data sources.
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = {
+        "org.springframework.boot.r2dbc.autoconfigure.R2dbcAutoConfiguration",
+        "org.springframework.boot.r2dbc.autoconfigure.R2dbcTransactionManagerAutoConfiguration"
+})
+@ConditionalOnClass({ConnectionFactory.class, R2dbcTransactionManager.class, ReactiveTransactionManager.class})
+@ConditionalOnSingleCandidate(ConnectionFactory.class)
 @EnableTransactionManagement
 public class R2dbcTransactionAutoConfiguration {
 
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(ReactiveTransactionManager.class)
     @Bean
     public ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
         return new R2dbcTransactionManager(connectionFactory);

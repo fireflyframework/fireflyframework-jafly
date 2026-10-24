@@ -6,3 +6,4 @@ org.fireflyframework.web.logging.config.PiiMaskingAutoConfiguration
 org.fireflyframework.web.conditions.config.ConditionsReportPropertiesAutoConfiguration
 org.fireflyframework.web.conditions.config.ConditionsReportAutoConfiguration
 org.fireflyframework.web.cors.config.CorsAutoConfiguration
+org.fireflyframework.web.jackson.config.JsonNullableAutoConfiguration

@@ -11,8 +11,9 @@ Customer onboarding can involve recording an application, checking eligibility, 
 | Completed steps need a business undo action if later work fails | Saga with explicit compensations |
 | Resources can be reserved before a final decision | Try-confirm-cancel participants |
 | Work has dependencies and an execution state to inspect | Workflow with ordered steps |
+| A bounded input snapshot needs stored checkpoints and restart after process failure | Durable JDBC batch |
 
-All three belong to the [orchestration module](../modules/orchestration.md). A local command handler is still the smallest choice when the whole operation fits one service decision.
+Saga, TCC, and workflow belong to the [orchestration module](../modules/orchestration.md). [Durable batch](../modules/batch.md) uses native Spring Batch JDBC metadata and explicit local transactions for restartable jobs. A local command handler is still the smallest choice when the whole operation fits one service decision.
 
 ## Follow the onboarding examples
 
@@ -31,6 +32,12 @@ A compensation is an application operation. It may need to be repeatable and may
 Set timeouts and retries to fit each operation. Keep an execution ID so operators can inspect a failure. A failed workflow and a suspended workflow have different recovery paths: the tutorial starts a new execution after provider recovery, while resume applies to a suspended execution.
 
 The example demonstrates engine behavior with controlled providers. Before replacing them, test the real provider's duplicate calls, reservation expiry, compensation failure, and recovery after a process restart. Do not infer cross-service transactions or exactly-once work from an engine success result.
+
+## Restart bounded jobs from stored checkpoints
+
+For an application-owned reconciliation or export job, retain the exact input snapshot, job parameters and item cursor before restarting. The optional batch module requires an explicitly selected PostgreSQL DataSource, matching JDBC transaction manager, bounded executor, and deployment-owned metadata schema. It does not launch jobs or create a scheduler automatically.
+
+A writer participates in the local transaction only through the same selected DataSource. Remote SDK calls, a second database and R2DBC work remain outside that JDBC transaction. Keep remote authorization and producer I/O outside held database locks, and reconcile retained business receipts before treating native COMPLETED as a business result. See the [Batch guide](../modules/batch.md) for configuration and the maintained restart/process-lifecycle fixtures.
 
 ## Keep coordination and history separate
 

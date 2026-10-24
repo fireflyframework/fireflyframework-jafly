@@ -30,7 +30,7 @@ import java.time.Instant;
  * <p>This is the <strong>only</strong> way to create query handlers. It provides:
  * <ul>
  *   <li><strong>Zero Boilerplate:</strong> Automatic type detection from generics</li>
- *   <li><strong>Smart Caching:</strong> Built-in caching with configurable TTL and automatic key generation</li>
+ *   <li><strong>Query Caching:</strong> Optional result caching with explicitly scoped query keys</li>
  *   <li><strong>Performance Monitoring:</strong> Automatic timing and success/failure tracking</li>
  *   <li><strong>Extensibility:</strong> Pre/post processing hooks for custom logic</li>
  *   <li><strong>Clean API:</strong> Just implement doHandle() - everything else is automatic</li>

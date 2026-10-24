@@ -20,7 +20,7 @@ Add this bundle if the onboarding service needs Spring-managed agent client/brid
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-agentic-bridge-starter</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

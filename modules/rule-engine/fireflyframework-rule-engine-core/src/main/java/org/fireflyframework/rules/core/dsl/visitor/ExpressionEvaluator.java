@@ -2115,7 +2115,7 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
 
     private Object generateAccountNumber(Object[] args) {
         // Generate a random 12-digit account number
-        java.util.Random random = new java.util.Random();
+        java.security.SecureRandom random = new java.security.SecureRandom();
         StringBuilder accountNumber = new StringBuilder();
 
         for (int i = 0; i < 12; i++) {

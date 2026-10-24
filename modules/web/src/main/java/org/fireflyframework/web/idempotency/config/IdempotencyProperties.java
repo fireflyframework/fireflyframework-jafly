@@ -68,6 +68,45 @@ public class IdempotencyProperties {
      */
     private Cache cache = new Cache();
 
+    /** Stable service/environment namespace; auto-configuration falls back to spring.application.name. */
+    private String namespace;
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    /** Maximum buffered keyed request size; larger requests fail before handler execution. */
+    private int maxRequestBodyBytes = 1024 * 1024;
+
+    /** Maximum buffered response size. Streaming endpoints should disable this filter. */
+    private int maxResponseBodyBytes = 4 * 1024 * 1024;
+
+    public int getMaxRequestBodyBytes() {
+        return maxRequestBodyBytes;
+    }
+
+    public void setMaxRequestBodyBytes(int value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException("maxRequestBodyBytes must be positive");
+        }
+        this.maxRequestBodyBytes = value;
+    }
+
+    public int getMaxResponseBodyBytes() {
+        return maxResponseBodyBytes;
+    }
+
+    public void setMaxResponseBodyBytes(int value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException("maxResponseBodyBytes must be positive");
+        }
+        this.maxResponseBodyBytes = value;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }

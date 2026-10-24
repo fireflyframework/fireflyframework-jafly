@@ -20,7 +20,7 @@ Protect onboarding HTTP routes with JWTs from the configured identity authority.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-resource-server</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -76,6 +76,10 @@ PolicyRule denyReports() {
 }
 ```
 
+## Header bearer and browser requests
+
+The default chain uses explicit header bearer authentication and never restores authentication from a session cookie. Native Spring Security CSRF protection remains enabled with its bearer exemption: valid signed bearer unsafe requests need no CSRF token; unsafe non-bearer requests require CSRF, including allowlisted browser routes. Missing CSRF can return 403 before authentication. See the [header bearer and CSRF contract](docs/bearer-api-and-csrf.md) for transport, status and application-owned browser-chain details.
+
 ## Configuration
 
 The `firefly.security.resource-server` namespace is bound by [ResourceServerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
@@ -87,6 +91,10 @@ The `firefly.security.resource-server` namespace is bound by [ResourceServerProp
 | `firefly.security.resource-server.audiences` | `List<String>` | `new ArrayList<>()` |
 | `firefly.security.resource-server.authority-prefix` | `String` | `""` |
 | `firefly.security.resource-server.role-claim-paths` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.tenant-claim-paths` | `List<String>` | `new ArrayList<>()` |
+| `firefly.security.resource-server.tenant-required` | `boolean` | `false` |
+
+Set `tenant-claim-paths: [tenant_id]` to project exactly one distinct tenant from validated token claims into `SecurityPrincipal.tenantId`; request headers are not used. The empty default preserves the existing unconfigured principal. With `tenant-required: true`, unresolved or ambiguous tenants reject authentication, and missing or invalid configured paths fail startup. Optional configured projection yields a null tenant when unresolved or ambiguous. Resolver errors reject authentication in either mode without exposing claim values.
 
 ## API overview
 

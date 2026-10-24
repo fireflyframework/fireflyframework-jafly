@@ -24,7 +24,7 @@ The tutorial saves applications in a process-local map. An application-owned R2D
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -184,6 +184,23 @@ firefly:
 Both beans use `matchIfMissing = true`, so they are active by default and back off cleanly if the host service disables observability or the underlying classes/beans (`MeterRegistry`, `ConnectionFactory`) are absent. The `ReactiveTransactionManager` and the springdoc `FilterParameterCustomizer` are both `@ConditionalOnMissingBean`, so you can override either by declaring your own bean.
 
 This module ships an `application-logging.yml` profile fragment that sets `org.springframework.data.r2dbc` and `io.r2dbc` logging to `INFO`.
+
+### Conditional database infrastructure
+
+R2DBC utility types can be present transitively in a service that owns no database. Their presence does not require that service to create a connection factory, entity template, or transaction manager. In this source version, database integration activates only when its runtime prerequisites exist:
+
+| Available infrastructure | Framework behavior |
+| --- | --- |
+| No R2DBC/transaction runtime classes | Database auto-configuration backs off before loading its dependent beans |
+| Classes present, no entity template or connection factory | No database template initialization or transaction-manager creation |
+| Application or Boot provides `R2dbcEntityTemplate` | Initialize `FilterUtils` after Boot's data R2DBC auto-configuration |
+| One candidate `ConnectionFactory`, no existing reactive transaction manager | Provide `R2dbcTransactionManager` if Boot has not already supplied one |
+| Existing `ReactiveTransactionManager` | Preserve the application's selected manager |
+| Several connection factories without a primary candidate | Do not choose an arbitrary database; configure the intended transaction boundary explicitly |
+
+This conditional behavior concerns framework infrastructure. It does not disable Spring Boot's own database auto-configuration selected by a data starter. A service that includes that starter must still configure its database or deliberately exclude the unused Boot data configuration. Database-free services should depend only on the facilities they actually use.
+
+`FilterUtils` uses a process-wide template reference. Applications with multiple independently selected databases must define the supported filtering/database boundary explicitly; these conditions do not introduce multitenant database routing.
 
 ### How It Works
 

@@ -39,6 +39,18 @@ class JourneyNavigationTests(unittest.TestCase):
         for item in catalog:
             self.assertEqual(rendered.count(f"modules/{item['slug']}.md"), 1, item['slug'])
 
+    def test_durable_batch_is_grouped_with_orchestration(self):
+        self.assertEqual(nav.category('batch'), nav.category('orchestration'))
+        rendered, capabilities = nav.generated(ROOT)
+        coordination = next(item for item in json.loads(capabilities)
+                            if item['id'] == 'business-coordination')
+        self.assertIn('batch', coordination['modules'])
+        self.assertEqual(rendered.count('modules/batch.md'), 1)
+
+    def test_existing_http_idempotency_guide_keeps_its_sidebar_link(self):
+        rendered, _ = nav.generated(ROOT)
+        self.assertEqual(rendered.count('modules/web-idempotency.md'), 1)
+
     def test_missing_learning_guide_fails_instead_of_hiding_the_route(self):
         (self.root / 'docs/site/guides/onboarding-coordination.md').unlink()
         with self.assertRaisesRegex(ValueError, 'onboarding-coordination'):

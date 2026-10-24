@@ -248,41 +248,42 @@ public class DefaultQueryBus extends FireflyMetricsSupport implements QueryBus {
                             })
                             .then(Mono.defer(() -> {
                                 // Check if caching is enabled and query is cacheable
-                                if (cacheAdapter != null && query.isCacheable() && query.getCacheKey() != null) {
+                                if (cacheAdapter != null && query.isCacheable() && handler.supportsCaching()) {
                                     String cacheKey = query.getCacheKey();
-
-                                    return cacheAdapter.get(cacheKey, query.getResultType())
-                                            .doOnNext(cachedResult -> log.debug("CQRS Query Cache Hit - Type: {}, ID: {}, CacheKey: {}",
-                                                    query.getClass().getSimpleName(), query.getQueryId(), cacheKey))
-                                            .doOnSuccess(result -> {
-                                                if (result != null) {
-                                                    log.info("CQRS Query Processing Completed from Cache - Type: {}, ID: {}, Result: {}",
-                                                            query.getClass().getSimpleName(), query.getQueryId(),
-                                                            result != null ? "Success" : "Null");
-                                                }
-                                            })
-                                            .switchIfEmpty(Mono.defer(() -> {
-                                                // Cache miss - execute handler and cache result
-                                                log.debug("CQRS Query Cache Miss - Type: {}, ID: {}, CacheKey: {}",
-                                                        query.getClass().getSimpleName(), query.getQueryId(), cacheKey);
-                                                return executeWithMetrics(handler, query, context)
-                                                        .flatMap(result -> {
-                                                            if (result != null) {
-                                                                return cacheAdapter.put(cacheKey, result)
-                                                                        .thenReturn(result)
-                                                                        .doOnSuccess(r -> log.debug("CQRS Query Result Cached - Type: {}, ID: {}, CacheKey: {}",
-                                                                                query.getClass().getSimpleName(), query.getQueryId(), cacheKey));
-                                                            }
-                                                            return Mono.just(result);
-                                                        })
-                                                        .doOnSuccess(result -> log.info("CQRS Query Processing Completed with Context - Type: {}, ID: {}, Result: {}",
+                                    if (cacheKey != null) {
+                                        return cacheAdapter.get(cacheKey, query.getResultType())
+                                                .doOnNext(cachedResult -> log.debug("CQRS Query Cache Hit - Type: {}, ID: {}, CacheKey: {}",
+                                                        query.getClass().getSimpleName(), query.getQueryId(), cacheKey))
+                                                .doOnSuccess(result -> {
+                                                    if (result != null) {
+                                                        log.info("CQRS Query Processing Completed from Cache - Type: {}, ID: {}, Result: {}",
                                                                 query.getClass().getSimpleName(), query.getQueryId(),
-                                                                result != null ? "Success" : "Null"))
-                                                        .doOnError(error -> log.error("CQRS Query Processing Failed with Context - Type: {}, ID: {}, Error: {}, Cause: {}",
-                                                                query.getClass().getSimpleName(), query.getQueryId(),
-                                                                error.getClass().getSimpleName(), error.getMessage(), error));
-                                            }))
-                                            .doFinally(signalType -> correlationContext.clear());
+                                                                result != null ? "Success" : "Null");
+                                                    }
+                                                })
+                                                .switchIfEmpty(Mono.defer(() -> {
+                                                    // Cache miss - execute handler and cache result
+                                                    log.debug("CQRS Query Cache Miss - Type: {}, ID: {}, CacheKey: {}",
+                                                            query.getClass().getSimpleName(), query.getQueryId(), cacheKey);
+                                                    return executeWithMetrics(handler, query, context)
+                                                            .flatMap(result -> {
+                                                                if (result != null) {
+                                                                    return cacheAdapter.put(cacheKey, result)
+                                                                            .thenReturn(result)
+                                                                            .doOnSuccess(r -> log.debug("CQRS Query Result Cached - Type: {}, ID: {}, CacheKey: {}",
+                                                                                    query.getClass().getSimpleName(), query.getQueryId(), cacheKey));
+                                                                }
+                                                                return Mono.just(result);
+                                                            })
+                                                            .doOnSuccess(result -> log.info("CQRS Query Processing Completed with Context - Type: {}, ID: {}, Result: {}",
+                                                                    query.getClass().getSimpleName(), query.getQueryId(),
+                                                                    result != null ? "Success" : "Null"))
+                                                            .doOnError(error -> log.error("CQRS Query Processing Failed with Context - Type: {}, ID: {}, Error: {}, Cause: {}",
+                                                                    query.getClass().getSimpleName(), query.getQueryId(),
+                                                                    error.getClass().getSimpleName(), error.getMessage(), error));
+                                                }))
+                                                .doFinally(signalType -> correlationContext.clear());
+                                    }
                                 }
 
                                 // Execute without caching

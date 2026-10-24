@@ -446,7 +446,7 @@ def main():
     args = parser.parse_args()
     if args.command == 'plan':
         tools = release_tools(args.root)
-        projects = tools.check_reactor(args.root, expected=86)
+        projects = tools.check_reactor(args.root, expected=87)
         association_path = args.associations or args.root / 'scripts/package-associations.jsonl'
         associations = [json.loads(line) for line in association_path.read_text().splitlines() if line.strip()]
         homes = build_homes(projects, associations)

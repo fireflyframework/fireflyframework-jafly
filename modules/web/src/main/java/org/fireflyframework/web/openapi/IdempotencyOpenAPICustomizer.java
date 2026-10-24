@@ -86,7 +86,7 @@ public class IdempotencyOpenAPICustomizer implements OpenApiCustomizer {
             Parameter idempotencyKeyParam = new Parameter()
                     .name(headerName)
                     .in("header")
-                    .description("Unique key for idempotent requests. If provided, ensures that identical requests with the same key will only be processed once.")
+                    .description("Optional retry key for scoped POST, PUT, PATCH, and DELETE response reuse. Safe methods ignore it. Reuse requires configured trusted identity and namespace; changed input returns 409. Business effects require durable application idempotency.")
                     .required(false)
                     .schema(new io.swagger.v3.oas.models.media.StringSchema());
 

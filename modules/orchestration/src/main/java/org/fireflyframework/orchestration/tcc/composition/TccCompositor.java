@@ -32,8 +32,9 @@ import java.util.*;
  *
  * <p>The compositor delegates individual TCC execution to {@link TccEngine}, which
  * handles Try-Confirm-Cancel phases internally. {@link TccEngine#execute(String, Map)}
- * always returns a {@link TccResult} (never errors) — even failures are represented
- * as {@link TccResult.Status#FAILED} or {@link TccResult.Status#CANCELED}.
+ * represents participant failures as {@link TccResult.Status#FAILED} or
+ * {@link TccResult.Status#CANCELED}. Required persistence acknowledgment failures
+ * propagate as errors without entering composition compensation.
  */
 @Slf4j
 public class TccCompositor {

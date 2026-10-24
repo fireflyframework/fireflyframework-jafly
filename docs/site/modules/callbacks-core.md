@@ -24,7 +24,7 @@ Route a configured application.submitted or application.reviewed event to author
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-callbacks-core</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

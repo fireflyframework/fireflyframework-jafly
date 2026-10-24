@@ -21,14 +21,20 @@ import org.fireflyframework.web.idempotency.annotation.DisableIdempotency;
 import org.fireflyframework.web.idempotency.cache.IdempotencyCache;
 import org.fireflyframework.web.idempotency.config.IdempotencyProperties;
 import org.fireflyframework.web.idempotency.model.CachedResponse;
+import org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolver;
+import org.fireflyframework.web.idempotency.scope.IdempotencyScopeResolver;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.reactivestreams.Publisher;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferLimitException;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.reactive.HandlerMapping;
@@ -39,322 +45,245 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * WebFilter that provides idempotency for all HTTP requests.
- * It intercepts requests with an X-Idempotency-Key header and ensures that
- * identical requests (with the same key) return the same response.
- * The X-Idempotency-Key header is optional for all HTTP methods.
- *
- * <p>This filter is automatically configured by {@link org.fireflyframework.web.idempotency.config.IdempotencyAutoConfiguration}
- * when fireflyframework-cache is available on the classpath. It will not be created if the required
- * cache dependencies are not available, preventing application startup failures.</p>
+ * Bounded HTTP response reuse for authenticated, scoped mutations. Business transactions must
+ * still enforce their own durable idempotency: cache retention and in-flight coordination are
+ * not a cross-process transaction boundary.
  */
-public class IdempotencyWebFilter implements WebFilter {
-
+public class IdempotencyWebFilter implements WebFilter, Ordered {
     private static final Logger log = LoggerFactory.getLogger(IdempotencyWebFilter.class);
-
+    private static final List<HttpMethod> MUTATIONS = List.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE);
+    private static final List<String> FINGERPRINT_HEADERS = List.of("Content-Type", "Accept", "Content-Encoding",
+            "Accept-Encoding", "Accept-Language", "If-Match", "If-None-Match");
+    private static final List<String> REPLAY_HEADERS = List.of("Location", "ETag", "Content-Language",
+            "Content-Encoding", "Content-Location", "Content-Disposition", "Last-Modified", "Vary");
     private final IdempotencyCache cache;
-    private final String idempotencyHeaderName;
-    private final Map<String, Sinks.One<CachedResponse>> inFlight = new ConcurrentHashMap<>();
+    private final IdempotencyProperties properties;
+    private final IdempotencyScopeResolver scopeResolver;
+    private final java.util.function.Supplier<List<HandlerMapping>> handlerMappings;
+    private final Map<String, PendingResponse> inFlight = new ConcurrentHashMap<>();
 
-    /**
-     * Creates a new IdempotencyWebFilter with the specified caching mechanism.
-     *
-     * @param properties the idempotency configuration properties
-     * @param cache the idempotency cache implementation
-     */
     public IdempotencyWebFilter(IdempotencyProperties properties, IdempotencyCache cache) {
-        this.cache = cache;
-        this.idempotencyHeaderName = properties.getHeaderName();
+        this(properties, cache, new AuthenticatedIdempotencyScopeResolver());
     }
+
+    public IdempotencyWebFilter(IdempotencyProperties properties, IdempotencyCache cache, IdempotencyScopeResolver scopeResolver) {
+        this(properties, cache, scopeResolver, List::of);
+    }
+
+    public IdempotencyWebFilter(IdempotencyProperties properties, IdempotencyCache cache,
+                                IdempotencyScopeResolver scopeResolver,
+                                java.util.function.Supplier<List<HandlerMapping>> handlerMappings) {
+        this.properties = properties;
+        this.cache = cache;
+        this.scopeResolver = scopeResolver;
+        this.handlerMappings = handlerMappings;
+    }
+
+    /** Runs after Spring Security and the trusted principal bridge. */
+    @Override public int getOrder() { return -80; }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        ServerHttpRequest request = exchange.getRequest();
-        log.debug("IdempotencyWebFilter.filter: Processing request {} {}", request.getMethod(), request.getPath());
-
-        // First check if this path is handled by a RestController or Router
-        return isHandledByController(exchange)
-                .flatMap(isControllerPath -> {
-                    if (!isControllerPath) {
-                        // Skip idempotency processing if the path is not handled by a controller
-                        log.debug("IdempotencyWebFilter.filter: Skipping non-controller path {}", request.getPath());
-                        return chain.filter(exchange);
-                    }
-
-                    // Check for idempotency header
-                    List<String> idempotencyKeyHeaders = request.getHeaders().get(idempotencyHeaderName);
-                    if (idempotencyKeyHeaders == null || idempotencyKeyHeaders.isEmpty()) {
-                        log.debug("IdempotencyWebFilter.filter: No {} header found", idempotencyHeaderName);
-                        return chain.filter(exchange);
-                    }
-
-                    String idempotencyKey = idempotencyKeyHeaders.get(0);
-                    log.debug("IdempotencyWebFilter.filter: Found {}: {}", idempotencyHeaderName, idempotencyKey);
-
-                    if (idempotencyKey == null || idempotencyKey.trim().isEmpty()) {
-                        log.debug("IdempotencyWebFilter.filter: Empty {} header", idempotencyHeaderName);
-                        return sendBadRequest(exchange, "Invalid " + idempotencyHeaderName + " header");
-                    }
-
-                    // Check if idempotency is disabled for this endpoint
-                    return isIdempotencyDisabled(exchange)
-                            .flatMap(disabled -> {
-                                if (disabled) {
-                                    // Skip idempotency processing if the endpoint has the DisableIdempotency annotation
-                                    log.debug("IdempotencyWebFilter.filter: Idempotency is disabled for this endpoint");
-                                    return chain.filter(exchange);
-                                }
-
-                                log.debug("IdempotencyWebFilter.filter: Checking cache for key: {}", idempotencyKey);
-                                // Check if we have a cached response
-                                return cache.get(idempotencyKey)
-                                        .hasElement()
-                                        .flatMap(hasCachedResponse -> {
-                                            if (hasCachedResponse) {
-                                                log.debug("IdempotencyWebFilter.filter: Found cached response for key: {}", idempotencyKey);
-                                                return cache.get(idempotencyKey)
-                                                        .flatMap(cachedResponse -> returnCachedResponse(exchange, cachedResponse));
-                                            } else {
-                                                log.debug("IdempotencyWebFilter.filter: No cached response found for key: {}", idempotencyKey);
-                                                Sinks.One<CachedResponse> newSink = Sinks.one();
-                                                Sinks.One<CachedResponse> existingSink = inFlight.putIfAbsent(idempotencyKey, newSink);
-                                                if (existingSink != null) {
-                                                    log.debug("IdempotencyWebFilter.filter: Another request in-flight for key: {}. Waiting for result.", idempotencyKey);
-                                                    return existingSink.asMono()
-                                                            .flatMap(cached -> returnCachedResponse(exchange, cached));
-                                                } else {
-                                                    log.debug("IdempotencyWebFilter.filter: This request will compute and emit result for key: {}", idempotencyKey);
-                                                    return processThroughFilterChain(exchange, chain, idempotencyKey, newSink);
-                                                }
-                                            }
-                                        });
-                            });
-                });
+        if (!properties.isEnabled() || properties.getNamespace() == null || properties.getNamespace().isBlank() || !MUTATIONS.contains(exchange.getRequest().getMethod())) {
+            return chain.filter(exchange);
+        }
+        List<String> keys = exchange.getRequest().getHeaders().get(properties.getHeaderName());
+        if (keys == null) return chain.filter(exchange);
+        return disabled(exchange).flatMap(disabled -> {
+            if (disabled) {
+                return chain.filter(exchange);
+            }
+            if (keys.size() != 1 || keys.getFirst() == null || keys.getFirst().isBlank() || keys.getFirst().length() > 256) {
+                return reject(exchange, HttpStatus.BAD_REQUEST, "Invalid " + properties.getHeaderName() + " header");
+            }
+            // Resolve to a value before flatMap: a completed Mono<Void> must not fall through and execute twice.
+            return scopeResolver.resolve(exchange).filter(scope -> !scope.isBlank())
+                    .map(Optional::of).defaultIfEmpty(Optional.empty())
+                    .flatMap(scope -> scope.isEmpty() ? chain.filter(exchange) : readBody(exchange)
+                            .flatMap(body -> process(exchange, chain, scope.get(), keys.getFirst(), body)));
+        });
     }
 
-    private Mono<Void> processThroughFilterChain(ServerWebExchange exchange, WebFilterChain chain, String idempotencyKey, Sinks.One<CachedResponse> sink) {
-        log.debug("IdempotencyWebFilter.processThroughFilterChain: Processing request through filter chain for key: {}", idempotencyKey);
-        ServerHttpResponse originalResponse = exchange.getResponse();
-        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
-            @Override
-            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                log.debug("IdempotencyWebFilter.writeWith: Writing response for key: {}", idempotencyKey);
-                // Convert the body to a Flux regardless of its type
-                Flux<DataBuffer> fluxBody = Flux.from(body);
-
-                return super.writeWith(fluxBody.collectList().map(dataBuffers -> {
-                    log.debug("IdempotencyWebFilter.writeWith: Collected response body for key: {}", idempotencyKey);
-                    // Combine all DataBuffers to get the complete response body
-                    DataBuffer joinedBuffer = exchange.getResponse().bufferFactory().join(dataBuffers);
-                    byte[] content = new byte[joinedBuffer.readableByteCount()];
-                    joinedBuffer.read(content);
-
-                    // Create a copy of the buffer for writing to the response
-                    DataBuffer copiedBuffer = exchange.getResponse().bufferFactory().wrap(content);
-
-                    // Store the response in the cache
-                    MediaType contentType = exchange.getResponse().getHeaders().getContentType();
-                    String contentTypeStr = contentType != null ? contentType.toString() : null;
-                    int statusCode = exchange.getResponse().getStatusCode() != null ?
-                            exchange.getResponse().getStatusCode().value() : HttpStatus.OK.value();
-
-                    log.debug("IdempotencyWebFilter.writeWith: Caching response for key: {}, status: {}, contentType: {}, bodyLength: {}",
-                             idempotencyKey, statusCode, contentTypeStr, content.length);
-
-                    CachedResponse cachedResponse = new CachedResponse(statusCode, content, contentTypeStr);
-                    cache.put(idempotencyKey, cachedResponse)
-                        .doOnError(e -> {
-                            // Log the error but don't fail the request
-                            log.error("Failed to cache response for idempotency key {}: {}", idempotencyKey, e.getMessage(), e);
-                        })
-                        .onErrorResume(e -> Mono.empty())
-                        .doOnSuccess(v -> log.debug("IdempotencyWebFilter.writeWith: Successfully cached response for key: {}", idempotencyKey))
-                        .subscribe();
-
-                    // Notify any waiting requests and clear in-flight marker
+    private Mono<byte[]> readBody(ServerWebExchange exchange) {
+        return DataBufferUtils.join(exchange.getRequest().getBody(), properties.getMaxRequestBodyBytes())
+                .map(buffer -> {
                     try {
-                        sink.tryEmitValue(cachedResponse);
-                    } finally {
-                        inFlight.remove(idempotencyKey);
-                    }
+                        byte[] bytes = new byte[buffer.readableByteCount()];
+                        buffer.read(bytes);
+                        return bytes;
+                    } finally { DataBufferUtils.release(buffer); }
+                }).defaultIfEmpty(new byte[0])
+                .onErrorMap(DataBufferLimitException.class, error ->
+                        new org.springframework.web.server.ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Idempotency request body limit exceeded", error));
+    }
 
-                    return copiedBuffer;
-                }).flux());
+    private Mono<Void> process(ServerWebExchange exchange, WebFilterChain chain, String scope, String clientKey, byte[] body) {
+        var request = exchange.getRequest();
+        String key = "v2:" + digest(parts(properties.getNamespace(), scope, request.getMethod().name(), request.getURI().getRawPath(),
+                Optional.ofNullable(request.getURI().getRawQuery()).orElse(""), clientKey));
+        List<String> fields = new java.util.ArrayList<>();
+        for (String name : FINGERPRINT_HEADERS) {
+            List<String> values = request.getHeaders().get(name);
+            fields.add(name);
+            fields.add(values == null ? null : Integer.toString(values.size()));
+            if (values != null) fields.addAll(values);
+        }
+        String fingerprint = digest(parts(fields.toArray(String[]::new)), body);
+        return cache.get(key).map(Optional::of).defaultIfEmpty(Optional.empty()).flatMap(cached -> {
+            if (cached.isPresent()) return replay(exchange, cached.get(), fingerprint);
+            return Mono.defer(() -> {
+                PendingResponse pending = new PendingResponse(fingerprint, Sinks.one());
+                PendingResponse existing = inFlight.putIfAbsent(key, pending);
+                if (existing != null) {
+                    return existing.fingerprint().equals(fingerprint)
+                            ? existing.response().asMono().flatMap(response -> replay(exchange, response, fingerprint))
+                            : reject(exchange, HttpStatus.CONFLICT, "Idempotency key was already used with a different request");
+                }
+                // A previous owner may have finished between the first lookup and this claim.
+                return cache.get(key).map(Optional::of).defaultIfEmpty(Optional.empty()).flatMap(second -> {
+                    if (second.isPresent()) {
+                        pending.response().tryEmitValue(second.get());
+                        return replay(exchange, second.get(), fingerprint);
+                    }
+                    return execute(exchange, chain, key, body, pending);
+                }).doOnError(pending.response()::tryEmitError)
+                  .doFinally(signal -> {
+                      pending.response().tryEmitError(new CancellationException("Idempotent response unavailable"));
+                      inFlight.remove(key, pending);
+                  });
+            });
+        });
+    }
+
+    private Mono<Void> execute(ServerWebExchange exchange, WebFilterChain chain, String key, byte[] body, PendingResponse pending) {
+        AtomicReference<byte[]> captured = new AtomicReference<>(new byte[0]);
+        var response = new ServerHttpResponseDecorator(exchange.getResponse()) {
+            @Override public Mono<Void> writeWith(Publisher<? extends DataBuffer> publisher) {
+                return DataBufferUtils.join(Flux.from(publisher), properties.getMaxResponseBodyBytes())
+                        .map(buffer -> {
+                            try {
+                                byte[] bytes = new byte[buffer.readableByteCount()]; buffer.read(bytes); return bytes;
+                            } finally { DataBufferUtils.release(buffer); }
+                        }).defaultIfEmpty(new byte[0]).flatMap(bytes -> {
+                            captured.set(bytes);
+                            return super.writeWith(Mono.just(bufferFactory().wrap(bytes)));
+                        });
+            }
+            @Override public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> publisher) {
+                return writeWith(Flux.from(publisher).concatMap(Flux::from));
             }
         };
-
-        return chain.filter(exchange.mutate().response(decoratedResponse).build())
-                .doOnSuccess(v -> log.debug("IdempotencyWebFilter.processThroughFilterChain: Successfully processed request through filter chain for key: {}", idempotencyKey))
-                .onErrorResume(e -> {
-                    // Notify waiters of the error and cleanup
-                    try {
-                        sink.tryEmitError(e);
-                    } finally {
-                        inFlight.remove(idempotencyKey);
-                    }
-                    // Handle JSON parsing errors and other exceptions gracefully
-                    if (isJsonParsingError(e)) {
-                        log.error("IdempotencyWebFilter.processThroughFilterChain: JSON parsing error for key: {}, returning BAD_REQUEST", idempotencyKey);
-                        return sendBadRequest(exchange, "Invalid JSON format in request body");
-                    }
-                    // For other errors, log and propagate them as is
-                    log.error("IdempotencyWebFilter.processThroughFilterChain: Error processing request through filter chain for key: {}: {}", idempotencyKey, e.getMessage(), e);
-                    return Mono.error(e);
-                })
-                .doFinally(signal -> {
-                    // In case there was no body written (e.g., empty response), ensure cleanup
-                    inFlight.remove(idempotencyKey);
-                });
+        var replayableRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
+            @Override public Flux<DataBuffer> getBody() {
+                return Flux.defer(() -> Flux.just(exchange.getResponse().bufferFactory().wrap(body)));
+            }
+        };
+        return chain.filter(exchange.mutate().request(replayableRequest).response(response).build())
+                .then(Mono.defer(() -> exchange.getResponse().setComplete()))
+                .then(Mono.defer(() -> {
+                    // Commit callbacks finalize status and representation headers during delegate completion.
+                    CachedResponse result = snapshot(exchange, pending.fingerprint(), captured.get());
+                    CachedResponse completed = result;
+                    Mono<Void> save = HttpStatusCode.valueOf(result.getStatus()).is2xxSuccessful() && supportedVary(result)
+                            ? cache.put(key, result).onErrorResume(error -> {
+                                log.warn("HTTP idempotency cache write failed; durable business idempotency is required", error);
+                                return Mono.empty();
+                            }) : Mono.empty();
+                    return save.doOnSuccess(ignored -> pending.response().tryEmitValue(completed));
+                }));
     }
 
-    private Mono<Void> returnCachedResponse(ServerWebExchange exchange, CachedResponse cachedResponse) {
-        log.debug("IdempotencyWebFilter.returnCachedResponse: Returning cached response with status: {}, contentType: {}, bodyLength: {}",
-                 cachedResponse.getStatus(),
-                 cachedResponse.getContentType(),
-                 (cachedResponse.getBody() != null ? cachedResponse.getBody().length : 0));
-
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.valueOf(cachedResponse.getStatus()));
-
-        if (cachedResponse.getContentType() != null) {
-            response.getHeaders().setContentType(MediaType.parseMediaType(cachedResponse.getContentType()));
+    private CachedResponse snapshot(ServerWebExchange exchange, String fingerprint, byte[] body) {
+        var response = exchange.getResponse();
+        CachedResponse result = new CachedResponse(response.getStatusCode() == null ? 200 : response.getStatusCode().value(),
+                body, response.getHeaders().getFirst("Content-Type"));
+        result.setRequestFingerprint(fingerprint);
+        Map<String, List<String>> headers = new LinkedHashMap<>();
+        for (String name : REPLAY_HEADERS) {
+            List<String> values = response.getHeaders().get(name);
+            if (values != null) headers.put(name, List.copyOf(values));
         }
-
-        DataBuffer buffer = response.bufferFactory().wrap(cachedResponse.getBody());
-        return response.writeWith(Mono.just(buffer))
-                .doOnSuccess(v -> log.debug("IdempotencyWebFilter.returnCachedResponse: Successfully returned cached response"))
-                .doOnError(e -> log.error("IdempotencyWebFilter.returnCachedResponse: Error returning cached response: {}", e.getMessage(), e));
+        result.setHeaders(headers);
+        return result;
     }
 
-    private Mono<Void> sendBadRequest(ServerWebExchange exchange, String message) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.BAD_REQUEST);
-        response.getHeaders().setContentType(MediaType.TEXT_PLAIN);
-
-        byte[] bytes = message.getBytes();
-        DataBuffer buffer = response.bufferFactory().wrap(bytes);
-        return response.writeWith(Mono.just(buffer));
+    private Mono<Void> replay(ServerWebExchange exchange, CachedResponse cached, String fingerprint) {
+        if (!supportedVary(cached)) {
+            return reject(exchange, HttpStatus.CONFLICT, "Response varies on unsupported request headers; use durable business recovery");
+        }
+        if (!fingerprint.equals(cached.getRequestFingerprint())) {
+            return reject(exchange, HttpStatus.CONFLICT, "Idempotency key was already used with a different request");
+        }
+        var response = exchange.getResponse();
+        response.setStatusCode(HttpStatusCode.valueOf(cached.getStatus()));
+        if (cached.getContentType() != null) response.getHeaders().setContentType(MediaType.parseMediaType(cached.getContentType()));
+        if (cached.getHeaders() != null) cached.getHeaders().forEach((name, values) -> {
+            if (REPLAY_HEADERS.stream().anyMatch(allowed -> allowed.equalsIgnoreCase(name))) response.getHeaders().put(name, values);
+        });
+        return response.writeWith(Mono.just(response.bufferFactory().wrap(cached.getBody())));
     }
 
-    /**
-     * Checks if the given exception is related to JSON parsing errors.
-     * 
-     * @param throwable the exception to check
-     * @return true if the exception is a JSON parsing error, false otherwise
-     */
-    private boolean isJsonParsingError(Throwable throwable) {
-        if (throwable == null) {
-            return false;
-        }
-        
-        // Check for JSON parsing exceptions
-        String exceptionName = throwable.getClass().getSimpleName();
-        String message = throwable.getMessage();
-        
-        // Check for Jackson JSON parsing exceptions
-        if (exceptionName.contains("JsonParseException") || 
-            exceptionName.contains("JsonProcessingException") ||
-            exceptionName.contains("JsonMappingException")) {
-            return true;
-        }
-        
-        // Check for Spring's DecodingException wrapping JSON errors
-        if (exceptionName.contains("DecodingException") && 
-            message != null && message.contains("JSON decoding error")) {
-            return true;
-        }
-        
-        // Check for ServerWebInputException with JSON-related messages
-        if (exceptionName.contains("ServerWebInputException") && 
-            message != null && message.contains("Failed to read HTTP message")) {
-            return true;
-        }
-        
-        // Recursively check the cause
-        return isJsonParsingError(throwable.getCause());
+    private Mono<Void> reject(ServerWebExchange exchange, HttpStatus status, String message) {
+        exchange.getResponse().setStatusCode(status);
+        exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
+        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(message.getBytes(StandardCharsets.UTF_8))));
     }
 
-    /**
-     * Checks if idempotency is disabled for the current endpoint.
-     *
-     * This method first tries to check if the handler method has the DisableIdempotency annotation.
-     * If the handler is not available yet (which can happen in a WebFilter), it falls back to
-     * checking the request path against known paths with the DisableIdempotency annotation.
-     *
-     * @param exchange the server web exchange
-     * @return a Mono that emits true if idempotency is disabled for this endpoint, false otherwise
-     */
-    private Mono<Boolean> isIdempotencyDisabled(ServerWebExchange exchange) {
-        // First try to get the handler from the exchange attributes
+    private Mono<Boolean> disabled(ServerWebExchange exchange) {
         Object handler = exchange.getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
-
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
-            boolean disabled = handlerMethod.hasMethodAnnotation(DisableIdempotency.class);
-            return Mono.just(disabled);
-        }
-
-        // If the handler is not available yet, we need to use a different approach
-        // by checking the request path
-        return Mono.just(false)
-            .flatMap(disabled -> {
-                // Get the path from the request
-                String path = exchange.getRequest().getPath().value();
-
-                // In a real application, this could be a configurable list of paths
-                // or could use a more sophisticated matching mechanism
-                if (path.endsWith("-disabled") || path.contains("/disabled/")) {
-                    return Mono.just(true);
-                }
-
-                return Mono.just(disabled);
-            });
+        if (handler instanceof HandlerMethod method) return Mono.just(method.hasMethodAnnotation(DisableIdempotency.class));
+        // Filters run before DispatcherHandler selects the controller. Resolve metadata lazily,
+        // without invoking the handler; path-name heuristics cannot honor method annotations.
+        return Flux.fromIterable(handlerMappings.get()).concatMap(mapping -> mapping.getHandler(exchange)).next()
+                .map(selected -> selected instanceof HandlerMethod method && method.hasMethodAnnotation(DisableIdempotency.class))
+                .defaultIfEmpty(false);
     }
 
-    /**
-     * Checks if the current path is handled by a RestController or Router.
-     *
-     * This method tries to get the handler from the exchange attributes and checks
-     * if it's a HandlerMethod (which indicates it's handled by a RestController) or
-     * a RouterFunction (which indicates it's handled by a Router).
-     *
-     * @param exchange the server web exchange
-     * @return a Mono that emits true if the path is handled by a controller, false otherwise
-     */
-    private Mono<Boolean> isHandledByController(ServerWebExchange exchange) {
-        // Try to get the handler from the exchange attributes
-        Object handler = exchange.getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
-
-        // If the handler is a HandlerMethod, it's handled by a RestController
-        if (handler instanceof HandlerMethod) {
-            return Mono.just(true);
-        }
-
-        // If the handler is not available yet or is not a HandlerMethod,
-        // we need to use a different approach to determine if it's a controller path
-
-        // Get the path from the request
-        String path = exchange.getRequest().getPath().value();
-
-        // Check if the path starts with /api/ which is a common convention for REST APIs
-        // This is a simple heuristic and might need to be adjusted based on your application's conventions
-        if (path.startsWith("/api/")) {
-            return Mono.just(true);
-        }
-
-        // For test paths, consider them as controller paths
-        // This is to ensure that unit tests continue to work
-        if (path.startsWith("/test")) {
-            return Mono.just(true);
-        }
-
-        // If we can't determine for sure, we'll assume it's not a controller path
-        // This is a conservative approach to avoid applying idempotency where it's not needed
-        return Mono.just(false);
+    private boolean supportedVary(CachedResponse response) {
+        if (response.getHeaders() == null) return true;
+        return response.getHeaders().entrySet().stream()
+                .filter(entry -> "Vary".equalsIgnoreCase(entry.getKey()))
+                .flatMap(entry -> entry.getValue().stream())
+                .flatMap(value -> java.util.Arrays.stream(value.split(",", -1)))
+                .map(String::trim)
+                .allMatch(name -> FINGERPRINT_HEADERS.stream().anyMatch(selected -> selected.equalsIgnoreCase(name)));
     }
+
+    private byte[] parts(String... values) {
+        var bytes = new java.io.ByteArrayOutputStream();
+        try (var output = new java.io.DataOutputStream(bytes)) {
+            output.writeInt(values.length);
+            for (String value : values) {
+                byte[] encoded = value == null ? null : value.getBytes(StandardCharsets.UTF_8);
+                output.writeInt(encoded == null ? -1 : encoded.length);
+                if (encoded != null) output.write(encoded);
+            }
+            return bytes.toByteArray();
+        } catch (java.io.IOException impossible) {
+            throw new java.io.UncheckedIOException(impossible);
+        }
+    }
+
+    private String digest(byte[]... values) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (byte[] value : values) digest.update(value);
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
+    private record PendingResponse(String fingerprint, Sinks.One<CachedResponse> response) { }
 }

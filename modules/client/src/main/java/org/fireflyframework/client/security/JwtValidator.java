@@ -135,7 +135,7 @@ public class JwtValidator {
         // Validate claims
         validateClaims(claims);
 
-        log.debug("JWT validated successfully for subject: {}", claims.getSubject());
+        log.debug("JWT validated successfully");
         return claims;
     }
 
@@ -228,6 +228,11 @@ public class JwtValidator {
             if (!claims.hasClaim(requiredClaim)) {
                 throw new JwtValidationException("Missing required claim: " + requiredClaim);
             }
+        }
+
+        Object subject = claims.getClaim("sub");
+        if (subject != null && !(subject instanceof String)) {
+            throw new JwtValidationException("Invalid subject claim");
         }
     }
 

@@ -20,7 +20,7 @@ The tutorial saves applications in a process-local map. An application-owned R2D
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -41,6 +41,10 @@ spring:
     user: app
     password: secret
 ```
+
+### Optional UTC auditing
+
+For `LocalDateTime`, `OffsetDateTime`, and `Instant` audit fields, expose `new org.fireflyframework.core.auditing.UtcOffsetDateTimeProvider(Clock.systemUTC())` as a `DateTimeProvider` bean and select its name with `@EnableR2dbcAuditing(dateTimeProviderRef = "yourBeanName")`. The injected clock is normalized to UTC. Spring Data retains create/update, immutable entity, and auditing flag behavior. This helper is opt-in; it does not enable auditing or register a bean automatically. Legacy `Date` and `Long` audit fields are unsupported by this provider.
 
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 

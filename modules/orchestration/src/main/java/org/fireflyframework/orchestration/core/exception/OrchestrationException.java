@@ -22,7 +22,7 @@ import java.util.Map;
 public sealed class OrchestrationException extends FireflyException
         permits ExecutionNotFoundException, StepExecutionException,
                 TopologyValidationException, DuplicateDefinitionException,
-                ExecutionTimeoutException, CompensationException, TccPhaseException {
+                ExecutionTimeoutException, CompensationException, TccPhaseException, TccPersistenceException {
 
     public OrchestrationException(String message) {
         super(message);

@@ -20,7 +20,7 @@ The callback service stores destinations, subscriptions, and executions separate
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-callbacks-models</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

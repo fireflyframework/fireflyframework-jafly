@@ -24,7 +24,7 @@ An application-tier onboarding API can use these request/context conventions whi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-starter-application</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -47,6 +47,10 @@ public class AccountController extends AbstractApplicationController {
     }
 }
 ```
+
+## Application metadata discovery
+
+Application metadata discovery reads predictable bean types without creating application beans, FactoryBeans or their products. Declare the `@FireflyApplication` main class through a known bean type; the existing immediate-superclass annotation lookup is retained. An unknown product type stays untouched, with existing fallback metadata when no annotation can be resolved. This prevents metadata discovery from reentering Actuator endpoint construction. The guarantee applies to metadata discovery; other integrations retain their own registration and initialization lifecycles.
 
 ## Configuration and wiring
 

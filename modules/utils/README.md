@@ -20,13 +20,36 @@ After accepting an application, the service can render a confirmation template o
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-utils</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
 ## Quick start
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
+
+### Render a restricted published fragment
+
+Use `RestrictedHtmlTemplateRenderer` for the closed `RESTRICTED_XHTML_V1` profile. Its independent configuration accepts a deeply copied JSON-compatible model, exact BigInteger/BigDecimal and integral numbers; it rejects arbitrary Java/FreeMarker objects and floating-point values. Model strings remain data. Existing `TemplateRenderUtil` retains its application-owned classpath/file/PDF behavior.
+
+```java
+import org.fireflyframework.utils.template.RestrictedHtmlTemplateRenderer;
+import java.util.Map;
+
+var renderer = new RestrictedHtmlTemplateRenderer();
+var result = renderer.render("<p>${recipient}</p>",
+        Map.of("recipient", "Synthetic & Bank"));
+if (!result.success()) {
+    throw new IllegalArgumentException(result.code());
+}
+String fragment = result.html(); // <p>Synthetic &amp; Bank</p>
+```
+
+The renderer forces HTML escaping, disables API/class construction and external template loaders, then validates a well-formed XHTML fragment with a closed print tag/attribute profile. Scripts, styles, links, images, custom/external entity declarations, DTDs and unknown markup reject the entire output. No partial document is returned. Successful output must contain visible text. Application-owned branding/shells and financial facts remain separate responsibilities; this profile does not render arbitrary CSS/assets or PDF.
+
+`RestrictedTemplateLimits.defaults()` bounds template256KiB, output1MiB, model5000nodes/depth32, strings65536UTF16 units,10000template elements and5000ms cooperative checks. Custom limits are immutable per instance. Codes are `UNSUPPORTED_TEMPLATE`, `UNSUPPORTED_MODEL`, `RENDER_LIMIT`, `EMPTY_OUTPUT`, `INVALID_HTML` and `RENDER_FAILED`; they do not disclose source/model fragments. Cooperative tracing cannot interrupt one expensive expression or establish a hard heap/RSS/CPU boundary. A service accepting published content must supply its separately qualified worker-process lifetime/heap controls when required. This utility alone does not provide that isolation.
+
+Read the [complete restricted profile](docs/restricted-html-templates.md) before selecting it for an issuance service.
 
 ### Render a template to HTML
 

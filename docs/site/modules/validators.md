@@ -24,7 +24,7 @@ The tutorial validates name and email with Jakarta constraints. Later onboarding
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-validators</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

@@ -103,14 +103,14 @@ CQRS Benefits:
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 
 <!-- Caching Support -->
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 
 <!-- R2DBC Driver for PostgreSQL -->

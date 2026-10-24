@@ -1,0 +1,2 @@
+org.fireflyframework.batch.autoconfigure.DurableBatchAutoConfiguration
+org.fireflyframework.batch.autoconfigure.DurableJdbcBatchAutoConfiguration
