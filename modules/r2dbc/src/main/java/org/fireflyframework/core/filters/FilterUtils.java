@@ -223,17 +223,9 @@ public class FilterUtils {
                                 criteriaList.add(Criteria.where(field.getName()).like("%" + stringValue + "%"));
                             }
                         }
-                        // Handle Enum types
-                        else if (field.getType().isEnum() || value.getClass().isEnum()) {
-                            // For Enum types, we use the exact match with the Enum's name or the Enum itself
-                            // depending on how the database stores the enum (as string or as ordinal)
-                            if (value instanceof String) {
-                                // If the value is already a String, use it directly
-                                criteriaList.add(Criteria.where(field.getName()).is(value));
-                            } else {
-                                // If the value is an Enum, use its name for matching
-                                criteriaList.add(Criteria.where(field.getName()).is(((Enum<?>) value).name()));
-                            }
+                        // Retain the enum type so registered persistence converters choose its representation.
+                        else if (value instanceof Enum<?>) {
+                            criteriaList.add(Criteria.where(field.getName()).is(value));
                         }
                         // Exact match for other types of fields
                         else if (!(value instanceof String)) {
