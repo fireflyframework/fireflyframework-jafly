@@ -32,7 +32,9 @@ The service may call a document-verification partner during a later onboarding s
 
 Secret storage, missing-secret, and removal events use fixed messages without caller-supplied secret names. Successful JWT validation does not log the verified subject. A non-null subject must remain text; other shapes receive a constant `JwtValidationException` diagnostic. Missing/null subjects and the existing required-claim presence rule retain their behavior. Encryption checks the combined IV and ciphertext length before allocating its output buffer; this check does not impose a new plaintext or configured-IV size budget. The cipher format and validation APIs are unchanged.
 
-The generated-key encoding contract remains **open**: `create()` converts random bytes through ISO-8859-1 before UTF-8 key loading, while `generateMasterKey()` returns Base64 and `rotateKey(String)` expects raw 32-byte UTF-8 text. These factory/generated-key paths are not qualified by this correction. Cipher compatibility tests use an explicitly supplied 32-byte ASCII master key; production key material belongs in an application-managed secret source.
+The master key accepts 32 UTF-8 bytes or the standard Base64 encoding of 32 key bytes. Existing 32-byte UTF-8 keys retain their raw interpretation. `generateMasterKey()` returns a Base64 key that can be supplied to the builder or `rotateKey(String)`; `create()` uses a generated key directly. The AES-GCM IV/ciphertext format is preserved. Keep the configured key in an application-managed secret source when ciphertext must outlive a manager instance.
+
+This encoding correction is part of the current source checkpoint. Consumer adoption requires a coordinated follow-up release; previously published artifacts are not replaced under the same version.
 
 ## Quick start
 

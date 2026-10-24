@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SecretsEncryptionManager {
 
     /**
-     * Master encryption key (32 bytes for AES-256).
+     * Master encryption key: 32 UTF-8 bytes or their Base64 encoding for AES-256.
      */
     private final String masterKey;
 
@@ -284,8 +284,15 @@ public class SecretsEncryptionManager {
             throw new IllegalStateException("Master key is not configured");
         }
 
-        // Ensure master key is exactly 32 bytes for AES-256
+        // Prefer legacy UTF-8 keys so existing configurations keep their meaning.
         byte[] keyBytes = masterKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length != 32) {
+            try {
+                keyBytes = Base64.getDecoder().decode(masterKey);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("Master key must be exactly 32 bytes for AES-256");
+            }
+        }
         if (keyBytes.length != 32) {
             throw new IllegalStateException("Master key must be exactly 32 bytes for AES-256");
         }
@@ -315,13 +322,8 @@ public class SecretsEncryptionManager {
      * @return configured SecretsEncryptionManager
      */
     public static SecretsEncryptionManager create() {
-        String masterKey = generateMasterKey();
-        // Decode to get exactly 32 bytes
-        byte[] keyBytes = Base64.getDecoder().decode(masterKey);
-        String key32Bytes = new String(keyBytes, StandardCharsets.ISO_8859_1);
-        
         return SecretsEncryptionManager.builder()
-            .masterKey(key32Bytes)
+            .masterKey(generateMasterKey())
             .build();
     }
 }
