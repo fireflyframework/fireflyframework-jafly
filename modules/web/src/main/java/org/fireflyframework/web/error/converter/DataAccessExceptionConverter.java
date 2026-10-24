@@ -62,7 +62,7 @@ public class DataAccessExceptionConverter implements ExceptionConverter<DataAcce
         } else {
             return new ServiceException(
                     "DATABASE_ERROR",
-                    "A database error occurred: " + exception.getMessage()
+                    "A database error occurred."
             );
         }
     }
@@ -168,7 +168,7 @@ public class DataAccessExceptionConverter implements ExceptionConverter<DataAcce
     private BusinessException handleTransientDataAccessException(TransientDataAccessException exception) {
         return new ServiceException(
                 "TRANSIENT_DATABASE_ERROR",
-                "A temporary database error occurred: " + exception.getMessage()
+                "A temporary database error occurred."
         );
     }
 }
