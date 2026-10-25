@@ -205,8 +205,8 @@ messaging:
     host: localhost
     # Redis port
     port: 6379
-    # Redis password
-    password: ""
+    # For authenticated Redis, opt in with an environment-supplied credential.
+    # password: ${MESSAGING_REDIS_PASSWORD}
     # Redis database index
     database: 0
     # Connection timeout in milliseconds
@@ -236,8 +236,8 @@ messaging:
     broker-url: tcp://localhost:61616
     # JMS username
     username: ""
-    # JMS password
-    password: ""
+    # For authenticated JMS, opt in with an environment-supplied credential.
+    # password: ${MESSAGING_JMS_PASSWORD}
     # Client ID for JMS connection
     client-id: messaging-publisher
     # Connection factory class name

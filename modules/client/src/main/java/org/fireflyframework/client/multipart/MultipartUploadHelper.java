@@ -481,7 +481,7 @@ public class MultipartUploadHelper {
      * Compresses a file using GZIP.
      */
     private File compressFile(File file) throws IOException {
-        File compressedFile = File.createTempFile("upload_", ".gz");
+        File compressedFile = Files.createTempFile("upload_", ".gz").toFile();
 
         try (FileInputStream fis = new FileInputStream(file);
              FileOutputStream fos = new FileOutputStream(compressedFile);
