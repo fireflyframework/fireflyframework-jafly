@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.cache.EnrichmentCacheService;
 import org.fireflyframework.data.controller.EndpointAware;
 import org.fireflyframework.data.enrichment.EnricherMetadataReader;
@@ -196,11 +197,15 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
                 .flatMap(cachedOpt -> {
                     if (cachedOpt.isPresent()) {
                         log.debug("Cache HIT for enrichment: type={}, provider={}, tenant={}",
-                                request.getType(), providerName, request.getTenantId());
+                                LogFields.text(request.getType()),
+                                LogFields.text(providerName),
+                                request.getTenantId());
                         return Mono.just(cachedOpt.get());
                     } else {
                         log.debug("Cache MISS for enrichment: type={}, provider={}, tenant={}",
-                                request.getType(), providerName, request.getTenantId());
+                                LogFields.text(request.getType()),
+                                LogFields.text(providerName),
+                                request.getTenantId());
                         return enrichAndCache(request, providerName);
                     }
                 });
@@ -240,7 +245,9 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
         Instant startTime = Instant.now();
 
         log.debug("Starting enrichment: type={}, provider={}, requestId={}",
-                enrichmentType, providerName, requestId);
+                LogFields.text(enrichmentType),
+                LogFields.text(providerName),
+                LogFields.text(requestId));
 
         // Wrap with tracing
         Mono<EnrichmentResponse> tracedOperation = tracingService.traceOperation(
@@ -256,7 +263,9 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
         return resilientOperation
                 .doOnSubscribe(subscription -> {
                     log.debug("Subscribed to enrichment operation: type={}, provider={}, requestId={}",
-                            enrichmentType, providerName, requestId);
+                            LogFields.text(enrichmentType),
+                            LogFields.text(providerName),
+                            LogFields.text(requestId));
                 })
                 .doOnNext(response -> {
                     long durationMillis = Duration.between(startTime, Instant.now()).toMillis();
@@ -279,7 +288,11 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
                     }
 
                     log.info("Enrichment completed: type={}, provider={}, success={}, duration={}ms, requestId={}",
-                            enrichmentType, providerName, response.isSuccess(), durationMillis, requestId);
+                            LogFields.text(enrichmentType),
+                            LogFields.text(providerName),
+                            response.isSuccess(),
+                            durationMillis,
+                            LogFields.text(requestId));
                 })
                 .doOnError(error -> {
                     long durationMillis = Duration.between(startTime, Instant.now()).toMillis();
@@ -305,12 +318,18 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
                         );
                     }
 
-                    log.error("Enrichment failed: type={}, provider={}, error={}, duration={}ms, requestId={}",
-                            enrichmentType, providerName, error.getMessage(), durationMillis, requestId, error);
+                    log.error("Enrichment failed: type={}, provider={}, errorType={}, duration={}ms, requestId={}",
+                            LogFields.text(enrichmentType),
+                            LogFields.text(providerName),
+                            LogFields.errorType(error),
+                            durationMillis,
+                            LogFields.text(requestId));
                 })
                 .onErrorResume(error -> {
-                    log.warn("Returning failure response for enrichment - type: {}, provider: {}, error: {}",
-                            enrichmentType, providerName, error.getMessage());
+                    log.warn("Returning failure response for enrichment - type: {}, provider: {}, errorType: {}",
+                            LogFields.text(enrichmentType),
+                            LogFields.text(providerName),
+                            LogFields.errorType(error));
 
                     // Return a failure response instead of propagating the error
                     return Mono.just(EnrichmentResponse.failure(
@@ -326,7 +345,8 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
      */
     protected final Mono<EnrichmentResponse> doEnrich(EnrichmentRequest request) {
         log.debug("Starting typed enrichment for type: {}, strategy: {}",
-                request.getType(), request.getStrategy());
+                LogFields.text(request.getType()),
+                request.getStrategy());
 
         return fetchProviderData(request)
                 .map(providerData -> {
@@ -371,7 +391,8 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
                 })
                 .onErrorResume(error -> {
                     log.warn("Enrichment failed for type {}: {}",
-                            request.getType(), error.getMessage());
+                            LogFields.text(request.getType()),
+                            LogFields.errorType(error));
 
                     return Mono.just(
                             EnrichmentResponseBuilder
@@ -483,7 +504,9 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
             return Flux.empty();
         }
 
-        log.info("Starting batch enrichment: provider={}, batchSize={}", getProviderName(), requests.size());
+        log.info("Starting batch enrichment: provider={}, batchSize={}",
+                LogFields.text(getProviderName()),
+                requests.size());
 
         // Process requests in parallel with controlled concurrency
         int parallelism = getBatchParallelism();
@@ -491,7 +514,8 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
         return Flux.fromIterable(requests)
             .flatMap(this::enrich, parallelism)
             .doOnComplete(() -> log.info("Batch enrichment completed: provider={}, batchSize={}",
-                    getProviderName(), requests.size()));
+                    LogFields.text(getProviderName()),
+                    requests.size()));
     }
 
     /**

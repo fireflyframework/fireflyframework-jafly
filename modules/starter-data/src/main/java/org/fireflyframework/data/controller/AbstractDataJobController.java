@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
@@ -50,11 +51,11 @@ public abstract class AbstractDataJobController implements DataJobController {
 
     @Override
     public Mono<JobStageResponse> startJob(JobStartRequest request) {
-        log.info("Received START job request - parameters: {}, requestId: {}, initiator: {}",
-                request.getParameters() != null ? request.getParameters().keySet() : "none",
-                request.getRequestId(),
-                request.getInitiator());
-        log.debug("Full START job request: {}", request);
+        log.info("Received START job request - parametersPresent: {}, requestId: {}, initiator: {}",
+                request.getParameters() != null,
+                LogFields.text(request.getRequestId()),
+                LogFields.text(request.getInitiator()));
+        log.debug("START job request type: {}", JobStartRequest.class.getSimpleName());
 
         // Convert JobStartRequest to JobStageRequest for the service layer
         JobStageRequest stageRequest = JobStageRequest.builder()
@@ -69,21 +70,26 @@ public abstract class AbstractDataJobController implements DataJobController {
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
                         log.info("START job completed successfully - executionId: {}, status: {}",
-                                response.getExecutionId(), response.getStatus());
+                                LogFields.text(response.getExecutionId()),
+                                response.getStatus());
                     } else {
-                        log.warn("START job completed with failure - executionId: {}, status: {}, message: {}",
-                                response.getExecutionId(), response.getStatus(), response.getMessage());
+                        log.warn("START job completed with failure - executionId: {}, status: {}, responseType: {}",
+                                LogFields.text(response.getExecutionId()),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
-                    log.debug("Full START job response: {}", response);
+                    log.debug("START job response type: {}", JobStageResponse.class.getSimpleName());
                 })
                 .doOnError(error -> {
-                    log.error("START job failed with error: {}", error.getMessage(), error);
+                    log.error("START job failed with errorType: {}", LogFields.errorType(error));
                 });
     }
 
     @Override
     public Mono<JobStageResponse> checkJob(String executionId, String requestId) {
-        log.info("Received CHECK job request - executionId: {}, requestId: {}", executionId, requestId);
+        log.info("Received CHECK job request - executionId: {}, requestId: {}",
+                LogFields.text(executionId),
+                LogFields.text(requestId));
 
         JobStageRequest request = JobStageRequest.builder()
                 .stage(JobStage.CHECK)
@@ -94,23 +100,31 @@ public abstract class AbstractDataJobController implements DataJobController {
         return dataJobService.checkJob(request)
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
-                        log.info("CHECK job completed successfully - executionId: {}, status: {}", 
-                                executionId, response.getStatus());
+                        log.info("CHECK job completed successfully - executionId: {}, status: {}",
+                                LogFields.text(executionId),
+                                response.getStatus());
                     } else {
-                        log.warn("CHECK job completed with failure - executionId: {}, status: {}, message: {}", 
-                                executionId, response.getStatus(), response.getMessage());
+                        log.warn("CHECK job completed with failure - executionId: {}, status: {}, responseType: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
-                    log.debug("Full CHECK job response for executionId {}: {}", executionId, response);
+                    log.debug("CHECK job response type for executionId {}: {}",
+                            LogFields.text(executionId),
+                            JobStageResponse.class.getSimpleName());
                 })
                 .doOnError(error -> {
-                    log.error("CHECK job failed for executionId {} with error: {}", 
-                            executionId, error.getMessage(), error);
+                    log.error("CHECK job failed for executionId {} with errorType: {}",
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                 });
     }
 
     @Override
     public Mono<JobStageResponse> collectJobResults(String executionId, String requestId) {
-        log.info("Received COLLECT job results request - executionId: {}, requestId: {}", executionId, requestId);
+        log.info("Received COLLECT job results request - executionId: {}, requestId: {}",
+                LogFields.text(executionId),
+                LogFields.text(requestId));
 
         JobStageRequest request = JobStageRequest.builder()
                 .stage(JobStage.COLLECT)
@@ -121,25 +135,33 @@ public abstract class AbstractDataJobController implements DataJobController {
         return dataJobService.collectJobResults(request)
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
-                        log.info("COLLECT job results completed successfully - executionId: {}, status: {}, dataKeys: {}", 
-                                executionId, response.getStatus(), 
-                                response.getData() != null ? response.getData().keySet() : "none");
+                        log.info("COLLECT job results completed successfully - executionId: {}, status: {}, dataPresent: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                response.getData() != null);
                     } else {
-                        log.warn("COLLECT job results completed with failure - executionId: {}, status: {}, message: {}", 
-                                executionId, response.getStatus(), response.getMessage());
+                        log.warn("COLLECT job results completed with failure - executionId: {}, status: {}, responseType: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
-                    log.debug("Full COLLECT job results response for executionId {}: {}", executionId, response);
+                    log.debug("COLLECT job results response type for executionId {}: {}",
+                            LogFields.text(executionId),
+                            JobStageResponse.class.getSimpleName());
                 })
                 .doOnError(error -> {
-                    log.error("COLLECT job results failed for executionId {} with error: {}", 
-                            executionId, error.getMessage(), error);
+                    log.error("COLLECT job results failed for executionId {} with errorType: {}",
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                 });
     }
 
     @Override
     public Mono<JobStageResponse> getJobResult(String executionId, String requestId, String targetDtoClass) {
         log.info("Received GET job result request - executionId: {}, requestId: {}, targetDtoClass: {}",
-                executionId, requestId, targetDtoClass);
+                LogFields.text(executionId),
+                LogFields.text(requestId),
+                LogFields.text(targetDtoClass));
 
         JobStageRequest request = JobStageRequest.builder()
                 .stage(JobStage.RESULT)
@@ -151,25 +173,33 @@ public abstract class AbstractDataJobController implements DataJobController {
         return dataJobService.getJobResult(request)
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
-                        log.info("GET job result completed successfully - executionId: {}, status: {}, dataKeys: {}",
-                                executionId, response.getStatus(),
-                                response.getData() != null ? response.getData().keySet() : "none");
+                        log.info("GET job result completed successfully - executionId: {}, status: {}, dataPresent: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                response.getData() != null);
                     } else {
-                        log.warn("GET job result completed with failure - executionId: {}, status: {}, message: {}",
-                                executionId, response.getStatus(), response.getMessage());
+                        log.warn("GET job result completed with failure - executionId: {}, status: {}, responseType: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
-                    log.debug("Full GET job result response for executionId {}: {}", executionId, response);
+                    log.debug("GET job result response type for executionId {}: {}",
+                            LogFields.text(executionId),
+                            JobStageResponse.class.getSimpleName());
                 })
                 .doOnError(error -> {
-                    log.error("GET job result failed for executionId {} with error: {}",
-                            executionId, error.getMessage(), error);
+                    log.error("GET job result failed for executionId {} with errorType: {}",
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                 });
     }
 
     @Override
     public Mono<JobStageResponse> stopJob(String executionId, String requestId, String reason) {
-        log.info("Received STOP job request - executionId: {}, requestId: {}, reason: {}",
-                executionId, requestId, reason);
+        log.info("Received STOP job request - executionId: {}, requestId: {}, reasonProvided: {}",
+                LogFields.text(executionId),
+                LogFields.text(requestId),
+                reason != null);
 
         JobStageRequest request = JobStageRequest.builder()
                 .stage(JobStage.STOP)
@@ -182,16 +212,22 @@ public abstract class AbstractDataJobController implements DataJobController {
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
                         log.info("STOP job completed successfully - executionId: {}, status: {}",
-                                executionId, response.getStatus());
+                                LogFields.text(executionId),
+                                response.getStatus());
                     } else {
-                        log.warn("STOP job completed with failure - executionId: {}, status: {}, message: {}",
-                                executionId, response.getStatus(), response.getMessage());
+                        log.warn("STOP job completed with failure - executionId: {}, status: {}, responseType: {}",
+                                LogFields.text(executionId),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
-                    log.debug("Full STOP job response for executionId {}: {}", executionId, response);
+                    log.debug("STOP job response type for executionId {}: {}",
+                            LogFields.text(executionId),
+                            JobStageResponse.class.getSimpleName());
                 })
                 .doOnError(error -> {
-                    log.error("STOP job failed for executionId {} with error: {}",
-                            executionId, error.getMessage(), error);
+                    log.error("STOP job failed for executionId {} with errorType: {}",
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                 });
     }
 
