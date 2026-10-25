@@ -65,6 +65,6 @@ public class OpenFgaRelationshipAdapter implements RelationshipPort {
 
     /** Subset of the OpenFGA check response ({@code {"allowed": <bool>}}). */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record CheckResult(Boolean allowed) {
+    record CheckResult(Object allowed) {
     }
 }

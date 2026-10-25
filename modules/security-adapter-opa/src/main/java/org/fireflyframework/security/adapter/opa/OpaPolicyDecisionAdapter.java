@@ -80,6 +80,6 @@ public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
 
     /** Subset of the OPA data API response ({@code {"result": <bool>}}). */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record OpaResult(Boolean result) {
+    record OpaResult(Object result) {
     }
 }
