@@ -7,3 +7,4 @@ org.fireflyframework.web.conditions.config.ConditionsReportPropertiesAutoConfigu
 org.fireflyframework.web.conditions.config.ConditionsReportAutoConfiguration
 org.fireflyframework.web.cors.config.CorsAutoConfiguration
 org.fireflyframework.web.jackson.config.JsonNullableAutoConfiguration
+org.fireflyframework.web.openapi.InstantScalarOpenAPIAutoConfiguration

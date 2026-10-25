@@ -433,6 +433,43 @@ public class OpenApiGenApplication {
 
 The Maven profile and plugin configuration are inherited from `fireflyframework-parent`.
 
+### Named Instant schemas
+
+Use the named scalar when an owner field is a real `java.time.Instant` and its generated client must retain the instant, offset interpretation, and nanoseconds. Existing `LocalDateTime` fields can keep their current SDK configuration.
+
+Use a framework revision containing this registrar; earlier artifacts do not implement the flag. The capability is disabled by default. Enable it explicitly in the application configuration **and** in the original producer application's `openapi-gen` profile:
+
+```yaml
+firefly:
+  openapi:
+    instant-scalar:
+      enabled: true
+```
+
+Normal auto-configuration and `@EnableOpenApiGen` import the same property-gated registrar. A coincidentally named domain schema has no effect while this property is missing or false.
+
+Annotate only the actual Instant field:
+
+```java
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+
+public record Observation(
+        @Schema(ref = "#/components/schemas/FireflyInstant") Instant recordedAt) {}
+```
+
+When an enabled document references this reserved name, the registrar adds `FireflyInstant` as the primitive `type: string`, `format: date-time` schema. An existing different definition fails generation instead of being overwritten. The registrar does not change runtime JSON serializers or the global ModelConverters registry. It visits modeled OpenAPI 3.0/3.1 schema locations, including path parameters, webhooks, component path items, and encoding headers; examples, descriptions, and arbitrary extension data are not opt-in signals, and remote references are not resolved.
+
+In the owner SDK's original `openapi-generator-maven-plugin` execution, use the standard mapping **list** supported by generator 7.26:
+
+```xml
+<schemaMappings>
+    <schemaMapping>FireflyInstant=java.time.Instant</schemaMapping>
+</schemaMappings>
+```
+
+Keep an existing `<dateLibrary>java8-localdatetime</dateLibrary>` for legacy fields. The explicit named mapping applies to the annotated scalar, rather than changing all date-time models. Generate the schema and SDK through the owner's original producer; do not edit the generated schema or Java files. Inspect generated field types and verify client serialization/deserialization against the real owner response before adopting this in a service. Framework source tests and generator contract vectors do not establish that service's producer, transport, release, or deployment readiness.
+
 ## Continue the application
 
 Use the [Security Resource Server guide](security-resource-server.md) for the next part of this integration. The runnable submission/query service is in [Getting started](../getting-started.md).

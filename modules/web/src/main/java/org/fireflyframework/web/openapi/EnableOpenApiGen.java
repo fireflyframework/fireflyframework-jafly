@@ -70,7 +70,8 @@ import java.lang.annotation.Target;
         Jackson2AutoConfiguration.class,
         CodecsAutoConfiguration.class,
         SpringApplicationAdminJmxAutoConfiguration.class,
-        IdempotencyOpenAPIAutoConfiguration.class
+        IdempotencyOpenAPIAutoConfiguration.class,
+        InstantScalarOpenAPIAutoConfiguration.class
 })
 public @interface EnableOpenApiGen {
 }
