@@ -29,6 +29,19 @@ The onboarding example inherits this parent and keeps its own application versio
 
 This POM has no runtime configuration namespace. Configure the selected child libraries in the application that uses them.
 
+### Generated Java SDK variants
+
+The managed OpenAPI Generator plugin exposes two opt-in build properties for object variants described with `oneOf`:
+
+```xml
+<properties>
+    <openapi.use.oneof.interfaces>true</openapi.use.oneof.interfaces>
+    <openapi.use.oneof.deduction>true</openapi.use.oneof.deduction>
+</properties>
+```
+
+Both properties default to `false`, preserving the existing generator behavior. For the qualified Java WebClient configuration, the interface option generates separate typed variants and the deduction option uses their JSON field shapes during Jackson deserialization. Qualify serialization, deserialization, ambiguous payloads, and compatibility with the owning API before enabling them in a consumer. Keep the API schema and normal generator lifecycle authoritative for SDK output. These properties do not change a service's business admission rules or publish an updated SDK.
+
 ## Continue the application
 
 Use the [CQRS guide](../../docs/site/modules/cqrs.md) for the next part of this integration.

@@ -53,6 +53,8 @@
         <openapi.use.tags>true</openapi.use.tags>
         <openapi.use.optional>true</openapi.use.optional>
         <openapi.date.library>java8</openapi.date.library>
+        <openapi.use.oneof.interfaces>false</openapi.use.oneof.interfaces>
+        <openapi.use.oneof.deduction>false</openapi.use.oneof.deduction>
 
         <!-- Spring Boot and Cloud -->
         <spring-boot.version>4.1.1</spring-boot.version>
@@ -1126,6 +1128,12 @@
                     <groupId>org.openapitools</groupId>
                     <artifactId>openapi-generator-maven-plugin</artifactId>
                     <version>${openapi-generator.version}</version>
+                    <configuration>
+                        <configOptions>
+                            <useOneOfInterfaces>${openapi.use.oneof.interfaces}</useOneOfInterfaces>
+                            <useDeductionForOneOfInterfaces>${openapi.use.oneof.deduction}</useDeductionForOneOfInterfaces>
+                        </configOptions>
+                    </configuration>
                 </plugin>
 
                 <!-- Maven Source Plugin -->
