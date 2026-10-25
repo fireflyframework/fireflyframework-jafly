@@ -15,6 +15,7 @@
  */
 package org.fireflyframework.security.idp.azuread.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.microsoft.graph.models.AppRole;
 import com.microsoft.graph.models.AppRoleAssignment;
 import com.microsoft.graph.models.AppRoleAssignmentCollectionResponse;
@@ -72,7 +73,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<CreateUserResponse>> createUser(CreateUserRequest request) {
         return Mono.<ResponseEntity<CreateUserResponse>>fromCallable(() -> {
-            log.info("Creating Entra ID user: {}", request.getUsername());
+            log.info("Creating Entra ID user: {}", LogFields.text(request.getUsername()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -103,12 +104,12 @@ public class EntraIdAdminService implements AzureAdAdminService {
                     .createdAt(Instant.now())
                     .build();
 
-            log.info("Successfully created user: {}", request.getUsername());
+            log.info("Successfully created user: {}", LogFields.text(request.getUsername()));
             return ResponseEntity.ok(response);
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to create user: {}", request.getUsername(), exception);
+              log.error("Failed to create user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<CreateUserResponse>build());
           });
     }
@@ -116,7 +117,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> changePassword(ChangePasswordRequest request) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Changing password for user: {}", request.getUserId());
+            log.info("Changing password for user: {}", LogFields.text(request.getUserId()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -128,12 +129,12 @@ public class EntraIdAdminService implements AzureAdAdminService {
 
             graphClient.users().byUserId(request.getUserId()).patch(user);
 
-            log.info("Successfully changed password for user: {}", request.getUserId());
+            log.info("Successfully changed password for user: {}", LogFields.text(request.getUserId()));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to change password", exception);
+              log.error("Failed to change password errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Password change failed", exception));
           });
     }
@@ -141,7 +142,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> resetPassword(String username) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Resetting password for user: {}", username);
+            log.info("Resetting password for user: {}", LogFields.text(username));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -153,12 +154,12 @@ public class EntraIdAdminService implements AzureAdAdminService {
 
             graphClient.users().byUserId(username).patch(user);
 
-            log.info("Successfully initiated password reset for user: {}", username);
+            log.info("Successfully initiated password reset for user: {}", LogFields.text(username));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to reset password", exception);
+              log.error("Failed to reset password errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Password reset failed", exception));
           });
     }
@@ -166,7 +167,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<MfaChallengeResponse>> mfaChallenge(String username) {
         return Mono.<ResponseEntity<MfaChallengeResponse>>fromCallable(() -> {
-            log.info("MFA challenge requested for user: {} — Azure MFA is managed by Conditional Access policies", username);
+            log.info("MFA challenge requested for user: {} — Azure MFA is managed by Conditional Access policies", LogFields.text(username));
 
             // Azure AD MFA is managed by Conditional Access policies, not programmatically
             MfaChallengeResponse response = MfaChallengeResponse.builder()
@@ -192,7 +193,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<List<SessionInfo>>> listSessions(String userId) {
         return Mono.<ResponseEntity<List<SessionInfo>>>fromCallable(() -> {
-            log.info("Listing sessions for user: {}", userId);
+            log.info("Listing sessions for user: {}", LogFields.text(userId));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -215,7 +216,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to list sessions", exception);
+              log.error("Failed to list sessions errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.ok(Collections.emptyList()));
           });
     }
@@ -223,17 +224,17 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> revokeSession(String sessionId) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Revoking session for user: {}", sessionId);
+            log.info("Revoking session for user: {}", LogFields.text(sessionId));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
             graphClient.users().byUserId(sessionId).revokeSignInSessions().post();
 
-            log.info("Successfully revoked session: {}", sessionId);
+            log.info("Successfully revoked session: {}", LogFields.text(sessionId));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to revoke session", exception);
+              log.error("Failed to revoke session errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Session revocation failed", exception));
           });
     }
@@ -241,7 +242,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<List<String>>> getRoles(String userId) {
         return Mono.<ResponseEntity<List<String>>>fromCallable(() -> {
-            log.info("Getting roles for user: {}", userId);
+            log.info("Getting roles for user: {}", LogFields.text(userId));
 
             String strategy = properties.getRoleMapping().getStrategy();
             List<String> roles = new ArrayList<>();
@@ -257,7 +258,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to get user roles", exception);
+              log.error("Failed to get user roles errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.ok(Collections.emptyList()));
           });
     }
@@ -265,17 +266,17 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> deleteUser(String userId) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Deleting user: {}", userId);
+            log.info("Deleting user: {}", LogFields.text(userId));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
             graphClient.users().byUserId(userId).delete();
 
-            log.info("Successfully deleted user: {}", userId);
+            log.info("Successfully deleted user: {}", LogFields.text(userId));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to delete user", exception);
+              log.error("Failed to delete user errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("User deletion failed", exception));
           });
     }
@@ -283,7 +284,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<UpdateUserResponse>> updateUser(UpdateUserRequest request) {
         return Mono.<ResponseEntity<UpdateUserResponse>>fromCallable(() -> {
-            log.info("Updating user: {}", request.getUserId());
+            log.info("Updating user: {}", LogFields.text(request.getUserId()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -310,12 +311,12 @@ public class EntraIdAdminService implements AzureAdAdminService {
                     .updatedAt(Instant.now())
                     .build();
 
-            log.info("Successfully updated user: {}", request.getUserId());
+            log.info("Successfully updated user: {}", LogFields.text(request.getUserId()));
             return ResponseEntity.ok(response);
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to update user", exception);
+              log.error("Failed to update user errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<UpdateUserResponse>build());
           });
     }
@@ -323,7 +324,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<CreateRolesResponse>> createRoles(CreateRolesRequest request) {
         return Mono.<ResponseEntity<CreateRolesResponse>>fromCallable(() -> {
-            log.info("Creating roles: {}", request.getRoleNames());
+            log.info("Creating roles: {}", LogFields.values(request.getRoleNames()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
             List<String> createdRoles = new ArrayList<>();
@@ -343,7 +344,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
                     createdRoles.add(roleName);
 
                 } catch (Exception e) {
-                    log.warn("Failed to create role: {}", roleName, e);
+                    log.warn("Failed to create role: {} errorType={}", LogFields.text(roleName), LogFields.errorType(e));
                 }
             }
 
@@ -355,7 +356,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to create roles", exception);
+              log.error("Failed to create roles errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<CreateRolesResponse>build());
           });
     }
@@ -363,7 +364,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<ResponseEntity<CreateScopeResponse>> createScope(CreateScopeRequest request) {
         return Mono.<ResponseEntity<CreateScopeResponse>>fromCallable(() -> {
-            log.info("Creating scope: {} — Scopes are configured in Azure AD app registration", request.getName());
+            log.info("Creating scope: {} — Scopes are configured in Azure AD app registration", LogFields.text(request.getName()));
 
             // Scopes in Azure AD are configured in the app registration, not programmatically
             CreateScopeResponse response = CreateScopeResponse.builder()
@@ -379,7 +380,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> assignRolesToUser(AssignRolesRequest request) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Assigning roles to user: {}", request.getUserId());
+            log.info("Assigning roles to user: {}", LogFields.text(request.getUserId()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -391,19 +392,19 @@ public class EntraIdAdminService implements AzureAdAdminService {
                         referenceCreate.setOdataId("https://graph.microsoft.com/v1.0/directoryObjects/" + request.getUserId());
                         graphClient.groups().byGroupId(groupId).members().ref().post(referenceCreate);
                     } else {
-                        log.warn("Group not found for role: {}", roleName);
+                        log.warn("Group not found for role: {}", LogFields.text(roleName));
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to assign role {} to user {}", roleName, request.getUserId(), e);
+                    log.warn("Failed to assign role {} to user {} errorType={}", LogFields.text(roleName), LogFields.text(request.getUserId()), LogFields.errorType(e));
                 }
             }
 
-            log.info("Successfully assigned roles to user: {}", request.getUserId());
+            log.info("Successfully assigned roles to user: {}", LogFields.text(request.getUserId()));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to assign roles", exception);
+              log.error("Failed to assign roles errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Role assignment failed", exception));
           });
     }
@@ -411,7 +412,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
     @Override
     public Mono<Void> removeRolesFromUser(AssignRolesRequest request) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Removing roles from user: {}", request.getUserId());
+            log.info("Removing roles from user: {}", LogFields.text(request.getUserId()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -422,19 +423,19 @@ public class EntraIdAdminService implements AzureAdAdminService {
                         graphClient.groups().byGroupId(groupId)
                                 .members().byDirectoryObjectId(request.getUserId()).ref().delete();
                     } else {
-                        log.warn("Group not found for role: {}", roleName);
+                        log.warn("Group not found for role: {}", LogFields.text(roleName));
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to remove role {} from user {}", roleName, request.getUserId(), e);
+                    log.warn("Failed to remove role {} from user {} errorType={}", LogFields.text(roleName), LogFields.text(request.getUserId()), LogFields.errorType(e));
                 }
             }
 
-            log.info("Successfully removed roles from user: {}", request.getUserId());
+            log.info("Successfully removed roles from user: {}", LogFields.text(request.getUserId()));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to remove roles", exception);
+              log.error("Failed to remove roles errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Role removal failed", exception));
           });
     }
@@ -487,7 +488,7 @@ public class EntraIdAdminService implements AzureAdAdminService {
                     }
                 }
             } catch (Exception e) {
-                log.warn("Failed to resolve app roles for resource: {}", entry.getKey(), e);
+                log.warn("Failed to resolve app roles for resource: {} errorType={}", LogFields.text(entry.getKey()), LogFields.errorType(e));
             }
         }
         return roleNames;

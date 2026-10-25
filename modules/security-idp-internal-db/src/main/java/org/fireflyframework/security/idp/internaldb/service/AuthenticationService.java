@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.internaldb.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.dtos.TokenResponse;
 import org.fireflyframework.security.idp.internaldb.config.InternalDbProperties;
 import org.fireflyframework.security.idp.internaldb.domain.RefreshToken;
@@ -67,7 +68,7 @@ public class AuthenticationService {
      * @return a Mono emitting the token response
      */
     public Mono<TokenResponse> authenticate(String username, String password) {
-        log.debug("Authenticating user: {}", username);
+        log.debug("Authenticating user: {}", LogFields.text(username));
 
         return userRepository.findByUsername(username)
                 .doOnNext(user -> user.markAsNotNew())
@@ -84,7 +85,7 @@ public class AuthenticationService {
 
                     // Check automatic lockout
                     if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
-                        log.warn("Login attempt for locked user: {} (locked until {})", username, user.getLockedUntil());
+                        log.warn("Login attempt for locked user: {} (locked until {})", LogFields.text(username), user.getLockedUntil());
                         return Mono.error(new RuntimeException("Account is temporarily locked. Try again later."));
                     }
 
@@ -128,7 +129,7 @@ public class AuthenticationService {
             LocalDateTime lockUntil = LocalDateTime.now().plus(properties.getLockout().getLockoutDuration());
             user.setLockedUntil(lockUntil);
             log.warn("Account locked for user: {} after {} failed attempts (locked until {})",
-                    user.getUsername(), attempts, lockUntil);
+                    LogFields.text(user.getUsername()), attempts, lockUntil);
         }
 
         return userRepository.save(user)
@@ -170,7 +171,7 @@ public class AuthenticationService {
                     .flatMap(this::generateTokens);
 
         } catch (Exception e) {
-            log.error("Failed to refresh token", e);
+            log.error("Failed to refresh token errorType={}", LogFields.errorType(e));
             return Mono.error(new RuntimeException("Invalid refresh token"));
         }
     }
@@ -218,7 +219,7 @@ public class AuthenticationService {
             return revokeSession.then(revokeRefreshToken);
 
         } catch (Exception e) {
-            log.error("Failed to logout", e);
+            log.error("Failed to logout errorType={}", LogFields.errorType(e));
             return Mono.error(new RuntimeException("Logout failed"));
         }
     }
@@ -305,7 +306,7 @@ public class AuthenticationService {
                     .defaultIfEmpty(false);
 
         } catch (Exception e) {
-            log.error("Failed to validate access token", e);
+            log.error("Failed to validate access token errorType={}", LogFields.errorType(e));
             return Mono.just(false);
         }
     }
@@ -334,7 +335,7 @@ public class AuthenticationService {
                     .then();
 
         } catch (Exception e) {
-            log.error("Failed to revoke refresh token", e);
+            log.error("Failed to revoke refresh token errorType={}", LogFields.errorType(e));
             return Mono.error(new RuntimeException("Failed to revoke refresh token"));
         }
     }

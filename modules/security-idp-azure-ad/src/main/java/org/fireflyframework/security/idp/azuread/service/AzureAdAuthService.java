@@ -15,6 +15,7 @@
  */
 package org.fireflyframework.security.idp.azuread.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.MsalException;
@@ -92,7 +93,7 @@ public class AzureAdAuthService {
      */
     public Mono<ResponseEntity<TokenResponse>> login(LoginRequest request) {
         return Mono.<ResponseEntity<TokenResponse>>fromCallable(() -> {
-            log.info("Initiating Azure AD login for user: {}", request.getUsername());
+            log.info("Initiating Azure AD login for user: {}", LogFields.text(request.getUsername()));
 
             PublicClientApplication client = getPublicClient();
 
@@ -121,12 +122,12 @@ public class AzureAdAuthService {
                     .scope(String.join(" ", scopes))
                     .build();
 
-            log.info("Successfully authenticated user: {}", request.getUsername());
+            log.info("Successfully authenticated user: {}", LogFields.text(request.getUsername()));
             return ResponseEntity.ok(tokenResponse);
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Azure AD login failed for user: {}", request.getUsername(), exception);
+              log.error("Azure AD login failed for user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(exception));
 
               if (exception instanceof MsalException) {
                   return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<TokenResponse>build());
@@ -168,7 +169,7 @@ public class AzureAdAuthService {
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Token refresh failed", exception);
+              log.error("Token refresh failed errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<TokenResponse>build());
           });
     }
@@ -185,12 +186,12 @@ public class AzureAdAuthService {
 
             graphClient.users().byUserId(userId).revokeSignInSessions().post();
 
-            log.info("Successfully logged out user: {}", userId);
+            log.info("Successfully logged out user: {}", LogFields.text(userId));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Logout failed", exception);
+              log.error("Logout failed errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("Logout failed", exception));
           });
     }
@@ -227,7 +228,7 @@ public class AzureAdAuthService {
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Token introspection failed", exception);
+              log.error("Token introspection failed errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<IntrospectionResponse>build());
           });
     }
@@ -254,12 +255,12 @@ public class AzureAdAuthService {
                     .name(user.getDisplayName())
                     .build();
 
-            log.debug("Successfully fetched user info for: {}", userId);
+            log.debug("Successfully fetched user info for: {}", LogFields.text(userId));
             return ResponseEntity.ok(userInfo);
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to fetch user info", exception);
+              log.error("Failed to fetch user info errorType={}", LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<UserInfoResponse>build());
           });
     }
@@ -282,7 +283,7 @@ public class AzureAdAuthService {
                 String userId = AzureAdTokenParser.extractUserId(refreshToken);
                 GraphServiceClient graphClient = graphClientFactory.getClient();
                 graphClient.users().byUserId(userId).revokeSignInSessions().post();
-                log.info("Successfully revoked sessions for user: {}", userId);
+                log.info("Successfully revoked sessions for user: {}", LogFields.text(userId));
             } catch (Exception e) {
                 // Refresh token is opaque — cannot extract user ID.
                 // Azure AD does not support revoking a single refresh token via Graph API.

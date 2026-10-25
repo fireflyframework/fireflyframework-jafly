@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.cognito.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.cognito.client.CognitoClientFactory;
 import org.fireflyframework.security.idp.cognito.properties.CognitoProperties;
 import org.fireflyframework.security.idp.dtos.*;
@@ -54,7 +55,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<CreateUserResponse>> createUser(CreateUserRequest request) {
         return Mono.fromCallable(() -> {
-            log.info("Creating Cognito user: {}", request.getUsername());
+            log.info("Creating Cognito user: {}", LogFields.text(request.getUsername()));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             
@@ -109,11 +110,11 @@ public class CognitoAdminService {
                     .email(request.getEmail())
                     .build();
             
-            log.info("Successfully created user: {}", request.getUsername());
+            log.info("Successfully created user: {}", LogFields.text(request.getUsername()));
             return ResponseEntity.ok(userResponse);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to create user: {}", request.getUsername(), exception);
+            log.error("Failed to create user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         });
     }
@@ -123,7 +124,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> changePassword(org.fireflyframework.security.idp.dtos.ChangePasswordRequest request) {
         return Mono.fromRunnable(() -> {
-            log.info("Changing password for user: {}", request.getUserId());
+            log.info("Changing password for user: {}", LogFields.text(request.getUserId()));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -137,9 +138,9 @@ public class CognitoAdminService {
                 
                 client.adminSetUserPassword(setPasswordRequest);
                 
-                log.info("Successfully changed password for user: {}", request.getUserId());
+                log.info("Successfully changed password for user: {}", LogFields.text(request.getUserId()));
             } catch (Exception e) {
-                log.error("Failed to change password", e);
+                log.error("Failed to change password errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Password change failed", e);
             }
         });
@@ -150,7 +151,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> resetPassword(String username) {
         return Mono.fromRunnable(() -> {
-            log.info("Resetting password for user: {}", username);
+            log.info("Resetting password for user: {}", LogFields.text(username));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -162,9 +163,9 @@ public class CognitoAdminService {
                 
                 client.adminResetUserPassword(resetRequest);
                 
-                log.info("Successfully initiated password reset for user: {}", username);
+                log.info("Successfully initiated password reset for user: {}", LogFields.text(username));
             } catch (Exception e) {
-                log.error("Failed to reset password", e);
+                log.error("Failed to reset password errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Password reset failed", e);
             }
         });
@@ -175,7 +176,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<MfaChallengeResponse>> mfaChallenge(String username) {
         return Mono.fromCallable(() -> {
-            log.info("Initiating MFA challenge for user: {}", username);
+            log.info("Initiating MFA challenge for user: {}", LogFields.text(username));
             
             // Cognito MFA is typically handled during authentication flow
             // This is a placeholder for custom MFA implementation
@@ -206,7 +207,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<List<SessionInfo>>> listSessions(String userId) {
         return Mono.fromCallable(() -> {
-            log.info("Listing sessions for user: {}", userId);
+            log.info("Listing sessions for user: {}", LogFields.text(userId));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             
@@ -228,7 +229,7 @@ public class CognitoAdminService {
             return ResponseEntity.ok(sessions);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to list sessions", exception);
+            log.error("Failed to list sessions errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.ok(Collections.emptyList()));
         });
     }
@@ -238,7 +239,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> revokeSession(String sessionId) {
         return Mono.fromRunnable(() -> {
-            log.info("Revoking session: {}", sessionId);
+            log.info("Revoking session: {}", LogFields.text(sessionId));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -251,9 +252,9 @@ public class CognitoAdminService {
                 
                 client.adminForgetDevice(forgetDeviceRequest);
                 
-                log.info("Successfully revoked session: {}", sessionId);
+                log.info("Successfully revoked session: {}", LogFields.text(sessionId));
             } catch (Exception e) {
-                log.error("Failed to revoke session", e);
+                log.error("Failed to revoke session errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Session revocation failed", e);
             }
         });
@@ -264,7 +265,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<List<String>>> getRoles(String userId) {
         return Mono.fromCallable(() -> {
-            log.info("Getting roles for user: {}", userId);
+            log.info("Getting roles for user: {}", LogFields.text(userId));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             
@@ -282,7 +283,7 @@ public class CognitoAdminService {
             return ResponseEntity.ok(roles);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to get user roles", exception);
+            log.error("Failed to get user roles errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.ok(Collections.emptyList()));
         });
     }
@@ -292,7 +293,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> deleteUser(String userId) {
         return Mono.fromRunnable(() -> {
-            log.info("Deleting user: {}", userId);
+            log.info("Deleting user: {}", LogFields.text(userId));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -304,9 +305,9 @@ public class CognitoAdminService {
                 
                 client.adminDeleteUser(deleteRequest);
                 
-                log.info("Successfully deleted user: {}", userId);
+                log.info("Successfully deleted user: {}", LogFields.text(userId));
             } catch (Exception e) {
-                log.error("Failed to delete user", e);
+                log.error("Failed to delete user errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("User deletion failed", e);
             }
         });
@@ -317,7 +318,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<UpdateUserResponse>> updateUser(UpdateUserRequest request) {
         return Mono.fromCallable(() -> {
-            log.info("Updating user: {}", request.getUserId());
+            log.info("Updating user: {}", LogFields.text(request.getUserId()));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             
@@ -345,11 +346,11 @@ public class CognitoAdminService {
                     .username(request.getUserId())
                     .build();
             
-            log.info("Successfully updated user: {}", request.getUserId());
+            log.info("Successfully updated user: {}", LogFields.text(request.getUserId()));
             return ResponseEntity.ok(response);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to update user", exception);
+            log.error("Failed to update user errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         });
     }
@@ -359,7 +360,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<CreateRolesResponse>> createRoles(CreateRolesRequest request) {
         return Mono.fromCallable(() -> {
-            log.info("Creating roles: {}", request.getRoleNames());
+            log.info("Creating roles: {}", LogFields.values(request.getRoleNames()));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             List<String> createdRoles = new ArrayList<>();
@@ -376,7 +377,7 @@ public class CognitoAdminService {
                     createdRoles.add(roleName);
                     
                 } catch (Exception e) {
-                    log.warn("Failed to create role: {}", roleName, e);
+                    log.warn("Failed to create role: {} errorType={}", LogFields.text(roleName), LogFields.errorType(e));
                 }
             }
             
@@ -387,7 +388,7 @@ public class CognitoAdminService {
             return ResponseEntity.ok(response);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to create roles", exception);
+            log.error("Failed to create roles errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         });
     }
@@ -397,7 +398,7 @@ public class CognitoAdminService {
      */
     public Mono<ResponseEntity<CreateScopeResponse>> createScope(CreateScopeRequest request) {
         return Mono.fromCallable(() -> {
-            log.info("Creating scope: {}", request.getName());
+            log.info("Creating scope: {}", LogFields.text(request.getName()));
             
             // Cognito uses resource servers for scopes
             // This is a simplified placeholder
@@ -414,7 +415,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> assignRolesToUser(AssignRolesRequest request) {
         return Mono.fromRunnable(() -> {
-            log.info("Assigning roles to user: {}", request.getUserId());
+            log.info("Assigning roles to user: {}", LogFields.text(request.getUserId()));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -429,9 +430,9 @@ public class CognitoAdminService {
                     client.adminAddUserToGroup(addToGroupRequest);
                 }
                 
-                log.info("Successfully assigned roles to user: {}", request.getUserId());
+                log.info("Successfully assigned roles to user: {}", LogFields.text(request.getUserId()));
             } catch (Exception e) {
-                log.error("Failed to assign roles", e);
+                log.error("Failed to assign roles errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Role assignment failed", e);
             }
         });
@@ -442,7 +443,7 @@ public class CognitoAdminService {
      */
     public Mono<Void> removeRolesFromUser(AssignRolesRequest request) {
         return Mono.fromRunnable(() -> {
-            log.info("Removing roles from user: {}", request.getUserId());
+            log.info("Removing roles from user: {}", LogFields.text(request.getUserId()));
             
             try {
                 CognitoIdentityProviderClient client = clientFactory.getClient();
@@ -457,9 +458,9 @@ public class CognitoAdminService {
                     client.adminRemoveUserFromGroup(removeFromGroupRequest);
                 }
                 
-                log.info("Successfully removed roles from user: {}", request.getUserId());
+                log.info("Successfully removed roles from user: {}", LogFields.text(request.getUserId()));
             } catch (Exception e) {
-                log.error("Failed to remove roles", e);
+                log.error("Failed to remove roles errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Role removal failed", e);
             }
         });

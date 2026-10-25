@@ -15,6 +15,7 @@
  */
 package org.fireflyframework.security.idp.azuread.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.microsoft.graph.models.ObjectIdentity;
 import com.microsoft.graph.models.PasswordProfile;
 import com.microsoft.graph.models.User;
@@ -55,7 +56,7 @@ public class B2CAdminService extends EntraIdAdminService {
     @Override
     public Mono<ResponseEntity<CreateUserResponse>> createUser(CreateUserRequest request) {
         return Mono.<ResponseEntity<CreateUserResponse>>fromCallable(() -> {
-            log.info("Creating B2C user: {}", request.getUsername());
+            log.info("Creating B2C user: {}", LogFields.text(request.getUsername()));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
             String b2cDomain = properties.getB2c().getDomain();
@@ -104,12 +105,12 @@ public class B2CAdminService extends EntraIdAdminService {
                     .createdAt(Instant.now())
                     .build();
 
-            log.info("Successfully created B2C user: {}", request.getUsername());
+            log.info("Successfully created B2C user: {}", LogFields.text(request.getUsername()));
             return ResponseEntity.ok(response);
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to create B2C user: {}", request.getUsername(), exception);
+              log.error("Failed to create B2C user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(exception));
               return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<CreateUserResponse>build());
           });
     }
@@ -117,7 +118,7 @@ public class B2CAdminService extends EntraIdAdminService {
     @Override
     public Mono<Void> resetPassword(String username) {
         return Mono.<Void>fromCallable(() -> {
-            log.info("Resetting password for B2C user: {}", username);
+            log.info("Resetting password for B2C user: {}", LogFields.text(username));
 
             GraphServiceClient graphClient = graphClientFactory.getClient();
 
@@ -129,12 +130,12 @@ public class B2CAdminService extends EntraIdAdminService {
 
             graphClient.users().byUserId(username).patch(user);
 
-            log.info("Successfully initiated password reset for B2C user: {} — user should use self-service flow", username);
+            log.info("Successfully initiated password reset for B2C user: {} — user should use self-service flow", LogFields.text(username));
             return null;
 
         }).subscribeOn(Schedulers.boundedElastic())
           .onErrorResume(exception -> {
-              log.error("Failed to reset B2C password", exception);
+              log.error("Failed to reset B2C password errorType={}", LogFields.errorType(exception));
               return Mono.error(new RuntimeException("B2C password reset failed", exception));
           });
     }

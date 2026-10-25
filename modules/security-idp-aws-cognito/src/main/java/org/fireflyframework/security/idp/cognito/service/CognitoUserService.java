@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.cognito.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.cognito.client.CognitoClientFactory;
 import org.fireflyframework.security.idp.cognito.properties.CognitoProperties;
 import org.fireflyframework.security.idp.cognito.util.CognitoSecretHashCalculator;
@@ -57,7 +58,7 @@ public class CognitoUserService {
      */
     public Mono<ResponseEntity<TokenResponse>> login(LoginRequest request) {
         return Mono.<ResponseEntity<TokenResponse>>fromCallable(() -> {
-            log.info("Initiating Cognito login for user: {}", request.getUsername());
+            log.info("Initiating Cognito login for user: {}", LogFields.text(request.getUsername()));
             
             CognitoIdentityProviderClient client = clientFactory.getClient();
             
@@ -98,11 +99,11 @@ public class CognitoUserService {
                     .expiresIn(authResult.expiresIn().longValue())
                     .build();
             
-            log.info("Successfully authenticated user: {}", request.getUsername());
+            log.info("Successfully authenticated user: {}", LogFields.text(request.getUsername()));
             return ResponseEntity.ok(tokenResponse);
             
         }).onErrorResume(exception -> {
-            log.error("Cognito login failed for user: {}", request.getUsername(), exception);
+            log.error("Cognito login failed for user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(exception));
             
             if (exception instanceof NotAuthorizedException) {
                 return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).<TokenResponse>build());
@@ -147,7 +148,7 @@ public class CognitoUserService {
             return ResponseEntity.ok(tokenResponse);
             
         }).onErrorResume(exception -> {
-            log.error("Token refresh failed", exception);
+            log.error("Token refresh failed errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         });
     }
@@ -170,7 +171,7 @@ public class CognitoUserService {
                 
                 log.info("Successfully logged out user");
             } catch (Exception e) {
-                log.error("Logout failed", e);
+                log.error("Logout failed errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Logout failed", e);
             }
         });
@@ -208,7 +209,7 @@ public class CognitoUserService {
                 return ResponseEntity.ok(introspection);
             }
         }).onErrorResume(exception -> {
-            log.error("Token introspection failed", exception);
+            log.error("Token introspection failed errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         });
     }
@@ -244,11 +245,11 @@ public class CognitoUserService {
                     .name(attributes.get("name"))
                     .build();
             
-            log.debug("Successfully fetched user info for: {}", getUserResponse.username());
+            log.debug("Successfully fetched user info for: {}", LogFields.text(getUserResponse.username()));
             return ResponseEntity.ok(userInfo);
             
         }).onErrorResume(exception -> {
-            log.error("Failed to fetch user info", exception);
+            log.error("Failed to fetch user info errorType={}", LogFields.errorType(exception));
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         });
     }
@@ -278,7 +279,7 @@ public class CognitoUserService {
                 
                 log.info("Successfully revoked refresh token");
             } catch (Exception e) {
-                log.error("Failed to revoke refresh token", e);
+                log.error("Failed to revoke refresh token errorType={}", LogFields.errorType(e));
                 throw new RuntimeException("Token revocation failed", e);
             }
         });

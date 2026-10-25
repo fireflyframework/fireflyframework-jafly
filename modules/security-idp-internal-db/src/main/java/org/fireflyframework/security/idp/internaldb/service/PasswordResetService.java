@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.internaldb.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.security.idp.internaldb.config.InternalDbProperties;
@@ -68,7 +69,7 @@ public class PasswordResetService {
         return userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.defer(() -> {
                     // Don't reveal whether the user exists — log and return silently
-                    log.debug("Password reset requested for non-existent user: {}", username);
+                    log.debug("Password reset requested for non-existent user: {}", LogFields.text(username));
                     return Mono.empty();
                 }))
                 .flatMap(user -> {
@@ -77,7 +78,7 @@ public class PasswordResetService {
                     return tokenRepository.countByUserIdAndCreatedAtAfter(user.getId(), oneHourAgo)
                             .flatMap(count -> {
                                 if (count >= MAX_RESETS_PER_HOUR) {
-                                    log.warn("Rate limit exceeded for password reset: user={}", username);
+                                    log.warn("Rate limit exceeded for password reset: user={}", LogFields.text(username));
                                     return Mono.error(new IllegalStateException(
                                             "Too many password reset requests. Please try again later."));
                                 }
@@ -101,7 +102,7 @@ public class PasswordResetService {
                                         .doOnSuccess(saved -> {
                                             // SECURITY: Log the reset token ID for audit, NEVER the raw token
                                             log.info("Password reset token created: tokenId={}, user={}, expiresAt={}",
-                                                    saved.getId(), username, saved.getExpiresAt());
+                                                    saved.getId(), LogFields.text(username), saved.getExpiresAt());
                                             // TODO: Wire email notification module to send reset link
                                             // emailProvider.sendPasswordResetEmail(user.getEmail(), rawToken);
                                         })
