@@ -3,6 +3,7 @@ package org.fireflyframework.core.filters;
 import org.fireflyframework.core.queries.PaginationRequest;
 import org.fireflyframework.core.queries.PaginationResponse;
 import org.fireflyframework.core.queries.PaginationUtils;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.utils.annotations.FilterableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -100,7 +101,7 @@ public class FilterUtils {
         public Mono<PaginationResponse<D>> filter(FilterRequest<?> filterRequest) {
             Criteria criteria = buildCriteria(filterRequest); // Build Criteria from the filter request
 
-            log.info("pagination request is {}", filterRequest.getPagination());
+            log.info("Pagination request present={}", filterRequest.getPagination() != null);
             // Use default pagination if no pagination provided in request
             PaginationRequest paginationRequest = filterRequest.getPagination() != null ?
                     filterRequest.getPagination() :
@@ -233,9 +234,9 @@ public class FilterUtils {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    log.error("Error accessing field: {}", field.getName(), e); // Log error for inaccessible fields
+                    log.error("Error accessing field {}: type={}", field.getName(), LogFields.errorType(e)); // Log error for inaccessible fields
                 } catch (Exception e) {
-                    log.error("Unexpected error processing filter field {}: {}", field.getName(), e.getMessage(), e);
+                    log.error("Unexpected error processing filter field {}: type={}", field.getName(), LogFields.errorType(e));
                 }
             }
 
@@ -274,7 +275,7 @@ public class FilterUtils {
             rangeFilters.getRanges().forEach((fieldName, range) -> {
                 // Skip ID fields for range filters
                 if (isAnyIdField(fieldName, entityClass)) {
-                    log.debug("Skipping range filter for ID field: {}", fieldName);
+                    log.debug("Skipping range filter for ID field: {}", LogFields.text(fieldName));
                     return;
                 }
 
