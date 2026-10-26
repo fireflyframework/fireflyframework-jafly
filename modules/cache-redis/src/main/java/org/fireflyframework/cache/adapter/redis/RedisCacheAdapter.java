@@ -16,6 +16,8 @@
 
 package org.fireflyframework.cache.adapter.redis;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheStats;
@@ -107,18 +109,18 @@ public class RedisCacheAdapter implements CacheAdapter {
                             V deserializedValue = serializer.deserialize(value, (Class<V>) Object.class);
                             hitCount.incrementAndGet();
                             totalLoadTime.addAndGet(System.nanoTime() - startTime);
-                            log.debug("Cache hit for key '{}' in cache '{}'", key, cacheName);
+                            log.debug("Cache hit for key present={} in cache '{}'", key != null, LogFields.text(cacheName));
                             return Optional.of(deserializedValue);
                         } catch (Exception e) {
-                            log.warn("Failed to deserialize value for key '{}' in cache '{}': {}", 
-                                    key, cacheName, e.getMessage());
+                            log.warn("Failed to deserialize value for key present={} in cache '{}': type={}",
+                                    key != null, LogFields.text(cacheName), LogFields.errorType(e));
                             missCount.incrementAndGet();
                             return Optional.<V>empty();
                         }
                     })
                     .switchIfEmpty(Mono.fromCallable(() -> {
                         missCount.incrementAndGet();
-                        log.debug("Cache miss for key '{}' in cache '{}'", key, cacheName);
+                        log.debug("Cache miss for key present={} in cache '{}'", key != null, LogFields.text(cacheName));
                         return Optional.<V>empty();
                     }));
         }).flatMap(mono -> mono);
@@ -138,18 +140,18 @@ public class RedisCacheAdapter implements CacheAdapter {
                             V deserializedValue = serializer.deserialize(value, valueType);
                             hitCount.incrementAndGet();
                             totalLoadTime.addAndGet(System.nanoTime() - startTime);
-                            log.debug("Cache hit for key '{}' in cache '{}'", key, cacheName);
+                            log.debug("Cache hit for key present={} in cache '{}'", key != null, LogFields.text(cacheName));
                             return Optional.of(deserializedValue);
                         } catch (Exception e) {
-                            log.warn("Failed to deserialize value for key '{}' in cache '{}': {}", 
-                                    key, cacheName, e.getMessage());
+                            log.warn("Failed to deserialize value for key present={} in cache '{}': type={}",
+                                    key != null, LogFields.text(cacheName), LogFields.errorType(e));
                             missCount.incrementAndGet();
                             return Optional.<V>empty();
                         }
                     })
                     .switchIfEmpty(Mono.fromCallable(() -> {
                         missCount.incrementAndGet();
-                        log.debug("Cache miss for key '{}' in cache '{}'", key, cacheName);
+                        log.debug("Cache miss for key present={} in cache '{}'", key != null, LogFields.text(cacheName));
                         return Optional.<V>empty();
                     }));
         }).flatMap(mono -> mono);
@@ -175,11 +177,11 @@ public class RedisCacheAdapter implements CacheAdapter {
                 
                 return operation.doOnSuccess(unused -> {
                     putCount.incrementAndGet();
-                    log.debug("Put value in cache '{}' for key '{}'", cacheName, key);
+                    log.debug("Put value in cache '{}' for key present={}", LogFields.text(cacheName), key != null);
                 });
             } catch (Exception e) {
-                log.error("Error putting value in cache '{}' for key '{}': {}", 
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error putting value in cache '{}' for key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value in cache", e);
             }
         }).flatMap(mono -> mono);
@@ -197,11 +199,11 @@ public class RedisCacheAdapter implements CacheAdapter {
                         .then()
                         .doOnSuccess(unused -> {
                             putCount.incrementAndGet();
-                            log.debug("Put value in cache '{}' for key '{}' with TTL {}", cacheName, key, ttl);
+                            log.debug("Put value in cache '{}' for key present={} with TTL {}", LogFields.text(cacheName), key != null, ttl);
                         });
             } catch (Exception e) {
-                log.error("Error putting value in cache '{}' for key '{}' with TTL: {}", 
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error putting value in cache '{}' for key present={} with TTL: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value in cache with TTL", e);
             }
         }).flatMap(mono -> mono);
@@ -226,14 +228,14 @@ public class RedisCacheAdapter implements CacheAdapter {
                 return operation.doOnNext(success -> {
                     if (success) {
                         putCount.incrementAndGet();
-                        log.debug("Put new value in cache '{}' for key '{}'", cacheName, key);
+                        log.debug("Put new value in cache '{}' for key present={}", LogFields.text(cacheName), key != null);
                     } else {
-                        log.debug("Key '{}' already exists in cache '{}'", key, cacheName);
+                        log.debug("Key present={} already exists in cache '{}'", key != null, LogFields.text(cacheName));
                     }
                 });
             } catch (Exception e) {
-                log.error("Error in putIfAbsent for cache '{}' and key '{}': {}", 
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error in putIfAbsent for cache '{}' and key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value if absent", e);
             }
         }).flatMap(mono -> mono);
@@ -251,15 +253,15 @@ public class RedisCacheAdapter implements CacheAdapter {
                         .doOnNext(success -> {
                             if (success) {
                                 putCount.incrementAndGet();
-                                log.debug("Put new value in cache '{}' for key '{}' with TTL {}", 
-                                         cacheName, key, ttl);
+                                log.debug("Put new value in cache '{}' for key present={} with TTL {}",
+                                         LogFields.text(cacheName), key != null, ttl);
                             } else {
-                                log.debug("Key '{}' already exists in cache '{}'", key, cacheName);
+                                log.debug("Key present={} already exists in cache '{}'", key != null, LogFields.text(cacheName));
                             }
                         });
             } catch (Exception e) {
-                log.error("Error in putIfAbsent with TTL for cache '{}' and key '{}': {}", 
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error in putIfAbsent with TTL for cache '{}' and key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value if absent with TTL", e);
             }
         }).flatMap(mono -> mono);
@@ -273,12 +275,12 @@ public class RedisCacheAdapter implements CacheAdapter {
                     if (existed) {
                         evictionCount.incrementAndGet();
                     }
-                    log.debug("Evicted key '{}' from cache '{}': {}", key, cacheName, existed);
+                    log.debug("Evicted key present={} from cache '{}': {}", key != null, LogFields.text(cacheName), existed);
                     return existed;
                 })
                 .onErrorResume(e -> {
-                    log.error("Error evicting key '{}' from cache '{}': {}", 
-                             key, cacheName, e.getMessage(), e);
+                    log.error("Error evicting key present={} from cache '{}': type={}",
+                             key != null, LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -294,11 +296,11 @@ public class RedisCacheAdapter implements CacheAdapter {
                 })
                 .doOnNext(deletedCount -> {
                     evictionCount.addAndGet(deletedCount);
-                    log.debug("Cleared cache '{}', deleted {} keys", cacheName, deletedCount);
+                    log.debug("Cleared cache '{}', deleted {} keys", LogFields.text(cacheName), deletedCount);
                 })
                 .then()
                 .onErrorResume(e -> {
-                    log.error("Error clearing cache '{}': {}", cacheName, e.getMessage(), e);
+                    log.error("Error clearing cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.empty();
                 });
     }
@@ -307,8 +309,8 @@ public class RedisCacheAdapter implements CacheAdapter {
     public <K> Mono<Boolean> exists(K key) {
         return redisTemplate.hasKey(buildKey(key))
                 .onErrorResume(e -> {
-                    log.warn("Error checking existence of key '{}' in cache '{}': {}", 
-                            key, cacheName, e.getMessage());
+                    log.warn("Error checking existence of key present={} in cache '{}': type={}",
+                            key != null, LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -322,7 +324,7 @@ public class RedisCacheAdapter implements CacheAdapter {
                         .map(key -> (K) key)
                         .collect(Collectors.toSet()))
                 .onErrorResume(e -> {
-                    log.error("Error getting keys from cache '{}': {}", cacheName, e.getMessage(), e);
+                    log.error("Error getting keys from cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(Set.of());
                 });
     }
@@ -332,7 +334,7 @@ public class RedisCacheAdapter implements CacheAdapter {
         return getKeys()
                 .map(keys -> (long) keys.size())
                 .onErrorResume(e -> {
-                    log.error("Error getting size of cache '{}': {}", cacheName, e.getMessage(), e);
+                    log.error("Error getting size of cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(0L);
                 });
     }
@@ -435,8 +437,8 @@ public class RedisCacheAdapter implements CacheAdapter {
                                 })
                                 .onErrorResume(infoError -> {
                                     // If we can't get info, still return healthy but without details
-                                    log.warn("Could not get Redis info for cache '{}': {}",
-                                            cacheName, infoError.getMessage());
+                                    log.warn("Could not get Redis info for cache '{}': type={}",
+                                            LogFields.text(cacheName), LogFields.errorType(infoError));
                                     return Mono.just(CacheHealth.builder()
                                             .status("UP")
                                             .cacheType(CacheType.REDIS)
@@ -456,7 +458,7 @@ public class RedisCacheAdapter implements CacheAdapter {
                                 });
                     })
                     .onErrorResume(e -> {
-                        log.error("Health check failed for cache '{}': {}", cacheName, e.getMessage(), e);
+                        log.error("Health check failed for cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                         return Mono.just(CacheHealth.unhealthy(CacheType.REDIS, cacheName,
                                 "Health check failed: " + e.getMessage(), e));
                     });
@@ -466,10 +468,10 @@ public class RedisCacheAdapter implements CacheAdapter {
     @Override
     public void close() {
         try {
-            log.info("Closing Redis cache adapter '{}'", cacheName);
+            log.info("Closing Redis cache adapter '{}'", LogFields.text(cacheName));
             // Connection factory is typically managed by Spring, so we don't close it here
         } catch (Exception e) {
-            log.error("Error closing cache '{}': {}", cacheName, e.getMessage(), e);
+            log.error("Error closing cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
         }
     }
 

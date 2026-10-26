@@ -16,6 +16,8 @@
 
 package org.fireflyframework.cache.adapter.caffeine;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheStats;
@@ -129,8 +131,8 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 V value = (V) cache.getIfPresent(prefixedKey);
                 return Optional.ofNullable(value);
             } catch (Exception e) {
-                log.warn("Error getting value from cache '{}' for key '{}': {}",
-                        cacheName, key, e.getMessage());
+                log.warn("Error getting value from cache '{}' for key present={}: type={}",
+                        LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 return Optional.<V>empty();
             }
         });
@@ -152,10 +154,10 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 cache.put(prefixedKey, value);
                 // Remove any custom expiration time
                 expirationTimes.remove(prefixedKey);
-                log.debug("Put value in cache '{}' for key '{}'", cacheName, key);
+                log.debug("Put value in cache '{}' for key present={}", LogFields.text(cacheName), key != null);
             } catch (Exception e) {
-                log.error("Error putting value in cache '{}' for key '{}': {}",
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error putting value in cache '{}' for key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value in cache", e);
             }
         });
@@ -169,10 +171,10 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 cache.put(prefixedKey, value);
                 // Track custom expiration time
                 expirationTimes.put(prefixedKey, Instant.now().plus(ttl));
-                log.debug("Put value in cache '{}' for key '{}' with TTL {}", cacheName, key, ttl);
+                log.debug("Put value in cache '{}' for key present={} with TTL {}", LogFields.text(cacheName), key != null, ttl);
             } catch (Exception e) {
-                log.error("Error putting value in cache '{}' for key '{}' with TTL: {}",
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error putting value in cache '{}' for key present={} with TTL: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value in cache with TTL", e);
             }
         });
@@ -196,15 +198,15 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 if (existingValue == null) {
                     cache.put(prefixedKey, value);
                     expirationTimes.remove(prefixedKey); // No custom TTL
-                    log.debug("Put new value in cache '{}' for key '{}'", cacheName, key);
+                    log.debug("Put new value in cache '{}' for key present={}", LogFields.text(cacheName), key != null);
                     return true;
                 } else {
-                    log.debug("Key '{}' already exists in cache '{}'", key, cacheName);
+                    log.debug("Key present={} already exists in cache '{}'", key != null, LogFields.text(cacheName));
                     return false;
                 }
             } catch (Exception e) {
-                log.error("Error in putIfAbsent for cache '{}' and key '{}': {}",
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error in putIfAbsent for cache '{}' and key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value if absent", e);
             }
         });
@@ -228,16 +230,16 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 if (existingValue == null) {
                     cache.put(prefixedKey, value);
                     expirationTimes.put(prefixedKey, Instant.now().plus(ttl));
-                    log.debug("Put new value in cache '{}' for key '{}' with TTL {}",
-                             cacheName, key, ttl);
+                    log.debug("Put new value in cache '{}' for key present={} with TTL {}",
+                             LogFields.text(cacheName), key != null, ttl);
                     return true;
                 } else {
-                    log.debug("Key '{}' already exists in cache '{}'", key, cacheName);
+                    log.debug("Key present={} already exists in cache '{}'", key != null, LogFields.text(cacheName));
                     return false;
                 }
             } catch (Exception e) {
-                log.error("Error in putIfAbsent with TTL for cache '{}' and key '{}': {}",
-                         cacheName, key, e.getMessage(), e);
+                log.error("Error in putIfAbsent with TTL for cache '{}' and key present={}: type={}",
+                         LogFields.text(cacheName), key != null, LogFields.errorType(e));
                 throw new RuntimeException("Failed to put value if absent with TTL", e);
             }
         });
@@ -251,11 +253,11 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 boolean existed = cache.getIfPresent(prefixedKey) != null || expirationTimes.containsKey(prefixedKey);
                 cache.invalidate(prefixedKey);
                 expirationTimes.remove(prefixedKey);
-                log.debug("Evicted key '{}' from cache '{}': {}", key, cacheName, existed);
+                log.debug("Evicted key present={} from cache '{}': {}", key != null, LogFields.text(cacheName), existed);
                 return existed;
             } catch (Exception e) {
-                log.error("Error evicting key '{}' from cache '{}': {}",
-                         key, cacheName, e.getMessage(), e);
+                log.error("Error evicting key present={} from cache '{}': type={}",
+                         key != null, LogFields.text(cacheName), LogFields.errorType(e));
                 throw new RuntimeException("Failed to evict key from cache", e);
             }
         });
@@ -267,9 +269,9 @@ public class CaffeineCacheAdapter implements CacheAdapter {
             try {
                 cache.invalidateAll();
                 expirationTimes.clear();
-                log.debug("Cleared cache '{}'", cacheName);
+                log.debug("Cleared cache '{}'", LogFields.text(cacheName));
             } catch (Exception e) {
-                log.error("Error clearing cache '{}': {}", cacheName, e.getMessage(), e);
+                log.error("Error clearing cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                 throw new RuntimeException("Failed to clear cache", e);
             }
         });
@@ -291,8 +293,8 @@ public class CaffeineCacheAdapter implements CacheAdapter {
 
                 return cache.getIfPresent(prefixedKey) != null;
             } catch (Exception e) {
-                log.warn("Error checking existence of key '{}' in cache '{}': {}",
-                        key, cacheName, e.getMessage());
+                log.warn("Error checking existence of key present={} in cache '{}': type={}",
+                        key != null, LogFields.text(cacheName), LogFields.errorType(e));
                 return false;
             }
         });
@@ -313,7 +315,7 @@ public class CaffeineCacheAdapter implements CacheAdapter {
 
                 return unprefixedKeys;
             } catch (Exception e) {
-                log.error("Error getting keys from cache '{}': {}", cacheName, e.getMessage(), e);
+                log.error("Error getting keys from cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                 throw new RuntimeException("Failed to get cache keys", e);
             }
         });
@@ -327,7 +329,7 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                 cleanupExpiredKeys();
                 return cache.estimatedSize();
             } catch (Exception e) {
-                log.error("Error getting size of cache '{}': {}", cacheName, e.getMessage(), e);
+                log.error("Error getting size of cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                 throw new RuntimeException("Failed to get cache size", e);
             }
         });
@@ -353,7 +355,7 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                         .cacheName(cacheName)
                         .build();
             } catch (Exception e) {
-                log.error("Error getting stats for cache '{}': {}", cacheName, e.getMessage(), e);
+                log.error("Error getting stats for cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                 return CacheStats.empty(CacheType.CAFFEINE, cacheName);
             }
         });
@@ -395,7 +397,7 @@ public class CaffeineCacheAdapter implements CacheAdapter {
                             "Health check failed: test value mismatch", null);
                 }
             } catch (Exception e) {
-                log.error("Health check failed for cache '{}': {}", cacheName, e.getMessage(), e);
+                log.error("Health check failed for cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
                 return CacheHealth.unhealthy(CacheType.CAFFEINE, cacheName, 
                         "Health check failed: " + e.getMessage(), e);
             }
@@ -408,9 +410,9 @@ public class CaffeineCacheAdapter implements CacheAdapter {
             cache.invalidateAll();
             cache.cleanUp();
             expirationTimes.clear();
-            log.info("Closed Caffeine cache adapter '{}'", cacheName);
+            log.info("Closed Caffeine cache adapter '{}'", LogFields.text(cacheName));
         } catch (Exception e) {
-            log.error("Error closing cache '{}': {}", cacheName, e.getMessage(), e);
+            log.error("Error closing cache '{}': type={}", LogFields.text(cacheName), LogFields.errorType(e));
         }
     }
 

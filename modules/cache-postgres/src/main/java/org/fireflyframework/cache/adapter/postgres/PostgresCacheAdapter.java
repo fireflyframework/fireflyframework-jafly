@@ -16,6 +16,8 @@
 
 package org.fireflyframework.cache.adapter.postgres;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Readable;
@@ -183,8 +185,8 @@ public class PostgresCacheAdapter implements CacheAdapter {
                 totalLoadTime.addAndGet(System.nanoTime() - start);
                 return Optional.ofNullable(value);
             } catch (Exception e) {
-                log.warn("Failed to deserialize cached value for key '{}' in cache '{}': {}",
-                        key, cacheName, e.getMessage());
+                log.warn("Failed to deserialize cached value for key present={} in cache '{}': type={}",
+                        key != null, LogFields.text(cacheName), LogFields.errorType(e));
                 missCount.incrementAndGet();
                 return Optional.<V>empty();
             }
@@ -192,7 +194,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
             missCount.incrementAndGet();
             return Optional.<V>empty();
         })).onErrorResume(e -> {
-            log.warn("Error reading key '{}' from cache '{}': {}", key, cacheName, e.getMessage());
+            log.warn("Error reading key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
             missCount.incrementAndGet();
             return Mono.just(Optional.<V>empty());
         });
@@ -295,7 +297,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
                     return removed;
                 })
                 .onErrorResume(e -> {
-                    log.warn("Error evicting key '{}' from cache '{}': {}", key, cacheName, e.getMessage());
+                    log.warn("Error evicting key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -333,8 +335,8 @@ public class PostgresCacheAdapter implements CacheAdapter {
                 .next())
                 .defaultIfEmpty(false)
                 .onErrorResume(e -> {
-                    log.warn("Error checking existence of key '{}' in cache '{}': {}",
-                            key, cacheName, e.getMessage());
+                    log.warn("Error checking existence of key present={} in cache '{}': type={}",
+                            key != null, LogFields.text(cacheName), LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -434,7 +436,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
     public void close() {
         // The ConnectionFactory/ConnectionPool is Spring-managed (disposed via the
         // bean destroy method); nothing to close here.
-        log.info("Closing PostgreSQL cache adapter '{}'", cacheName);
+        log.info("Closing PostgreSQL cache adapter '{}'", LogFields.text(cacheName));
     }
 
     private Mono<Long> rowsUpdated(Statement statement) {
