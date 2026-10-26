@@ -16,6 +16,7 @@
 
 package org.fireflyframework.orchestration.core.observability;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.orchestration.core.context.TccPhase;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import lombok.extern.slf4j.Slf4j;
@@ -24,50 +25,50 @@ import lombok.extern.slf4j.Slf4j;
 public class OrchestrationLoggerEvents implements OrchestrationEvents {
     @Override
     public void onStart(String name, String correlationId, ExecutionPattern pattern) {
-        log.info("[orchestration] started name={} correlationId={} pattern={}", name, correlationId, pattern);
+        log.info("[orchestration] started name={} correlationId={} pattern={}", LogFields.text(name), LogFields.text(correlationId), pattern);
     }
     @Override
     public void onStepStarted(String name, String correlationId, String stepId) {
-        log.info("[orchestration] step.started name={} correlationId={} stepId={}", name, correlationId, stepId);
+        log.info("[orchestration] step.started name={} correlationId={} stepId={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId));
     }
     @Override
     public void onStepSuccess(String name, String correlationId, String stepId, int attempts, long latencyMs) {
-        log.info("[orchestration] step.success name={} correlationId={} stepId={} attempts={} latencyMs={}", name, correlationId, stepId, attempts, latencyMs);
+        log.info("[orchestration] step.success name={} correlationId={} stepId={} attempts={} latencyMs={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId), attempts, latencyMs);
     }
     @Override
     public void onStepFailed(String name, String correlationId, String stepId, Throwable error, int attempts) {
-        log.warn("[orchestration] step.failed name={} correlationId={} stepId={} attempts={} error={}", name, correlationId, stepId, attempts, error.getMessage());
+        log.warn("[orchestration] step.failed name={} correlationId={} stepId={} attempts={} error={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId), attempts, LogFields.text(error.getMessage()));
     }
     @Override
     public void onCompleted(String name, String correlationId, ExecutionPattern pattern, boolean success, long durationMs) {
-        log.info("[orchestration] completed name={} correlationId={} pattern={} success={} durationMs={}", name, correlationId, pattern, success, durationMs);
+        log.info("[orchestration] completed name={} correlationId={} pattern={} success={} durationMs={}", LogFields.text(name), LogFields.text(correlationId), pattern, success, durationMs);
     }
     @Override
     public void onCompensationStarted(String name, String correlationId) {
-        log.warn("[orchestration] compensation.started name={} correlationId={}", name, correlationId);
+        log.warn("[orchestration] compensation.started name={} correlationId={}", LogFields.text(name), LogFields.text(correlationId));
     }
     @Override
     public void onStepCompensated(String name, String correlationId, String stepId) {
-        log.info("[orchestration] step.compensated name={} correlationId={} stepId={}", name, correlationId, stepId);
+        log.info("[orchestration] step.compensated name={} correlationId={} stepId={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId));
     }
     @Override
     public void onStepCompensationFailed(String name, String correlationId, String stepId, Throwable error) {
-        log.error("[orchestration] step.compensation.failed name={} correlationId={} stepId={} error={}", name, correlationId, stepId, error.getMessage());
+        log.error("[orchestration] step.compensation.failed name={} correlationId={} stepId={} error={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId), LogFields.text(error.getMessage()));
     }
     @Override
     public void onPhaseStarted(String name, String correlationId, TccPhase phase) {
-        log.info("[orchestration] tcc.phase.started name={} correlationId={} phase={}", name, correlationId, phase);
+        log.info("[orchestration] tcc.phase.started name={} correlationId={} phase={}", LogFields.text(name), LogFields.text(correlationId), phase);
     }
     @Override
     public void onPhaseCompleted(String name, String correlationId, TccPhase phase, long durationMs) {
-        log.info("[orchestration] tcc.phase.completed name={} correlationId={} phase={} durationMs={}", name, correlationId, phase, durationMs);
+        log.info("[orchestration] tcc.phase.completed name={} correlationId={} phase={} durationMs={}", LogFields.text(name), LogFields.text(correlationId), phase, durationMs);
     }
     @Override
     public void onPhaseFailed(String name, String correlationId, TccPhase phase, Throwable error) {
-        log.error("[orchestration] tcc.phase.failed name={} correlationId={} phase={} error={}", name, correlationId, phase, error.getMessage());
+        log.error("[orchestration] tcc.phase.failed name={} correlationId={} phase={} error={}", LogFields.text(name), LogFields.text(correlationId), phase, LogFields.text(error.getMessage()));
     }
     @Override
     public void onDeadLettered(String name, String correlationId, String stepId, Throwable error) {
-        log.error("[orchestration] dead-lettered name={} correlationId={} stepId={} error={}", name, correlationId, stepId, error.getMessage());
+        log.error("[orchestration] dead-lettered name={} correlationId={} stepId={} error={}", LogFields.text(name), LogFields.text(correlationId), LogFields.text(stepId), LogFields.text(error.getMessage()));
     }
 }
