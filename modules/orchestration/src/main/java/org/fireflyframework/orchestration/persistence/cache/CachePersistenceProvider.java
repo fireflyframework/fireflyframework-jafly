@@ -16,6 +16,7 @@
 
 package org.fireflyframework.orchestration.persistence.cache;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
@@ -73,8 +74,8 @@ public class CachePersistenceProvider implements ExecutionPersistenceProvider {
         return cacheAdapter.put(stateKey, state, defaultTtl)
                 .then(cacheAdapter.put(patternKey, state.correlationId(), defaultTtl))
                 .then(cacheAdapter.put(statusKey, state.correlationId(), defaultTtl))
-                .doOnSuccess(v -> log.debug("[orchestration] Saved execution state: {}", state.correlationId()))
-                .doOnError(e -> log.error("[orchestration] Failed to save execution state: {}", state.correlationId(), e));
+                .doOnSuccess(v -> log.debug("[orchestration] Saved execution state: {}", LogFields.text(state.correlationId())))
+                .doOnError(e -> log.error("[orchestration] Failed to save execution state: {}", LogFields.text(state.correlationId()), e));
     }
 
     @Override

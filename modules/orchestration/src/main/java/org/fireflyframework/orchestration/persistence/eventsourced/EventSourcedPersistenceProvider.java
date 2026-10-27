@@ -16,6 +16,7 @@
 
 package org.fireflyframework.orchestration.persistence.eventsourced;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.eventsourcing.domain.Event;
 import org.fireflyframework.eventsourcing.domain.StoredEventEnvelope;
@@ -102,9 +103,9 @@ public class EventSourcedPersistenceProvider implements ExecutionPersistenceProv
                             }));
                 })
                 .then()
-                .doOnSuccess(v -> log.debug("[orchestration] Saved state as event: {}", state.correlationId()))
+                .doOnSuccess(v -> log.debug("[orchestration] Saved state as event: {}", LogFields.text(state.correlationId())))
                 .doOnError(e -> log.error("[orchestration] Failed to save event-sourced state: {}",
-                        state.correlationId(), e));
+                        LogFields.text(state.correlationId()), e));
     }
 
     @Override
