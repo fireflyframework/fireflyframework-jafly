@@ -28,7 +28,8 @@ public final class R2dbcOperationBudget {
         if(elapsed<0||elapsed>=budgetNanos||now.isBefore(observedAt)||!now.isBefore(until))throw new IllegalStateException("Original operation budget exhausted");
         var absolute=Duration.between(now,until);var monotonic=Duration.ofNanos(budgetNanos-elapsed);return absolute.compareTo(monotonic)<0?absolute:monotonic;
     }
-    R2dbcOperationBudget intersect(R2dbcOperationBudget other){
+    /** Compose inherited limits before acquisition; both budgets must share the same time sources. */
+    public R2dbcOperationBudget intersect(R2dbcOperationBudget other){
         Objects.requireNonNull(other);
         if(clock!=other.clock||nanos!=other.nanos)throw new IllegalArgumentException("Compatible original time sources required");
         long before=nanos.getAsLong();var a=remaining();var b=other.remaining();var remaining=a.compareTo(b)<0?a:b;var absolute=until.isBefore(other.until)?until:other.until;
