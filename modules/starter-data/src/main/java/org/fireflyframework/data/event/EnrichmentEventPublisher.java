@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.event;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.model.EnrichmentRequest;
 import org.fireflyframework.data.model.EnrichmentResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,7 @@ public class EnrichmentEventPublisher {
         
         publishEvent(event);
         log.debug("Published enrichment started event: type={}, provider={}, requestId={}",
-                request.getType(), providerName, request.getRequestId());
+                LogFields.text(request.getType()), LogFields.text(providerName), LogFields.text(request.getRequestId()));
     }
     
     /**
@@ -84,7 +85,7 @@ public class EnrichmentEventPublisher {
         
         publishEvent(event);
         log.debug("Published enrichment completed event: type={}, provider={}, success={}, duration={}ms",
-                response.getType(), response.getProviderName(),
+                LogFields.text(response.getType()), LogFields.text(response.getProviderName()),
                 response.isSuccess(), durationMillis);
     }
     
@@ -121,7 +122,7 @@ public class EnrichmentEventPublisher {
         
         publishEvent(event);
         log.debug("Published enrichment failed event: type={}, provider={}, error={}",
-                request.getType(), providerName, error);
+                LogFields.text(request.getType()), LogFields.text(providerName), LogFields.text(error));
     }
     
     /**
@@ -131,7 +132,7 @@ public class EnrichmentEventPublisher {
         try {
             eventPublisher.publishEvent(event);
         } catch (Exception e) {
-            log.warn("Failed to publish enrichment event: {}", e.getMessage(), e);
+            log.warn("Failed to publish enrichment event: {}", LogFields.text(e.getMessage()), e);
         }
     }
 }
