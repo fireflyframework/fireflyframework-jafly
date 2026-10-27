@@ -155,6 +155,7 @@ public class WorkflowAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    @ConditionalOnProperty(name = "firefly.orchestration.rest.enabled", havingValue = "true", matchIfMissing = true)
     public WorkflowController workflowController(WorkflowEngine engine, WorkflowRegistry registry,
                                                    SignalService signalService, TimerService timerService) {
         log.info("[orchestration] Workflow REST controller initialized");
