@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.enrichment.EnricherMetadataReader;
 import org.fireflyframework.data.service.DataEnricher;
 import org.fireflyframework.data.service.DataEnricherRegistry;
@@ -133,7 +134,7 @@ public class GlobalEnrichmentHealthController {
             @Parameter(description = "Optional enrichment type to filter enrichers")
             @RequestParam(required = false) String type) {
         
-        log.info("Received global health check request - tenantId: {}, type: {}", tenantId, type);
+        log.info("Received global health check request - tenantId: {}, type: {}", tenantId, LogFields.text(type));
 
         // Get all enrichers (or filtered by tenant/type)
         List<DataEnricher<?, ?, ?>> enrichers;
@@ -148,7 +149,7 @@ public class GlobalEnrichmentHealthController {
         }
 
         if (enrichers.isEmpty()) {
-            log.warn("No enrichers found for health check - tenantId: {}, type: {}", tenantId, type);
+            log.warn("No enrichers found for health check - tenantId: {}, type: {}", tenantId, LogFields.text(type));
             return Mono.just(GlobalHealthResponse.builder()
                 .overallHealthy(true)
                 .totalEnrichers(0)
@@ -179,7 +180,7 @@ public class GlobalEnrichmentHealthController {
                     })
                     .onErrorResume(error -> {
                         log.error("Health check failed for enricher {}: {}", 
-                            enricher.getProviderName(), error.getMessage());
+                            LogFields.text(enricher.getProviderName()), LogFields.text(error.getMessage()));
                         
                         return Mono.just(EnricherHealthInfo.builder()
                             .providerName(enricher.getProviderName())
