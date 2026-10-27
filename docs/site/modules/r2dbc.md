@@ -46,6 +46,18 @@ spring:
     password: secret
 ```
 
+### Opt-in bounded root transactions
+
+The source tree provides `BoundedRootTransaction` and `impl.DefaultBoundedRootTransaction` for an application-owned R2DBC transaction with a finite operation budget. Use a source build containing these classes until the corresponding release is published. This API does not register beans or change the default transaction manager.
+
+Build one `OwnedLeaseConnectionFactory` around the application connection factory, then construct the actual `DatabaseClient`, customized `R2dbcEntityTemplate`, Spring Data repositories, and `R2dbcTransactionManager` with that same wrapper. `BoundedR2dbcResources.verify` checks the factory/client/template/manager identities; preserve the host converter, callbacks, and repository configuration. The helper refuses an ambient transaction rather than joining another owner's work. It owns individual acquired leases and never closes the application pool.
+
+Capture the monotonic anchor before obtaining an original observation. Pass its original observation time, absolute expiration, explicit maximum duration, clock, and the same monotonic supplier to `R2dbcOperationBudget.observed`. Execute with a `PROPAGATION_REQUIRED` transaction definition and return one result; other propagation modes are refused. Use `RootTransactionScope.narrow` when a later native observation or dependency imposes an earlier bound. Original and narrowed budgets must share the identical `Clock` object and monotonic supplier. Budget checks include acquisition, transaction completion, and final cleanup; an expired budget does not grant a fresh timeout. Configure rollback and close limits separately with `CleanupPolicy`.
+
+`RootCompletion` exposes a value only after successful bounded completion. `RootTransactionException` exposes payload-free `TransactionFacts` and `CleanupFact`: commit acknowledgment and completed transaction boundary are separate observations. Timeout, cancellation, or cleanup failure can leave the business outcome uncertain. The application must recover through its authoritative action/receipt protocol. These technical facts establish no authentication, authorization, financial finality, or proof that no business effect occurred.
+
+Run the module and its reactor dependencies with `./mvnw -B -ntp -pl :fireflyframework-r2dbc -am verify`. The transaction tests exercise actual Spring transaction infrastructure with controlled R2DBC connections; native PostgreSQL and application journeys require separate integration tests.
+
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 
 ```java
