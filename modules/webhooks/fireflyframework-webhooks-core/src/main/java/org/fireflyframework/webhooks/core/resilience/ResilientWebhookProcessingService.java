@@ -17,6 +17,7 @@
 package org.fireflyframework.webhooks.core.resilience;
 
 import org.fireflyframework.webhooks.core.services.WebhookProcessingService;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.webhooks.interfaces.dto.WebhookEventDTO;
 import org.fireflyframework.webhooks.interfaces.dto.WebhookResponseDTO;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -73,7 +74,7 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
     @Override
     public Mono<WebhookResponseDTO> processWebhook(WebhookEventDTO eventDto) {
         log.debug("Processing webhook with resilience patterns: eventId={}, provider={}",
-                eventDto.getEventId(), eventDto.getProviderName());
+                eventDto.getEventId(), LogFields.text(eventDto.getProviderName()));
 
         return delegate.processWebhook(eventDto)
                 // Apply time limiter first (inner decorator)
@@ -93,7 +94,7 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
      */
     private Mono<WebhookResponseDTO> handleResilienceError(Throwable error) {
         if (error instanceof TimeoutException) {
-            log.error("Webhook processing timed out: {}", error.getMessage());
+            log.error("Webhook processing timed out: {}", LogFields.text(error.getMessage()));
             return Mono.error(new ResponseStatusException(
                     HttpStatus.GATEWAY_TIMEOUT,
                     "Webhook processing timed out. The message broker may be slow or unavailable."
@@ -101,7 +102,7 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
         }
 
         if (error instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
-            log.error("Circuit breaker is OPEN - rejecting webhook: {}", error.getMessage());
+            log.error("Circuit breaker is OPEN - rejecting webhook: {}", LogFields.text(error.getMessage()));
             return Mono.error(new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE,
                     "Webhook processing is temporarily unavailable. The message broker is experiencing issues. Please retry later."
@@ -109,7 +110,7 @@ public class ResilientWebhookProcessingService implements WebhookProcessingServi
         }
 
         // For other errors, let them propagate
-        log.error("Error in resilient webhook processing: {}", error.getMessage(), error);
+        log.error("Error in resilient webhook processing: {}", LogFields.text(error.getMessage()), error);
         return Mono.error(error);
     }
 

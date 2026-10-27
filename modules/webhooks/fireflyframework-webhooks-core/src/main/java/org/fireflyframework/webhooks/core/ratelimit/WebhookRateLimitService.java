@@ -22,6 +22,7 @@ import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,7 +53,7 @@ public class WebhookRateLimitService {
         return operation
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
                 .onErrorMap(RequestNotPermitted.class, e -> {
-                    log.warn("Rate limit exceeded for provider: {}", providerName);
+                    log.warn("Rate limit exceeded for provider: {}", LogFields.text(providerName));
                     return new ResponseStatusException(
                             HttpStatus.TOO_MANY_REQUESTS,
                             "Rate limit exceeded for provider: " + providerName + 
@@ -75,7 +76,7 @@ public class WebhookRateLimitService {
         return operation
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
                 .onErrorMap(RequestNotPermitted.class, e -> {
-                    log.warn("Rate limit exceeded for IP: {}", sourceIp);
+                    log.warn("Rate limit exceeded for IP: {}", LogFields.text(sourceIp));
                     return new ResponseStatusException(
                             HttpStatus.TOO_MANY_REQUESTS,
                             "Rate limit exceeded for your IP address. Please retry after some time."

@@ -17,6 +17,7 @@
 package org.fireflyframework.webhooks.core.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.webhooks.core.config.WebhookSecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.util.SubnetUtils;
@@ -87,7 +88,7 @@ public class WebhookValidator {
         }
 
         if (!providerNamePattern.matcher(providerName).matches()) {
-            log.warn("Invalid provider name format: {}", providerName);
+            log.warn("Invalid provider name format: {}", LogFields.text(providerName));
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Invalid provider name format. Must match pattern: " + securityProperties.getProviderNamePattern()
@@ -153,7 +154,7 @@ public class WebhookValidator {
 
         List<String> allowedTypes = securityProperties.getAllowedContentTypes();
         if (!allowedTypes.contains(baseContentType)) {
-            log.warn("Invalid Content-Type: {}. Allowed types: {}", baseContentType, allowedTypes);
+            log.warn("Invalid Content-Type: {}. Allowed types: {}", LogFields.text(baseContentType), LogFields.values(allowedTypes));
             throw new ResponseStatusException(
                     HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                     "Content-Type must be one of: " + String.join(", ", allowedTypes)
@@ -186,14 +187,14 @@ public class WebhookValidator {
                 .anyMatch(allowedIp -> isIpMatch(sourceIp, allowedIp));
 
         if (!isWhitelisted) {
-            log.warn("IP {} not whitelisted for provider {}", sourceIp, providerName);
+            log.warn("IP {} not whitelisted for provider {}", LogFields.text(sourceIp), LogFields.text(providerName));
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Source IP not authorized for this provider"
             );
         }
 
-        log.debug("IP whitelist validation passed: {} for provider {}", sourceIp, providerName);
+        log.debug("IP whitelist validation passed: {} for provider {}", LogFields.text(sourceIp), LogFields.text(providerName));
     }
 
     /**
@@ -237,7 +238,7 @@ public class WebhookValidator {
                 return sourceIp.equals(allowedIp);
             }
         } catch (IllegalArgumentException e) {
-            log.warn("Invalid IP or CIDR notation: allowedIp={}, error={}", allowedIp, e.getMessage());
+            log.warn("Invalid IP or CIDR notation: allowedIp={}, error={}", LogFields.text(allowedIp), LogFields.text(e.getMessage()));
             return false;
         }
     }
