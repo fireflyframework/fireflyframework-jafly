@@ -29,6 +29,30 @@ public final class OwnedLeaseConnectionFactory extends DelegatingConnectionFacto
         return Mono.from(super.create()).map(scope::own);
     });}
 
+    /** Proves an append participates in this exact, still-active owner invocation and resource graph. */
+    public Mono<Void> requireBoundScope(BoundedR2dbcResources resources,RootTransactionScope expected){
+        return Mono.deferContextual(context->{
+            Object active=context.getOrDefault(INVOCATION,null);
+            if(!(active instanceof Invocation scope)||active!=expected||scope.factory!=this||resources==null
+                    ||!resources.sameGraph(scope.resources)||!resources.current()||!scope.resources.current()
+                    ||scope.transaction.get()==null||scope.transaction.get().isCompleted())
+                return Mono.error(new IllegalStateException("Exact active bounded audit transaction required"));
+            scope.remaining();
+            return TransactionSynchronizationManager.forCurrentTransaction()
+                .filter(manager->manager.isActualTransactionActive()&&manager.hasResource(this))
+                .switchIfEmpty(Mono.error(new IllegalStateException("Exact active bounded audit transaction required")))
+                .onErrorMap(NoTransactionException.class,error->new IllegalStateException("Exact active bounded audit transaction required"))
+                .then();
+        });
+    }
+
+    /** Mandatory append failure cannot be converted into a committing business result by error recovery. */
+    public Mono<Void> markBoundScopeRollbackOnly(BoundedR2dbcResources resources,RootTransactionScope expected){
+        return requireBoundScope(resources,expected).then(Mono.deferContextual(context->{
+            ((Invocation)context.get(INVOCATION)).transaction.get().setRollbackOnly();return Mono.empty();
+        }));
+    }
+
     /** Execution bridge used by the opt-in service; the verified graph is required on every subscription. */
     public <T> Mono<RootCompletion<T>> executeBounded(BoundedR2dbcResources resources,R2dbcOperationBudget original,
             TransactionDefinition definition,CleanupPolicy cleanup,Function<RootTransactionScope,Mono<T>> work){

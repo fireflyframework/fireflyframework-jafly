@@ -22,6 +22,7 @@ public final class BoundedR2dbcResources {
         return new BoundedR2dbcResources(factory,client,template,manager);
     }
     boolean current(){return client.getConnectionFactory()==factory&&template.getDatabaseClient()==client&&manager.getConnectionFactory()==factory;}
+    boolean sameGraph(BoundedR2dbcResources other){return other!=null&&factory==other.factory&&client==other.client&&template==other.template&&manager==other.manager;}
     public OwnedLeaseConnectionFactory factory(){return factory;}
     public R2dbcTransactionManager manager(){return manager;}
 }
