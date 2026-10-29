@@ -26,6 +26,7 @@ NS = {'m': NS_URI}
 REPO = re.compile(r'[a-z0-9][a-z0-9._-]*')
 SHA = re.compile(r'[0-9a-f]{64}')
 CANONICAL_HOMES = Path(__file__).with_name('package-homes.json')
+CANONICAL_INITIAL_INTENT = Path(__file__).with_name('initial-package-intent.json')
 VERSION = re.compile(r'\d{2}\.(?:0[1-9]|1[0-2])\.(?:\d{2}|[1-9]\d*|0)(?:-SNAPSHOT)?')
 
 
@@ -60,7 +61,27 @@ def required_paths(projects):
     return paths
 
 
-def build_homes(projects, associations):
+def validate_initial_intent(projects, intent):
+    expected = {'schema': 1, 'kind': 'SOURCE_OWNED_INITIAL_NAMESPACE_INTENT',
+                'owner': OWNER, 'groupId': 'org.fireflyframework',
+                'artifactId': 'fireflyframework-batch', 'repository': JAFLY_REPOSITORY,
+                'repositoryId': JAFLY_REPOSITORY_ID, 'visibility': 'public',
+                'requiredProviderQualification': 'EXISTING_EXACT_PACKAGE_GET_200',
+                'on404': 'UNKNOWN_REFUSE'}
+    if (initial_intent_digest(intent) != initial_intent_digest(expected)
+            or initial_intent_digest(intent) != initial_intent_digest(json.loads(CANONICAL_INITIAL_INTENT.read_text()))
+            or ('org.fireflyframework', 'fireflyframework-batch') not in
+               {(p['groupId'], p['artifactId']) for p in publishable(projects)}):
+        raise ValueError('exact committed source-owned initial namespace intent required')
+    return {key: intent[key] for key in ('groupId', 'artifactId', 'repository', 'visibility')}
+
+
+def initial_intent_digest(intent):
+    return hashlib.sha256(json.dumps(intent, sort_keys=True).encode()).hexdigest()
+
+
+def build_homes(projects, associations, initial_intent=None):
+    initial = validate_initial_intent(projects, initial_intent) if initial_intent is not None else None
     by_name = {}
     for row in associations:
         if row['name'] in by_name:
@@ -69,9 +90,12 @@ def build_homes(projects, associations):
     entries = []
     for project in publishable(projects):
         name = project['groupId'] + '.' + project['artifactId']
-        if name not in by_name:
+        is_initial = initial is not None and project['groupId'] == initial['groupId'] and project['artifactId'] == initial['artifactId']
+        if is_initial and name in by_name:
+            raise ValueError('initial intent must not replace a captured association')
+        if name not in by_name and not is_initial:
             raise ValueError('missing existing package home: ' + name)
-        row = by_name[name]
+        row = initial if is_initial else by_name[name]
         if not REPO.fullmatch(row['repository']) or row['visibility'] not in ('public', 'private'):
             raise ValueError('invalid captured package association')
         entries.append({key: project[key] for key in ('groupId', 'artifactId')} |
@@ -79,6 +103,8 @@ def build_homes(projects, associations):
     result = {'schema': 1, 'owner': OWNER, 'publicationMode': 'jafly-bootstrap', 'associationSha256':
               hashlib.sha256(json.dumps(associations, sort_keys=True).encode()).hexdigest(),
               'artifacts': sorted(entries, key=lambda row: row['artifactId'])}
+    if initial is not None:
+        result['initialNamespaceIntentSha256'] = initial_intent_digest(initial_intent)
     validate_homes(projects, result)
     return result
 
@@ -86,6 +112,8 @@ def build_homes(projects, associations):
 def validate_homes(projects, homes):
     if homes.get('schema') != 1 or homes.get('owner') != OWNER or not SHA.fullmatch(homes.get('associationSha256', '')):
         raise ValueError('untrusted package-home schema or owner')
+    if 'initialNamespaceIntentSha256' in homes and (not isinstance(homes['initialNamespaceIntentSha256'], str) or not SHA.fullmatch(homes['initialNamespaceIntentSha256'])):
+        raise ValueError('invalid initial namespace intent digest')
     mode = homes.get('publicationMode')
     if mode not in (None, 'jafly-bootstrap'):
         raise ValueError('unsupported package publication mode')
@@ -106,16 +134,23 @@ def validate_homes(projects, homes):
     return entries
 
 
-def validate_associations(projects, homes, associations):
+def validate_associations(projects, homes, associations, initial_intent=None):
     validate_homes(projects, homes)
-    if homes != build_homes(projects, associations):
+    if homes != build_homes(projects, associations, initial_intent=initial_intent):
         raise ValueError('package-home map differs from captured associations')
 
 
-def validate_canonical_homes(projects, homes, canonical=None):
+def validate_canonical_homes(projects, homes, canonical=None, initial_intent=None):
     canonical = CANONICAL_HOMES if canonical is None else Path(canonical)
     committed = json.loads(canonical.read_text())
     try:
+        if initial_intent is not None:
+            initial = validate_initial_intent(projects, initial_intent)
+            historical = [p for p in projects if (p['groupId'], p['artifactId']) !=
+                          (initial['groupId'], initial['artifactId'])]
+            validate_homes(historical, committed)
+            committed = committed | {'artifacts': sorted([*committed['artifacts'], initial], key=lambda row: row['artifactId']),
+                                      'initialNamespaceIntentSha256': initial_intent_digest(initial_intent)}
         validate_homes(projects, committed)
     except ValueError:
         raise ValueError('invalid canonical package-home map') from None
@@ -337,8 +372,16 @@ class NoApiRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def preflight_associations(projects, homes, token):
+def preflight_associations(projects, homes, token, initial_intent=None):
     entries = validate_homes(projects, homes)
+    initial_name = None
+    if initial_intent is not None:
+        initial = validate_initial_intent(projects, initial_intent)
+        if homes.get('initialNamespaceIntentSha256') != initial_intent_digest(initial_intent):
+            raise ValueError('exact initial namespace intent binding required')
+        initial_name = initial['groupId'] + '.' + initial['artifactId']
+    elif 'initialNamespaceIntentSha256' in homes:
+        raise ValueError('bound source-owned initial namespace intent required')
     if homes.get('publicationMode') != 'jafly-bootstrap':
         raise ValueError('explicit Jafly bootstrap publication policy required')
     opener = urllib.request.build_opener(NoApiRedirect())
@@ -353,11 +396,15 @@ def preflight_associations(projects, homes, token):
         })
         try:
             with opener.open(request, timeout=60) as response:
+                if name == initial_name and getattr(response, 'status', None) != 200:
+                    raise ValueError('initial namespace requires actual existing provider GET200: ' + name)
                 data = response.read(1024 * 1024 + 1)
         except urllib.error.HTTPError as error:
             status = error.code
             error.close()
             if status == 404:
+                if name == initial_name:
+                    raise ValueError('initial namespace provider association UNKNOWN: ' + name) from None
                 proof.append({'name': name, 'status': 'absent'})
                 continue
             raise ValueError(f'HTTP {status} checking package association: {name}') from None
@@ -386,8 +433,10 @@ def run_batch(maven, plan, local=False):
     homes = json.loads((plan / 'package-homes.json').read_text())
     inventory = json.loads((plan / 'github-manifest.json').read_text())
     associations = json.loads((plan / 'source-associations.json').read_text())
-    validate_associations(projects, homes, associations)
-    validate_canonical_homes(projects, homes)
+    intent_path = plan / 'source-initial-intent.json'
+    initial_intent = json.loads(intent_path.read_text()) if intent_path.exists() else None
+    validate_associations(projects, homes, associations, initial_intent=initial_intent)
+    validate_canonical_homes(projects, homes, initial_intent=initial_intent)
     validate_inventory(projects, inventory)
     for row in inventory:
         if digest_file(plan / 'artifacts' / row['path']) != row['sha256']:
@@ -400,7 +449,7 @@ def run_batch(maven, plan, local=False):
         token = os.environ.get('JAFLY_PACKAGES_TOKEN')
         username = os.environ.get('JAFLY_PACKAGES_USER') or os.environ.get('GITHUB_ACTOR')
         if not token or not username: raise ValueError('JAFLY_PACKAGES_TOKEN and JAFLY_PACKAGES_USER/GITHUB_ACTOR are required')
-        association_proof = preflight_associations(projects, homes, token)
+        association_proof = preflight_associations(projects, homes, token, initial_intent=initial_intent)
         settings = '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"><servers><server><id>github-packages</id><username>${env.JAFLY_PACKAGES_USER}</username><password>${env.JAFLY_PACKAGES_TOKEN}</password></server></servers></settings>\n'
         rendered, goals = render_publisher(projects, homes, plan / 'artifacts')
     pom = plan / ('local-publisher.pom.xml' if local else 'publisher.pom.xml')
@@ -430,6 +479,7 @@ def main():
     plan = commands.add_parser('plan')
     plan.add_argument('--root', required=True, type=Path)
     plan.add_argument('--associations', type=Path, help='Captured package metadata; defaults to scripts/package-associations.jsonl')
+    plan.add_argument('--initial-intent', type=Path, help='Explicit committed initial namespace intent; never provider existence or write authority')
     plan.add_argument('--repository', required=True, type=Path)
     plan.add_argument('--output', required=True, type=Path)
     execute = commands.add_parser('execute')
@@ -439,6 +489,7 @@ def main():
     verify.add_argument('--projects', required=True, type=Path)
     verify.add_argument('--homes', required=True, type=Path)
     verify.add_argument('--manifest', required=True, type=Path)
+    verify.add_argument('--initial-intent', type=Path)
     verify.add_argument('--output', required=True, type=Path)
     verify.add_argument('--token-env', default='JAFLY_PACKAGES_TOKEN')
     verify.add_argument('--attempts', type=int, default=1)
@@ -449,16 +500,20 @@ def main():
         projects = tools.check_reactor(args.root, expected=87)
         association_path = args.associations or args.root / 'scripts/package-associations.jsonl'
         associations = [json.loads(line) for line in association_path.read_text().splitlines() if line.strip()]
-        homes = build_homes(projects, associations)
-        validate_canonical_homes(projects, homes, args.root / 'scripts/package-homes.json')
+        initial_intent = json.loads(args.initial_intent.read_text()) if args.initial_intent is not None else None
+        homes = build_homes(projects, associations, initial_intent=initial_intent)
+        validate_canonical_homes(projects, homes, args.root / 'scripts/package-homes.json', initial_intent=initial_intent)
         inventory = tools.inventory_repository(projects, args.repository)
         if args.output.exists(): raise ValueError('refusing to overwrite an existing plan')
         prepare_stage(projects, homes, inventory, args.repository, args.output / 'artifacts')
         for filename, value in [('reactor-inventory.json', projects),('package-homes.json',homes),('github-manifest.json',inventory),('source-associations.json',associations)]:
             (args.output / filename).write_text(json.dumps(value, indent=2) + '\n')
-        rendered, goals = render_publisher(projects, homes, args.output / 'artifacts')
-        (args.output / 'publisher.pom.xml').write_text(rendered)
-        (args.output / 'goals.json').write_text(json.dumps(goals, indent=2) + '\n')
+        if initial_intent is not None:
+            (args.output / 'source-initial-intent.json').write_text(json.dumps(initial_intent, indent=2) + '\n')
+        if initial_intent is None:
+            rendered, goals = render_publisher(projects, homes, args.output / 'artifacts')
+            (args.output / 'publisher.pom.xml').write_text(rendered)
+            (args.output / 'goals.json').write_text(json.dumps(goals, indent=2) + '\n')
         print(f'Prepared {len(homes["artifacts"])} package homes and {len(inventory)} staged files; no upload performed')
     elif args.command == 'execute':
         run_batch(args.maven, args.plan)
@@ -470,7 +525,8 @@ def main():
         if not token or not username: raise ValueError('read credentials are required')
         projects = json.loads(args.projects.read_text())
         homes = json.loads(args.homes.read_text())
-        validate_canonical_homes(projects, homes)
+        initial_intent = json.loads(args.initial_intent.read_text()) if args.initial_intent is not None else None
+        validate_canonical_homes(projects, homes, initial_intent=initial_intent)
         proof = verify_with_retry(projects, homes, json.loads(args.manifest.read_text()),
                                   username=username, token=token, attempts=args.attempts, delay=args.delay)
         args.output.write_text(json.dumps(proof, indent=2) + '\n')

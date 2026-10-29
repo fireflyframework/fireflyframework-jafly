@@ -81,3 +81,13 @@ actionlint .github/workflows/*.yml
 ```
 
 Unit tests cover valid and invalid version inheritance, tag/commit mismatches, mixed versions, parent/BOM cycles, duplicate GAVs, missing projects, path traversal, required attachments, signed bundle completeness, and remote HTTP/digest failures using an isolated local HTTP server. These tests do not publish artifacts or inspect credentials.
+
+## Source-owned Batch namespace intent
+
+The current reactor has 87 projects and 85 publishable artifacts, requiring all 316 POM/JAR/source/Javadoc files. The historical canonical map still records 84 publication homes; its captured association file remains unchanged, including additional historical package rows. `scripts/initial-package-intent.json` is a separate source-owned intention for `org.fireflyframework:fireflyframework-batch` in the public `fireflyframework/fireflyframework-jafly` repository, ID 1423952543. It does not describe an existing package, allocate a namespace, grant write permission, select a version, or reserve a patch counter.
+
+An explicit `github_packages.py plan --initial-intent scripts/initial-package-intent.json` composes all 85 homes and requires a complete 316-file inventory. The plan retains the exact intent digest and historical association digest separately. It stages local files but produces no publisher POM, settings or deploy goals. Omitting the intent still refuses the unmapped Batch coordinate.
+
+Execution revalidates the committed intent and requires an actual HTTP 200 response for the existing Batch package with the exact Maven name, public visibility, owner and repository name/ID before creating publisher/settings files or invoking Maven. HTTP 404 is `UNKNOWN` and refuses; an inaccessible namespace is never treated as absence or creation authority. Conflicting metadata, authorization failures and HTTP 409 also refuse. The 84 historical bootstrap policies remain unchanged.
+
+This source intent does not make first publication runnable. An independently authorized provider-side allocation and exact readable existing-package association are still prerequisites. No package is created or uploaded by preparing the intent; no GitHub association or first-publication qualification follows from mocked source tests. All85 artifacts must be accounted for; Batch is never silently omitted. The human-selected `YY.MM.PATCH` counter policy is unchanged.

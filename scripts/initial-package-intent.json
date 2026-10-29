@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "kind": "SOURCE_OWNED_INITIAL_NAMESPACE_INTENT",
+  "owner": "fireflyframework",
+  "groupId": "org.fireflyframework",
+  "artifactId": "fireflyframework-batch",
+  "repository": "fireflyframework-jafly",
+  "repositoryId": 1423952543,
+  "visibility": "public",
+  "requiredProviderQualification": "EXISTING_EXACT_PACKAGE_GET_200",
+  "on404": "UNKNOWN_REFUSE"
+}
