@@ -26,7 +26,7 @@ NS = {'m': NS_URI}
 REPO = re.compile(r'[a-z0-9][a-z0-9._-]*')
 SHA = re.compile(r'[0-9a-f]{64}')
 CANONICAL_HOMES = Path(__file__).with_name('package-homes.json')
-VERSION = re.compile(r'\d{2}\.(?:0[1-9]|1[0-2])\.\d{2}(?:-SNAPSHOT)?')
+VERSION = re.compile(r'\d{2}\.(?:0[1-9]|1[0-2])\.(?:\d{2}|[1-9]\d*|0)(?:-SNAPSHOT)?')
 
 
 def release_tools(root):

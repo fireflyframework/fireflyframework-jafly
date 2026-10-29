@@ -2,7 +2,7 @@
 
 ![One version train](assets/banners/versioning.svg)
 
-Jafly uses padded CalVer versions: `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The final component counts releases within the month; it does not represent a date. The current development version is `26.10.22`.
+Jafly uses `YY.MM.PATCH` for a final release and `YY.MM.PATCH-SNAPSHOT` during development. The year and month use two digits. The final component is a nonnegative release counter within the month, not a day, and has no two-digit limit: `26.10.6`, `26.10.32`, and `26.10.100` are valid. Existing two-digit zero-padding, such as `26.10.06`, remains supported. The current development version is `26.10.22`.
 
 ## What the version identifies
 

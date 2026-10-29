@@ -47,6 +47,25 @@ class ReleaseToolsTests(unittest.TestCase):
         projects = self.tools.check_reactor(self.root, 'v26.10.18', expected=4)
         self.assertEqual(len(projects), 4)
 
+    def test_reactor_accepts_numeric_patch_counters_of_different_widths(self):
+        for version in ('26.10.0', '26.10.6', '26.10.06', '26.10.32', '26.10.100'):
+            with self.subTest(version=version):
+                self.pom(self.root, 'fireflyframework-jafly', version, modules=['build/parent', 'build/bom', 'modules/kernel'])
+                self.pom(self.root / 'build/parent', 'fireflyframework-parent', version)
+                self.pom(self.root / 'build/bom', 'fireflyframework-bom', version)
+                self.pom(self.root / 'modules/kernel', 'fireflyframework-kernel', version, packaging='jar')
+                projects = self.tools.check_reactor(self.root, 'v' + version, expected=4)
+                self.assertEqual({version}, {project['version'] for project in projects})
+
+    def test_immutable_tag_guard_accepts_patch_counters_of_different_widths(self):
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
+        subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '--allow-empty', '-qm', 'Initial'], check=True)
+        for version in ('26.10.0', '26.10.6', '26.10.06', '26.10.32', '26.10.100'):
+            with self.subTest(version=version):
+                tag = 'v' + version
+                subprocess.run(['git', '-C', str(self.root), 'tag', tag], check=True)
+                self.tools.check_tag_commit(self.root, tag)
+
     def test_accepts_version_inherited_from_the_local_parent(self):
         path = self.root / 'modules/kernel/pom.xml'
         source = path.read_text().replace('<version>26.10.18</version>', '', 1)

@@ -55,6 +55,17 @@ class QuietHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
 
+class PatchCounterCoordinateTests(unittest.TestCase):
+    def test_publication_inventory_accepts_numeric_patch_counters(self):
+        for version in ('26.10.0', '26.10.6', '26.10.06', '26.10.32', '26.10.100', '26.10.100-SNAPSHOT'):
+            with self.subTest(version=version):
+                projects = copy.deepcopy(CURRENT_PROJECTS)
+                for project in projects:
+                    project['version'] = version
+                self.assertEqual(85, len(m.publishable(projects)))
+                self.assertEqual(r.required_paths(projects), m.required_paths(projects))
+
+
 class MappedPublishingTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

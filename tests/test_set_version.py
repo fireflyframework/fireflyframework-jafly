@@ -37,6 +37,16 @@ class SetVersionTest(unittest.TestCase):
                     tool.set_version(root, invalid)
             self.assertIn('26.10.32', pom.read_text())
 
+    def test_patch_counter_supports_single_digits_and_more_than_two_digits(self):
+        tool = self.tool()
+        for version in ('26.10.0', '26.10.6', '26.10.06', '26.10.100', '26.10.1000-SNAPSHOT'):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                root = pathlib.Path(directory)
+                pom = root / 'pom.xml'
+                pom.write_text('<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>org.fireflyframework</groupId><version>26.10.22</version></project>')
+                self.assertEqual([pom], tool.set_version(root, version))
+                self.assertIn('<version>' + version + '</version>', pom.read_text())
+
     def test_update_projects_framework_parents_dependencies_and_property(self):
         tool = self.tool()
         with tempfile.TemporaryDirectory() as directory:
