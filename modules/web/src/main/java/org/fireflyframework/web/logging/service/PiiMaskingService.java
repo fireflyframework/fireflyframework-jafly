@@ -50,6 +50,7 @@ public class PiiMaskingService {
     private final PiiMaskingProperties properties;
     private final Map<String, Pattern> compiledPatterns = new ConcurrentHashMap<>();
     private final boolean patternsInitialized;
+    private boolean allPatternsCompiled = true;
 
     public PiiMaskingService(PiiMaskingProperties properties) {
         this.properties = properties;
@@ -78,15 +79,42 @@ public class PiiMaskingService {
                 try {
                     maskedText = maskWithPattern(maskedText, pattern, patternName);
                 } catch (Exception e) {
-                    log.warn("Error applying PII masking pattern '{}': {}", patternName, e.getMessage());
+                    log.warn("A configured PII masking rule could not be applied (type={})", e.getClass().getName());
                     // Continue with other patterns
                 }
             }
             
             return maskedText;
         } catch (Exception e) {
-            log.error("Unexpected error during PII masking: {}", e.getMessage(), e);
+            log.error("PII masking failed (type={})", e.getClass().getName());
             return text; // Return original text on error
+        }
+    }
+
+    /**
+     * Masks logging content without diagnostic recursion or an unmasked error fallback.
+     * A missing configured rule or masking failure refuses the content with a safe exception.
+     */
+    public String maskLogData(String text) {
+        try {
+            if (!isReady() || !allPatternsCompiled || properties.getMaskCharacter() == null
+                    || properties.getMaskCharacter().isEmpty()
+                    || (!properties.isPreserveLength() && properties.getShowCharacters() < 0)) {
+                throw new IllegalStateException();
+            }
+            if (text == null || text.isEmpty()) {
+                return text;
+            }
+            String maskedText = text;
+            for (Map.Entry<String, Pattern> entry : compiledPatterns.entrySet()) {
+                maskedText = maskWithPattern(maskedText, entry.getValue(), entry.getKey(), false);
+            }
+            if (maskedText == null) {
+                throw new IllegalStateException();
+            }
+            return maskedText;
+        } catch (Exception unavailable) {
+            throw new IllegalStateException("PII logging mask is unavailable");
         }
     }
 
@@ -175,10 +203,10 @@ public class PiiMaskingService {
                 try {
                     Pattern compiledPattern = Pattern.compile(patternString, flags);
                     compiledPatterns.put(patternName, compiledPattern);
-                    log.debug("Successfully compiled PII pattern: {}", patternName);
+                    log.debug("A configured PII masking rule was compiled");
                 } catch (PatternSyntaxException e) {
-                    log.error("Invalid regex pattern for '{}': {}. Pattern: {}", 
-                             patternName, e.getMessage(), patternString);
+                    allPatternsCompiled = false;
+                    log.error("A configured PII masking rule was rejected (type={})", e.getClass().getName());
                     // Continue with other patterns
                 }
             }
@@ -187,7 +215,8 @@ public class PiiMaskingService {
             return !compiledPatterns.isEmpty();
             
         } catch (Exception e) {
-            log.error("Failed to initialize PII masking patterns: {}", e.getMessage(), e);
+            allPatternsCompiled = false;
+            log.error("PII masking initialization failed (type={})", e.getClass().getName());
             return false;
         }
     }
@@ -201,6 +230,10 @@ public class PiiMaskingService {
      * @return the text with matches masked
      */
     private String maskWithPattern(String text, Pattern pattern, String patternName) {
+        return maskWithPattern(text, pattern, patternName, true);
+    }
+
+    private String maskWithPattern(String text, Pattern pattern, String patternName, boolean diagnostics) {
         Matcher matcher = pattern.matcher(text);
         
         StringBuffer result = new StringBuffer();
@@ -214,8 +247,8 @@ public class PiiMaskingService {
         }
         matcher.appendTail(result);
         
-        if (matchCount > 0) {
-            log.debug("Masked {} occurrences of pattern '{}' in text", matchCount, patternName);
+        if (diagnostics && matchCount > 0) {
+            log.debug("Masked {} occurrences of a configured PII rule", matchCount);
         }
         
         return result.toString();

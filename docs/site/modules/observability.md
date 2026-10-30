@@ -340,6 +340,10 @@ This provides:
 - Async appender for production performance
 - Automatic MDC fields: `traceId`, `spanId`, `X-Transaction-Id`, `userId`, `correlationId`, `requestId`
 
+The shared Logstash encoder defaults to `includeContext=false`. Arbitrary Logback context properties therefore stop appearing automatically in JSON output. This changes the previous metadata export default while preserving the existing format and event field configuration.
+
+An explicitly configured `includeContext=true` exports encoder-owned global context independently of event masking. The PII appender's event snapshot cannot sanitize that separate provider. Keep such configuration within a deliberate metadata policy. This default and event masking provide no durable or immutable audit-storage guarantee.
+
 ### Architecture
 
 ```
