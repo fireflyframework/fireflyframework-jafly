@@ -24,20 +24,15 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Tests for the core {@link CacheAutoConfiguration} default (Caffeine-only) wiring.
- * <p>
- * The core module ships no distributed providers (Redis/Hazelcast/JCache/Postgres) on
- * its classpath, so the default cache manager must wire to Caffeine. These tests verify
- * that the library works correctly out of the box without referencing any provider type.
- */
-class CacheAutoConfigurationCaffeineDefaultTest {
+/** Tests explicit local cache selection without a PostgreSQL configuration. */
+class CacheAutoConfigurationExplicitCaffeineTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class))
+            .withPropertyValues("firefly.cache.default-cache-type=CAFFEINE");
 
     @Test
-    void shouldStartWithCaffeineDefault() {
+    void shouldStartWithExplicitCaffeine() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
             assertThat(context).hasSingleBean(FireflyCacheManager.class);
@@ -45,7 +40,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
     }
 
     @Test
-    void shouldCreateCaffeineCacheManagerByDefault() {
+    void shouldCreateExplicitCaffeineCacheManager() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
 

@@ -17,7 +17,6 @@
 package org.fireflyframework.common.application.config;
 
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
-import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
 import org.fireflyframework.cache.manager.FireflyCacheManager;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +38,7 @@ import java.time.Duration;
  * <ul>
  *   <li>Key prefix: {@code firefly:application:config}</li>
  *   <li>TTL: 1 hour (tenant configurations are relatively stable)</li>
- *   <li>Preferred type: REDIS (for distributed config management)</li>
- *   <li>Fallback: Caffeine (for single-instance deployments)</li>
+ *   <li>Provider: the global default cache type</li>
  * </ul>
  */
 @AutoConfiguration
@@ -74,10 +72,8 @@ public class ConfigCacheAutoConfiguration {
                 CONFIG_CACHE_TTL.toHours()
         );
 
-        // Use AUTO to select the best available provider (Redis, Hazelcast, JCache, or Caffeine)
-        return factory.createCacheManager(
+        return factory.createDefaultCacheManager(
                 "app-config",
-                CacheType.AUTO,
                 CONFIG_CACHE_KEY_PREFIX,
                 CONFIG_CACHE_TTL,
                 description,

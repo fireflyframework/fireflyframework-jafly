@@ -251,6 +251,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Technical cache storage remains separate from business connection factories. -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-cache-postgres</artifactId>
+            <version>${fireflyframework.version}</version>
+        </dependency>
+
         <!-- Firefly Common CQRS Library -->
         <dependency>
             <groupId>org.fireflyframework</groupId>

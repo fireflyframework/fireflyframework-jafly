@@ -90,6 +90,7 @@ public enum CacheType {
      * <p>
      * The system will automatically choose the best available cache:
      * <ol>
+     *   <li>PostgreSQL if configured and available</li>
      *   <li>Redis if configured and available</li>
      *   <li>Hazelcast if available</li>
      *   <li>JCache if available</li>
