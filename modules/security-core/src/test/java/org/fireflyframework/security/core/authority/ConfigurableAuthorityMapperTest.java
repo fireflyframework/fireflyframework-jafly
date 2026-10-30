@@ -59,4 +59,48 @@ class ConfigurableAuthorityMapperTest {
         Map<String, Object> claims = Map.of("roles", List.of("admin", "ROLE_existing"));
         assertThat(prefixed.mapAuthorities(claims)).containsExactlyInAnyOrder("ROLE_admin", "ROLE_existing");
     }
+
+    @Test
+    void commaInsideScopeTokenDoesNotGrantSeparateScopes() {
+        assertThat(mapper.mapScopes(Map.of("scope", "funds:reserve,funds:read")))
+                .containsExactly("funds:reserve,funds:read")
+                .doesNotContain("funds:reserve", "funds:read");
+    }
+
+    @Test
+    void configuredScpStringAlsoKeepsCommaTokensOpaque() {
+        assertThat(mapper.mapScopes(Map.of("scp", "accounts:read,accounts:write")))
+                .containsExactly("accounts:read,accounts:write");
+    }
+
+    @Test
+    void malformedScalarScopeClaimCannotGrantPrefixOrSuffixScopes() {
+        for (String scope : List.of("read\twrite", "read\nwrite", "read\rwrite", "read\fwrite",
+                "read" + (char) 0x0b + "write", "read\u00a0write", "read\"write", "read\\write",
+                "read" + (char) 0x7f + "write", "read write\nadmin")) {
+            assertThat(mapper.mapScopes(Map.of("scope", scope))).isEmpty();
+        }
+    }
+
+    @Test
+    void existingScopeArraysStayOpaqueAndScpArraysRemainSupported() {
+        Map<String, Object> claims = Map.of(
+                "scope", List.of("read,write", "opaque member", "read\twrite"),
+                "scp", List.of("profile", "email"));
+        assertThat(mapper.mapScopes(claims)).containsExactlyInAnyOrder(
+                "read,write", "opaque member", "read\twrite", "profile", "email");
+    }
+
+    @Test
+    void asciiSpacesPreserveExistingPaddingDeduplicationAndCaseSensitivity() {
+        assertThat(mapper.mapScopes(Map.of("scope", "  read   write read READ  ")))
+                .containsExactlyInAnyOrder("read", "write", "READ");
+    }
+
+    @Test
+    void genericRoleStringDelimitersRemainUnchanged() {
+        assertThat(mapper.mapAuthorities(Map.of("roles", "admin,auditor support\tviewer")))
+                .containsExactlyInAnyOrder("admin", "auditor", "support", "viewer");
+    }
+
 }

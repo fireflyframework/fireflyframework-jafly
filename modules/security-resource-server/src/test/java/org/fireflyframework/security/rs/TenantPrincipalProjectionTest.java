@@ -46,7 +46,7 @@ class TenantPrincipalProjectionTest {
             var expected=factory.fromClaims(token.getSubject(),token.getIssuer().toString(),token.getClaims()).toBuilder().tenantId(tenant).build();
             assertThat(projected).isEqualTo(expected);assertThat(projected.claims().get("tenant_id")).isEqualTo(tenant);
             assertThat(projected.authorities()).containsExactlyInAnyOrder("operator","auditor");
-            assertThat(projected.scopes()).containsExactlyInAnyOrder("read","write");
+            assertThat(projected.scopes()).containsExactly("read,write").doesNotContain("read","write");
         }
     }
     @Test void requiredAndOptionalProjectionAgreeOnAnExactSingleCollectionElement() {
