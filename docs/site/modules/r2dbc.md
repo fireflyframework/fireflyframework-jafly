@@ -58,6 +58,16 @@ Capture the monotonic anchor before obtaining an original observation. Pass its 
 
 Run the module and its reactor dependencies with `./mvnw -B -ntp -pl :fireflyframework-r2dbc -am verify`. The transaction tests exercise actual Spring transaction infrastructure with controlled R2DBC connections; native PostgreSQL and application journeys require separate integration tests.
 
+### Optional completed audit append read
+
+`CompletedAuditAppendService` and `impl.SpringDataCompletedAuditAppendService` verify an append that has already completed inside its still-active original bounded owner root. Construct the service explicitly with the original `BoundedR2dbcResources`, the same `DatabaseClient`, customized `R2dbcEntityTemplate`, transaction manager, `Clock` and monotonic supplier. Its Spring Data repository is built from that retained template; there is no automatic bean, injected arbitrary repository or ambient-transaction fallback.
+
+Call `requireCompleted(scope, contextNonce, provisionalAppend)` with the exact native context nonce supplied through the existing appender's call-local nonce supplier and its actual `ProvisionalAppend`. The provisional record does not expose or create a nonce. The new service requires exactly one typed native row, rejects NULL numeric projections and out-of-range raw nanos, narrows the original scope to the observed native window, recomputes the full canonical record through `AuditRows.Event.record()`, and compares the entire expected record. A mismatch, read error or late result marks that same root rollback-only, even if the caller catches the error. No separate read transaction is started.
+
+The optional `modules/r2dbc/src/main/resources/db/optional/immutable-audit/completed-append.sql` extends an existing reviewed immutable-audit installation. Its read-only function reuses the original private `context_for` and `require_graph`, requires completion and exact nonce/event/sequence/hash/replay context, then checks the original context again after the row read. It does not reopen completed `scope_matches`, RLS or write authority. Installation leaves no consumer EXECUTE grant. A separately reviewed deployment must grant only the new function to its explicit restricted consumer and prove the same physical session/full-XID/backend and native ACL behavior. Do not grant private-schema/table access or runtime schema CREATE.
+
+The SQL check establishes the relational completion graph, not canonical cryptographic record hashing or actor admission. The Java service's actual row rehash and full equality are mandatory. A database writer can otherwise insert a relational graph with a syntactically valid hash; a future native owner pairing must independently enforce native canonical integrity or an equivalently protected append path. The accessor alone does not attest that Java verification ran. Source controls are not SQL parsing, native execution, financial finality or a released artifact claim. Existing audit records, `ProvisionalAppend`, constructors, default SQL and default grants remain unchanged.
+
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 
 ```java

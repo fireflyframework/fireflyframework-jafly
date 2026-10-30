@@ -33,11 +33,13 @@ import reactor.core.publisher.*;
 
 /** Networkless mapping/count/transaction model; never PostgreSQL or authority qualification. */
 final class AuditTestFixture {
-    Throwable workFailure;final Clock clock=Clock.systemUTC();final LongSupplier nanos=System::nanoTime;
+    Throwable workFailure;final Clock clock;final LongSupplier nanos;
+    AuditTestFixture(){this(Clock.systemUTC(),System::nanoTime);}
+    AuditTestFixture(Clock clock,LongSupplier nanos){this.clock=clock;this.nanos=nanos;}
     final Driver driver=new Driver();final OwnedLeaseConnectionFactory factory=new OwnedLeaseConnectionFactory(driver);final DatabaseClient client=DatabaseClient.create(factory);final R2dbcEntityTemplate template=new R2dbcEntityTemplate(client,PostgresDialect.INSTANCE);final R2dbcTransactionManager manager=new R2dbcTransactionManager(factory);final BoundedR2dbcResources resources=BoundedR2dbcResources.verify(factory,client,template,manager);final BoundedRootTransaction root=new DefaultBoundedRootTransaction(resources,new CleanupPolicy(Duration.ofSeconds(1),Duration.ofSeconds(1)));
     <T> Mono<RootCompletion<T>> execute(Function<RootTransactionScope,Mono<T>> work){var now=clock.instant();return root.execute(R2dbcOperationBudget.observed(now,now.plusSeconds(5),nanos.getAsLong(),Duration.ofSeconds(5),clock,nanos),new DefaultTransactionDefinition(),scope->work.apply(scope).doOnError(error->workFailure=error));}
     static final class Driver implements ConnectionFactory {
-        Map<String,List<Map<String,Object>>> tables=new HashMap<>(),snapshot;final List<String> sql=new ArrayList<>();final List<Map<Integer,Object>> bindings=new ArrayList<>();int creates,writes,selects,affectedObservations,commits,rollbacks,closes,failWrite,nativeEnters,nativeCompletions,countAtWrite;long writeCount=1;boolean emptyCount;boolean autoCommit=true;
+        Map<String,List<Map<String,Object>>> tables=new HashMap<>(),snapshot;Runnable beforeRead=()->{};Throwable readFailure;final List<String> sql=new ArrayList<>();final List<Map<Integer,Object>> bindings=new ArrayList<>();int creates,writes,selects,affectedObservations,commits,rollbacks,closes,failWrite,nativeEnters,nativeCompletions,countAtWrite;long writeCount=1;boolean emptyCount;boolean autoCommit=true;
         Map<String,List<Map<String,Object>>> copy(){var out=new HashMap<String,List<Map<String,Object>>>();tables.forEach((t,rows)->out.put(t,new ArrayList<>(rows.stream().map(LinkedHashMap::new).toList())));return out;}
         final Connection connection=(Connection)Proxy.newProxyInstance(getClass().getClassLoader(),new Class[]{Connection.class},(p,m,a)->switch(m.getName()){
             case "isAutoCommit"->autoCommit;case "setAutoCommit"->{autoCommit=(boolean)a[0];yield Mono.empty();}case "getTransactionIsolationLevel"->IsolationLevel.READ_COMMITTED;
@@ -55,6 +57,7 @@ final class AuditTestFixture {
                     if(query.startsWith("INSERT")){String text=query.substring(query.indexOf('(')+1,query.indexOf(')'));String[] columns=text.replace("\"","").split(",");var row=new LinkedHashMap<String,Object>();for(int i=0;i<columns.length;i++)row.put(columns[i].trim(),bound.get(i));tables.computeIfAbsent(table,k->new ArrayList<>()).add(row);}
                     else{var row=tables.get(table).getFirst();var matcher=Pattern.compile("([a-z_]+) = [$]([0-9]+)").matcher(query.substring(query.indexOf(" SET ")+5,query.indexOf(" WHERE ")));while(matcher.find())row.put(matcher.group(1),bound.get(Integer.parseInt(matcher.group(2))-1));}
                 }return Mono.just(result(List.of(),actualCount,true));}
+                beforeRead.run();if(readFailure!=null&&query.contains("firefly_audit_require_completed"))return Mono.error(readFailure);
                 selects++;var rows=new ArrayList<>(tables.getOrDefault(table,List.of()));var matches=Pattern.compile("(?:[a-z_]+[.])?([a-z_]+) = [$]([0-9]+)").matcher(query);while(matches.find()){String col=matches.group(1);Object v=bound.get(Integer.parseInt(matches.group(2))-1);rows.removeIf(row->!Objects.equals(row.get(col),v));}return Mono.just(result(rows,0,false));
             });
         });}
