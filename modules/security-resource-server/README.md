@@ -96,6 +96,13 @@ The `firefly.security.resource-server` namespace is bound by [ResourceServerProp
 
 Set `tenant-claim-paths: [tenant_id]` to project exactly one distinct tenant from validated token claims into `SecurityPrincipal.tenantId`; request headers are not used. The empty default preserves the existing unconfigured principal. With `tenant-required: true`, unresolved or ambiguous tenants reject authentication, and missing or invalid configured paths fail startup. Optional configured projection yields a null tenant when unresolved or ambiguous. Resolver errors reject authentication in either mode without exposing claim values.
 
+Tenant identifiers are opaque. A nonblank scalar String and the same String as a collection element retain identical spaces, commas, case and valid Unicode, including leading/trailing spaces and supplementary characters. Nothing is trimmed or split into authority-style tokens. Multiple distinct resulting identifiers remain unresolved. Use a JSON array to represent multiple tenants: scalar `"tenant-a,tenant-b"` now identifies that exact tenant rather than a delimited list. This intentionally corrects the previous implicit use of authority/scope tokenization for scalar tenant claims; role and scope parsing are unchanged.
+
+ISO control characters and unpaired UTF-16 surrogates make the whole tenant candidate unresolved, including when a malformed element appears beside another otherwise valid value or in another configured claim path. No malformed element is silently dropped to choose a different tenant. This intentionally tightens the previous acceptance of control-bearing collection elements. Valid surrogate pairs are preserved. Required projection rejects unresolved candidates; optional projection retains its existing null-tenant behavior. JWT signature, issuer, audience and timestamp validation are unchanged, and projection does not prove tenant existence or resource authority.
+
+Legacy non-String coercion remains for compatibility: for example, numeric `17` and a sole collection element `17` project to `"17"`; a mixed collection containing `"tenant-a"` and `17` remains ambiguous. Null and plain blank collection entries retain their prior omission behavior, while malformed control-bearing blanks invalidate the whole candidate. Stricter typed tenant claims are a separate security/design gate. Generic String tenant discriminators remain distinct from owner-specific UUID resource identifiers; this projection performs no UUID conversion or cross-tenant mapping.
+
+
 ## API overview
 
 | Type | Contract and responsibility |

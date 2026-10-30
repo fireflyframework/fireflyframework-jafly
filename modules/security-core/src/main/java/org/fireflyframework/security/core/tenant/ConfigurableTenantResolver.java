@@ -21,13 +21,15 @@ import org.fireflyframework.security.core.authority.ClaimPaths;
 import org.fireflyframework.security.spi.TenantResolverPort;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Default {@link TenantResolverPort}: reads the tenant id from the validated token claims at the
- * configured dot-paths (default {@code tenant_ids}, coalesced across paths).
+ * configured dot-paths (default {@code tenant_ids}, coalesced across paths). Scalar identifiers and
+ * collection elements are opaque, unlike the delimited authority/scope claim syntax.
  *
  * <p>Single-tenant and <strong>fail-closed</strong>: it emits the id only when the token carries
  * exactly one tenant, and {@link Mono#empty()} for 0 or &gt;1 so the caller decides how to fail
@@ -48,8 +50,28 @@ public class ConfigurableTenantResolver implements TenantResolverPort {
     public Mono<String> resolveTenant(SecurityPrincipal principal) {
         Set<String> tenants = new LinkedHashSet<>();
         for (String path : claimPaths) {
-            tenants.addAll(ClaimPaths.readStringSet(principal.claims(), path));
+            Object value = ClaimPaths.read(principal.claims(), path);
+            if (value instanceof Collection<?> values) {
+                for (Object tenant : values) {
+                    if (tenant != null && !addTenant(tenants, tenant.toString())) {
+                        return Mono.empty();
+                    }
+                }
+            } else if (value != null && !addTenant(tenants, value.toString())) {
+                return Mono.empty();
+            }
         }
         return tenants.size() == 1 ? Mono.just(tenants.iterator().next()) : Mono.empty();
+    }
+
+    private static boolean addTenant(Set<String> tenants, String tenant) {
+        if (tenant == null || tenant.codePoints().anyMatch(value ->
+                Character.isISOControl(value) || value >= 0xD800 && value <= 0xDFFF)) {
+            return false;
+        }
+        if (!tenant.isBlank()) {
+            tenants.add(tenant);
+        }
+        return true;
     }
 }
