@@ -27,16 +27,8 @@ import java.util.Optional;
 /**
  * Automatic cache selection strategy that chooses the best available cache based on priority.
  * <p>
- * This strategy selects caches in the following priority order:
- * <ol>
- *   <li>Caffeine (fast, in-memory, default choice)</li>
- *   <li>Redis (distributed, persistent)</li>
- *   <li>Any other available cache</li>
- *   <li>No-op cache (fallback)</li>
- * </ol>
- * <p>
- * The strategy also considers cache availability - unhealthy caches are deprioritized.
- * By default, Caffeine is preferred for its performance and simplicity.
+ * Prefers available PostgreSQL, then Redis, Hazelcast, JCache and local Caffeine.
+ * Unavailable caches are filtered before provider priority is compared.
  */
 @Slf4j
 public class AutoCacheSelectionStrategy implements CacheSelectionStrategy {
@@ -99,7 +91,7 @@ public class AutoCacheSelectionStrategy implements CacheSelectionStrategy {
     private int getTypePriority(CacheType cacheType) {
         return switch (cacheType) {
             case REDIS -> 1;       // Distributed and persistent
-            case POSTGRES -> 1;    // Distributed and persistent
+            case POSTGRES -> 0;    // Distributed and persistent
             case HAZELCAST -> 2;   // Distributed in-memory grid
             case JCACHE -> 3;      // Standard JCache provider
             case CAFFEINE -> 4;    // Fast in-memory (default when no distributed provider configured)
@@ -115,6 +107,6 @@ public class AutoCacheSelectionStrategy implements CacheSelectionStrategy {
 
     @Override
     public String toString() {
-        return "AutoCacheSelectionStrategy{priority: Caffeine > Redis > Others > NoOp}";
+        return "AutoCacheSelectionStrategy{priority: Postgres > Redis > Hazelcast > JCache > Caffeine > NoOp}";
     }
 }

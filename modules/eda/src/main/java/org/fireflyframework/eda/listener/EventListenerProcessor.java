@@ -64,6 +64,8 @@ public class EventListenerProcessor implements ApplicationListener<ContextRefres
     private final ApplicationEventPublisher applicationEventPublisher;
     private final CustomErrorHandlerRegistry customErrorHandlerRegistry;
     private final Environment environment;
+    private final org.fireflyframework.eda.expression.SpelExpressionEvaluator deliveryExpressions =
+            new org.fireflyframework.eda.expression.SpelExpressionEvaluator();
 
     // Cache of event type to list of listener methods
     private final Map<Class<?>, List<EventListenerMethod>> listenerCache = new ConcurrentHashMap<>();
@@ -203,6 +205,131 @@ public class EventListenerProcessor implements ApplicationListener<ContextRefres
                     return Mono.empty(); // Don't fail the entire processing chain
                 });
     }
+
+    /**
+     * Processes trusted delivery metadata without acknowledging or swallowing listener failures.
+     * Success requires an actual Reactive Streams publisher to complete or a synchronous void return.
+     * A Map after the first parameter receives the exact envelope headers.
+     */
+    public Mono<EventDeliveryOutcome> processDelivery(EventEnvelope envelope) {
+        java.util.Objects.requireNonNull(envelope, "envelope");
+        return Mono.defer(() -> {
+            if (envelope.payload() == null) {
+                return Mono.just(new EventDeliveryOutcome(EventDeliveryOutcome.Disposition.UNHANDLED, 0, 0, null));
+            }
+            var listeners = java.util.stream.Stream.concat(listenerCache.values().stream(), topicListenerCache.values().stream())
+                    .flatMap(List::stream)
+                    .distinct()
+                    .filter(listener -> matchesDelivery(listener, envelope))
+                    .sorted(java.util.Comparator.comparingInt((EventListenerMethod listener) -> listener.getAnnotation().priority()).reversed())
+                    .toList();
+            if (listeners.isEmpty()) {
+                return Mono.just(new EventDeliveryOutcome(EventDeliveryOutcome.Disposition.UNHANDLED, 0, 0, null));
+            }
+            return Flux.fromIterable(listeners)
+                    .flatMap(listener -> invokeDelivery(listener, envelope), Math.min(32, listeners.size()))
+                    .collectList()
+                    .map(outcomes -> aggregateDelivery(listeners.size(), outcomes))
+                    .timeout(Duration.ofSeconds(30))
+                    .onErrorResume(error -> Mono.just(new EventDeliveryOutcome(
+                            EventDeliveryOutcome.Disposition.RETRY, listeners.size(), 0, error)));
+        }).onErrorResume(error -> Mono.just(new EventDeliveryOutcome(
+                EventDeliveryOutcome.Disposition.RETRY, 0, 0, error)));
+    }
+
+    private boolean matchesDelivery(EventListenerMethod listener, EventEnvelope envelope) {
+        EventListener annotation = listener.getAnnotation();
+        if (annotation.consumerType() != PublisherType.AUTO
+                && !annotation.consumerType().name().equals(envelope.consumerType())) return false;
+        String connection = envelope.connectionId() != null ? envelope.connectionId() : "default";
+        if (!environment.resolvePlaceholders(annotation.connectionId()).equals(connection)) return false;
+        if (annotation.destinations().length > 0 && java.util.Arrays.stream(annotation.destinations())
+                .map(environment::resolvePlaceholders)
+                .noneMatch(destination -> envelope.destination() != null && matchesPattern(envelope.destination(), destination))) return false;
+        if (annotation.eventTypes().length > 0 && java.util.Arrays.stream(annotation.eventTypes())
+                .noneMatch(type -> matchesPattern(envelope.payload().getClass().getName(), type)
+                        || matchesPattern(envelope.payload().getClass().getSimpleName(), type)
+                        || (envelope.eventType() != null && matchesPattern(envelope.eventType(), type)))) return false;
+        Class<?>[] parameters = listener.getMethod().getParameterTypes();
+        return parameters.length == 0 || parameters[0] == EventEnvelope.class
+                || parameters[0].isInstance(envelope.payload())
+                || (parameters[0] == Map.class && annotation.destinations().length > 0);
+    }
+
+    private Mono<DeliveryInvocation> invokeDelivery(EventListenerMethod listener, EventEnvelope envelope) {
+        EventListener annotation = listener.getAnnotation();
+        if (!annotation.autoAck()) {
+            return Mono.just(failedDelivery(annotation, new IllegalStateException(
+                    "Manual acknowledgment requires the explicit manual delivery mode")));
+        }
+        Mono<DeliveryInvocation> invocation = Mono.defer(() -> {
+            try {
+                Class<?>[] parameters = listener.getMethod().getParameterTypes();
+                Object[] arguments = new Object[parameters.length];
+                for (int index = 0; index < parameters.length; index++) {
+                    Class<?> type = parameters[index];
+                    if (type == EventEnvelope.class) arguments[index] = envelope;
+                    else if (index > 0 && Map.class.isAssignableFrom(type)) {
+                        if (!type.isInstance(envelope.headers())) {
+                            return Mono.error(new IllegalStateException("Unsupported delivery headers parameter"));
+                        }
+                        arguments[index] = envelope.headers();
+                    } else if (type.isInstance(envelope.payload())) arguments[index] = envelope.payload();
+                    else if (type == Map.class) arguments[index] = envelope.headers();
+                    else return Mono.error(new IllegalStateException("Unsupported delivery listener parameter"));
+                }
+                var condition = deliveryExpressions.evaluateDeliveryCondition(
+                        annotation.condition(), listener.getMethod(), arguments, envelope);
+                if (condition.status() == org.fireflyframework.eda.expression.SpelExpressionEvaluator.ConditionStatus.ERROR) {
+                    return Mono.just(new DeliveryInvocation(EventDeliveryOutcome.Disposition.RETRY, false, condition.failure()));
+                }
+                if (condition.status() == org.fireflyframework.eda.expression.SpelExpressionEvaluator.ConditionStatus.NO_MATCH) {
+                    return Mono.just(new DeliveryInvocation(EventDeliveryOutcome.Disposition.UNHANDLED, false, null));
+                }
+                Object result = listener.getMethod().invoke(listener.getBean(), arguments);
+                if (result instanceof org.reactivestreams.Publisher<?> publisher) {
+                    return Flux.from(publisher).then(Mono.just(new DeliveryInvocation(
+                            EventDeliveryOutcome.Disposition.HANDLED, true, null)));
+                }
+                if (listener.getMethod().getReturnType() != void.class || result != null) {
+                    return Mono.error(new IllegalStateException(
+                            "Strict delivery requires a reactive publisher or synchronous void completion"));
+                }
+                return Mono.just(new DeliveryInvocation(EventDeliveryOutcome.Disposition.HANDLED, true, null));
+            } catch (java.lang.reflect.InvocationTargetException error) {
+                return Mono.error(error.getCause() != null ? error.getCause() : error);
+            } catch (Exception error) {
+                return Mono.error(error);
+            }
+        }).subscribeOn(annotation.async() ? Schedulers.parallel() : Schedulers.immediate())
+                .timeout(Duration.ofMillis(annotation.timeoutMs() > 0 ? annotation.timeoutMs() : 30000));
+        if (annotation.errorStrategy() == ErrorHandlingStrategy.LOG_AND_RETRY && annotation.maxRetries() > 0) {
+            invocation = invocation.retryWhen(Retry.backoff(annotation.maxRetries(), Duration.ofMillis(annotation.retryDelayMs())));
+        }
+        return invocation.onErrorResume(error -> Mono.just(failedDelivery(annotation, error)));
+    }
+
+    private DeliveryInvocation failedDelivery(EventListener annotation, Throwable failure) {
+        EventDeliveryOutcome.Disposition disposition = annotation.errorStrategy() == ErrorHandlingStrategy.DEAD_LETTER
+                ? EventDeliveryOutcome.Disposition.DEAD_LETTER : EventDeliveryOutcome.Disposition.RETRY;
+        return new DeliveryInvocation(disposition, false, failure);
+    }
+
+    private EventDeliveryOutcome aggregateDelivery(int matched, List<DeliveryInvocation> outcomes) {
+        EventDeliveryOutcome.Disposition disposition = outcomes.stream()
+                .anyMatch(outcome -> outcome.disposition() == EventDeliveryOutcome.Disposition.DEAD_LETTER)
+                ? EventDeliveryOutcome.Disposition.DEAD_LETTER
+                : outcomes.stream().anyMatch(outcome -> outcome.disposition() == EventDeliveryOutcome.Disposition.RETRY)
+                        ? EventDeliveryOutcome.Disposition.RETRY
+                        : outcomes.stream().anyMatch(DeliveryInvocation::completed)
+                                ? EventDeliveryOutcome.Disposition.HANDLED : EventDeliveryOutcome.Disposition.UNHANDLED;
+        Throwable failure = outcomes.stream().filter(outcome -> outcome.disposition() == disposition)
+                .map(DeliveryInvocation::failure).filter(java.util.Objects::nonNull).findFirst().orElse(null);
+        int completed = (int) outcomes.stream().filter(DeliveryInvocation::completed).count();
+        return new EventDeliveryOutcome(disposition, matched, completed, failure);
+    }
+
+    private record DeliveryInvocation(EventDeliveryOutcome.Disposition disposition, boolean completed, Throwable failure) { }
 
     /**
      * Discovers all methods annotated with @EventListener in the application context.

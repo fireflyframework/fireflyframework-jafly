@@ -1,0 +1,11 @@
+# HTTP diagnostic body streaming
+
+The approved source base is public commit `20c1a2b4cd7e65a6822d2ac2a905c5f3fac3246a` (the header/query privacy and borrowed-buffer byte-preservation fix). Explicit body diagnostics must observe a bounded prefix without aggregating, delaying, replacing, consuming, retaining, or releasing business DataBuffers.
+
+Create capture state per subscription. Borrow only each onNext buffer long enough to copy its remaining prefix bytes using the existing absolute read-position copy. Forward every original buffer immediately with identical downstream demand and terminal signals. Retain at most configured maxBodySize bytes; a zero/nonpositive diagnostic limit captures nothing. A completed body may log its prefix once. Error/cancel clears diagnostic state and propagates the original signal unchanged. Logging callback failures must not turn a business stream into a failure.
+
+Request getBody and response writeWith must preserve first-frame delivery for incomplete or endless streams. Response writeAndFlushWith must preserve nested publishers and flush boundaries; use a single prefix budget per response subscription, not one budget per group. The observer never subscribes separately, caches, joins, or stores buffer references. Buffer ownership stays with the existing upstream/consumer/delegate. Repeated subscriptions get independent prefix state.
+
+Existing metadata/body defaults, explicit flags, public API and clocks remain unchanged. This block does not introduce Boot ECS, MDC/privacy policy, transport policy or broader enterprise logging defaults. No DB/cache/business role changes. No Maven/native HTTP/database execution or publication is granted by source controls. A fresh frozen source packet requires Root and independent review before a separately approved runtime.
+
+Acceptance uses actual pooled Netty buffers and genuine Spring WebFlux/Reactor dependencies in isolated source JVMs: first frame before completion, one-element demand without unbounded upstream request, exact byte delivery, unchanged read positions/refcounts, pooled error/cancel with an explicitly draining delegate, repeated subscriptions, fragmented UTF8, one cross-group log cap and exact flush-group delivery. Preserve all six privacy controls and existing filter/PII controls.

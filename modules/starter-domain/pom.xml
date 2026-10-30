@@ -134,6 +134,18 @@
             <artifactId>fireflyframework-eda</artifactId>
             <version>${fireflyframework.version}</version>
         </dependency>
+        <!-- Technical cache storage remains separate from business persistence. -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-cache-postgres</artifactId>
+            <version>${fireflyframework.version}</version>
+        </dependency>
+        <!-- Business persistence APIs are used only by architecture regression tests. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

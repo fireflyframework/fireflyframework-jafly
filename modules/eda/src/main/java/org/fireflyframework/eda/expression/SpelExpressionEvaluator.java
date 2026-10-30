@@ -152,6 +152,36 @@ public class SpelExpressionEvaluator {
         return Boolean.TRUE.equals(evaluated);
     }
 
+    /** Evaluates delivery filters without conflating an invalid filter with a false result. */
+    public ConditionEvaluation evaluateDeliveryCondition(String conditionExpression, Method method, Object[] args,
+            org.fireflyframework.eda.event.EventEnvelope event) {
+        if (conditionExpression == null || conditionExpression.isBlank()) {
+            return new ConditionEvaluation(ConditionStatus.MATCH, null);
+        }
+        try {
+            String expressionString = conditionExpression.trim();
+            if (expressionString.startsWith("#{") && expressionString.endsWith("}")) {
+                expressionString = expressionString.substring(2, expressionString.length() - 1);
+            }
+            Expression expression = expressionCache.computeIfAbsent(expressionString, parser::parseExpression);
+            StandardEvaluationContext context = (StandardEvaluationContext) createEvaluationContext(method, args, null);
+            context.setRootObject(event);
+            context.setVariable("event", event);
+            Object result = expression.getValue(context);
+            if (!(result instanceof Boolean matched)) {
+                return new ConditionEvaluation(ConditionStatus.ERROR,
+                        new IllegalStateException("Delivery condition must return a boolean"));
+            }
+            return new ConditionEvaluation(matched ? ConditionStatus.MATCH : ConditionStatus.NO_MATCH, null);
+        } catch (Exception error) {
+            return new ConditionEvaluation(ConditionStatus.ERROR, error);
+        }
+    }
+
+    public enum ConditionStatus { MATCH, NO_MATCH, ERROR }
+
+    public record ConditionEvaluation(ConditionStatus status, Throwable failure) { }
+
     /**
      * Evaluates header expressions and returns a map of header key-value pairs.
      *

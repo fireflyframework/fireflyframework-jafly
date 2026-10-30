@@ -50,12 +50,13 @@ public class CacheProperties {
      * <ul>
      *   <li>CAFFEINE - Use in-memory cache (always available)</li>
      *   <li>REDIS - Use distributed cache (requires Redis dependencies)</li>
-     *   <li>AUTO - Automatically select based on availability (Redis preferred if available)</li>
+     *   <li>POSTGRES - Use the separately configured PostgreSQL cache provider</li>
+     *   <li>AUTO - Prefer configured PostgreSQL, then available providers</li>
      * </ul>
-     * Defaults to CAFFEINE for optimal performance and reliability.
+     * Defaults to POSTGRES. Explicit local cache selection remains available.
      */
     @NotNull(message = "Default cache type cannot be null")
-    private CacheType defaultCacheType = CacheType.CAFFEINE;
+    private CacheType defaultCacheType = CacheType.POSTGRES;
 
     /**
      * Whether to enable metrics collection.
@@ -263,7 +264,7 @@ public class CacheProperties {
         /**
          * Whether Postgres cache is enabled.
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * PostgreSQL server host.
@@ -293,7 +294,7 @@ public class CacheProperties {
         /**
          * PostgreSQL schema for cache tables.
          */
-        private String schema = "public";
+        private String schema = "firefly_cache";
 
         /**
          * TLS/SSL mode for the R2DBC connection. Maps to the r2dbc-postgresql
@@ -312,7 +313,9 @@ public class CacheProperties {
         private String cacheTable = "firefly_cache_entries";
 
         /**
-         * Key prefix for all cache entries.
+         * Service namespace and default feature prefix. At Spring bootstrap a blank
+         * value falls back to spring.application.name. Caller feature prefixes cannot
+         * replace this service identity. Selected PostgreSQL requires one.
          */
         private String keyPrefix = "";
 
@@ -324,7 +327,7 @@ public class CacheProperties {
         /**
          * Whether to auto-create the cache schema/table on startup.
          */
-        private boolean autoCreateSchema = true;
+        private boolean autoCreateSchema = false;
 
         /**
          * Maximum number of connections in the pool.
@@ -335,6 +338,18 @@ public class CacheProperties {
          * Minimum number of connections in the pool.
          */
         private int minPoolSize = 1;
+
+        /** Maximum time to establish a physical connection. */
+        private Duration connectTimeout = Duration.ofSeconds(5);
+
+        /** Maximum time to acquire a pooled connection. */
+        private Duration acquireTimeout = Duration.ofSeconds(5);
+
+        /** Maximum time to provision or check cache storage at startup. */
+        private Duration initializationTimeout = Duration.ofSeconds(30);
+
+        /** Maximum time to release connections or dispose an owned pool. */
+        private Duration shutdownTimeout = Duration.ofSeconds(5);
 
         /**
          * Additional Postgres configuration properties.
@@ -348,7 +363,7 @@ public class CacheProperties {
     @Data
     public static class SmartConfig {
         /** Enable smart L1+L2 cache for distributed providers (write-through). */
-        private boolean enabled = true;
+        private boolean enabled = false;
         /**
          * Preferred write strategy. Only WRITE_THROUGH is implemented now.
          * Possible values in future: WRITE_THROUGH, WRITE_BACK.

@@ -64,7 +64,7 @@ public class CacheManagerFactory {
     private final Object redisConnectionFactory; // Use Object to avoid loading Redis classes
     private final Object hazelcastInstance;      // Optional HazelcastInstance
     private final Object jcacheManager;          // Optional JCache CacheManager
-    private final Object r2dbcConnectionFactory; // Optional R2DBC ConnectionFactory (Postgres)
+    private final java.util.function.Supplier<Object> r2dbcConnectionFactory;
     private final boolean redisAvailable;
     private final boolean hazelcastAvailable;
     private final boolean jcacheAvailable;
@@ -102,12 +102,24 @@ public class CacheManagerFactory {
                                 Object hazelcastInstance,
                                 Object jcacheManager,
                                 Object r2dbcConnectionFactory) {
+        this(properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager,
+                r2dbcConnectionFactory, () -> r2dbcConnectionFactory);
+    }
+
+    /** Resolves the separately named PostgreSQL factory only when PostgreSQL is selected. */
+    public CacheManagerFactory(CacheProperties properties,
+                               ObjectMapper objectMapper,
+                               Object redisConnectionFactory,
+                               Object hazelcastInstance,
+                               Object jcacheManager,
+                               Object r2dbcConnectionFactory,
+                               java.util.function.Supplier<Object> postgresFactoryResolver) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.redisConnectionFactory = redisConnectionFactory;
         this.hazelcastInstance = hazelcastInstance;
         this.jcacheManager = jcacheManager;
-        this.r2dbcConnectionFactory = r2dbcConnectionFactory;
+        this.r2dbcConnectionFactory = java.util.Objects.requireNonNull(postgresFactoryResolver);
         this.redisAvailable = checkRedisAvailable();
         this.hazelcastAvailable = checkHazelcastAvailable();
         this.jcacheAvailable = checkJCacheAvailable();
@@ -196,7 +208,7 @@ public class CacheManagerFactory {
 
         // Prefer SPI providers if available
         var ctx = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
-                properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, r2dbcConnectionFactory);
+                properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, postgresFactoryFor(resolvedType));
         var provider = findProvider(resolvedType);
         boolean providerCreated = false;
         if (provider != null && provider.isAvailable(ctx)) {
@@ -204,6 +216,9 @@ public class CacheManagerFactory {
                 primaryCache = provider.create(cacheName, keyPrefix, defaultTtl, ctx);
                 providerCreated = true;
             } catch (Exception e) {
+                if (resolvedType == CacheType.POSTGRES) {
+                    throw new IllegalStateException("Cannot initialize PostgreSQL cache provider");
+                }
                 log.warn("SPI provider {} failed for cache '{}': {}. Falling back.", resolvedType, cacheName, e.getMessage());
                 primaryCache = null;
             }
@@ -212,6 +227,9 @@ public class CacheManagerFactory {
             primaryCache = null;
         }
         if (primaryCache == null) {
+            if (resolvedType == CacheType.POSTGRES) {
+                throw new IllegalStateException("Cannot create POSTGRES cache: provider not available or not enabled");
+            }
             // Fallback to built-in creation methods (backward compatibility)
             if (resolvedType == CacheType.REDIS && redisEnabled) {
                 primaryCache = createRedisCacheAdapterViaReflection(cacheName, keyPrefix, defaultTtl);
@@ -245,7 +263,7 @@ public class CacheManagerFactory {
                     cacheName, l1, primaryCache, defaultTtl, properties.getSmart().isBackfillL1OnRead());
             fallbackCache = null; // Smart includes both
             log.info("Cache '{}' created: SMART(L1+L2) over {} (TTL: {})", cacheName, resolvedType, defaultTtl);
-        } else if (resolvedType != CacheType.CAFFEINE && properties.getCaffeine().isEnabled()) {
+        } else if (resolvedType != CacheType.CAFFEINE && resolvedType != CacheType.POSTGRES && properties.getCaffeine().isEnabled()) {
             // Legacy fallback
             fallbackCache = createCaffeineCacheAdapter(cacheName, keyPrefix, defaultTtl);
             log.info("Cache '{}' created: {} + Caffeine fallback (TTL: {})", cacheName, resolvedType, defaultTtl);
@@ -315,10 +333,15 @@ public class CacheManagerFactory {
         return list;
     }
 
+    private Object postgresFactoryFor(CacheType type) {
+        return properties.getPostgres().isEnabled() && (type == CacheType.POSTGRES || type == CacheType.AUTO)
+                ? r2dbcConnectionFactory.get() : null;
+    }
+
     private CacheType selectBestProviderType() {
         for (var factory : providerFactories) {
             var ctx = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
-                    properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, r2dbcConnectionFactory);
+                    properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, postgresFactoryFor(CacheType.AUTO));
             if (factory.isAvailable(ctx)) {
                 return factory.getType();
             }
@@ -426,6 +449,12 @@ public class CacheManagerFactory {
         }
     }
 
+    /** Creates a feature cache with global provider selection and caller-supplied identity and TTL. */
+    public FireflyCacheManager createDefaultCacheManager(String cacheName, String keyPrefix, Duration defaultTtl,
+                                                        String description, String requestedBy) {
+        return createCacheManager(cacheName, properties.getDefaultCacheType(), keyPrefix, defaultTtl, description, requestedBy);
+    }
+
     /**
      * Creates a cache manager using default configuration from properties.
      *
@@ -433,18 +462,18 @@ public class CacheManagerFactory {
      * @return a configured FireflyCacheManager
      */
     public FireflyCacheManager createDefaultCacheManager(String cacheName) {
-        // Validate that at least one cache type is available and enabled
-        boolean caffeineEnabled = properties.getCaffeine().isEnabled();
-        boolean redisEnabled = properties.getRedis().isEnabled() && redisAvailable;
-        
-        if (!caffeineEnabled && !redisEnabled) {
-            throw new IllegalStateException(
-                "No cache adapters available. At least one cache type (Caffeine or Redis) must be enabled."
-            );
-        }
-        
         CacheType cacheType = properties.getDefaultCacheType();
-        
+        if (cacheType == CacheType.AUTO) {
+            cacheType = selectBestProviderType();
+        }
+        boolean redisEnabled = properties.getRedis().isEnabled() && redisAvailable;
+        if (cacheType == CacheType.POSTGRES) {
+            String configuredName = properties.getPostgres().getCacheName();
+            String actualName = configuredName != null && !"default".equals(configuredName) ? configuredName : cacheName;
+            return createCacheManager(actualName, cacheType, properties.getPostgres().getKeyPrefix(),
+                    properties.getPostgres().getDefaultTtl());
+        }
+
         // Determine the actual cache name from properties
         String actualCacheName = cacheName;
         if (cacheType == CacheType.CAFFEINE || (cacheType == CacheType.AUTO && !redisEnabled)) {

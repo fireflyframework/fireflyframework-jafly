@@ -21,9 +21,8 @@ import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.client.SSLMode;
-import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
-import lombok.extern.slf4j.Slf4j;
+import org.fireflyframework.cache.adapter.postgres.PostgresCacheConfig;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -31,134 +30,109 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Auto-configuration for the PostgreSQL R2DBC cache provider.
- * <p>
- * Creates a pooled {@link ConnectionFactory} dedicated to cache storage and,
- * when {@code firefly.cache.postgres.auto-create-schema} is {@code true},
- * provisions the cache table and a supporting expiry index. The resulting bean
- * (named {@code fireflyCachePostgresConnectionFactory}) is what the cache core
- * resolves reflectively into the provider context's
- * {@code r2dbcConnectionFactory}.
- * <p>
- * <strong>Configuration source:</strong> {@code firefly.cache.postgres.*} --
- * never {@code spring.r2dbc.*}.
- */
+/** Owns a lazy technical cache pool, independently of business persistence. */
 @AutoConfiguration(after = CacheAutoConfiguration.class)
-@ConditionalOnClass(name = "io.r2dbc.spi.ConnectionFactory")
-@ConditionalOnProperty(prefix = "firefly.cache.postgres", name = "enabled", havingValue = "true")
+@ConditionalOnClass(name = {"io.r2dbc.spi.ConnectionFactory", "io.r2dbc.pool.ConnectionPool",
+        "io.r2dbc.postgresql.PostgresqlConnectionFactory"})
+@ConditionalOnProperty(prefix = "firefly.cache", name = {"enabled", "postgres.enabled"},
+        havingValue = "true", matchIfMissing = true)
+@ConditionalOnMissingBean(name = "fireflyCachePostgresConnectionFactory")
+@Conditional(PostgresCacheAutoConfiguration.ConfiguredPostgres.class)
 @EnableConfigurationProperties(CacheProperties.class)
-@Slf4j
 public class PostgresCacheAutoConfiguration {
-
-    /**
-     * Creates the pooled R2DBC {@link ConnectionFactory} the cache adapter uses.
-     */
-    @Bean(name = "fireflyCachePostgresConnectionFactory", destroyMethod = "dispose")
-    @ConditionalOnMissingBean(name = "fireflyCachePostgresConnectionFactory")
-    public ConnectionFactory fireflyCachePostgresConnectionFactory(CacheProperties properties) {
-        CacheProperties.PostgresConfig cfg = properties.getPostgres();
-        log.info("Creating PostgreSQL cache ConnectionFactory: host={}:{}, database={}, schema={}, table={}",
-                cfg.getHost(), cfg.getPort(), cfg.getDatabase(), cfg.getSchema(), cfg.getCacheTable());
-
-        PostgresqlConnectionConfiguration.Builder builder = PostgresqlConnectionConfiguration.builder()
-                .host(cfg.getHost())
-                .port(cfg.getPort());
-        if (cfg.getDatabase() != null) {
-            builder.database(cfg.getDatabase());
+    static final class ConfiguredPostgres implements Condition {
+        @Override
+        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+            String database = context.getEnvironment().getProperty("firefly.cache.postgres.database");
+            String username = context.getEnvironment().getProperty("firefly.cache.postgres.username");
+            return database != null && !database.isBlank() && username != null && !username.isBlank();
         }
-        if (cfg.getUsername() != null) {
-            builder.username(cfg.getUsername());
+    }
+
+    @Bean(destroyMethod = "close")
+    @Lazy
+    OwnedPostgresPool fireflyCachePostgresOwnedPool(CacheProperties properties) {
+        var cfg = properties.getPostgres();
+        requireText(cfg.getHost(), "host");
+        requireText(cfg.getDatabase(), "database");
+        requireText(cfg.getUsername(), "username");
+        PostgresCacheConfig.quoteIdentifier(cfg.getSchema());
+        PostgresCacheConfig.quoteIdentifier(cfg.getCacheTable());
+        if (cfg.getPort() < 1 || cfg.getPort() > 65535 || cfg.getMinPoolSize() < 0
+                || cfg.getMaxPoolSize() < 1 || cfg.getMinPoolSize() > cfg.getMaxPoolSize()) {
+            throw new IllegalArgumentException("Invalid PostgreSQL cache port or pool bounds");
         }
+        requirePositive(cfg.getConnectTimeout());
+        requirePositive(cfg.getAcquireTimeout());
+        requirePositive(cfg.getInitializationTimeout());
+        requirePositive(cfg.getShutdownTimeout());
+
+        var builder = PostgresqlConnectionConfiguration.builder().host(cfg.getHost()).port(cfg.getPort())
+                .database(cfg.getDatabase()).username(cfg.getUsername()).schema(cfg.getSchema())
+                .connectTimeout(cfg.getConnectTimeout());
         if (cfg.getPassword() != null) {
             builder.password(cfg.getPassword());
         }
-        if (cfg.getSchema() != null) {
-            builder.schema(cfg.getSchema());
-        }
-        // TLS: r2dbc-postgresql defaults to DISABLE. Servers that enforce SSL
-        // (e.g. AWS Aurora with rds.force_ssl) reject unencrypted connections
-        // ("no pg_hba.conf entry ... no encryption"). Map the configured mode
-        // when set, so consumers can opt into require/verify-* without a code
-        // change. Blank/null keeps the driver default (disable) for back-compat.
         if (cfg.getSslMode() != null && !cfg.getSslMode().isBlank()) {
             builder.sslMode(SSLMode.fromValue(cfg.getSslMode()));
         }
         if (cfg.getProperties() != null && !cfg.getProperties().isEmpty()) {
-            Map<String, String> options = new HashMap<>();
-            for (Map.Entry<String, Object> entry : cfg.getProperties().entrySet()) {
-                if (entry.getValue() != null) {
-                    options.put(entry.getKey(), entry.getValue().toString());
-                }
-            }
-            if (!options.isEmpty()) {
-                builder.options(options);
-            }
+            var options = new HashMap<String, String>();
+            cfg.getProperties().forEach((name, value) -> {
+                if (value != null) options.put(name, value.toString());
+            });
+            builder.options(options);
         }
-        PostgresqlConnectionFactory delegate = new PostgresqlConnectionFactory(builder.build());
-
-        ConnectionPoolConfiguration poolConfig = ConnectionPoolConfiguration.builder(delegate)
-                .maxSize(Math.max(1, cfg.getMaxPoolSize()))
-                .initialSize(Math.max(1, cfg.getMinPoolSize()))
-                .maxIdleTime(Duration.ofMinutes(5))
-                .build();
-        ConnectionPool pool = new ConnectionPool(poolConfig);
-
-        if (cfg.isAutoCreateSchema()) {
-            initialiseSchema(pool, cfg);
-        }
-
-        log.info("PostgreSQL cache ConnectionFactory created successfully");
-        return pool;
+        var configuration = ConnectionPoolConfiguration.builder(new PostgresqlConnectionFactory(builder.build()))
+                .maxSize(cfg.getMaxPoolSize()).initialSize(cfg.getMinPoolSize()).minIdle(cfg.getMinPoolSize())
+                .maxAcquireTime(cfg.getAcquireTimeout()).maxCreateConnectionTime(cfg.getConnectTimeout())
+                .maxValidationTime(cfg.getAcquireTimeout()).acquireRetry(0).maxIdleTime(Duration.ofMinutes(5)).build();
+        return new OwnedPostgresPool(new ConnectionPool(configuration), cfg.getShutdownTimeout());
     }
 
-    /**
-     * Provisions the cache table and a supporting expiry index. Statements are
-     * idempotent so repeated startups are safe.
-     */
-    private void initialiseSchema(ConnectionFactory factory, CacheProperties.PostgresConfig cfg) {
-        String schema = cfg.getSchema() != null ? cfg.getSchema() : "public";
-        String table = cfg.getCacheTable() != null ? cfg.getCacheTable() : "firefly_cache_entries";
-        String qualified = "\"" + schema + "\".\"" + table + "\"";
+    @Bean(name = "fireflyCachePostgresConnectionFactory", destroyMethod = "", defaultCandidate = false)
+    @Lazy
+    public ConnectionFactory fireflyCachePostgresConnectionFactory(OwnedPostgresPool owner) {
+        return owner.pool;
+    }
 
-        String createTable = "CREATE TABLE IF NOT EXISTS " + qualified + " ("
-                + "cache_name VARCHAR(255) NOT NULL, "
-                + "cache_key VARCHAR(1024) NOT NULL, "
-                + "value BYTEA NOT NULL, "
-                + "expires_at TIMESTAMPTZ, "
-                + "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), "
-                + "PRIMARY KEY (cache_name, cache_key))";
-
-        String createExpiresIndex = "CREATE INDEX IF NOT EXISTS " + table + "_expires_idx "
-                + "ON " + qualified + " (expires_at) WHERE expires_at IS NOT NULL";
-
-        try {
-            Mono.usingWhen(
-                            Mono.from(factory.create()),
-                            connection -> executeAll(connection, createTable, createExpiresIndex),
-                            Connection::close)
-                    .block(Duration.ofSeconds(30));
-            log.info("PostgreSQL cache schema ensured: {}.{}", schema, table);
-        } catch (Exception e) {
-            log.error("Failed to initialise PostgreSQL cache schema {}.{}: {}", schema, table, e.getMessage());
-            log.error("Caching will fail until the schema is created manually");
+    private static void requireText(String value, String property) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("firefly.cache.postgres." + property + " must be configured");
         }
     }
 
-    private Mono<Void> executeAll(Connection connection, String... statements) {
-        Mono<Void> chain = Mono.empty();
-        for (String sql : statements) {
-            String stmt = sql;
-            chain = chain.then(Mono.from(connection.createStatement(stmt).execute())
-                    .flatMap(result -> Mono.from(result.getRowsUpdated()))
-                    .then());
+    private static void requirePositive(Duration timeout) {
+        if (timeout == null || timeout.isNegative() || timeout.isZero()) {
+            throw new IllegalArgumentException("PostgreSQL cache timeouts must be positive");
         }
-        return chain;
+    }
+
+    static final class OwnedPostgresPool implements AutoCloseable {
+        private final ConnectionPool pool;
+        private final Duration shutdownTimeout;
+        private final AtomicBoolean closed = new AtomicBoolean();
+
+        OwnedPostgresPool(ConnectionPool pool, Duration shutdownTimeout) {
+            this.pool = pool;
+            this.shutdownTimeout = shutdownTimeout;
+        }
+
+        @Override
+        public void close() {
+            if (closed.compareAndSet(false, true)) {
+                pool.disposeLater().block(shutdownTimeout);
+            }
+        }
     }
 }

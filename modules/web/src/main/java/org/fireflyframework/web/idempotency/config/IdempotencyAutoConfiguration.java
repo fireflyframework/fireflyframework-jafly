@@ -17,7 +17,6 @@
 package org.fireflyframework.web.idempotency.config;
 
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
-import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
 import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.fireflyframework.web.idempotency.cache.FireflyCacheIdempotencyAdapter;
@@ -115,9 +114,8 @@ public class IdempotencyAutoConfiguration {
             IdempotencyProperties properties) {
 
         Duration ttl = Duration.ofHours(properties.getCache().getTtlHours());
-        return factory.createCacheManager(
+        return factory.createDefaultCacheManager(
                 "http-idempotency",
-                CacheType.AUTO,
                 "firefly:web:idempotency",
                 ttl,
                 "HTTP idempotency cache",

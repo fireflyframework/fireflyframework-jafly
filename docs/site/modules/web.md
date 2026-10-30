@@ -184,14 +184,18 @@ The `firefly.web.http-request-logging` namespace is bound by [HttpRequestLogging
 | Setting | Java type | Source default |
 | --- | --- | --- |
 | `firefly.web.http-request-logging.enabled` | `boolean` | `true` |
-| `firefly.web.http-request-logging.include-headers` | `boolean` | `true` |
+| `firefly.web.http-request-logging.include-headers` | `boolean` | `false` |
 | `firefly.web.http-request-logging.include-request-body` | `boolean` | `false` |
 | `firefly.web.http-request-logging.include-response-body` | `boolean` | `false` |
 | `firefly.web.http-request-logging.max-body-size` | `int` | `1024` |
 | `firefly.web.http-request-logging.sensitive-headers` | `Set<String>` | `nested/default initializer; see source` |
 | `firefly.web.http-request-logging.excluded-paths` | `Set<String>` | `new HashSet<>(Arrays.asList( "/health", "/actuator/**", "/metrics", "/info"))` |
 | `firefly.web.http-request-logging.log-level` | `String` | `"INFO"` |
-| `firefly.web.http-request-logging.include-query-params` | `boolean` | `true` |
+| `firefly.web.http-request-logging.include-query-params` | `boolean` | `false` |
+
+HTTP logging includes request method/path and response status/duration by default. Headers, query parameters, and bodies require explicit opt-in. Diagnostic body logging copies only a byte prefix up to `max-body-size` per subscription. It forwards the original buffers as they arrive, preserves demand and response flush groups, and neither retains nor releases transport buffers. The limit applies to the diagnostic copy; it is not a request-size limit. A nonpositive limit captures nothing.
+
+A request body prefix is logged after that body completes. A response prefix is logged after both its body and the transport write complete successfully. Error or cancellation discards the diagnostic prefix; an endless stream continues delivering frames without waiting for a body log. UTF-8 is decoded after collecting the bounded prefix, so a limit inside a character may produce a replacement character. Ordinary diagnostic-copy failures omit that body log and preserve the business stream. Configure data masking for any diagnostic fields you enable; the existing masking and JSON logging policies are separate from stream delivery.
 
 The `firefly.web.pii-masking` namespace is bound by [PiiMaskingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/logging/config/PiiMaskingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
@@ -210,6 +214,10 @@ The `firefly.web.pii-masking` namespace is bound by [PiiMaskingProperties.java](
 | `firefly.web.pii-masking.auto-mask-logs` | `boolean` | `true` |
 | `firefly.web.pii-masking.enable-stdout-masking` | `boolean` | `true` |
 | `firefly.web.pii-masking.case-sensitive` | `boolean` | `false` |
+
+When masking is enabled, `PiiMaskingAppender` creates a detached snapshot of the formatted message, metadata, MDC, key/value pairs, markers, throwable tree and caller data before handing the event to another appender. It formats permitted scalar arguments with SLF4J and discards the original argument array. Unsupported object values, cyclic or overly deep graphs, inaccessible source fields, missing masking state and masking failures omit the event with a fixed diagnostic that contains no provider exception or input data.
+
+The strict `PiiMaskingService.maskLogData` logging path requires every configured pattern to compile and emits no recursive masking diagnostics. Existing nonlogging masking methods retain their result behavior. Only an explicit Boolean `false` in the configured service's enabled state preserves the original unprotected event; absent, ambiguous or unavailable state fails closed. Configured patterns define what is masked. Startup coverage, encoder-owned global properties, custom appenders and the wider logging policy require separate configuration and validation.
 
 Property-based wiring conditions found in this module:
 
@@ -356,10 +364,10 @@ firefly:
     http-request-logging:
       enabled: true
       log-level: INFO
-      include-headers: true
+      include-headers: false
       include-request-body: false
       include-response-body: false
-      include-query-params: true
+      include-query-params: false
       max-body-size: 1024              # bytes
       sensitive-headers: [authorization, x-api-key, x-auth-token, cookie, set-cookie]
       excluded-paths: [/health, /actuator/**, /metrics, /info]

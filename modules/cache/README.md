@@ -2,7 +2,7 @@
 
 # Common Cache Library
 
-Use a common cache API with a local Caffeine default and pluggable distributed providers.
+Use a common cache API with a PostgreSQL default and explicit local or distributed providers.
 
 Depend on the core abstraction, inject FireflyCacheManager or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
 
@@ -30,7 +30,7 @@ The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided d
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (Caffeine by default). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
+With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (PostgreSQL by default, with the PostgreSQL adapter and configuration). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
 
 ```java
 import lombok.RequiredArgsConstructor;
@@ -70,7 +70,7 @@ import org.fireflyframework.cache.manager.FireflyCacheManager;
 
 FireflyCacheManager idempotencyCache = factory.createCacheManager(
         "http-idempotency",
-        CacheType.AUTO,                // Redis if present, else Caffeine
+        CacheType.AUTO,                // Configured PostgreSQL first, then available providers
         "firefly:http:idempotency",
         Duration.ofHours(24));
 ```
@@ -82,10 +82,20 @@ The `firefly.cache` namespace is bound by [CacheProperties.java](https://github.
 | Setting | Java type | Source default |
 | --- | --- | --- |
 | `firefly.cache.enabled` | `boolean` | `true` |
-| `firefly.cache.default-cache-type` | `CacheType` | `CacheType.CAFFEINE` |
+| `firefly.cache.default-cache-type` | `CacheType` | `CacheType.POSTGRES` |
 | `firefly.cache.metrics-enabled` | `boolean` | `true` |
 | `firefly.cache.health-enabled` | `boolean` | `true` |
 | `firefly.cache.stats-enabled` | `boolean` | `true` |
+
+## Default migration
+
+Add `fireflyframework-cache-postgres` and configure `firefly.cache.postgres.database` and `username` (plus deployment credentials). The default provider fails startup if its adapter, configuration or technical table is unavailable. It does not silently substitute Caffeine.
+
+For an explicitly local cache, set `firefly.cache.default-cache-type=CAFFEINE`; unused PostgreSQL configuration is neither validated nor connected. Explicit Redis, Hazelcast and JCache selections retain their adapter contracts. `AUTO` prefers configured PostgreSQL, then available alternatives.
+
+The built-in application-config and HTTP-idempotency cache factories also honor the global default provider. Explicit `CAFFEINE` creates their local caches without PostgreSQL lookup or namespace validation; explicit `AUTO` retains automatic provider selection. PostgreSQL service identity stays independent of each feature's key prefix.
+
+`firefly.cache.smart.enabled` now defaults to `false` for every provider. Set it to `true` to restore the optional Caffeine L1. PostgreSQL has no implicit local fallback. See the [PostgreSQL adapter](../cache-postgres/README.md) for the technical schema and pool lifecycle.
 
 ## API overview
 

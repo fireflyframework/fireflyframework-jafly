@@ -48,11 +48,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * PostgreSQL-backed reactive cache adapter implemented over R2DBC.
  * <p>
  * Cache entries are stored in a single relational table keyed by
- * {@code (cache_name, cache_key)}. Values are serialized with a
+ * {@code (cache_name, cache_key)}. The physical cache name includes an exact
+ * service namespace while public metadata retains the logical cache name. Values are serialized with a
  * {@link CacheSerializer} into a JSON {@link String}, encoded as UTF-8 bytes and
  * persisted in a {@code BYTEA} column. Expiry is enforced both lazily on read
  * (rows whose {@code expires_at} is in the past are treated as absent) and at
- * write time ({@code expires_at = NOW() + ttl}).
+ * write time using the database clock. Conditional expired-row replacements
+ * evaluate expiry and renewed TTL after acquiring the conflicting row lock.
  * <p>
  * All operations run reactively against a Spring-managed
  * {@link ConnectionFactory}; connections are acquired and released per operation
@@ -64,6 +66,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
 
     private final String cacheName;
     private final String keyPrefix;
+    private final String storageCacheName;
     private final ConnectionFactory connectionFactory;
     private final PostgresCacheConfig config;
     private final CacheSerializer serializer;
@@ -76,18 +79,49 @@ public class PostgresCacheAdapter implements CacheAdapter {
     private final AtomicLong evictionCount = new AtomicLong();
     private final AtomicLong totalLoadTime = new AtomicLong();
 
+    /** Retains direct callers whose explicit prefix supplies both service and feature identity. */
     public PostgresCacheAdapter(String cacheName,
                                 ConnectionFactory connectionFactory,
                                 PostgresCacheConfig config,
                                 CacheSerializer serializer) {
+        this(cacheName, connectionFactory, config, serializer, config.getKeyPrefix());
+    }
+
+    /** Keeps a factory's service identity independent of a caller's feature prefix. */
+    public PostgresCacheAdapter(String cacheName,
+                                ConnectionFactory connectionFactory,
+                                PostgresCacheConfig config,
+                                CacheSerializer serializer,
+                                String serviceNamespace) {
+        config.validate(cacheName, serviceNamespace);
+        String featurePrefix = config.effectiveKeyPrefix(serviceNamespace);
         this.cacheName = cacheName;
+        this.storageCacheName = physicalCacheName(serviceNamespace, cacheName, featurePrefix);
         this.connectionFactory = connectionFactory;
         this.config = config;
         this.serializer = serializer;
-        this.keyPrefix = buildKeyPrefix(cacheName, config.getKeyPrefix());
-        String schema = config.getSchema() != null ? config.getSchema() : "public";
-        String table = config.getCacheTable() != null ? config.getCacheTable() : "firefly_cache_entries";
-        this.qualifiedTable = "\"" + schema + "\".\"" + table + "\"";
+        this.keyPrefix = buildKeyPrefix(cacheName, featurePrefix);
+        this.qualifiedTable = config.qualifiedTable();
+    }
+
+    private static String physicalCacheName(String namespace, String logicalName, String featurePrefix) {
+        byte[] namespaceBytes = namespace.getBytes(StandardCharsets.UTF_8);
+        byte[] nameBytes = logicalName.getBytes(StandardCharsets.UTF_8);
+        byte[] featureBytes = featurePrefix.getBytes(StandardCharsets.UTF_8);
+        byte[] input = java.nio.ByteBuffer.allocate(16 + namespaceBytes.length + nameBytes.length + featureBytes.length)
+                .order(java.nio.ByteOrder.BIG_ENDIAN).putInt(2)
+                .putInt(namespaceBytes.length).put(namespaceBytes).putInt(nameBytes.length).put(nameBytes)
+                .putInt(featureBytes.length).put(featureBytes).array();
+        try {
+            return "v2:" + java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(input));
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IllegalStateException("SHA-256 unavailable");
+        }
+    }
+
+    private static String literalLikePrefix(String prefix) {
+        return prefix.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     private String buildKeyPrefix(String cacheName, String configPrefix) {
@@ -173,7 +207,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
                 + " AND (expires_at IS NULL OR expires_at > NOW())";
         return withConnection(conn -> {
             Statement st = conn.createStatement(sql)
-                    .bind("$1", cacheName)
+                    .bind("$1", storageCacheName)
                     .bind("$2", fullKey);
             return Flux.from(st.execute())
                     .flatMap(result -> result.map((row, meta) -> readBytes(row, "value")))
@@ -216,27 +250,30 @@ public class PostgresCacheAdapter implements CacheAdapter {
                         if (hasTtl) {
                             String insertSql = "INSERT INTO " + qualifiedTable
                                     + " (cache_name, cache_key, value, expires_at, created_at)"
-                                    + " VALUES ($1, $2, $3, NOW() + ($4 || ' milliseconds')::interval, NOW())"
+                                    + " VALUES ($1, $2, $3, pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, pg_catalog.clock_timestamp())"
                                     + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
-                                    + " SET value = EXCLUDED.value, expires_at = EXCLUDED.expires_at, created_at = NOW()";
+                                    + " SET value = EXCLUDED.value, expires_at = pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, created_at = pg_catalog.clock_timestamp()";
                             st = conn.createStatement(insertSql)
-                                    .bind("$1", cacheName)
+                                    .bind("$1", storageCacheName)
                                     .bind("$2", fullKey)
                                     .bind("$3", bytes)
                                     .bind("$4", String.valueOf(ttl.toMillis()));
                         } else {
                             String insertSql = "INSERT INTO " + qualifiedTable
                                     + " (cache_name, cache_key, value, expires_at, created_at)"
-                                    + " VALUES ($1, $2, $3, NULL, NOW())"
+                                    + " VALUES ($1, $2, $3, NULL, pg_catalog.clock_timestamp())"
                                     + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
-                                    + " SET value = EXCLUDED.value, expires_at = EXCLUDED.expires_at, created_at = NOW()";
+                                    + " SET value = EXCLUDED.value, expires_at = NULL, created_at = pg_catalog.clock_timestamp()";
                             st = conn.createStatement(insertSql)
-                                    .bind("$1", cacheName)
+                                    .bind("$1", storageCacheName)
                                     .bind("$2", fullKey)
                                     .bind("$3", bytes);
                         }
-                        return rowsUpdated(st).doOnNext(n -> putCount.incrementAndGet()).then();
-                    });
+                        return rowsUpdated(st);
+                    }).doOnNext(count -> {
+                        if (count != 1) throw new IllegalStateException("PostgreSQL cache put requires exactly one affected row");
+                        putCount.incrementAndGet();
+                    }).then();
                 });
     }
 
@@ -251,21 +288,18 @@ public class PostgresCacheAdapter implements CacheAdapter {
         return Mono.fromCallable(() -> toBytes(value))
                 .flatMap(bytes -> {
                     boolean hasTtl = ttl != null && !ttl.isZero() && !ttl.isNegative();
-                    String sql;
-                    if (hasTtl) {
-                        sql = "INSERT INTO " + qualifiedTable
-                                + " (cache_name, cache_key, value, expires_at, created_at)"
-                                + " VALUES ($1, $2, $3, NOW() + ($4 || ' milliseconds')::interval, NOW())"
-                                + " ON CONFLICT (cache_name, cache_key) DO NOTHING";
-                    } else {
-                        sql = "INSERT INTO " + qualifiedTable
-                                + " (cache_name, cache_key, value, expires_at, created_at)"
-                                + " VALUES ($1, $2, $3, NULL, NOW())"
-                                + " ON CONFLICT (cache_name, cache_key) DO NOTHING";
-                    }
+                    String clock = "pg_catalog.clock_timestamp()";
+                    String expires = hasTtl ? clock + " + ($4 || ' milliseconds')::interval" : "NULL";
+                    String sql = "INSERT INTO " + qualifiedTable + " AS cache_entry"
+                            + " (cache_name, cache_key, value, expires_at, created_at)"
+                            + " VALUES ($1, $2, $3, " + expires + ", " + clock + ")"
+                            + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
+                            + " SET value = EXCLUDED.value, expires_at = " + expires + ", created_at = " + clock
+                            + " WHERE cache_entry.expires_at IS NOT NULL"
+                            + " AND cache_entry.expires_at <= " + clock;
                     return withConnection(conn -> {
                         Statement st = conn.createStatement(sql)
-                                .bind("$1", cacheName)
+                                .bind("$1", storageCacheName)
                                 .bind("$2", fullKey)
                                 .bind("$3", bytes);
                         if (hasTtl) {
@@ -273,11 +307,11 @@ public class PostgresCacheAdapter implements CacheAdapter {
                         }
                         return rowsUpdated(st);
                     }).map(n -> {
-                        if (n > 0) {
-                            putCount.incrementAndGet();
-                            return true;
+                        if (n != 0 && n != 1) {
+                            throw new IllegalStateException("PostgreSQL cache insertion requires zero or one affected row");
                         }
-                        return false;
+                        if (n == 1) putCount.incrementAndGet();
+                        return n == 1;
                     });
                 });
     }
@@ -287,7 +321,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
         String fullKey = buildKey(key);
         String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1 AND cache_key = $2";
         return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
-                .bind("$1", cacheName)
+                .bind("$1", storageCacheName)
                 .bind("$2", fullKey)))
                 .map(n -> {
                     boolean removed = n > 0;
@@ -305,18 +339,18 @@ public class PostgresCacheAdapter implements CacheAdapter {
     @Override
     public Mono<Void> clear() {
         String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1";
-        return withConnection(conn -> rowsUpdated(conn.createStatement(sql).bind("$1", cacheName)))
+        return withConnection(conn -> rowsUpdated(conn.createStatement(sql).bind("$1", storageCacheName)))
                 .doOnNext(evictionCount::addAndGet)
                 .then();
     }
 
     @Override
     public Mono<Long> evictByPrefix(String keyPrefixToMatch) {
-        String fullPrefix = buildKey(keyPrefixToMatch);
+        String fullPrefix = literalLikePrefix(buildKey(keyPrefixToMatch));
         String sql = "DELETE FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND cache_key LIKE $2 || '%'";
+                + " WHERE cache_name = $1 AND cache_key LIKE $2 || '%' ESCAPE E'\\\\'";
         return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
-                .bind("$1", cacheName)
+                .bind("$1", storageCacheName)
                 .bind("$2", fullPrefix)))
                 .doOnNext(evictionCount::addAndGet);
     }
@@ -328,7 +362,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
                 + " WHERE cache_name = $1 AND cache_key = $2"
                 + " AND (expires_at IS NULL OR expires_at > NOW())";
         return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", cacheName)
+                .bind("$1", storageCacheName)
                 .bind("$2", fullKey)
                 .execute())
                 .flatMap(result -> result.map((row, meta) -> Boolean.TRUE))
@@ -347,7 +381,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
         String sql = "SELECT cache_key FROM " + qualifiedTable
                 + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
         return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", cacheName)
+                .bind("$1", storageCacheName)
                 .execute())
                 .flatMap(result -> result.map((row, meta) -> (String) row.get("cache_key")))
                 .map(this::extractOriginalKey)
@@ -361,7 +395,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
         String sql = "SELECT COUNT(*) AS cnt FROM " + qualifiedTable
                 + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
         return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", cacheName)
+                .bind("$1", storageCacheName)
                 .execute())
                 .flatMap(result -> result.map((row, meta) -> {
                     Number n = (Number) row.get("cnt");

@@ -2,6 +2,8 @@ package org.fireflyframework.common.application.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.fireflyframework.cache.core.CacheType;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.fireflyframework.common.application.metadata.ApplicationMetadataProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,15 @@ import org.springframework.context.annotation.Lazy;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-@SpringBootTest(classes = ApplicationStartupTest.Application.class)
+@SpringBootTest(classes = ApplicationStartupTest.Application.class,
+        properties = "firefly.cache.default-cache-type=CAFFEINE")
 class ApplicationStartupTest {
     private static final AtomicReference<Boolean> metadataInitializationState =
             new AtomicReference<>();
 
     @Autowired CacheManager cacheManager;
+
+    @Autowired FireflyCacheManager fireflyCacheManager;
 
     @Autowired ApplicationContext applicationContext;
 
@@ -31,6 +36,7 @@ class ApplicationStartupTest {
     void startsReactiveWithTheSpringCacheInfrastructureRequiredByTheApplicationLayer() {
         assertThat(applicationContext).isInstanceOf(ReactiveWebApplicationContext.class);
         assertThat(cacheManager).isNotNull();
+        assertThat(fireflyCacheManager.getCacheType()).isEqualTo(CacheType.CAFFEINE);
         assertThat(metadataInitializationState.get()).isFalse();
     }
 

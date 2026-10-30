@@ -101,6 +101,12 @@ public class OrderService {
 
 ## Configuration and wiring
 
+The shipped OTLP and Zipkin trace exporters and OTLP log exporter require explicit opt-in. Framework defaults set `management.tracing.export.otlp.enabled=false`, `management.tracing.export.zipkin.enabled=false`, and `management.logging.export.otlp.enabled=false` at the lowest property precedence. Local tracing, W3C/B3 propagation, and Prometheus scraping stay enabled; a collector is optional. Boot may retain local batch processors with empty/no-op exporter delegates. Custom exporters remain subject to their own application policy.
+
+Deployments that relied on implicit localhost collection must now enable the individual exporter and configure its collector endpoint. For OTLP traces, set `management.tracing.export.otlp.enabled=true` and `management.opentelemetry.tracing.export.otlp.endpoint`; for Zipkin traces, select the Brave bridge and opt in with `management.tracing.export.zipkin.enabled=true` and the applicable Boot Zipkin endpoint; for OTLP logs, set `management.logging.export.otlp.enabled=true` and `management.opentelemetry.logging.export.otlp.endpoint`. An endpoint or `management.tracing.export.enabled=true` alone does not override the specific exporter defaults. Existing protocol/endpoint aliases and bridge selection remain available. Application properties and active profile configuration override the framework defaults.
+
+The global `management.tracing.export.enabled` property keeps its standard Boot behavior. Boot 4.1.1 also gates its propagation factories on that global flag, so explicitly setting it to `false` disables W3C/B3 injection. The framework leaves it unset and does not counteract an application's explicit choice.
+
 The `firefly.observability` namespace is bound by [FireflyObservabilityProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
 | Setting | Java type | Source default |
@@ -339,6 +345,10 @@ This provides:
 - Pretty-printing with colors and trace context (dev profiles)
 - Async appender for production performance
 - Automatic MDC fields: `traceId`, `spanId`, `X-Transaction-Id`, `userId`, `correlationId`, `requestId`
+
+The shared Logstash encoder defaults to `includeContext=false`. Arbitrary Logback context properties therefore stop appearing automatically in JSON output. This changes the previous metadata export default while preserving the existing format and event field configuration.
+
+An explicitly configured `includeContext=true` exports encoder-owned global context independently of event masking. The PII appender's event snapshot cannot sanitize that separate provider. Keep such configuration within a deliberate metadata policy. This default and event masking provide no durable or immutable audit-storage guarantee.
 
 ### Architecture
 
