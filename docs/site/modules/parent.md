@@ -24,7 +24,7 @@ The onboarding example inherits this parent and keeps its own application versio
 <parent>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
     <relativePath/>
 </parent>
 ```
@@ -69,6 +69,17 @@ Versions below are read directly from the parent POM. Spring Boot supplies addit
 | `maven-surefire-plugin.version` | `3.6.0` |
 | `maven-failsafe-plugin.version` | `3.6.0` |
 | `native-maven-plugin.version` | `1.1.14` |
+
+### Generated Java SDK object variants
+
+The managed OpenAPI Generator plugin accepts these opt-in Maven properties:
+
+| Property | Default | Generated behavior |
+| --- | --- | --- |
+| `openapi.use.oneof.interfaces` | `false` | Generates interfaces for supported `oneOf` object variants. |
+| `openapi.use.oneof.deduction` | `false` | Enables Jackson deduction from variant field shapes in the qualified Java WebClient configuration. |
+
+Set both properties to `true` in the consuming SDK project after qualifying its schema, generator configuration, and runtime mapper. Test each variant's serialized shape and deserialization, including ambiguous objects and compatibility with the owning API. Continue to generate SDK code through the original OpenAPI lifecycle. These options preserve existing behavior by default and do not alter business admission rules or publish consumer artifacts.
 
 ### Imported dependency platforms
 

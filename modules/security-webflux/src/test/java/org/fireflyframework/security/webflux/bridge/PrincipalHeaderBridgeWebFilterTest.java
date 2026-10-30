@@ -111,4 +111,31 @@ class PrincipalHeaderBridgeWebFilterTest {
         assertThat(chain.calls).hasValue(1);
         assertThat(chain.captured.get().getRequest().getHeaders().getFirst("X-Tenant-Id")).isEqualTo("client");
     }
+
+    @Test
+    void opaqueScalarAndCollectionTenantRemainExactInTrustedHeaders() {
+        String tenant = " tenant/🌍 α,β ";
+        for (Object value : List.of(tenant, List.of(tenant))) {
+            var principal = SecurityPrincipal.builder().subject("user-1").claims(Map.of("tenant_ids", value)).build();
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/x").header("X-Tenant-Id", "client"));
+            var chain = new CapturingChain();
+            StepVerifier.create(filter(principalPort(principal)).filter(exchange, chain)).verifyComplete();
+            assertThat(chain.calls).hasValue(1);
+            assertThat(chain.captured.get().getRequest().getHeaders().getFirst("X-Tenant-Id")).isEqualTo(tenant);
+        }
+    }
+
+    @Test
+    void malformedTenantCollectionRefusesBeforeTrustedHeaderMutation() {
+        for (String value : List.of("tenant\nvalue", "tenant"+(char)0, "tenant"+(char)0xD800, "\t")) {
+            var principal = SecurityPrincipal.builder().subject("user-1").claims(Map.of("tenant_ids", List.of("tenant-a", value))).build();
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/x"));
+            var chain = new CapturingChain();
+            StepVerifier.create(filter(principalPort(principal)).filter(exchange, chain))
+                    .expectErrorSatisfies(error -> assertThat(((ResponseStatusException) error).getStatusCode().value()).isEqualTo(403))
+                    .verify();
+            assertThat(chain.calls).hasValue(0);
+        }
+    }
+
 }

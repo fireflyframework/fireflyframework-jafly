@@ -17,6 +17,7 @@
 package org.fireflyframework.webhooks.web.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.webhooks.core.domain.WebhookMetadata;
 import org.fireflyframework.webhooks.core.services.WebhookMetadataEnrichmentService;
 import org.fireflyframework.webhooks.core.services.WebhookProcessingService;
@@ -136,7 +137,7 @@ public class WebhookController {
         Instant startTime = Instant.now();
         UUID eventId = UUID.randomUUID();
 
-        log.info("Received webhook from provider: {} eventId: {}", providerName, eventId);
+        log.info("Received webhook from provider: {} eventId: {}", LogFields.text(providerName), eventId);
 
         // Record metrics
         metricsService.recordWebhookReceived(providerName);
@@ -216,12 +217,12 @@ public class WebhookController {
                     return response;
                 })
                 .doOnSuccess(response -> {
-                    log.info("Webhook processed successfully: {} from provider: {}", eventId, providerName);
+                    log.info("Webhook processed successfully: {} from provider: {}", eventId, LogFields.text(providerName));
                     metricsService.recordWebhookPublished(providerName);
                     metricsService.recordProcessingTime(providerName, startTime);
                 })
                 .doOnError(error -> {
-                    log.error("Error processing webhook from provider: {}", providerName, error);
+                    log.error("Error processing webhook from provider: {}", LogFields.text(providerName), error);
                     String errorType = error.getClass().getSimpleName();
                     metricsService.recordWebhookFailed(providerName, errorType);
                 });

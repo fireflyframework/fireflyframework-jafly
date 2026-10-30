@@ -12,7 +12,7 @@ CAPABILITIES = [
     ('external-services', 'External services', 'Connect HTTP, SOAP, gRPC, notifications, callbacks, and Agentic through explicit service and provider integrations.'),
     ('event-driven-integration', 'Event-driven integration', 'Use event contracts and transport adapters for in-process events, Kafka, RabbitMQ, PostgreSQL, and inbound webhooks.'),
     ('domain-and-data', 'Domain and data', 'Choose reactive data helpers, optional event history, cache providers, content storage, and signature adapters.'),
-    ('business-coordination', 'Business coordination', 'Coordinate workflows, compensating sagas, and try-confirm-cancel steps with explicit recovery and failure policies.'),
+    ('business-coordination', 'Business coordination', 'Coordinate workflows, compensating sagas, try-confirm-cancel steps, and restartable JDBC jobs with explicit recovery and failure policies.'),
     ('service-operations', 'Service operations', 'Connect application telemetry, HTTP conventions, health checks, and centralized configuration.'),
     ('team-wide-architecture', 'Team-wide architecture', 'Share a dependency train, build conventions, service-layer starters, common types, validation, and extension contracts.'),
 ]
@@ -29,7 +29,7 @@ def category(slug):
         return 3
     if slug.startswith(('cache', 'ecm')) or slug in ('r2dbc', 'eventsourcing'):
         return 4
-    if slug == 'orchestration':
+    if slug in ('orchestration', 'batch'):
         return 5
     if slug in ('web', 'observability', 'config-server'):
         return 6
@@ -44,7 +44,7 @@ LEAD_MODULES = [
     'client', 'client-complete-example', 'notifications', 'notifications-core', 'callbacks',
     'agentic-bridge', 'agentic-bridge-core', 'agentic-bridge-autoconfigure', 'agentic-bridge-starter',
     'eda', 'eda-kafka', 'eda-rabbitmq', 'eda-postgres', 'webhooks',
-    'r2dbc', 'eventsourcing', 'cache', 'ecm', 'orchestration', 'observability', 'web', 'config-server',
+    'r2dbc', 'eventsourcing', 'cache', 'ecm', 'orchestration', 'batch', 'observability', 'web', 'config-server',
     'parent', 'bom', 'kernel', 'utils', 'validators', 'starter-core', 'starter-domain',
     'starter-application', 'starter-data', 'backoffice', 'plugins', 'plugin-api', 'plugin-core',
 ]
@@ -78,6 +78,8 @@ def generated(root):
                 continue
             label = sentence_case(item['title'].removeprefix('Common ').removeprefix(': ').removesuffix(' Library'))
             lines.append('          - ' + json.dumps(label) + ': modules/' + item['slug'] + '.md')
+            if item['slug'] == 'web':
+                lines.append('          - "HTTP idempotency": modules/web-idempotency.md')
     return '\n'.join(lines) + '\n', json.dumps(capabilities, indent=2) + '\n'
 
 

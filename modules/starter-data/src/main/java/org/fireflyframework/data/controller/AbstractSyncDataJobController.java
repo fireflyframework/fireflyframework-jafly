@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.data.model.JobStageRequest;
@@ -119,13 +120,13 @@ public abstract class AbstractSyncDataJobController implements SyncDataJobContro
                                          String requestId,
                                          String initiator,
                                          String metadata) {
-        log.info("Received synchronous job execution request - jobName: {}, parameters: {}, requestId: {}, initiator: {}",
-                syncDataJobService.getJobName(),
-                parameters != null ? parameters.keySet() : "none",
-                requestId,
-                initiator);
-        log.debug("Full synchronous job request - jobName: {}, parameters: {}, metadata: {}",
-                syncDataJobService.getJobName(), parameters, metadata);
+        log.info("Received synchronous job execution request - jobName: {}, parametersPresent: {}, requestId: {}, initiator: {}",
+                LogFields.text(syncDataJobService.getJobName()),
+                parameters != null,
+                LogFields.text(requestId),
+                LogFields.text(initiator));
+        log.debug("Synchronous job request diagnostics - jobName: {}, parametersPresent: {}, metadataPresent: {}",
+                LogFields.text(syncDataJobService.getJobName()), parameters != null, metadata != null);
 
         // Parse metadata if provided
         Map<String, String> metadataMap = parseMetadata(metadata);
@@ -141,22 +142,22 @@ public abstract class AbstractSyncDataJobController implements SyncDataJobContro
         return syncDataJobService.execute(request)
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
-                        log.info("Synchronous job completed successfully - jobName: {}, executionId: {}, dataKeys: {}",
-                                syncDataJobService.getJobName(),
-                                response.getExecutionId(),
-                                response.getData() != null ? response.getData().keySet() : "none");
+                        log.info("Synchronous job completed successfully - jobName: {}, executionId: {}, dataPresent: {}",
+                                LogFields.text(syncDataJobService.getJobName()),
+                                LogFields.text(response.getExecutionId()),
+                                response.getData() != null);
                     } else {
                         log.warn("Synchronous job completed with failure - jobName: {}, executionId: {}, message: {}",
-                                syncDataJobService.getJobName(),
-                                response.getExecutionId(),
-                                response.getMessage());
+                                LogFields.text(syncDataJobService.getJobName()),
+                                LogFields.text(response.getExecutionId()),
+                                LogFields.text(response.getMessage()));
                     }
-                    log.debug("Full synchronous job response - jobName: {}, executionId: {}, response: {}",
-                            syncDataJobService.getJobName(), response.getExecutionId(), response);
+                    log.debug("Synchronous job response diagnostics - jobName: {}, executionId: {}, responseType: {}",
+                            LogFields.text(syncDataJobService.getJobName()), LogFields.text(response.getExecutionId()), LogFields.text(response.getClass().getName()));
                 })
                 .doOnError(error -> {
                     log.error("Synchronous job failed - jobName: {}, error: {}",
-                            syncDataJobService.getJobName(), error.getMessage(), error);
+                            LogFields.text(syncDataJobService.getJobName()), LogFields.text(error.getMessage()), error);
                 });
     }
 
@@ -176,7 +177,7 @@ public abstract class AbstractSyncDataJobController implements SyncDataJobContro
             Map<String, String> metadataMap = objectMapper.readValue(metadata, Map.class);
             return metadataMap;
         } catch (JsonProcessingException e) {
-            log.warn("Failed to parse metadata JSON, using empty map: {}", e.getMessage());
+            log.warn("Failed to parse metadata JSON, using empty map - exceptionType: {}", LogFields.text(e.getClass().getSimpleName()));
             return new HashMap<>();
         }
     }

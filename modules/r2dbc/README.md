@@ -20,7 +20,7 @@ The tutorial saves applications in a process-local map. An application-owned R2D
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -41,6 +41,22 @@ spring:
     user: app
     password: secret
 ```
+
+### Optional UTC auditing
+
+For `LocalDateTime`, `OffsetDateTime`, and `Instant` audit fields, expose `new org.fireflyframework.core.auditing.UtcOffsetDateTimeProvider(Clock.systemUTC())` as a `DateTimeProvider` bean and select its name with `@EnableR2dbcAuditing(dateTimeProviderRef = "yourBeanName")`. The injected clock is normalized to UTC. Spring Data retains create/update, immutable entity, and auditing flag behavior. This helper is opt-in; it does not enable auditing or register a bean automatically. Legacy `Date` and `Long` audit fields are unsupported by this provider.
+
+### Opt-in bounded root transactions
+
+The source tree provides `BoundedRootTransaction` and `impl.DefaultBoundedRootTransaction` for an application-owned R2DBC transaction with a finite operation budget. Use a source build containing these classes until the corresponding release is published. This API does not register beans or change the default transaction manager.
+
+Build one `OwnedLeaseConnectionFactory` around the application connection factory, then construct the actual `DatabaseClient`, customized `R2dbcEntityTemplate`, Spring Data repositories, and `R2dbcTransactionManager` with that same wrapper. `BoundedR2dbcResources.verify` checks the factory/client/template/manager identities; preserve the host converter, callbacks, and repository configuration. The helper refuses an ambient transaction rather than joining another owner's work. It owns individual acquired leases and never closes the application pool.
+
+Capture the monotonic anchor before obtaining an original observation. Pass its original observation time, absolute expiration, explicit maximum duration, clock, and the same monotonic supplier to `R2dbcOperationBudget.observed`. Execute with a `PROPAGATION_REQUIRED` transaction definition and return one result; other propagation modes are refused. Compose an already observed dependency limit with `original.intersect(inherited)` before passing the budget to `execute`, so connection acquisition and transaction begin use the earlier bound. Use `RootTransactionScope.narrow` when a later native observation or dependency imposes an earlier bound. Original and narrowed budgets must share the identical `Clock` object and monotonic supplier. Budget checks include acquisition, transaction completion, and final cleanup; an expired budget does not grant a fresh timeout. Configure rollback and close limits separately with `CleanupPolicy`.
+
+`RootCompletion` exposes a value only after successful bounded completion. `RootTransactionException` exposes payload-free `TransactionFacts` and `CleanupFact`: commit acknowledgment and completed transaction boundary are separate observations. Timeout, cancellation, or cleanup failure can leave the business outcome uncertain. The application must recover through its authoritative action/receipt protocol. These technical facts establish no authentication, authorization, financial finality, or proof that no business effect occurred.
+
+Run the module and its reactor dependencies with `./mvnw -B -ntp -pl :fireflyframework-r2dbc -am verify`. The transaction tests exercise actual Spring transaction infrastructure with controlled R2DBC connections; native PostgreSQL and application journeys require separate integration tests.
 
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 

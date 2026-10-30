@@ -18,6 +18,7 @@ package org.fireflyframework.webhooks.core.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.observability.metrics.FireflyMetricsSupport;
 import org.springframework.stereotype.Service;
 
@@ -38,33 +39,33 @@ public class WebhookMetricsService extends FireflyMetricsSupport {
 
     public void recordWebhookReceived(String providerName) {
         counter("received", "provider", providerName).increment();
-        log.debug("Recorded webhook received for provider: {}", providerName);
+        log.debug("Recorded webhook received for provider: {}", LogFields.text(providerName));
     }
 
     public void recordWebhookPublished(String providerName) {
         counter("published", "provider", providerName).increment();
-        log.debug("Recorded webhook published for provider: {}", providerName);
+        log.debug("Recorded webhook published for provider: {}", LogFields.text(providerName));
     }
 
     public void recordWebhookFailed(String providerName, String errorType) {
         counter("failed", "provider", providerName, "error.type", errorType).increment();
-        log.debug("Recorded webhook failure for provider: {}, error: {}", providerName, errorType);
+        log.debug("Recorded webhook failure for provider: {}, error: {}", LogFields.text(providerName), LogFields.text(errorType));
     }
 
     public void recordWebhookRejected(String providerName, String reason) {
         counter("rejected", "provider", providerName, "reason", reason).increment();
-        log.debug("Recorded webhook rejection for provider: {}, reason: {}", providerName, reason);
+        log.debug("Recorded webhook rejection for provider: {}, reason: {}", LogFields.text(providerName), LogFields.text(reason));
     }
 
     public void recordDuplicateWebhook(String providerName) {
         counter("duplicates", "provider", providerName).increment();
-        log.debug("Recorded duplicate webhook for provider: {}", providerName);
+        log.debug("Recorded duplicate webhook for provider: {}", LogFields.text(providerName));
     }
 
     public void recordProcessingTime(String providerName, Instant startTime) {
         Duration duration = Duration.between(startTime, Instant.now());
         timer("processing.time", "provider", providerName).record(duration);
-        log.debug("Recorded processing time for provider: {} - {}ms", providerName, duration.toMillis());
+        log.debug("Recorded processing time for provider: {} - {}ms", LogFields.text(providerName), duration.toMillis());
     }
 
     public void recordPayloadSize(String providerName, long sizeBytes) {

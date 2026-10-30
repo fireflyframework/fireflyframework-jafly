@@ -22,6 +22,10 @@ import org.fireflyframework.kernel.exception.FireflyException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class for resolving generic type parameters at runtime.
@@ -77,31 +81,10 @@ public final class GenericTypeResolver {
         log.debug("Resolving generic type for class: {} extending/implementing: {} at index: {}",
             implementationClass.getName(), targetClass.getName(), typeParameterIndex);
 
-        // Walk up the class hierarchy
-        Class<?> currentClass = implementationClass;
-        while (currentClass != null && currentClass != Object.class) {
-            
-            // Check direct interfaces
-            Type[] interfaces = currentClass.getGenericInterfaces();
-            for (Type interfaceType : interfaces) {
-                Class<T> resolvedType = extractTypeFromInterface(interfaceType, targetClass, typeParameterIndex);
-                if (resolvedType != null) {
-                    log.debug("Resolved generic type: {} for class: {}", resolvedType.getName(), implementationClass.getName());
-                    return resolvedType;
-                }
-            }
-
-            // Check superclass
-            Type superclass = currentClass.getGenericSuperclass();
-            if (superclass instanceof ParameterizedType) {
-                Class<T> resolvedType = extractTypeFromSuperclass(superclass, targetClass, typeParameterIndex, currentClass);
-                if (resolvedType != null) {
-                    log.debug("Resolved generic type from superclass: {} for class: {}", resolvedType.getName(), implementationClass.getName());
-                    return resolvedType;
-                }
-            }
-            
-            currentClass = currentClass.getSuperclass();
+        Class<T> resolvedType = resolveFromHierarchy(implementationClass, targetClass, typeParameterIndex, Map.of());
+        if (resolvedType != null) {
+            log.debug("Resolved generic type: {} for class: {}", resolvedType.getName(), implementationClass.getName());
+            return resolvedType;
         }
 
         log.error("Could not resolve generic type for class: {} extending/implementing: {} at index: {}\n{}",
@@ -110,77 +93,61 @@ public final class GenericTypeResolver {
         return null;
     }
 
-    /**
-     * Extracts type information from a parameterized interface.
-     */
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> extractTypeFromInterface(Type interfaceType,
-                                                         Class<?> targetClass,
-                                                         int typeParameterIndex) {
-        if (!(interfaceType instanceof ParameterizedType)) {
+    private static <T> Class<T> resolveFromHierarchy(Type type, Class<?> targetClass,
+                                                    int typeParameterIndex,
+                                                    Map<TypeVariable<?>, Type> inheritedBindings) {
+        Class<?> rawClass;
+        Map<TypeVariable<?>, Type> bindings = new HashMap<>(inheritedBindings);
+        if (type instanceof ParameterizedType parameterizedType) {
+            rawClass = (Class<?>) parameterizedType.getRawType();
+            TypeVariable<?>[] parameters = rawClass.getTypeParameters();
+            Type[] arguments = parameterizedType.getActualTypeArguments();
+            for (int i = 0; i < parameters.length; i++) {
+                bindings.put(parameters[i], resolveBinding(arguments[i], inheritedBindings));
+            }
+        } else if (type instanceof Class<?> typeClass) {
+            rawClass = typeClass;
+        } else {
             return null;
         }
 
-        ParameterizedType parameterizedType = (ParameterizedType) interfaceType;
-        Type rawType = parameterizedType.getRawType();
-
-        // Check if this is the target interface
-        if (rawType.equals(targetClass)) {
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-
-            if (typeParameterIndex >= typeArguments.length) {
-                log.warn("Type parameter index {} is out of bounds for interface {} with {} type arguments",
-                    typeParameterIndex, targetClass.getName(), typeArguments.length);
+        if (rawClass == targetClass) {
+            TypeVariable<?>[] parameters = rawClass.getTypeParameters();
+            if (typeParameterIndex >= parameters.length) {
                 return null;
             }
-
-            Type typeArgument = typeArguments[typeParameterIndex];
-            if (typeArgument instanceof Class) {
-                return (Class<T>) typeArgument;
-            } else if (typeArgument instanceof ParameterizedType) {
-                Type rawTypeArg = ((ParameterizedType) typeArgument).getRawType();
-                if (rawTypeArg instanceof Class) {
-                    return (Class<T>) rawTypeArg;
-                }
+            Type argument = resolveBinding(parameters[typeParameterIndex], bindings);
+            if (argument instanceof Class<?> argumentClass) {
+                return (Class<T>) argumentClass;
             }
-        }
-
-        return null;
-    }
-
-    /**
-     * Extracts type information from a parameterized superclass.
-     */
-    @SuppressWarnings("unchecked")
-    private static <T> Class<T> extractTypeFromSuperclass(Type superclass,
-                                                          Class<?> targetClass,
-                                                          int typeParameterIndex,
-                                                          Class<?> currentClass) {
-        if (!(superclass instanceof ParameterizedType)) {
+            if (argument instanceof ParameterizedType parameterizedArgument) {
+                return (Class<T>) parameterizedArgument.getRawType();
+            }
             return null;
         }
 
-        ParameterizedType parameterizedSuperclass = (ParameterizedType) superclass;
-        Class<?> superclassRaw = (Class<?>) parameterizedSuperclass.getRawType();
-
-        // Check if this superclass IS the target class (for abstract classes like CommandHandler)
-        if (superclassRaw.equals(targetClass)) {
-            Type[] typeArguments = parameterizedSuperclass.getActualTypeArguments();
-            if (typeArguments.length > typeParameterIndex) {
-                Type typeArg = typeArguments[typeParameterIndex];
-                if (typeArg instanceof Class) {
-                    return (Class<T>) typeArg;
-                } else if (typeArg instanceof ParameterizedType) {
-                    Type rawTypeArg = ((ParameterizedType) typeArg).getRawType();
-                    if (rawTypeArg instanceof Class) {
-                        return (Class<T>) rawTypeArg;
-                    }
-                }
+        for (Type interfaceType : rawClass.getGenericInterfaces()) {
+            Class<T> resolvedType = resolveFromHierarchy(interfaceType, targetClass, typeParameterIndex, bindings);
+            if (resolvedType != null) {
+                return resolvedType;
             }
         }
+        Type superclass = rawClass.getGenericSuperclass();
+        return superclass != null ? resolveFromHierarchy(superclass, targetClass, typeParameterIndex, bindings) : null;
+    }
 
-        // Recursively check if the superclass implements the target interface (for interfaces)
-        return resolveGenericType(superclassRaw, targetClass, typeParameterIndex);
+    private static Type resolveBinding(Type type, Map<TypeVariable<?>, Type> bindings) {
+        Set<Type> visited = new HashSet<>();
+        while (type instanceof TypeVariable<?> && visited.add(type)) {
+            Type binding = bindings.get(type);
+            if (binding == null) {
+                break;
+            }
+            type = binding;
+        }
+        // Unbound variables stay unresolved rather than becoming their upper bounds.
+        return type;
     }
 
     /**

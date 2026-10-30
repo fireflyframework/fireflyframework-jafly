@@ -24,7 +24,7 @@ The tutorial saves applications in a process-local map. An application-owned R2D
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-r2dbc</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -45,6 +45,18 @@ spring:
     user: app
     password: secret
 ```
+
+### Opt-in bounded root transactions
+
+The source tree provides `BoundedRootTransaction` and `impl.DefaultBoundedRootTransaction` for an application-owned R2DBC transaction with a finite operation budget. Use a source build containing these classes until the corresponding release is published. This API does not register beans or change the default transaction manager.
+
+Build one `OwnedLeaseConnectionFactory` around the application connection factory, then construct the actual `DatabaseClient`, customized `R2dbcEntityTemplate`, Spring Data repositories, and `R2dbcTransactionManager` with that same wrapper. `BoundedR2dbcResources.verify` checks the factory/client/template/manager identities; preserve the host converter, callbacks, and repository configuration. The helper refuses an ambient transaction rather than joining another owner's work. It owns individual acquired leases and never closes the application pool.
+
+Capture the monotonic anchor before obtaining an original observation. Pass its original observation time, absolute expiration, explicit maximum duration, clock, and the same monotonic supplier to `R2dbcOperationBudget.observed`. Execute with a `PROPAGATION_REQUIRED` transaction definition and return one result; other propagation modes are refused. Compose an already observed dependency limit with `original.intersect(inherited)` before passing the budget to `execute`, so connection acquisition and transaction begin use the earlier bound. Use `RootTransactionScope.narrow` when a later native observation or dependency imposes an earlier bound. Original and narrowed budgets must share the identical `Clock` object and monotonic supplier. Budget checks include acquisition, transaction completion, and final cleanup; an expired budget does not grant a fresh timeout. Configure rollback and close limits separately with `CleanupPolicy`.
+
+`RootCompletion` exposes a value only after successful bounded completion. `RootTransactionException` exposes payload-free `TransactionFacts` and `CleanupFact`: commit acknowledgment and completed transaction boundary are separate observations. Timeout, cancellation, or cleanup failure can leave the business outcome uncertain. The application must recover through its authoritative action/receipt protocol. These technical facts establish no authentication, authorization, financial finality, or proof that no business effect occurred.
+
+Run the module and its reactor dependencies with `./mvnw -B -ntp -pl :fireflyframework-r2dbc -am verify`. The transaction tests exercise actual Spring transaction infrastructure with controlled R2DBC connections; native PostgreSQL and application journeys require separate integration tests.
 
 ### 2. Define an entity, a filter DTO, and a paginated endpoint
 
@@ -184,6 +196,23 @@ firefly:
 Both beans use `matchIfMissing = true`, so they are active by default and back off cleanly if the host service disables observability or the underlying classes/beans (`MeterRegistry`, `ConnectionFactory`) are absent. The `ReactiveTransactionManager` and the springdoc `FilterParameterCustomizer` are both `@ConditionalOnMissingBean`, so you can override either by declaring your own bean.
 
 This module ships an `application-logging.yml` profile fragment that sets `org.springframework.data.r2dbc` and `io.r2dbc` logging to `INFO`.
+
+### Conditional database infrastructure
+
+R2DBC utility types can be present transitively in a service that owns no database. Their presence does not require that service to create a connection factory, entity template, or transaction manager. In this source version, database integration activates only when its runtime prerequisites exist:
+
+| Available infrastructure | Framework behavior |
+| --- | --- |
+| No R2DBC/transaction runtime classes | Database auto-configuration backs off before loading its dependent beans |
+| Classes present, no entity template or connection factory | No database template initialization or transaction-manager creation |
+| Application or Boot provides `R2dbcEntityTemplate` | Initialize `FilterUtils` after Boot's data R2DBC auto-configuration |
+| One candidate `ConnectionFactory`, no existing reactive transaction manager | Provide `R2dbcTransactionManager` if Boot has not already supplied one |
+| Existing `ReactiveTransactionManager` | Preserve the application's selected manager |
+| Several connection factories without a primary candidate | Do not choose an arbitrary database; configure the intended transaction boundary explicitly |
+
+This conditional behavior concerns framework infrastructure. It does not disable Spring Boot's own database auto-configuration selected by a data starter. A service that includes that starter must still configure its database or deliberately exclude the unused Boot data configuration. Database-free services should depend only on the facilities they actually use.
+
+`FilterUtils` uses a process-wide template reference. Applications with multiple independently selected databases must define the supported filtering/database boundary explicitly; these conditions do not introduce multitenant database routing.
 
 ### How It Works
 

@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.enrichment.EnricherMetadataReader;
 import org.fireflyframework.data.service.DataEnricher;
 import org.fireflyframework.data.service.DataEnricherRegistry;
@@ -183,7 +184,7 @@ public class EnrichmentDiscoveryController {
             @RequestParam(required = false) UUID tenantId) {
 
         log.info("Received request to list providers" +
-                (type != null ? " for type: " + type : "") +
+                (type != null ? " for type: " + LogFields.text(type) : "") +
                 (tenantId != null ? " for tenant: " + tenantId : ""));
 
         return Mono.fromSupplier(() -> {
@@ -241,7 +242,7 @@ public class EnrichmentDiscoveryController {
                     .collect(Collectors.toList());
 
             log.info("Found {} enrichers" +
-                    (type != null ? " for type: " + type : "") +
+                    (type != null ? " for type: " + LogFields.text(type) : "") +
                     (tenantId != null ? " for tenant: " + tenantId : ""),
                     providers.size());
 

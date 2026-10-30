@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
@@ -151,10 +152,14 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
         String orchestratorType = getOrchestratorType();
 
         // Log stage start with request details
-        log.info("Starting {} stage - executionId: {}, parameters: {}",
-                stage, executionId, request.getParameters() != null ? request.getParameters().keySet() : "none");
-        log.debug("Full request details for {} stage - executionId: {}, request: {}",
-                stage, executionId, request);
+        log.info("Starting {} stage - executionId: {}, parametersPresent: {}",
+                stage,
+                LogFields.text(executionId),
+                request.getParameters() != null);
+        log.debug("Request type for {} stage - executionId: {}, requestType: {}",
+                stage,
+                LogFields.text(executionId),
+                JobStageRequest.class.getSimpleName());
 
         // Record audit entry for operation started
         if (auditService != null) {
@@ -179,7 +184,10 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
                     .timeout(timeout)
                     .onErrorResume(java.util.concurrent.TimeoutException.class, e -> {
                         Duration duration = Duration.between(startTime, Instant.now());
-                        log.warn("Job stage {} timed out after {} - executionId: {}", stage, timeout, executionId);
+                        log.warn("Job stage {} timed out after {} - executionId: {}",
+                                stage,
+                                timeout,
+                                LogFields.text(executionId));
                         metricsService.recordJobError(stage, "TimeoutException");
                         metricsService.incrementJobStageCounter(stage, "timeout");
                         return Mono.just(JobStageResponse.failure(stage, executionId,
@@ -190,7 +198,7 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
         // Add metrics, logging, and persistence
         return resilientOperation
                 .doOnSubscribe(subscription -> {
-                    log.debug("Subscribed to {} stage operation for execution {}", stage, executionId);
+                    log.debug("Subscribed to {} stage operation for execution {}", stage, LogFields.text(executionId));
                 })
                 .doOnSuccess(response -> {
                     Duration duration = Duration.between(startTime, Instant.now());
@@ -225,14 +233,22 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
 
                     if (response.isSuccess()) {
                         log.info("Successfully completed {} stage - executionId: {}, duration: {}ms, status: {}",
-                                stage, executionId, duration.toMillis(), response.getStatus());
-                        log.debug("Response details for {} stage - executionId: {}, data keys: {}, message: {}",
-                                stage, executionId,
-                                response.getData() != null ? response.getData().keySet() : "none",
-                                response.getMessage());
+                                stage,
+                                LogFields.text(executionId),
+                                duration.toMillis(),
+                                response.getStatus());
+                        log.debug("Response details for {} stage - executionId: {}, dataPresent: {}, responseType: {}",
+                                stage,
+                                LogFields.text(executionId),
+                                response.getData() != null,
+                                JobStageResponse.class.getSimpleName());
                     } else {
-                        log.warn("Completed {} stage with failure - executionId: {}, duration: {}ms, status: {}, message: {}",
-                                stage, executionId, duration.toMillis(), response.getStatus(), response.getMessage());
+                        log.warn("Completed {} stage with failure - executionId: {}, duration: {}ms, status: {}, responseType: {}",
+                                stage,
+                                LogFields.text(executionId),
+                                duration.toMillis(),
+                                response.getStatus(),
+                                JobStageResponse.class.getSimpleName());
                     }
                 })
                 .doOnError(error -> {
@@ -264,13 +280,21 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
                         eventPublisher.publishJobFailed(executionId, request.getJobType(), error.getMessage(), error);
                     }
 
-                    log.error("Failed {} stage - executionId: {}, duration: {}ms, errorType: {}, errorMessage: {}",
-                            stage, executionId, duration.toMillis(), error.getClass().getSimpleName(), error.getMessage());
-                    log.debug("Full error details for {} stage - executionId: {}", stage, executionId, error);
+                    log.error("Failed {} stage - executionId: {}, duration: {}ms, errorType: {}",
+                            stage,
+                            LogFields.text(executionId),
+                            duration.toMillis(),
+                            LogFields.errorType(error));
+                    log.debug("Error type details for {} stage - executionId: {}, errorType: {}",
+                            stage,
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                 })
                 .onErrorResume(error -> {
-                    log.warn("Returning failure response for {} stage - executionId: {}, error: {}",
-                            stage, executionId, error.getMessage());
+                    log.warn("Returning failure response for {} stage - executionId: {}, errorType: {}",
+                            stage,
+                            LogFields.text(executionId),
+                            LogFields.errorType(error));
                     // Return a failure response instead of propagating the error
                     return Mono.just(JobStageResponse.failure(
                             stage,

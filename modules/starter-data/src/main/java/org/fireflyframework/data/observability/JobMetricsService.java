@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.observability;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.orchestration.model.JobExecutionStatus;
@@ -59,7 +60,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 "orchestrator", properties.getOrchestratorType())
                 .record(duration);
 
-        log.debug("Recorded metric for stage {} with status {} and duration {}", stage, status, duration);
+        log.debug("Recorded metric for stage {} with status {} and duration {}", stage, LogFields.text(status), duration);
     }
 
     /**
@@ -76,7 +77,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 "orchestrator", properties.getOrchestratorType())
                 .increment();
 
-        log.debug("Incremented counter for stage {} with status {}", stage, status);
+        log.debug("Incremented counter for stage {} with status {}", stage, LogFields.text(status));
     }
 
     /**
@@ -93,7 +94,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 "orchestrator", properties.getOrchestratorType())
                 .increment();
 
-        log.debug("Recorded job execution start for {}", executionId);
+        log.debug("Recorded job execution start for {}", LogFields.text(executionId));
     }
 
     /**
@@ -114,7 +115,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                     .record(duration);
 
             log.debug("Recorded job execution completion for {} with status {} and duration {}",
-                    executionId, status, duration);
+                    LogFields.text(executionId), status, duration);
         }
 
         counter("execution.completed",
@@ -137,7 +138,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 "orchestrator", properties.getOrchestratorType())
                 .increment();
 
-        log.debug("Recorded error for stage {} with type {}", stage, errorType);
+        log.debug("Recorded error for stage {} with type {}", stage, LogFields.text(errorType));
     }
 
     /**
@@ -154,7 +155,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 .record(duration);
 
         log.debug("Recorded mapper execution for {} with status {} and duration {}",
-                mapperName, success ? "success" : "failure", duration);
+                LogFields.text(mapperName), success ? "success" : "failure", duration);
     }
 
     /**
@@ -172,7 +173,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 .record(duration);
 
         log.debug("Recorded orchestrator operation {} with status {} and duration {}",
-                operation, success ? "success" : "failure", duration);
+                LogFields.text(operation), success ? "success" : "failure", duration);
     }
 
     /**
@@ -237,7 +238,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
         }
 
         log.debug("Recorded enrichment metrics: type={}, provider={}, success={}, duration={}ms",
-                enrichmentType, providerName, success, durationMillis);
+                LogFields.text(enrichmentType), LogFields.text(providerName), success, durationMillis);
     }
 
     /**
@@ -263,7 +264,7 @@ public class JobMetricsService extends FireflyMetricsSupport {
                 .increment();
 
         log.debug("Recorded enrichment error: type={}, provider={}, errorType={}",
-                enrichmentType, providerName, errorType);
+                LogFields.text(enrichmentType), LogFields.text(providerName), LogFields.text(errorType));
     }
 
     private boolean isMetricsEnabled() {

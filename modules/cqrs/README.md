@@ -6,6 +6,8 @@ Separate commands and queries with reactive dispatch, execution context, validat
 
 Define command/query messages and their handlers, then invoke the appropriate bus. Configure timeouts and query caching through firefly.cqrs; use the EDA integration only when the event transport has also been configured.
 
+Query-result caching requires an explicit `Query.getCacheKey()` implementation; the default returns `null`. A query class name or metadata hash cannot identify all result-affecting inputs. Include the relevant trusted tenant, subject/policy scope, resource identifiers, filters, pagination, and version in a deliberately designed key. Keep credentials and personal data out of keys. Both query-bus overloads honor `isCacheable()` and `@QueryHandlerComponent(cacheable = false)`. Use uncached handlers when a caller needs current authoritative state; supplying an execution context does not add that context to a custom key automatically.
+
 [Module guide](../../docs/site/modules/cqrs.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
 ## Installation
@@ -16,7 +18,7 @@ Define command/query messages and their handlers, then invoke the appropriate bu
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

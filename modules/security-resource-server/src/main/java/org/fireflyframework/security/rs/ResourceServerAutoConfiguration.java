@@ -17,6 +17,7 @@
 package org.fireflyframework.security.rs;
 
 import org.fireflyframework.security.api.domain.SigningKey;
+import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.core.authority.AuthorityMappingProperties;
 import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapper;
 import org.fireflyframework.security.core.audit.LoggingAuditEventAdapter;
@@ -24,6 +25,7 @@ import org.fireflyframework.security.core.context.PrincipalFactory;
 import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapter;
 import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapter;
 import org.fireflyframework.security.core.policy.PolicyRule;
+import org.fireflyframework.security.core.tenant.ConfigurableTenantResolver;
 import org.fireflyframework.security.spi.AuditEventPort;
 import org.fireflyframework.security.spi.AuthorityMappingPort;
 import org.fireflyframework.security.spi.KeyManagementPort;
@@ -50,10 +52,10 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import reactor.core.publisher.Mono;
@@ -97,8 +99,14 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public PolicyDecisionPort fireflyPolicyDecisionPort(ObjectProvider<PolicyRule> rules,
+                                                       ResourceServerProperties properties) {
+        return new EmbeddedPolicyDecisionAdapter(rules.orderedStream().toList(), properties.isStrictPolicy());
+    }
+
+    /** Preserves direct factory callers that explicitly rely on the legacy RBAC deferral. */
     public PolicyDecisionPort fireflyPolicyDecisionPort(ObjectProvider<PolicyRule> rules) {
-        return new EmbeddedPolicyDecisionAdapter(rules.orderedStream().toList());
+        return fireflyPolicyDecisionPort(rules, new ResourceServerProperties());
     }
 
     @Bean
@@ -115,8 +123,27 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(PrincipalFactory principalFactory) {
-        return new JwtToFireflyPrincipalConverter(principalFactory);
+    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(
+            PrincipalFactory principalFactory, ResourceServerProperties properties) {
+        List<String> paths = properties.getTenantClaimPaths();
+        if (paths == null || paths.stream().anyMatch(path -> path == null || path.isBlank()
+                || java.util.Arrays.stream(path.split("\\.", -1)).anyMatch(String::isBlank))) {
+            throw new IllegalArgumentException("Valid tenant claim paths are required");
+        }
+        if (paths.isEmpty()) {
+            if (properties.isTenantRequired()) {
+                throw new IllegalArgumentException("Required tenant projection needs configured claim paths");
+            }
+            return new JwtToFireflyPrincipalConverter(principalFactory);
+        }
+        return new JwtToFireflyPrincipalConverter(principalFactory,
+                new ConfigurableTenantResolver(paths), properties.isTenantRequired());
+    }
+
+    /** Preserves direct callers that use the unconfigured single-tenant projection. */
+    public Converter<Jwt, Mono<AbstractAuthenticationToken>> fireflyJwtAuthenticationConverter(
+            PrincipalFactory principalFactory) {
+        return fireflyJwtAuthenticationConverter(principalFactory, new ResourceServerProperties());
     }
 
     @Bean
@@ -151,7 +178,7 @@ public class ResourceServerAutoConfiguration {
 
     private static List<OAuth2TokenValidator<Jwt>> buildValidators(ResourceServerProperties properties) {
         List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
-        validators.add(new JwtTimestampValidator());
+        validators.add(AccessTokenValidators.timestamps());
         if (properties.getIssuer() != null && !properties.getIssuer().isBlank()) {
             validators.add(new JwtIssuerValidator(properties.getIssuer()));
         }
@@ -170,10 +197,17 @@ public class ResourceServerAutoConfiguration {
             PolicyDecisionPort policyDecisionPort,
             ResourceServerProperties properties) {
 
-        PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(policyDecisionPort);
+        PolicyDecisionPort urlPolicy = properties.isStrictPolicy()
+                ? (principal, action, resource, context) -> policyDecisionPort
+                        .authorize(principal, action, resource, context)
+                        .timeout(Duration.ofSeconds(5))
+                        .map(decision -> decision.obligations().isEmpty() ? decision
+                                : Decision.deny("URL enforcement cannot fulfill policy obligations"))
+                : policyDecisionPort;
+        PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(urlPolicy);
 
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)

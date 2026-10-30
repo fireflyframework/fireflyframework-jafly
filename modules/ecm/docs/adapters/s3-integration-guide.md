@@ -26,14 +26,14 @@ Add the S3 adapter dependency to your `pom.xml`:
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm</artifactId>
-        <version>26.10.21-SNAPSHOT</version>
+        <version>26.10.22</version>
     </dependency>
     
     <!-- S3 Adapter -->
     <dependency>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-ecm-storage-aws</artifactId>
-        <version>26.10.21-SNAPSHOT</version>
+        <version>26.10.22</version>
     </dependency>
 </dependencies>
 ```

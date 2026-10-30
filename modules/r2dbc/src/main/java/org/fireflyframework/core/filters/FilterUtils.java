@@ -3,6 +3,7 @@ package org.fireflyframework.core.filters;
 import org.fireflyframework.core.queries.PaginationRequest;
 import org.fireflyframework.core.queries.PaginationResponse;
 import org.fireflyframework.core.queries.PaginationUtils;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.utils.annotations.FilterableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -100,7 +101,7 @@ public class FilterUtils {
         public Mono<PaginationResponse<D>> filter(FilterRequest<?> filterRequest) {
             Criteria criteria = buildCriteria(filterRequest); // Build Criteria from the filter request
 
-            log.info("pagination request is {}", filterRequest.getPagination());
+            log.info("Pagination request present={}", filterRequest.getPagination() != null);
             // Use default pagination if no pagination provided in request
             PaginationRequest paginationRequest = filterRequest.getPagination() != null ?
                     filterRequest.getPagination() :
@@ -223,17 +224,9 @@ public class FilterUtils {
                                 criteriaList.add(Criteria.where(field.getName()).like("%" + stringValue + "%"));
                             }
                         }
-                        // Handle Enum types
-                        else if (field.getType().isEnum() || value.getClass().isEnum()) {
-                            // For Enum types, we use the exact match with the Enum's name or the Enum itself
-                            // depending on how the database stores the enum (as string or as ordinal)
-                            if (value instanceof String) {
-                                // If the value is already a String, use it directly
-                                criteriaList.add(Criteria.where(field.getName()).is(value));
-                            } else {
-                                // If the value is an Enum, use its name for matching
-                                criteriaList.add(Criteria.where(field.getName()).is(((Enum<?>) value).name()));
-                            }
+                        // Retain the enum type so registered persistence converters choose its representation.
+                        else if (value instanceof Enum<?>) {
+                            criteriaList.add(Criteria.where(field.getName()).is(value));
                         }
                         // Exact match for other types of fields
                         else if (!(value instanceof String)) {
@@ -241,9 +234,9 @@ public class FilterUtils {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    log.error("Error accessing field: {}", field.getName(), e); // Log error for inaccessible fields
+                    log.error("Error accessing field {}: type={}", field.getName(), LogFields.errorType(e)); // Log error for inaccessible fields
                 } catch (Exception e) {
-                    log.error("Unexpected error processing filter field {}: {}", field.getName(), e.getMessage(), e);
+                    log.error("Unexpected error processing filter field {}: type={}", field.getName(), LogFields.errorType(e));
                 }
             }
 
@@ -282,7 +275,7 @@ public class FilterUtils {
             rangeFilters.getRanges().forEach((fieldName, range) -> {
                 // Skip ID fields for range filters
                 if (isAnyIdField(fieldName, entityClass)) {
-                    log.debug("Skipping range filter for ID field: {}", fieldName);
+                    log.debug("Skipping range filter for ID field: {}", LogFields.text(fieldName));
                     return;
                 }
 

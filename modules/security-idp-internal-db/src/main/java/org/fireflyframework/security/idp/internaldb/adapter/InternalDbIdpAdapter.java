@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.internaldb.adapter;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
 import org.fireflyframework.security.idp.dtos.*;
 import org.fireflyframework.security.idp.internaldb.repository.SessionRepository;
@@ -68,12 +69,12 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<ResponseEntity<TokenResponse>> login(LoginRequest request) {
-        log.debug("Login request for user: {}", request.getUsername());
+        log.debug("Login request for user: {}", LogFields.text(request.getUsername()));
 
         return authenticationService.authenticate(request.getUsername(), request.getPassword())
                 .map(tokenResponse -> ResponseEntity.ok(tokenResponse))
                 .onErrorResume(e -> {
-                    log.error("Login failed for user {}: {}", request.getUsername(), e.getMessage());
+                    log.error("Login failed for user {}: errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                             .body(TokenResponse.builder().build()));
                 });
@@ -86,7 +87,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
         return authenticationService.refreshToken(request.getRefreshToken())
                 .map(tokenResponse -> ResponseEntity.ok(tokenResponse))
                 .onErrorResume(e -> {
-                    log.error("Token refresh failed: {}", e.getMessage());
+                    log.error("Token refresh failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                             .body(TokenResponse.builder().build()));
                 });
@@ -98,7 +99,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
         return authenticationService.logout(request.getAccessToken(), request.getRefreshToken())
                 .onErrorResume(e -> {
-                    log.error("Logout failed: {}", e.getMessage());
+                    log.error("Logout failed: errorType={}", LogFields.errorType(e));
                     return Mono.empty();
                 });
     }
@@ -135,7 +136,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                         return Mono.just(ResponseEntity.ok(response));
 
                     } catch (Exception e) {
-                        log.error("Token introspection failed: {}", e.getMessage());
+                        log.error("Token introspection failed: errorType={}", LogFields.errorType(e));
                         return Mono.just(ResponseEntity.ok(IntrospectionResponse.builder()
                                 .active(false)
                                 .build()));
@@ -179,7 +180,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                                         }));
 
                     } catch (Exception e) {
-                        log.error("Get user info failed: {}", e.getMessage());
+                        log.error("Get user info failed: errorType={}", LogFields.errorType(e));
                         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                 .body(UserInfoResponse.builder().build()));
                     }
@@ -188,7 +189,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<ResponseEntity<CreateUserResponse>> createUser(CreateUserRequest request) {
-        log.debug("Create user request: {}", request.getUsername());
+        log.debug("Create user request: {}", LogFields.text(request.getUsername()));
 
         return userManagementService.createUser(request)
                 .map(user -> {
@@ -201,7 +202,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 })
                 .onErrorResume(e -> {
-                    log.error("Create user failed: {}", e.getMessage());
+                    log.error("Create user failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body(CreateUserResponse.builder().build()));
                 });
@@ -209,7 +210,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<Void> changePassword(ChangePasswordRequest request) {
-        log.debug("Change password request for user: {}", request.getUserId());
+        log.debug("Change password request for user: {}", LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isEmpty()) {
             return Mono.error(new IllegalArgumentException("User ID is required"));
@@ -218,26 +219,26 @@ public class InternalDbIdpAdapter implements IdpAdapter {
         UUID userId = UUID.fromString(request.getUserId());
         return userManagementService.changePassword(userId, request.getOldPassword(), request.getNewPassword())
                 .onErrorResume(e -> {
-                    log.error("Change password failed: {}", e.getMessage());
+                    log.error("Change password failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<Void> resetPassword(String username) {
-        log.debug("Reset password request for user: {}", username);
+        log.debug("Reset password request for user: {}", LogFields.text(username));
 
         return passwordResetService.initiateReset(username)
-                .doOnSuccess(v -> log.info("Password reset initiated for user: {}", username))
+                .doOnSuccess(v -> log.info("Password reset initiated for user: {}", LogFields.text(username)))
                 .onErrorResume(e -> {
-                    log.error("Reset password failed for user {}: {}", username, e.getMessage());
+                    log.error("Reset password failed for user {}: errorType={}", LogFields.text(username), LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<ResponseEntity<MfaChallengeResponse>> mfaChallenge(String username) {
-        log.debug("MFA challenge request for user: {}", username);
+        log.debug("MFA challenge request for user: {}", LogFields.text(username));
 
         return mfaService.isMfaEnabled(username)
                 .flatMap(enabled -> {
@@ -261,7 +262,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<Void> mfaVerify(MfaVerifyRequest request) {
-        log.debug("MFA verify request for user: {}", request.getUserId());
+        log.debug("MFA verify request for user: {}", LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getCode() == null) {
             return Mono.error(new IllegalArgumentException("User ID and code are required"));
@@ -283,14 +284,14 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
         return authenticationService.revokeRefreshToken(refreshToken)
                 .onErrorResume(e -> {
-                    log.error("Revoke refresh token failed: {}", e.getMessage());
+                    log.error("Revoke refresh token failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<ResponseEntity<List<SessionInfo>>> listSessions(String userId) {
-        log.debug("List sessions request for user: {}", userId);
+        log.debug("List sessions request for user: {}", LogFields.text(userId));
 
         if (userId == null || userId.isEmpty()) {
             return Mono.just(ResponseEntity.badRequest().body(List.of()));
@@ -310,7 +311,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                 .collectList()
                 .map(sessions -> ResponseEntity.ok(sessions))
                 .onErrorResume(e -> {
-                    log.error("List sessions failed: {}", e.getMessage());
+                    log.error("List sessions failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body(List.of()));
                 });
@@ -318,7 +319,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<Void> revokeSession(String sessionId) {
-        log.debug("Revoke session request: {}", sessionId);
+        log.debug("Revoke session request: {}", LogFields.text(sessionId));
 
         if (sessionId == null || sessionId.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Session ID is required"));
@@ -332,14 +333,14 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                     return sessionRepository.save(session).then();
                 })
                 .onErrorResume(e -> {
-                    log.error("Revoke session failed: {}", e.getMessage());
+                    log.error("Revoke session failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<ResponseEntity<List<String>>> getRoles(String userId) {
-        log.debug("Get roles request for user: {}", userId);
+        log.debug("Get roles request for user: {}", LogFields.text(userId));
 
         if (userId == null || userId.isEmpty()) {
             return Mono.just(ResponseEntity.badRequest().body(List.of()));
@@ -351,7 +352,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                 .collectList()
                 .map(roles -> ResponseEntity.ok(roles))
                 .onErrorResume(e -> {
-                    log.error("Get roles failed: {}", e.getMessage());
+                    log.error("Get roles failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body(List.of()));
                 });
@@ -359,7 +360,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<Void> deleteUser(String userId) {
-        log.debug("Delete user request: {}", userId);
+        log.debug("Delete user request: {}", LogFields.text(userId));
 
         if (userId == null || userId.isEmpty()) {
             return Mono.error(new IllegalArgumentException("User ID is required"));
@@ -369,14 +370,14 @@ public class InternalDbIdpAdapter implements IdpAdapter {
         
         return userManagementService.deleteUser(userUuid)
                 .onErrorResume(e -> {
-                    log.error("Delete user failed: {}", e.getMessage());
+                    log.error("Delete user failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<ResponseEntity<UpdateUserResponse>> updateUser(UpdateUserRequest request) {
-        log.debug("Update user request: {}", request.getUserId());
+        log.debug("Update user request: {}", LogFields.text(request.getUserId()));
 
         return userManagementService.updateUser(request)
                 .map(user -> {
@@ -389,7 +390,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                     return ResponseEntity.ok(response);
                 })
                 .onErrorResume(e -> {
-                    log.error("Update user failed: {}", e.getMessage());
+                    log.error("Update user failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body(UpdateUserResponse.builder().build()));
                 });
@@ -397,7 +398,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<ResponseEntity<CreateRolesResponse>> createRoles(CreateRolesRequest request) {
-        log.debug("Create roles request: {}", request.getRoleNames());
+        log.debug("Create roles request: {}", LogFields.values(request.getRoleNames()));
 
         return roleService.createRoles(request.getRoleNames())
                 .map(role -> role.getName())
@@ -409,7 +410,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 })
                 .onErrorResume(e -> {
-                    log.error("Create roles failed: {}", e.getMessage());
+                    log.error("Create roles failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body(CreateRolesResponse.builder().build()));
                 });
@@ -418,7 +419,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
     @Override
     public Mono<ResponseEntity<CreateScopeResponse>> createScope(CreateScopeRequest request) {
         log.warn("InternalDbIdpAdapter does not support scopes natively; scope '{}' will be stored as a role. " +
-                "Consider using KeycloakIdpAdapter for full OAuth2 scope support.", request.getName());
+                "Consider using KeycloakIdpAdapter for full OAuth2 scope support.", LogFields.text(request.getName()));
 
         return roleService.createRole(request.getName(), request.getDescription())
                 .map(role -> {
@@ -430,7 +431,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 })
                 .onErrorResume(e -> {
-                    log.error("Create scope failed: {}", e.getMessage());
+                    log.error("Create scope failed: errorType={}", LogFields.errorType(e));
                     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body(CreateScopeResponse.builder().build()));
                 });
@@ -438,7 +439,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
 
     @Override
     public Mono<Void> assignRolesToUser(AssignRolesRequest request) {
-        log.debug("Assign roles to user request: {}", request.getUserId());
+        log.debug("Assign roles to user request: {}", LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isEmpty()) {
             return Mono.error(new IllegalArgumentException("User ID is required"));
@@ -448,14 +449,14 @@ public class InternalDbIdpAdapter implements IdpAdapter {
         
         return roleService.assignRolesToUser(userId, request.getRoleNames())
                 .onErrorResume(e -> {
-                    log.error("Assign roles failed: {}", e.getMessage());
+                    log.error("Assign roles failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }
 
     @Override
     public Mono<Void> removeRolesFromUser(AssignRolesRequest request) {
-        log.debug("Remove roles from user request: {}", request.getUserId());
+        log.debug("Remove roles from user request: {}", LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isEmpty()) {
             return Mono.error(new IllegalArgumentException("User ID is required"));
@@ -465,7 +466,7 @@ public class InternalDbIdpAdapter implements IdpAdapter {
         
         return roleService.removeRolesFromUser(userId, request.getRoleNames())
                 .onErrorResume(e -> {
-                    log.error("Remove roles failed: {}", e.getMessage());
+                    log.error("Remove roles failed: errorType={}", LogFields.errorType(e));
                     return Mono.error(e);
                 });
     }

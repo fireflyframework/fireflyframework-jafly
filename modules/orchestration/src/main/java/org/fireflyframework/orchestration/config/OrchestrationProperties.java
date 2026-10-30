@@ -16,6 +16,8 @@
 
 package org.fireflyframework.orchestration.config;
 
+import org.fireflyframework.orchestration.tcc.engine.TccPersistenceMode;
+
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -202,6 +204,7 @@ public class OrchestrationProperties {
 
     public static class TccProperties {
         private boolean enabled = true;
+        private TccPersistenceMode persistenceMode = TccPersistenceMode.BEST_EFFORT;
         private Duration defaultTimeout = Duration.ofSeconds(30);
 
         @NestedConfigurationProperty
@@ -212,6 +215,9 @@ public class OrchestrationProperties {
 
         public Duration getDefaultTimeout() { return defaultTimeout; }
         public void setDefaultTimeout(Duration defaultTimeout) { this.defaultTimeout = defaultTimeout; }
+
+        public TccPersistenceMode getPersistenceMode() { return persistenceMode; }
+        public void setPersistenceMode(TccPersistenceMode persistenceMode) { this.persistenceMode = persistenceMode; }
 
         public TccCompositionProperties getComposition() { return composition; }
         public void setComposition(TccCompositionProperties composition) { this.composition = composition; }

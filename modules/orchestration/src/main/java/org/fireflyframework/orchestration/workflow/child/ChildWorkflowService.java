@@ -18,6 +18,7 @@ package org.fireflyframework.orchestration.workflow.child;
 
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -52,7 +53,7 @@ public class ChildWorkflowService {
                                              Map<String, Object> input) {
         return engine.startWorkflow(childWorkflowId, input, null, "child:" + parentCorrelationId, false)
                 .doOnSubscribe(s -> log.info("[child-workflow] Spawning child '{}' from parent '{}'",
-                        childWorkflowId, parentCorrelationId))
+                        LogFields.text(childWorkflowId), LogFields.text(parentCorrelationId)))
                 .doOnNext(state -> {
                     parentToChildren.computeIfAbsent(parentCorrelationId, k -> new CopyOnWriteArrayList<>())
                             .add(state.correlationId());
@@ -85,7 +86,7 @@ public class ChildWorkflowService {
         return Flux.fromIterable(children)
                 .flatMap(childId -> engine.cancelWorkflow(childId)
                         .onErrorResume(err -> {
-                            log.warn("[child-workflow] Failed to cancel child '{}': {}", childId, err.getMessage());
+                            log.warn("[child-workflow] Failed to cancel child '{}': {}", LogFields.text(childId), LogFields.text(err.getMessage()));
                             return Mono.empty();
                         }))
                 .then();

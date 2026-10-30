@@ -85,8 +85,8 @@ webclient:
     # Proxy username
     username: ""
     
-    # Proxy password
-    password: ""
+    # For an authenticated proxy, opt in with an environment-supplied credential.
+    # password: ${WEBCLIENT_PROXY_PASSWORD}
     
     # Non-proxy hosts (hosts that should bypass the proxy)
     non-proxy-hosts:

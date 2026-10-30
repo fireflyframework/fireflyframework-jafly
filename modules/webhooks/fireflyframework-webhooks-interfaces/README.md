@@ -20,7 +20,7 @@ Carry the provider name, JSON payload, event ID, and request metadata from verif
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks-interfaces</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

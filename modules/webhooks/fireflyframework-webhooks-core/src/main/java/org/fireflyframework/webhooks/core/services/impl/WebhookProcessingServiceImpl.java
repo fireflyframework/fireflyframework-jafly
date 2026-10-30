@@ -16,6 +16,7 @@
 
 package org.fireflyframework.webhooks.core.services.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
 import org.fireflyframework.webhooks.core.domain.events.WebhookReceivedEvent;
@@ -78,7 +79,7 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
 
     @Override
     public Mono<WebhookResponseDTO> processWebhook(WebhookEventDTO eventDto) {
-        log.info("Processing webhook from provider: {}", eventDto.getProviderName());
+        log.info("Processing webhook from provider: {}", LogFields.text(eventDto.getProviderName()));
 
         // Convert DTO to domain event
         WebhookReceivedEvent domainEvent = webhookEventMapper.toDomainEvent(eventDto);
@@ -111,10 +112,10 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
                 )))
                 .doOnSuccess(response ->
                         log.info("Successfully processed webhook {} from provider: {}",
-                                eventDto.getEventId(), eventDto.getProviderName()))
+                                eventDto.getEventId(), LogFields.text(eventDto.getProviderName())))
                 .onErrorResume(error -> {
                     log.error("Error processing webhook from provider: {}",
-                            eventDto.getProviderName(), error);
+                            LogFields.text(eventDto.getProviderName()), error);
                     return Mono.just(WebhookResponseDTO.error(
                             eventDto.getEventId(),
                             eventDto.getProviderName(),
@@ -187,11 +188,11 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
             // This allows end-to-end tracing from HTTP request -> Kafka -> Worker
             addTracingHeaders(headers, ctx);
 
-            log.debug("Publishing webhook event to destination: {} with tracing headers", destination);
+            log.debug("Publishing webhook event to destination: {} with tracing headers", LogFields.text(destination));
 
             // Use batching if enabled, otherwise publish directly
             if (batchingEnabled && batchingService != null) {
-                log.debug("Adding event {} to batch for destination: {}", event.getEventId(), destination);
+                log.debug("Adding event {} to batch for destination: {}", event.getEventId(), LogFields.text(destination));
                 return batchingService.addToBatch(event, destination, headers)
                         .doOnSuccess(v -> log.debug("Event {} added to batch successfully", event.getEventId()))
                         .doOnError(error -> log.error("Error adding event {} to batch", event.getEventId(), error));
@@ -243,15 +244,15 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
         // Add B3 propagation headers to Kafka message
         if (traceId != null) {
             headers.put("X-B3-TraceId", traceId);
-            log.debug("Propagating traceId to Kafka: {}", traceId);
+            log.debug("Propagating traceId to Kafka: {}", LogFields.text(traceId));
         }
         if (spanId != null) {
             headers.put("X-B3-SpanId", spanId);
-            log.debug("Propagating spanId to Kafka: {}", spanId);
+            log.debug("Propagating spanId to Kafka: {}", LogFields.text(spanId));
         }
         if (requestId != null) {
             headers.put("X-Request-ID", requestId);
-            log.debug("Propagating requestId to Kafka: {}", requestId);
+            log.debug("Propagating requestId to Kafka: {}", LogFields.text(requestId));
         }
     }
 
@@ -264,7 +265,7 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
     private String resolveDestination(String providerName) {
         // If custom destination is set, use it directly
         if (customDestination != null && !customDestination.isEmpty()) {
-            log.debug("Using custom destination: {}", customDestination);
+            log.debug("Using custom destination: {}", LogFields.text(customDestination));
             return customDestination;
         }
 
@@ -287,7 +288,7 @@ public class WebhookProcessingServiceImpl implements WebhookProcessingService {
         }
 
         String resolvedDestination = destination.toString();
-        log.debug("Resolved destination for provider {}: {}", providerName, resolvedDestination);
+        log.debug("Resolved destination for provider {}: {}", LogFields.text(providerName), LogFields.text(resolvedDestination));
         
         return resolvedDestination;
     }

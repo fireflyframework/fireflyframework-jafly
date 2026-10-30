@@ -17,6 +17,7 @@
 
 package org.fireflyframework.security.idp.adapter.service.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.adapter.exception.KeycloakExceptionHandler;
 import org.fireflyframework.security.idp.adapter.keycloak.KeycloakClientFactory;
 import org.fireflyframework.security.idp.adapter.service.IdpAdminService;
@@ -56,7 +57,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performCreateUser(request))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error creating user: {}", request.getUsername(), throwable);
+                    log.error("Error creating user: {} errorType={}", LogFields.text(request.getUsername()), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -67,7 +68,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performChangePassword(request);
             } catch (Throwable t) {
-                log.error("Error changing password for user: {}", request.getUserId(), t);
+                log.error("Error changing password for user: {} errorType={}", LogFields.text(request.getUserId()), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -79,7 +80,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performResetPassword(username);
             } catch (Throwable t) {
-                log.error("Error resetting password for user: {}", username, t);
+                log.error("Error resetting password for user: {} errorType={}", LogFields.text(username), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -93,7 +94,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private String performAssignTemporaryPassword(String userId) {
-        log.debug("Assigning temporary password for userId: {}", userId);
+        log.debug("Assigning temporary password for userId: {}", LogFields.text(userId));
         if (userId == null || userId.isBlank()) {
             throw new WebApplicationException("userId cannot be null or empty");
         }
@@ -124,7 +125,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performListSessions(userId))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error listing sessions for user: {}", userId, throwable);
+                    log.error("Error listing sessions for user: {} errorType={}", LogFields.text(userId), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -135,7 +136,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performRevokeSession(sessionId);
             } catch (Throwable t) {
-                log.error("Error revoking session: {}", sessionId, t);
+                log.error("Error revoking session: {} errorType={}", LogFields.text(sessionId), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -146,7 +147,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performGetRoles(userId))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error getting roles for user: {}", userId, throwable);
+                    log.error("Error getting roles for user: {} errorType={}", LogFields.text(userId), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -157,7 +158,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performDeleteUser(userId);
             } catch (Throwable t) {
-                log.error("Error deleting user: {}", userId, t);
+                log.error("Error deleting user: {} errorType={}", LogFields.text(userId), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -168,7 +169,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performUpdateUser(request))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error updating user: {}", request.getUserId(), throwable);
+                    log.error("Error updating user: {} errorType={}", LogFields.text(request.getUserId()), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -178,7 +179,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performCreateRoles(request))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error creating roles: {}", request.getRoleNames(), throwable);
+                    log.error("Error creating roles: {} errorType={}", LogFields.values(request.getRoleNames()), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -188,7 +189,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(() -> performCreateScope(request))
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error creating scope: {}", request.getName(), throwable);
+                    log.error("Error creating scope: {} errorType={}", LogFields.text(request.getName()), LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -199,7 +200,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performAssignRolesToUser(request);
             } catch (Throwable t) {
-                log.error("Error assigning roles to user: {}", request.getUserId(), t);
+                log.error("Error assigning roles to user: {} errorType={}", LogFields.text(request.getUserId()), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -211,7 +212,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
             try {
                 performRemoveRolesFromUser(request);
             } catch (Throwable t) {
-                log.error("Error removing roles from user: {}", request.getUserId(), t);
+                log.error("Error removing roles from user: {} errorType={}", LogFields.text(request.getUserId()), LogFields.errorType(t));
             }
             return Mono.empty();
         });
@@ -222,7 +223,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
         return Mono.fromCallable(this::performListRoles)
                 .map(ResponseEntity::ok)
                 .onErrorResume(throwable -> {
-                    log.error("Error listing realm roles", throwable);
+                    log.error("Error listing realm roles errorType={}", LogFields.errorType(throwable));
                     return Mono.just(KeycloakExceptionHandler.handleException(throwable));
                 });
     }
@@ -230,20 +231,20 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     @Override
     public Mono<Void> deleteRole(String roleName) {
         return Mono.<Void>fromRunnable(() -> performDeleteRole(roleName))
-                .doOnError(t -> log.error("Error deleting realm role: {}", roleName, t));
+                .doOnError(t -> log.error("Error deleting realm role: {} errorType={}", LogFields.text(roleName), LogFields.errorType(t)));
     }
 
     @Override
     public Mono<Void> updateRole(UpdateRoleRequest request) {
         return Mono.<Void>fromRunnable(() -> performUpdateRole(request))
-                .doOnError(t -> log.error("Error updating realm role: {}",
-                        request == null ? null : request.getName(), t));
+                .doOnError(t -> log.error("Error updating realm role: {} errorType={}",
+                        LogFields.text(request == null ? null : request.getName()), LogFields.errorType(t)));
     }
 
     // Private methods for business logic
 
     private CreateUserResponse performCreateUser(CreateUserRequest request) {
-        log.debug("Creating user: {}", request.getUsername());
+        log.debug("Creating user: {}", LogFields.text(request.getUsername()));
 
         String userId;
         try (Keycloak keycloak = keycloakFactory.createClientCredentialsClient()) {
@@ -302,7 +303,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performChangePassword(ChangePasswordRequest request) {
-        log.debug("Changing password for user: {}", request.getUserId());
+        log.debug("Changing password for user: {}", LogFields.text(request.getUserId()));
 
         String username = getUsernameById(request.getUserId());
 
@@ -334,7 +335,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performResetPassword(String username) {
-        log.debug("Resetting password for username: {}", username);
+        log.debug("Resetting password for username: {}", LogFields.text(username));
 
         if (username == null || username.isBlank()) {
             throw new WebApplicationException("username cannot be null or empty");
@@ -385,7 +386,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private List<SessionInfo> performListSessions(String userId) {
-        log.debug("Listing sessions for user: {}", userId);
+        log.debug("Listing sessions for user: {}", LogFields.text(userId));
 
         try (Keycloak keycloak = keycloakFactory.createClientCredentialsClient()) {
             RealmResource realmResource = keycloak.realm(keycloakFactory.getRealm());
@@ -408,7 +409,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performRevokeSession(String sessionId) {
-        log.debug("Revoking session: {}", sessionId);
+        log.debug("Revoking session: {}", LogFields.text(sessionId));
 
         if (sessionId == null || sessionId.isBlank()) {
             throw new WebApplicationException("SessionId cannot be null or empty");
@@ -421,7 +422,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private List<String> performGetRoles(String userId) {
-        log.debug("Getting roles for user: {}", userId);
+        log.debug("Getting roles for user: {}", LogFields.text(userId));
 
         try (Keycloak keycloak = keycloakFactory.createClientCredentialsClient()) {
             UserResource userResource = keycloak.realm(keycloakFactory.getRealm()).users().get(userId);
@@ -452,7 +453,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performDeleteUser(String userId) {
-        log.debug("Deleting user: {}", userId);
+        log.debug("Deleting user: {}", LogFields.text(userId));
 
         if (userId == null || userId.isBlank()) {
             throw new WebApplicationException("userId cannot be null or empty");
@@ -465,7 +466,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private UpdateUserResponse performUpdateUser(UpdateUserRequest request) {
-        log.debug("Updating user: {}", request.getUserId());
+        log.debug("Updating user: {}", LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isBlank()) {
             throw new WebApplicationException("userId cannot be null or empty");
@@ -509,7 +510,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private CreateRolesResponse performCreateRoles(CreateRolesRequest request) {
-        log.debug("Creating roles: {}", request.getRoleNames());
+        log.debug("Creating roles: {}", LogFields.values(request.getRoleNames()));
 
         if (request.getRoleNames() == null || request.getRoleNames().isEmpty()) {
             throw new WebApplicationException("roleNames cannot be null or empty");
@@ -568,7 +569,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performDeleteRole(String roleName) {
-        log.debug("Deleting realm role: {}", roleName);
+        log.debug("Deleting realm role: {}", LogFields.text(roleName));
 
         if (roleName == null || roleName.isBlank()) {
             throw new WebApplicationException("roleName cannot be null or empty");
@@ -581,7 +582,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performUpdateRole(UpdateRoleRequest request) {
-        log.debug("Updating realm role: {}", request == null ? null : request.getName());
+        log.debug("Updating realm role: {}", LogFields.text(request == null ? null : request.getName()));
 
         if (request == null || request.getName() == null || request.getName().isBlank()) {
             throw new WebApplicationException("role name cannot be null or empty");
@@ -600,7 +601,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private CreateScopeResponse performCreateScope(CreateScopeRequest request) {
-        log.debug("Creating scope: {}", request.getName());
+        log.debug("Creating scope: {}", LogFields.text(request.getName()));
 
         if (request.getName() == null || request.getName().isBlank()) {
             throw new WebApplicationException("Scope name cannot be null or empty");
@@ -642,7 +643,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performAssignRolesToUser(AssignRolesRequest request) {
-        log.debug("Assigning roles {} to user: {}", request.getRoleNames(), request.getUserId());
+        log.debug("Assigning roles {} to user: {}", LogFields.values(request.getRoleNames()), LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isBlank()) {
             throw new WebApplicationException("userId cannot be null or empty");
@@ -671,7 +672,7 @@ public class IdpAdminServiceImpl implements IdpAdminService {
     }
 
     private void performRemoveRolesFromUser(AssignRolesRequest request) {
-        log.debug("Removing roles {} from user: {}", request.getRoleNames(), request.getUserId());
+        log.debug("Removing roles {} from user: {}", LogFields.values(request.getRoleNames()), LogFields.text(request.getUserId()));
 
         if (request.getUserId() == null || request.getUserId().isBlank()) {
             throw new WebApplicationException("userId cannot be null or empty");

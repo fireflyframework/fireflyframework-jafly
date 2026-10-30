@@ -19,6 +19,7 @@ package org.fireflyframework.orchestration.workflow.signal;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -56,13 +57,13 @@ public class SignalService {
         return persistence.findById(correlationId)
                 .flatMap(opt -> {
                     if (opt.isEmpty()) {
-                        log.warn("[signal] No workflow instance found: {}", correlationId);
+                        log.warn("[signal] No workflow instance found: {}", LogFields.text(correlationId));
                         return Mono.just(SignalResult.notDelivered(correlationId, signalName));
                     }
 
                     var state = opt.get();
                     if (state.status().isTerminal()) {
-                        log.warn("[signal] Cannot signal terminal instance: {} (status={})", correlationId, state.status());
+                        log.warn("[signal] Cannot signal terminal instance: {} (status={})", LogFields.text(correlationId), state.status());
                         return Mono.just(SignalResult.notDelivered(correlationId, signalName));
                     }
 
@@ -80,10 +81,10 @@ public class SignalService {
                         sink.tryEmitValue(effectivePayload);
                         resumedStepId = signalName;
                         log.info("[signal] Signal '{}' delivered and resumed waiter for instance '{}'",
-                                signalName, correlationId);
+                                LogFields.text(signalName), LogFields.text(correlationId));
                     } else {
                         log.info("[signal] Signal '{}' buffered for instance '{}' (no active waiter)",
-                                signalName, correlationId);
+                                LogFields.text(signalName), LogFields.text(correlationId));
                     }
 
                     events.onSignalDelivered(state.executionName(), correlationId, signalName);

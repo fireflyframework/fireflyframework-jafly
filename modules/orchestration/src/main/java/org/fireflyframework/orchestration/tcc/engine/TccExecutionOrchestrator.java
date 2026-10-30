@@ -19,6 +19,7 @@ package org.fireflyframework.orchestration.tcc.engine;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
 import org.fireflyframework.orchestration.core.context.TccPhase;
 import org.fireflyframework.orchestration.core.event.OrchestrationEvent;
+import org.fireflyframework.orchestration.core.exception.TccPersistenceException;
 import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
@@ -54,6 +55,7 @@ public class TccExecutionOrchestrator {
     private final OrchestrationEvents events;
     private final OrchestrationEventPublisher eventPublisher;
     private final ExecutionPersistenceProvider persistence;
+    private final TccPersistenceMode persistenceMode;
 
     public TccExecutionOrchestrator(StepInvoker stepInvoker, OrchestrationEvents events,
                                      OrchestrationEventPublisher eventPublisher) {
@@ -63,13 +65,31 @@ public class TccExecutionOrchestrator {
     public TccExecutionOrchestrator(StepInvoker stepInvoker, OrchestrationEvents events,
                                      OrchestrationEventPublisher eventPublisher,
                                      ExecutionPersistenceProvider persistence) {
+        this(stepInvoker, events, eventPublisher, persistence, TccPersistenceMode.BEST_EFFORT);
+    }
+
+    public TccExecutionOrchestrator(StepInvoker stepInvoker, OrchestrationEvents events,
+                                     OrchestrationEventPublisher eventPublisher,
+                                     ExecutionPersistenceProvider persistence, TccPersistenceMode persistenceMode) {
+        this.persistenceMode = Objects.requireNonNull(persistenceMode, "persistenceMode");
+        if (persistenceMode == TccPersistenceMode.REQUIRED && persistence == null) {
+            throw new IllegalArgumentException("REQUIRED TCC persistence needs a provider");
+        }
         this.stepInvoker = Objects.requireNonNull(stepInvoker, "stepInvoker");
         this.events = Objects.requireNonNull(events, "events");
         this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher");
         this.persistence = persistence;
     }
 
+    public TccPersistenceMode getPersistenceMode() { return persistenceMode; }
+
+    ExecutionPersistenceProvider getPersistenceProvider() { return persistence; }
+
     public Mono<OrchestratorResult> orchestrate(TccDefinition tccDef, TccInputs inputs, ExecutionContext ctx) {
+        return Mono.defer(() -> orchestrateDeferred(tccDef, inputs, ctx));
+    }
+
+    private Mono<OrchestratorResult> orchestrateDeferred(TccDefinition tccDef, TccInputs inputs, ExecutionContext ctx) {
         events.onStart(tccDef.name, ctx.getCorrelationId(), ExecutionPattern.TCC);
         List<TccParticipantDefinition> ordered = getOrderedParticipants(tccDef);
         OrchestratorState state = new OrchestratorState(tccDef, ordered, inputs, ctx);
@@ -78,7 +98,7 @@ public class TccExecutionOrchestrator {
                 .flatMap(trySuccess -> {
                     if (trySuccess) {
                         return saveCheckpoint(state, ExecutionStatus.CONFIRMING)
-                                .then(executeConfirmPhase(state));
+                                .then(Mono.defer(() -> executeConfirmPhase(state)));
                     } else {
                         return executeCancelPhase(state);
                     }
@@ -342,11 +362,8 @@ public class TccExecutionOrchestrator {
                 Set.copyOf(ctx.getIdempotencyKeys()),
                 List.of(),
                 null, ctx.getStartedAt(), Instant.now(), Optional.empty());
-        return persistence.save(checkpoint)
-                .onErrorResume(err -> {
-                    log.warn("[tcc] Failed to save TCC checkpoint: {}", ctx.getCorrelationId(), err);
-                    return Mono.empty();
-                });
+        return TccPersistenceSupport.save(persistence, persistenceMode, ctx, checkpoint,
+                TccPersistenceException.Stage.CHECKPOINT);
     }
 
     // --- Internal State ---

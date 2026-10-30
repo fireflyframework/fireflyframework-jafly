@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SecretsEncryptionManager {
 
     /**
-     * Master encryption key (32 bytes for AES-256).
+     * Master encryption key: 32 UTF-8 bytes or their Base64 encoding for AES-256.
      */
     private final String masterKey;
 
@@ -114,7 +114,7 @@ public class SecretsEncryptionManager {
             byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
             // Combine IV and ciphertext
-            ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(checkedCombinedLength(iv.length, ciphertext.length));
             byteBuffer.put(iv);
             byteBuffer.put(ciphertext);
 
@@ -180,7 +180,7 @@ public class SecretsEncryptionManager {
         }
         String encrypted = encrypt(value);
         encryptedSecrets.put(key, encrypted);
-        log.debug("Stored encrypted secret: {}", key);
+        log.debug("Stored encrypted secret");
     }
 
     /**
@@ -192,7 +192,7 @@ public class SecretsEncryptionManager {
     public String getSecret(String key) {
         String encrypted = encryptedSecrets.get(key);
         if (encrypted == null) {
-            log.warn("Secret not found: {}", key);
+            log.warn("Secret not found");
             return null;
         }
         return decrypt(encrypted);
@@ -207,7 +207,7 @@ public class SecretsEncryptionManager {
     public boolean removeSecret(String key) {
         boolean removed = encryptedSecrets.remove(key) != null;
         if (removed) {
-            log.debug("Removed secret: {}", key);
+            log.debug("Removed secret");
         }
         return removed;
     }
@@ -267,6 +267,13 @@ public class SecretsEncryptionManager {
         return newManager;
     }
 
+    static int checkedCombinedLength(int ivLength, int ciphertextLength) {
+        if (ivLength < 0 || ciphertextLength < 0) {
+            throw new IllegalArgumentException("Lengths cannot be negative");
+        }
+        return Math.addExact(ivLength, ciphertextLength);
+    }
+
     /**
      * Gets the secret key from the master key.
      *
@@ -277,8 +284,15 @@ public class SecretsEncryptionManager {
             throw new IllegalStateException("Master key is not configured");
         }
 
-        // Ensure master key is exactly 32 bytes for AES-256
+        // Prefer legacy UTF-8 keys so existing configurations keep their meaning.
         byte[] keyBytes = masterKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length != 32) {
+            try {
+                keyBytes = Base64.getDecoder().decode(masterKey);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("Master key must be exactly 32 bytes for AES-256");
+            }
+        }
         if (keyBytes.length != 32) {
             throw new IllegalStateException("Master key must be exactly 32 bytes for AES-256");
         }
@@ -308,13 +322,8 @@ public class SecretsEncryptionManager {
      * @return configured SecretsEncryptionManager
      */
     public static SecretsEncryptionManager create() {
-        String masterKey = generateMasterKey();
-        // Decode to get exactly 32 bytes
-        byte[] keyBytes = Base64.getDecoder().decode(masterKey);
-        String key32Bytes = new String(keyBytes, StandardCharsets.ISO_8859_1);
-        
         return SecretsEncryptionManager.builder()
-            .masterKey(key32Bytes)
+            .masterKey(generateMasterKey())
             .build();
     }
 }

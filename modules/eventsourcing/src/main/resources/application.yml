@@ -125,7 +125,8 @@ spring:
   r2dbc:
     url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
     username: sa
-    password: ""
+    # Supply an ephemeral credential when selecting this standalone test profile.
+    password: ${EVENT_STORE_TEST_PASSWORD}
 
   flyway:
     enabled: false  # Managed by test setup

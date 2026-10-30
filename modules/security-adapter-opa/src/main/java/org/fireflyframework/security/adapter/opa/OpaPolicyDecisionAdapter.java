@@ -54,6 +54,9 @@ public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
     public Mono<Decision> authorize(SecurityPrincipal principal, String action, String resource, Map<String, Object> context) {
         Map<String, Object> subject = new HashMap<>();
         subject.put("subject", principal.subject());
+        if (principal.issuer() != null) {
+            subject.put("issuer", principal.issuer());
+        }
         subject.put("authorities", principal.authorities());
         subject.put("scopes", principal.scopes());
         subject.put("tenantId", principal.tenantId());
@@ -80,6 +83,6 @@ public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
 
     /** Subset of the OPA data API response ({@code {"result": <bool>}}). */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record OpaResult(Boolean result) {
+    record OpaResult(Object result) {
     }
 }

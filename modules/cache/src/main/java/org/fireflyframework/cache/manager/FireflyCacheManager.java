@@ -16,6 +16,8 @@
 
 package org.fireflyframework.cache.manager;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheStats;
@@ -79,7 +81,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Optional<V>> get(K key) {
         return getActiveCache().<K, V>get(key)
                 .onErrorResume(e -> {
-                    log.error("Error during get operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during get operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(Optional.empty());
                 });
     }
@@ -88,7 +90,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Optional<V>> get(K key, Class<V> valueType) {
         return getActiveCache().<K, V>get(key, valueType)
                 .onErrorResume(e -> {
-                    log.error("Error during get operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during get operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(Optional.empty());
                 });
     }
@@ -97,7 +99,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Void> put(K key, V value) {
         return getActiveCache().<K, V>put(key, value)
                 .onErrorResume(e -> {
-                    log.error("Error during put operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during put operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.empty();
                 });
     }
@@ -106,7 +108,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Void> put(K key, V value, Duration ttl) {
         return getActiveCache().<K, V>put(key, value, ttl)
                 .onErrorResume(e -> {
-                    log.error("Error during put operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during put operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.empty();
                 });
     }
@@ -115,7 +117,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Boolean> putIfAbsent(K key, V value) {
         return getActiveCache().<K, V>putIfAbsent(key, value)
                 .onErrorResume(e -> {
-                    log.error("Error during putIfAbsent operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during putIfAbsent operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -124,7 +126,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K, V> Mono<Boolean> putIfAbsent(K key, V value, Duration ttl) {
         return getActiveCache().<K, V>putIfAbsent(key, value, ttl)
                 .onErrorResume(e -> {
-                    log.error("Error during putIfAbsent operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during putIfAbsent operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -133,7 +135,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K> Mono<Boolean> evict(K key) {
         return getActiveCache().<K>evict(key)
                 .onErrorResume(e -> {
-                    log.error("Error during evict operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during evict operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -142,7 +144,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public Mono<Void> clear() {
         return getActiveCache().clear()
                 .onErrorResume(e -> {
-                    log.error("Error clearing cache: {}", e.getMessage(), e);
+                    log.error("Error clearing cache: type={}", LogFields.errorType(e));
                     return Mono.empty();
                 });
     }
@@ -151,7 +153,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K> Mono<Boolean> exists(K key) {
         return getActiveCache().<K>exists(key)
                 .onErrorResume(e -> {
-                    log.error("Error during exists operation for key {}: {}", key, e.getMessage());
+                    log.error("Error during exists operation for key present={}: type={}", key != null, LogFields.errorType(e));
                     return Mono.just(false);
                 });
     }
@@ -160,7 +162,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public <K> Mono<Set<K>> keys() {
         return getActiveCache().<K>keys()
                 .onErrorResume(e -> {
-                    log.error("Error getting keys: {}", e.getMessage(), e);
+                    log.error("Error getting keys: type={}", LogFields.errorType(e));
                     return Mono.just(Set.of());
                 });
     }
@@ -169,7 +171,7 @@ public class FireflyCacheManager implements CacheAdapter {
     public Mono<Long> size() {
         return getActiveCache().size()
                 .onErrorResume(e -> {
-                    log.error("Error getting size: {}", e.getMessage(), e);
+                    log.error("Error getting size: type={}", LogFields.errorType(e));
                     return Mono.just(0L);
                 });
     }
@@ -212,7 +214,7 @@ public class FireflyCacheManager implements CacheAdapter {
             primaryCache.close();
             log.debug("Closed primary cache");
         } catch (Exception e) {
-            log.error("Error closing primary cache: {}", e.getMessage(), e);
+            log.error("Error closing primary cache: type={}", LogFields.errorType(e));
         }
         
         if (fallbackCache != null) {
@@ -220,7 +222,7 @@ public class FireflyCacheManager implements CacheAdapter {
                 fallbackCache.close();
                 log.debug("Closed fallback cache");
             } catch (Exception e) {
-                log.error("Error closing fallback cache: {}", e.getMessage(), e);
+                log.error("Error closing fallback cache: type={}", LogFields.errorType(e));
             }
         }
         

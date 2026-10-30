@@ -6,7 +6,7 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-parent</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - Parent POM</name>
@@ -35,7 +35,7 @@
     </scm>
 
     <properties>
-        <fireflyframework.version>26.10.21-SNAPSHOT</fireflyframework.version>
+        <fireflyframework.version>26.10.22</fireflyframework.version>
         <!-- Java -->
         <java.version>25</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -53,6 +53,8 @@
         <openapi.use.tags>true</openapi.use.tags>
         <openapi.use.optional>true</openapi.use.optional>
         <openapi.date.library>java8</openapi.date.library>
+        <openapi.use.oneof.interfaces>false</openapi.use.oneof.interfaces>
+        <openapi.use.oneof.deduction>false</openapi.use.oneof.deduction>
 
         <!-- Spring Boot and Cloud -->
         <spring-boot.version>4.1.1</spring-boot.version>
@@ -88,11 +90,12 @@
         <resilience4j.version>2.4.0</resilience4j.version>
 
         <!-- gRPC -->
-        <grpc.version>1.79.0</grpc.version>
+        <grpc.version>1.83.1</grpc.version>
         <protobuf.version>4.33.5</protobuf.version>
 
         <!-- Serialization -->
         <avro.version>1.12.1</avro.version>
+        <jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
 
         <!-- Logging -->
         <janino.version>3.1.12</janino.version>
@@ -474,6 +477,11 @@
 
             <!-- Serialization -->
             <dependency>
+                <groupId>org.openapitools</groupId>
+                <artifactId>jackson-databind-nullable</artifactId>
+                <version>${jackson-databind-nullable.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${avro.version}</version>
@@ -810,6 +818,11 @@
             </dependency>
             <dependency>
                 <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-batch</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-ecm</artifactId>
                 <version>${fireflyframework.version}</version>
             </dependency>
@@ -1115,6 +1128,12 @@
                     <groupId>org.openapitools</groupId>
                     <artifactId>openapi-generator-maven-plugin</artifactId>
                     <version>${openapi-generator.version}</version>
+                    <configuration>
+                        <configOptions>
+                            <useOneOfInterfaces>${openapi.use.oneof.interfaces}</useOneOfInterfaces>
+                            <useDeductionForOneOfInterfaces>${openapi.use.oneof.deduction}</useDeductionForOneOfInterfaces>
+                        </configOptions>
+                    </configuration>
                 </plugin>
 
                 <!-- Maven Source Plugin -->

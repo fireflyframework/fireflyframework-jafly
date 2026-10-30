@@ -34,7 +34,7 @@ Implement the worker that turns a verified provider event into an application-st
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-webhooks-processor</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

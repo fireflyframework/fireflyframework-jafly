@@ -20,7 +20,7 @@ Evaluate a validated onboarding rule against application input through the parse
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-rule-engine-core</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

@@ -39,7 +39,7 @@ An extended onboarding flow might verify documents, wait for a review, and provi
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-orchestration</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -137,6 +137,23 @@ tccEngine.execute(def, TccInputs.of(Map.of("debit", request, "credit", request))
         else if (result.isCanceled()) log.warn("Transaction canceled");
     });
 ```
+
+### Require TCC persistence acknowledgments
+
+`BEST_EFFORT` is the default. Select `REQUIRED` when an execution must stop if its configured persistence provider does not acknowledge a save:
+
+```yaml
+firefly:
+  orchestration:
+    tcc:
+      persistence-mode: REQUIRED
+```
+
+The native configuration gives the engine and orchestrator the same policy/provider. Manual assembly must do so explicitly; REQUIRED rejects absent or mismatched providers/policies. An initial save failure invokes no participant. A required checkpoint or final-save failure propagates `TccPersistenceException` with its correlation ID, save stage, attempted status, original cause, possible-effects flag and retained execution context. It cannot become a confirmed result, an error-suppressed success or an automatic compensation request.
+
+Overall completion observations, execution-completed publication and success callbacks—including asynchronous callback subscription—wait for the final acknowledgment. Participant/phase events still describe calls that already occurred and do not establish overall financial completion. Preserve the original operation/resource IDs when handling uncertainty; do not blindly retry execution or compensate based only on this error.
+
+An acknowledged save means the configured publisher completed. The default in-memory provider does not gain disk durability through this setting. Existing phase snapshots are not a participant journal or a durable pause/resume protocol: a CONFIRMED phase checkpoint can exist without an acknowledged final report. Actual provider storage, restart recovery and the product's financial action protocol need separate qualification. Existing participant-error cancellation rules remain; define participant timeout/uncertain-outcome semantics before using the example for money movement.
 
 ### Workflow
 

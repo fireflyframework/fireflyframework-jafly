@@ -37,6 +37,7 @@ import org.fireflyframework.orchestration.workflow.timer.TimerService;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -154,7 +155,7 @@ public class WorkflowExecutor {
                     // Skip already-completed steps (for resume scenarios)
                     StepStatus currentStatus = ctx.getStepStatus(stepId);
                     if (currentStatus == StepStatus.DONE) {
-                        log.debug("[workflow] Skipping already-completed step '{}'", stepId);
+                        log.debug("[workflow] Skipping already-completed step '{}'", LogFields.text(stepId));
                         return Mono.<Void>empty();
                     }
 
@@ -394,9 +395,9 @@ public class WorkflowExecutor {
             childMono.subscribeOn(Schedulers.boundedElastic())
                     .subscribe(
                             result -> log.info("[workflow] Child workflow '{}' completed for step '{}'",
-                                    stepDef.childWorkflowId(), stepId),
+                                    LogFields.text(stepDef.childWorkflowId()), LogFields.text(stepId)),
                             error -> log.warn("[workflow] Child workflow '{}' failed for step '{}'",
-                                    stepDef.childWorkflowId(), stepId, error));
+                                    LogFields.text(stepDef.childWorkflowId()), LogFields.text(stepId), error));
             ctx.setStepStatus(stepId, StepStatus.DONE);
             long latency = Duration.between(ctx.getStepStartedAt(stepId), Instant.now()).toMillis();
             ctx.setStepLatency(stepId, latency);
@@ -445,7 +446,7 @@ public class WorkflowExecutor {
                 null, ctx.getStartedAt(), Instant.now(), Optional.empty());
         return persistence.save(checkpoint)
                 .onErrorResume(err -> {
-                    log.warn("[orchestration] Failed to save workflow checkpoint: {}", ctx.getCorrelationId(), err);
+                    log.warn("[orchestration] Failed to save workflow checkpoint: {}", LogFields.text(ctx.getCorrelationId()), err);
                     return Mono.empty();
                 });
     }
@@ -494,7 +495,7 @@ public class WorkflowExecutor {
                     m.invoke(bean, args);
                 } catch (Exception e) {
                     log.warn("[workflow] @OnStepComplete callback '{}' failed for step '{}'",
-                            m.getName(), stepId, e);
+                            LogFields.text(m.getName()), LogFields.text(stepId), e);
                 }
             });
 

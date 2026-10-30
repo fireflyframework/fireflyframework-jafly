@@ -3,6 +3,8 @@ package org.fireflyframework.observability;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.EnvironmentPostProcessor;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -10,7 +12,9 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -154,9 +158,11 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
         }
 
         // Merge with any existing exclusions
-        String existing = environment.getProperty(EXCLUDE_PROPERTY, "");
-        String merged = existing.isBlank() ? toExclude : existing + "," + toExclude;
-        props.put(EXCLUDE_PROPERTY, merged);
+        List<String> existing = Binder.get(environment)
+                .bind(EXCLUDE_PROPERTY, Bindable.listOf(String.class)).orElse(List.of());
+        List<String> merged = new ArrayList<>(existing);
+        merged.add(toExclude);
+        props.put(EXCLUDE_PROPERTY, String.join(",", merged));
     }
 
     private void configureMetricsExporter(ConfigurableEnvironment environment, Map<String, Object> props) {

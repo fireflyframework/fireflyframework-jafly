@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
 VERSION = ET.parse(ROOT / 'pom.xml').getroot().findtext('m:version', namespaces=NS)
+NATIVE_MODULES = {'modules/batch'}
 
 
 def read(path):
@@ -33,7 +34,31 @@ class MigrationContractTest(unittest.TestCase):
         root = read(ROOT / 'pom.xml')
         modules = {x.text for x in root.findall('m:modules/m:module', NS)}
         sources = json.loads((ROOT / 'docs/migration/source-manifest.json').read_text())['sources']
-        self.assertEqual({x['destination'] for x in sources}, modules)
+        self.assertEqual({x['destination'] for x in sources} | NATIVE_MODULES, modules)
+
+    def test_native_batch_module_preserves_historical_source_classification(self):
+        historical = {x['destination'] for x in json.loads(
+            (ROOT / 'docs/migration/source-manifest.json').read_text())['sources']}
+        self.assertEqual({'modules/batch'}, NATIVE_MODULES)
+        self.assertTrue(NATIVE_MODULES.isdisjoint(historical))
+        batch = read(ROOT / 'modules/batch/pom.xml')
+        self.assertEqual('fireflyframework-batch', value(batch, 'artifactId'))
+        self.assertEqual('fireflyframework-parent', value(batch, 'parent/m:artifactId'))
+        production = [d for d in batch.findall('m:dependencies/m:dependency', NS)
+                      if value(d, 'scope') != 'test']
+        self.assertEqual({('org.springframework.batch', 'spring-batch-core'),
+                          ('org.springframework', 'spring-jdbc'),
+                          ('org.springframework.boot', 'spring-boot-autoconfigure')},
+                         {(value(d, 'groupId'), value(d, 'artifactId')) for d in production})
+        self.assertTrue(all(value(d, 'version') is None for d in production))
+
+    def test_native_batch_module_is_not_implicitly_adopted_by_other_modules(self):
+        for path in (ROOT / 'modules').rglob('pom.xml'):
+            if 'target' in path.parts or path == ROOT / 'modules/batch/pom.xml':
+                continue
+            dependencies = read(path).findall('m:dependencies/m:dependency', NS)
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn('fireflyframework-batch', [value(d, 'artifactId') for d in dependencies])
 
     def test_framework_parents_resolve_from_source(self):
         for path in list((ROOT / 'modules').rglob('pom.xml')):

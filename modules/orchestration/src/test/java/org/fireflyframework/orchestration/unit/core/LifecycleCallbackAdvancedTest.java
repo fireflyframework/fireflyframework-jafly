@@ -69,13 +69,14 @@ class LifecycleCallbackAdvancedTest {
     void sagaAsyncCallback_invokesOnDifferentThread() throws Exception {
         AsyncSagaBean.latch.countDown(); // reset
         var latch = new CountDownLatch(1);
-        var threadName = new AtomicReference<String>();
+        var callingThread = Thread.currentThread();
+        var callbackThread = new AtomicReference<Thread>();
 
         @SuppressWarnings("unused")
         class AsyncBean {
             @OnSagaComplete(async = true)
             public void asyncComplete() {
-                threadName.set(Thread.currentThread().getName());
+                callbackThread.set(Thread.currentThread());
                 latch.countDown();
             }
         }
@@ -98,7 +99,7 @@ class LifecycleCallbackAdvancedTest {
 
         // Wait for async callback
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-        assertThat(threadName.get()).contains("boundedElastic");
+        assertThat(callbackThread.get()).isNotNull().isNotSameAs(callingThread);
     }
 
     // ── Saga Priority ────────────────────────────────────────────
@@ -144,13 +145,14 @@ class LifecycleCallbackAdvancedTest {
     @Test
     void tccAsyncCallback_invokesOnDifferentThread() throws Exception {
         var latch = new CountDownLatch(1);
-        var threadName = new AtomicReference<String>();
+        var callingThread = Thread.currentThread();
+        var callbackThread = new AtomicReference<Thread>();
 
         @SuppressWarnings("unused")
         class AsyncTccBean {
             @OnTccComplete(async = true)
             public void asyncComplete() {
-                threadName.set(Thread.currentThread().getName());
+                callbackThread.set(Thread.currentThread());
                 latch.countDown();
             }
         }
@@ -178,7 +180,7 @@ class LifecycleCallbackAdvancedTest {
                 .verifyComplete();
 
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-        assertThat(threadName.get()).contains("boundedElastic");
+        assertThat(callbackThread.get()).isNotNull().isNotSameAs(callingThread);
     }
 
     // ── TCC Priority ────────────────────────────────────────────

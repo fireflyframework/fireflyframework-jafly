@@ -6,13 +6,13 @@ import re
 import xml.etree.ElementTree as ET
 
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
-PATTERN = re.compile(r'^(\d{2})\.(0[1-9]|1[0-2])\.(\d{2})(?:-SNAPSHOT)?$')
+PATTERN = re.compile(r'^(\d{2})\.(0[1-9]|1[0-2])\.(\d{2}|[1-9]\d*|0)(?:-SNAPSHOT)?$')
 
 
 def set_version(root: pathlib.Path, version: str) -> list[pathlib.Path]:
     match = PATTERN.fullmatch(version)
     if match is None:
-        raise ValueError('Version must be YY.MM.PP or YY.MM.PP-SNAPSHOT with a valid month')
+        raise ValueError('Version must be YY.MM.PATCH or YY.MM.PATCH-SNAPSHOT with a valid month and numeric release counter')
     changes = {}
     for path in sorted(root.rglob('pom.xml')):
         if {'target', '.git'} & set(path.relative_to(root).parts):

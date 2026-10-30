@@ -17,6 +17,7 @@
 package org.fireflyframework.orchestration.workflow.timer;
 
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -49,7 +50,7 @@ public class TimerService {
             TimerEntry entry = TimerEntry.create(correlationId, timerId, Instant.now().plus(delay), data);
             timers.computeIfAbsent(correlationId, k -> new CopyOnWriteArrayList<>()).add(entry);
             log.info("[timer] Scheduled timer '{}' for instance '{}', fires at {}",
-                    timerId, correlationId, entry.fireAt());
+                    LogFields.text(timerId), LogFields.text(correlationId), entry.fireAt());
             return entry;
         });
     }
@@ -61,7 +62,7 @@ public class TimerService {
         return Mono.fromCallable(() -> {
             TimerEntry entry = TimerEntry.create(correlationId, timerId, fireAt, data);
             timers.computeIfAbsent(correlationId, k -> new CopyOnWriteArrayList<>()).add(entry);
-            log.info("[timer] Scheduled timer '{}' for instance '{}', fires at {}", timerId, correlationId, fireAt);
+            log.info("[timer] Scheduled timer '{}' for instance '{}', fires at {}", LogFields.text(timerId), LogFields.text(correlationId), fireAt);
             return entry;
         });
     }
@@ -75,7 +76,7 @@ public class TimerService {
             if (entries == null) return false;
             boolean removed = entries.removeIf(e -> e.timerId().equals(timerId));
             if (removed) {
-                log.info("[timer] Cancelled timer '{}' for instance '{}'", timerId, correlationId);
+                log.info("[timer] Cancelled timer '{}' for instance '{}'", LogFields.text(timerId), LogFields.text(correlationId));
             }
             return removed;
         });

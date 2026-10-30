@@ -31,6 +31,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CachedResponse {
 
+    /** SHA-256 request fingerprint; absent legacy entries must not be replayed. */
+    private String requestFingerprint;
+
+    /** Replayable representation headers only; authentication and cookies are excluded. */
+    private java.util.Map<String, java.util.List<String>> headers = java.util.Map.of();
+
+    public CachedResponse(int status, byte[] body, String contentType) {
+        this.status = status;
+        this.body = body;
+        this.contentType = contentType;
+    }
+
     /**
      * HTTP status code of the cached response
      */

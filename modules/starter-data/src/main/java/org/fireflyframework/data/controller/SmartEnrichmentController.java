@@ -16,6 +16,8 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import org.fireflyframework.data.cache.EnrichmentCacheService;
 import org.fireflyframework.data.model.EnrichmentApiRequest;
 import org.fireflyframework.data.model.EnrichmentApiResponse;
@@ -160,7 +162,7 @@ public class SmartEnrichmentController {
             @RequestBody EnrichmentApiRequest apiRequest) {
 
         log.info("Received preview request - type: {}, tenantId: {}",
-                apiRequest.getType(), apiRequest.getTenantId());
+                LogFields.text(apiRequest.getType()), apiRequest.getTenantId());
 
         return Mono.fromCallable(() -> {
             DataEnricher<?, ?, ?> enricher = enricherRegistry.getEnricherForTypeAndTenant(
@@ -170,7 +172,7 @@ public class SmartEnrichmentController {
 
             if (enricher == null) {
                 log.warn("No enricher found for preview - type: {}, tenantId: {}",
-                        apiRequest.getType(), apiRequest.getTenantId());
+                        LogFields.text(apiRequest.getType()), apiRequest.getTenantId());
                 return ResponseEntity.notFound().<PreviewResponse>build();
             }
 
@@ -189,7 +191,7 @@ public class SmartEnrichmentController {
                     .build();
 
             log.info("Preview generated - provider: {}, priority: {}, cached: {}",
-                    preview.getProviderName(), preview.getPriority(), preview.isCached());
+                    LogFields.text(preview.getProviderName()), preview.getPriority(), preview.isCached());
 
             return ResponseEntity.ok(preview);
         });
@@ -235,9 +237,9 @@ public class SmartEnrichmentController {
             @RequestBody EnrichmentApiRequest request) {
         
         log.info("Received smart enrichment request - type: {}, tenantId: {}, requestId: {}",
-                request.getType(),
+                LogFields.text(request.getType()),
                 request.getTenantId(),
-                request.getRequestId());
+                LogFields.text(request.getRequestId()));
 
         // Validate request
         if (request.getType() == null || request.getType().isBlank()) {
@@ -257,14 +259,14 @@ public class SmartEnrichmentController {
                     request.getType(),
                     request.getTenantId()
             );
-            log.warn(message);
+            log.warn(LogFields.text(message));
             return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
         });
 
         log.info("Selected enricher: {} (priority: {}) for type: {}, tenant: {}",
-                enricher.getProviderName(),
+                LogFields.text(enricher.getProviderName()),
                 enricher.getPriority(),
-                request.getType(),
+                LogFields.text(request.getType()),
                 request.getTenantId());
 
         // Convert API request to domain request
@@ -276,25 +278,25 @@ public class SmartEnrichmentController {
                 .doOnSuccess(response -> {
                     if (response.isSuccess()) {
                         log.info("Smart enrichment completed successfully - type: {}, provider: {}, priority: {}, fieldsEnriched: {}, requestId: {}",
-                                response.getType(),
-                                response.getProviderName(),
+                                LogFields.text(response.getType()),
+                                LogFields.text(response.getProviderName()),
                                 enricher.getPriority(),
                                 response.getFieldsEnriched(),
-                                response.getRequestId());
+                                LogFields.text(response.getRequestId()));
                     } else {
                         log.warn("Smart enrichment completed with failure - type: {}, provider: {}, message: {}, requestId: {}",
-                                response.getType(),
-                                response.getProviderName(),
-                                response.getMessage(),
-                                response.getRequestId());
+                                LogFields.text(response.getType()),
+                                LogFields.text(response.getProviderName()),
+                                LogFields.text(response.getMessage()),
+                                LogFields.text(response.getRequestId()));
                     }
                 })
                 .doOnError(error -> {
                     log.error("Smart enrichment failed for type {} with provider {} and requestId {}: {}",
-                            request.getType(),
-                            enricher.getProviderName(),
-                            request.getRequestId(),
-                            error.getMessage(),
+                            LogFields.text(request.getType()),
+                            LogFields.text(enricher.getProviderName()),
+                            LogFields.text(request.getRequestId()),
+                            LogFields.text(error.getMessage()),
                             error);
                 });
     }
@@ -412,13 +414,13 @@ public class SmartEnrichmentController {
                                 first.getType(),
                                 first.getTenantId()
                         );
-                        log.warn(message);
+                        log.warn(LogFields.text(message));
                         return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
                     });
 
                     log.info("Processing {} requests with enricher: {} (priority: {})",
                             group.size(),
-                            enricher.getProviderName(),
+                            LogFields.text(enricher.getProviderName()),
                             enricher.getPriority());
 
                     // Convert to domain requests
@@ -432,7 +434,7 @@ public class SmartEnrichmentController {
                             .onErrorResume(error -> {
                                 // Handle individual errors gracefully
                                 log.error("Error in batch enrichment for provider {}: {}",
-                                        enricher.getProviderName(), error.getMessage());
+                                        LogFields.text(enricher.getProviderName()), LogFields.text(error.getMessage()));
 
                                 EnrichmentApiResponse errorResponse = EnrichmentApiResponse.builder()
                                         .success(false)
@@ -518,7 +520,7 @@ public class SmartEnrichmentController {
                             })
                             .onErrorResume(error -> {
                                 log.error("SSE stream enrichment failed for index {} (type: {}): {}",
-                                        index, type, error.getMessage());
+                                        index, LogFields.text(type), LogFields.text(error.getMessage()));
                                 EnrichmentApiResponse errorResponse = EnrichmentApiResponse.builder()
                                         .success(false)
                                         .message("Enrichment failed: " + error.getMessage())

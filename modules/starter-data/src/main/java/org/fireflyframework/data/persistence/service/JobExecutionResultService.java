@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.persistence.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
@@ -89,8 +90,8 @@ public class JobExecutionResultService {
         enrichWithContext(result, request, orchestratorType, jobDefinition);
 
         return resultRepository.get().save(result)
-                .doOnSuccess(saved -> log.info("Saved successful job execution result: {}", saved.getResultId()))
-                .doOnError(error -> log.error("Failed to save job execution result: {}", error.getMessage(), error))
+                .doOnSuccess(saved -> log.info("Saved successful job execution result: {}", LogFields.text(saved.getResultId())))
+                .doOnError(error -> log.error("Failed to save job execution result: {}", LogFields.text(error.getMessage()), error))
                 .onErrorResume(error -> Mono.empty()); // Don't fail the operation if save fails
     }
 
@@ -122,8 +123,8 @@ public class JobExecutionResultService {
         enrichWithContext(result, request, orchestratorType, jobDefinition);
 
         return resultRepository.get().save(result)
-                .doOnSuccess(saved -> log.info("Saved failed job execution result: {}", saved.getResultId()))
-                .doOnError(error -> log.error("Failed to save job execution result: {}", error.getMessage(), error))
+                .doOnSuccess(saved -> log.info("Saved failed job execution result: {}", LogFields.text(saved.getResultId())))
+                .doOnError(error -> log.error("Failed to save job execution result: {}", LogFields.text(error.getMessage()), error))
                 .onErrorResume(error -> Mono.empty());
     }
 
@@ -147,8 +148,8 @@ public class JobExecutionResultService {
                     result.setMapperName(mapperName);
                     return resultRepository.get().save(result);
                 })
-                .doOnSuccess(saved -> log.debug("Updated result with transformed output: {}", saved.getResultId()))
-                .doOnError(error -> log.error("Failed to update result: {}", error.getMessage(), error));
+                .doOnSuccess(saved -> log.debug("Updated result with transformed output: {}", LogFields.text(saved.getResultId())))
+                .doOnError(error -> log.error("Failed to update result: {}", LogFields.text(error.getMessage()), error));
     }
 
     /**
@@ -205,7 +206,7 @@ public class JobExecutionResultService {
                 .defaultIfEmpty(Optional.empty())
                 .doOnNext(result -> {
                     if (result.isPresent()) {
-                        log.debug("Found valid cached result for execution: {}", executionId);
+                        log.debug("Found valid cached result for execution: {}", LogFields.text(executionId));
                     }
                 });
     }
@@ -223,7 +224,7 @@ public class JobExecutionResultService {
 
         return resultRepository.get().deleteByEndTimeBefore(cutoffTime)
                 .doOnSuccess(count -> log.info("Cleaned up {} old job execution results", count))
-                .doOnError(error -> log.error("Failed to cleanup old results: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to cleanup old results: {}", LogFields.text(error.getMessage()), error));
     }
 
     /**
@@ -236,7 +237,7 @@ public class JobExecutionResultService {
 
         return resultRepository.get().deleteExpired()
                 .doOnSuccess(count -> log.info("Cleaned up {} expired cached results", count))
-                .doOnError(error -> log.error("Failed to cleanup expired results: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to cleanup expired results: {}", LogFields.text(error.getMessage()), error));
     }
 
     /**
@@ -287,7 +288,7 @@ public class JobExecutionResultService {
     private String extractTraceId(io.micrometer.observation.Observation observation) {
         String traceId = TracingContextExtractor.extractTraceId(observation);
         if (traceId != null) {
-            log.trace("Extracted trace ID: {}", traceId);
+            log.trace("Extracted trace ID: {}", LogFields.text(traceId));
         } else {
             log.trace("No trace ID available in observation context");
         }
@@ -304,7 +305,7 @@ public class JobExecutionResultService {
     private String extractSpanId(io.micrometer.observation.Observation observation) {
         String spanId = TracingContextExtractor.extractSpanId(observation);
         if (spanId != null) {
-            log.trace("Extracted span ID: {}", spanId);
+            log.trace("Extracted span ID: {}", LogFields.text(spanId));
         } else {
             log.trace("No span ID available in observation context");
         }
@@ -326,9 +327,9 @@ public class JobExecutionResultService {
 
         if (totalSize > 0) {
             log.debug("Calculated data size for execution {}: {} ({})",
-                    result.getExecutionId(),
+                    LogFields.text(result.getExecutionId()),
                     totalSize,
-                    DataSizeCalculator.formatSize(totalSize));
+                    LogFields.text(DataSizeCalculator.formatSize(totalSize)));
         }
 
         return totalSize;

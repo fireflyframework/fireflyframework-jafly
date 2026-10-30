@@ -6,7 +6,7 @@
 
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-bom</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
     <packaging>pom</packaging>
 
     <name>Firefly Framework - BOM</name>
@@ -35,7 +35,7 @@
     </scm>
 
     <properties>
-        <fireflyframework.version>26.10.21-SNAPSHOT</fireflyframework.version>
+        <fireflyframework.version>26.10.22</fireflyframework.version>
         <!-- Security patches beyond the selected platform BOMs. -->
         <jackson2-bom.version>2.21.7</jackson2-bom.version>
         <jackson-bom.version>3.1.7</jackson-bom.version>
@@ -293,6 +293,11 @@
             <dependency>
                 <groupId>org.fireflyframework</groupId>
                 <artifactId>fireflyframework-backoffice</artifactId>
+                <version>${fireflyframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fireflyframework</groupId>
+                <artifactId>fireflyframework-batch</artifactId>
                 <version>${fireflyframework.version}</version>
             </dependency>
 

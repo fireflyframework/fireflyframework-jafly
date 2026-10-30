@@ -36,7 +36,7 @@ Commands and queries have different handlers and policies. The buses connect app
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cqrs</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -123,6 +123,8 @@ Use the returned `id` in `GET /applications/{id}`. Run the project's tests with:
 ### Authorization and optional bridges
 
 The command/query interfaces allow execution by default. Protected operations need an authorization rule and trusted identity context. Jakarta annotation validation needs a `Validator` bean; the example declares the validation starter.
+
+`ContextAwareCommandHandler<C, R>` and `ContextAwareQueryHandler<Q, R>` support handlers that require the bus's `ExecutionContext`. Bind their message and result types in a concrete subclass. Type resolution follows generic bindings through intermediate classes, reordered parameters, interfaces and standard generated subclasses; raw or unbound message variables do not become permission to dispatch every command/query through their upper bound. Construction still rejects an unresolved handler type. Parameterized result types expose their raw Java class for dispatch metadata, rather than a complete serialization schema. Context propagation does not authenticate an arbitrary context: populate identity through a trusted application boundary and enforce the operation's authorization policy.
 
 Publishing a command result requires EDA, an `EventPublisherFactory` bean, the enabled CQRS/EDA bridge, and `@PublishDomainEvent` on the handler. Query invalidation requires a `QueryCacheAdapter` and a matching `@InvalidateCacheOn` event delivered through Spring's application-event path. Connect broker events to that local path explicitly. The onboarding tutorial configures neither bridge.
 
@@ -230,6 +232,14 @@ void shouldCreateFailedAuthorizationResultWithSingleError() {
 
 ## Detailed reference
 
+### Explicit query cache identity
+
+`Query.getCacheKey()` returns `null` by default, so a handler executes without a cached result unless the query explicitly supplies a key. The former class-name/metadata-hash default could collapse different resources into the same entry. Updating the framework stops reading those implicit entries; existing explicit custom keys keep their own semantics and must be reviewed separately.
+
+A custom key must represent all result-affecting inputs and the relevant trusted tenant, subject, and policy scope, including resource identity, filters, pagination, and version where applicable. Do not put credentials or personal data in keys. If an execution context changes the result, either include its trusted scope in the query's explicit key or keep that handler uncached. The bus does not infer a complete authority boundary from an arbitrary context map.
+
+Both `query(query)` and `query(query, context)` require the query and handler to allow caching and a non-null explicit key. Validation and configured authorization precede cache access. `@QueryHandlerComponent(cacheable = false)` bypasses both cache reads and writes, including when a matching stale entry exists. Prefer that setting for authoritative workflow status/result reads without a qualified invalidation and freshness policy.
+
 ### Configuration
 
 All properties live under the `firefly.cqrs.*` namespace. The values below are the configured defaults; you only need to set what you want to change.
@@ -244,7 +254,7 @@ firefly:
       tracing-enabled: true
     query:
       timeout: 15s                # default query processing timeout
-      caching-enabled: true       # enable query-result caching by default
+      caching-enabled: true       # provide caching; each query still needs an explicit key
       cache-ttl: 15m              # default TTL for the dedicated CQRS query cache
       metrics-enabled: true
       tracing-enabled: true

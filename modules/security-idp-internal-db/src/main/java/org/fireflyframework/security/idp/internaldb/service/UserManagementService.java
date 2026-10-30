@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.internaldb.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.dtos.CreateUserRequest;
 import org.fireflyframework.security.idp.dtos.UpdateUserRequest;
 import org.fireflyframework.security.idp.internaldb.domain.User;
@@ -52,7 +53,7 @@ public class UserManagementService {
      * @return a Mono emitting the created user
      */
     public Mono<User> createUser(CreateUserRequest request) {
-        log.debug("Creating user: {}", request.getUsername());
+        log.debug("Creating user: {}", LogFields.text(request.getUsername()));
 
         return userRepository.existsByUsername(request.getUsername())
                 .flatMap(exists -> {
@@ -127,7 +128,7 @@ public class UserManagementService {
      * @return a Mono emitting the updated user
      */
     public Mono<User> updateUser(UpdateUserRequest request) {
-        log.debug("Updating user: {}", request.getUserId());
+        log.debug("Updating user: {}", LogFields.text(request.getUserId()));
 
         UUID userId = UUID.fromString(request.getUserId());
 
@@ -209,7 +210,7 @@ public class UserManagementService {
      * @return a Mono signaling completion
      */
     public Mono<Void> resetPassword(String username, String newPassword) {
-        log.debug("Resetting password for user: {}", username);
+        log.debug("Resetting password for user: {}", LogFields.text(username));
 
         return userRepository.findByUsername(username)
                 .doOnNext(user -> user.markAsNotNew())

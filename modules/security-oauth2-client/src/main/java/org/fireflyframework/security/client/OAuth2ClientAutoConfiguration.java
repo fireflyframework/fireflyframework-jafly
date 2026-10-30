@@ -36,7 +36,7 @@ import org.springframework.security.oauth2.client.web.reactive.function.client.S
  * {@code authorization_code}, {@code refresh_token} and {@code client_credentials}, and a WebClient
  * token-relay filter. All beans are {@link ConditionalOnMissingBean} so applications can override them.
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = "org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration")
 @ConditionalOnClass(ReactiveOAuth2AuthorizedClientManager.class)
 public class OAuth2ClientAutoConfiguration {
 

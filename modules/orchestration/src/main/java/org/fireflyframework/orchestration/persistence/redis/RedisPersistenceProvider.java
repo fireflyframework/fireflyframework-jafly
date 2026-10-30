@@ -22,6 +22,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
@@ -62,7 +63,7 @@ public class RedisPersistenceProvider implements ExecutionPersistenceProvider {
         this.stateKeyPrefix = (keyPrefix != null ? keyPrefix : "orchestration:") + "state:";
         this.metaKeyPrefix = (keyPrefix != null ? keyPrefix : "orchestration:") + "meta:";
         this.keyTtl = keyTtl;
-        log.info("[orchestration] RedisPersistenceProvider initialized with prefix: {}", keyPrefix);
+        log.info("[orchestration] RedisPersistenceProvider initialized with prefix: {}", LogFields.text(keyPrefix));
     }
 
     public RedisPersistenceProvider(ReactiveRedisTemplate<String, String> redisTemplate,
@@ -90,8 +91,8 @@ public class RedisPersistenceProvider implements ExecutionPersistenceProvider {
                     }
                     return Mono.when(stateOp, metaOp).then(ttlOp);
                 })
-                .doOnSuccess(v -> log.debug("[orchestration] Saved state to Redis: {}", state.correlationId()))
-                .doOnError(e -> log.error("[orchestration] Failed to save to Redis: {}", state.correlationId(), e));
+                .doOnSuccess(v -> log.debug("[orchestration] Saved state to Redis: {}", LogFields.text(state.correlationId())))
+                .doOnError(e -> log.error("[orchestration] Failed to save to Redis: {}", LogFields.text(state.correlationId()), e));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class RedisPersistenceProvider implements ExecutionPersistenceProvider {
                     try {
                         return Optional.of(objectMapper.readValue(json, ExecutionState.class));
                     } catch (JsonProcessingException e) {
-                        log.error("[orchestration] Failed to deserialize state: {}", correlationId, e);
+                        log.error("[orchestration] Failed to deserialize state: {}", LogFields.text(correlationId), e);
                         return Optional.<ExecutionState>empty();
                     }
                 })
@@ -197,7 +198,7 @@ public class RedisPersistenceProvider implements ExecutionPersistenceProvider {
             Instant updatedAt = parts.length > 2 ? Instant.parse(parts[2]) : null;
             return new MetaEntry(correlationId, pattern, status, updatedAt);
         } catch (Exception e) {
-            log.warn("[orchestration] Failed to parse meta entry: {}", metaKey, e);
+            log.warn("[orchestration] Failed to parse meta entry: {}", LogFields.text(metaKey), e);
             return null;
         }
     }

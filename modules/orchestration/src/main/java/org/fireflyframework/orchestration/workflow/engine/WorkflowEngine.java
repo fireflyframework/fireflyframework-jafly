@@ -38,6 +38,7 @@ import org.fireflyframework.orchestration.workflow.annotation.OnWorkflowError;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowDefinition;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowRegistry;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowStepDefinition;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -148,9 +149,9 @@ public class WorkflowEngine {
                                     .subscribeOn(Schedulers.boundedElastic())
                                     .subscribe(
                                             state -> log.info("[workflow] Async workflow '{}' completed with status {}",
-                                                    workflowId, state.status()),
+                                                    LogFields.text(workflowId), state.status()),
                                             error -> log.error("[workflow] Async workflow '{}' failed unexpectedly",
-                                                    workflowId, error)
+                                                    LogFields.text(workflowId), error)
                                     );
                             // Return initial RUNNING state immediately
                             return Mono.just(initialState);
@@ -333,7 +334,7 @@ public class WorkflowEngine {
                 ExecutionStatus.FAILED, error, inputs != null ? inputs : Map.of());
         return dlqService.deadLetter(entry)
                 .onErrorResume(err -> {
-                    log.warn("[workflow] Failed to save to DLQ: {}", ctx.getCorrelationId(), err);
+                    log.warn("[workflow] Failed to save to DLQ: {}", LogFields.text(ctx.getCorrelationId()), err);
                     return Mono.empty();
                 });
     }
@@ -372,7 +373,7 @@ public class WorkflowEngine {
                         Method compMethod = findCompensationMethod(bean.getClass(), compMethodName);
                         if (compMethod == null) {
                             log.warn("[workflow] Compensation method '{}' not found on bean '{}'",
-                                    compMethodName, bean.getClass().getSimpleName());
+                                    LogFields.text(compMethodName), LogFields.text(bean.getClass().getSimpleName()));
                             return Mono.empty();
                         }
                         compMethod.setAccessible(true);
@@ -386,7 +387,7 @@ public class WorkflowEngine {
                                     .then(Mono.fromRunnable(() -> events.onStepCompensated(workflowId, correlationId, stepId)))
                                     .then()
                                     .onErrorResume(e -> {
-                                        log.warn("[workflow] Compensation failed for step '{}'", stepId, e);
+                                        log.warn("[workflow] Compensation failed for step '{}'", LogFields.text(stepId), e);
                                         events.onStepCompensationFailed(workflowId, correlationId, stepId, e);
                                         return Mono.empty();
                                     });
@@ -399,7 +400,7 @@ public class WorkflowEngine {
                             return mono.then()
                                     .doOnSuccess(v -> events.onStepCompensated(workflowId, correlationId, stepId))
                                     .onErrorResume(e -> {
-                                        log.warn("[workflow] Compensation failed for step '{}'", stepId, e);
+                                        log.warn("[workflow] Compensation failed for step '{}'", LogFields.text(stepId), e);
                                         events.onStepCompensationFailed(workflowId, correlationId, stepId, e);
                                         return Mono.empty();
                                     });
@@ -407,7 +408,7 @@ public class WorkflowEngine {
                         events.onStepCompensated(workflowId, correlationId, stepId);
                         return Mono.empty();
                     } catch (Exception e) {
-                        log.warn("[workflow] Compensation failed for step '{}'", stepId, e);
+                        log.warn("[workflow] Compensation failed for step '{}'", LogFields.text(stepId), e);
                         events.onStepCompensationFailed(workflowId, correlationId, stepId, e);
                         return Mono.empty();
                     }
@@ -525,7 +526,7 @@ public class WorkflowEngine {
                     Object[] args = resolveCallbackArgs(m, ctx);
                     m.invoke(bean, args);
                 } catch (Exception e) {
-                    log.warn("[workflow] @OnWorkflowComplete callback '{}' failed", m.getName(), e);
+                    log.warn("[workflow] @OnWorkflowComplete callback '{}' failed", LogFields.text(m.getName()), e);
                 }
             });
 
@@ -579,7 +580,7 @@ public class WorkflowEngine {
                     Object[] args = resolveCallbackArgs(m, error, ctx);
                     m.invoke(bean, args);
                 } catch (Exception e) {
-                    log.warn("[workflow] @OnWorkflowError callback '{}' failed", m.getName(), e);
+                    log.warn("[workflow] @OnWorkflowError callback '{}' failed", LogFields.text(m.getName()), e);
                 }
             });
 

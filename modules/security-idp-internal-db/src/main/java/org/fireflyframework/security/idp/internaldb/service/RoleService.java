@@ -16,6 +16,7 @@
 
 package org.fireflyframework.security.idp.internaldb.service;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.security.idp.internaldb.domain.Role;
 import org.fireflyframework.security.idp.internaldb.domain.UserRole;
 import org.fireflyframework.security.idp.internaldb.repository.RoleRepository;
@@ -47,7 +48,7 @@ public class RoleService {
      * @return a Mono emitting the created role
      */
     public Mono<Role> createRole(String name, String description) {
-        log.debug("Creating role: {}", name);
+        log.debug("Creating role: {}", LogFields.text(name));
 
         return roleRepository.existsByName(name)
                 .flatMap(exists -> {
@@ -79,7 +80,10 @@ public class RoleService {
         return Flux.fromIterable(roleNames)
                 .flatMap(roleName -> createRole(roleName, null))
                 .onErrorContinue((error, item) -> 
-                    log.warn("Failed to create role {}: {}", item, error.getMessage()));
+                    log.warn("Failed to create role {}: errorType={}",
+                            item instanceof String roleItem ? LogFields.text(roleItem)
+                                    : item == null ? null : item.getClass().getName(),
+                            LogFields.errorType(error)));
     }
 
     /**
@@ -121,7 +125,7 @@ public class RoleService {
      * @return a Mono signaling completion
      */
     public Mono<Void> assignRoleToUser(UUID userId, String roleName) {
-        log.debug("Assigning role {} to user {}", roleName, userId);
+        log.debug("Assigning role {} to user {}", LogFields.text(roleName), userId);
 
         return roleRepository.findByName(roleName)
                 .switchIfEmpty(Mono.error(new RuntimeException("Role not found: " + roleName)))
@@ -131,7 +135,7 @@ public class RoleService {
                             .hasElement()
                             .flatMap(exists -> {
                                 if (exists) {
-                                    log.debug("Role {} already assigned to user {}", roleName, userId);
+                                    log.debug("Role {} already assigned to user {}", LogFields.text(roleName), userId);
                                     return Mono.empty();
                                 }
 
@@ -170,7 +174,7 @@ public class RoleService {
      * @return a Mono signaling completion
      */
     public Mono<Void> removeRoleFromUser(UUID userId, String roleName) {
-        log.debug("Removing role {} from user {}", roleName, userId);
+        log.debug("Removing role {} from user {}", LogFields.text(roleName), userId);
 
         return roleRepository.findByName(roleName)
                 .switchIfEmpty(Mono.error(new RuntimeException("Role not found: " + roleName)))
@@ -198,7 +202,7 @@ public class RoleService {
      * @return a Mono signaling completion
      */
     public Mono<Void> deleteRole(String roleName) {
-        log.debug("Deleting role: {}", roleName);
+        log.debug("Deleting role: {}", LogFields.text(roleName));
 
         return roleRepository.findByName(roleName)
                 .switchIfEmpty(Mono.error(new RuntimeException("Role not found: " + roleName)))

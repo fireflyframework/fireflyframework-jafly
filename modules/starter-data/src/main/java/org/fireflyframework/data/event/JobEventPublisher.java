@@ -16,6 +16,8 @@
 
 package org.fireflyframework.data.event;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
@@ -65,7 +67,7 @@ public class JobEventPublisher {
         );
 
         publishEvent(event);
-        log.debug("Published job started event for execution: {}", request.getExecutionId());
+        log.debug("Published job started event for execution: {}", LogFields.text(request.getExecutionId()));
     }
 
     /**
@@ -89,7 +91,7 @@ public class JobEventPublisher {
 
         publishEvent(event);
         log.debug("Published job stage completed event for execution: {}, stage: {}, success: {}", 
-                response.getExecutionId(), stage, response.isSuccess());
+                LogFields.text(response.getExecutionId()), stage, response.isSuccess());
     }
 
     /**
@@ -117,7 +119,7 @@ public class JobEventPublisher {
         );
 
         publishEvent(event);
-        log.debug("Published job failed event for execution: {}", executionId);
+        log.debug("Published job failed event for execution: {}", LogFields.text(executionId));
     }
 
     /**
@@ -138,7 +140,7 @@ public class JobEventPublisher {
         );
 
         publishEvent(event);
-        log.debug("Published job completed event for execution: {}", executionId);
+        log.debug("Published job completed event for execution: {}", LogFields.text(executionId));
     }
 
     private JobEvent createJobEvent(String eventType,

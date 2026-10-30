@@ -64,6 +64,14 @@
     "bom_managed": true
   },
   {
+    "slug": "batch",
+    "title": "Durable Batch",
+    "artifact": "fireflyframework-batch",
+    "path": "modules/batch",
+    "packaging": "jar",
+    "bom_managed": true
+  },
+  {
     "slug": "cache",
     "title": "Common Cache Library",
     "artifact": "fireflyframework-cache",

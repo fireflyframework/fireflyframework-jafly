@@ -24,7 +24,7 @@ RabbitMQ can route application lifecycle events to the configured review queues.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-eda-rabbitmq</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 

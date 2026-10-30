@@ -24,7 +24,7 @@ The onboarding HTTP boundary needs consistent error responses and carefully chos
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-web</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -88,19 +88,35 @@ A typical error response (RFC 7807 Problem Details):
 
 ### Idempotent requests
 
-Clients send a unique `X-Idempotency-Key` header on a write request; retries with the same key replay the original cached response instead of re-executing the handler. Opt an endpoint out with `@DisableIdempotency`:
+The optional `X-Idempotency-Key` header enables bounded HTTP response reuse for `POST`, `PUT`, `PATCH`, and `DELETE`. `GET`, `HEAD`, `OPTIONS`, and `TRACE` always pass through. The [HTTP idempotency guide](web-idempotency.md) describes setup, scope, recovery, and the executable qualification cases.
+
+Configure a stable application/environment namespace and authenticated tenant context before relying on response reuse:
+
+```yaml
+spring:
+  application:
+    name: payment-service
+firefly:
+  web:
+    idempotency:
+      namespace: payment-service:sandbox
+      max-request-body-bytes: 1048576
+      max-response-body-bytes: 4194304
+```
+
+The default resolver uses an authenticated Jafly `SecurityPrincipal` and the existing `TenantResolverPort` when available. Without that port, it requires `SecurityPrincipal.tenantId()`. Missing trusted identity, tenant, or application namespace bypasses HTTP response reuse. A caller-supplied tenant header never establishes identity. Services using a different authentication model can provide an `IdempotencyScopeResolver` bean derived from their verified server-side context.
+
+A key is scoped by service/environment namespace, issuer, subject, tenant, current roles/scopes, HTTP method, raw path, and raw query. A different payload or relevant representation/precondition header under that scope returns `409` before another handler execution. Byte-identical input replays a successful status/body and selected representation headers, including `Location`. JSON whitespace and field order count as input changes.
+
+Enforce authorization before the filter. HTTP response reuse cannot replace resource authorization, durable business idempotency, transaction isolation, or distributed coordination. The cache can expire or be unavailable, and in-flight coordination belongs to one filter instance. Financial effects must retain their authoritative durable business key even when a cache is enabled.
+
+Opt streaming or other unsuitable controller methods out with `@DisableIdempotency`; auto-configuration resolves actual controller metadata before response reuse. Manually constructed filters must supply handler mappings to honor that annotation. Disable the entire filter with `firefly.web.idempotency.enabled=false` when endpoint-specific metadata is unavailable.
 
 ```java
 import org.fireflyframework.web.idempotency.annotation.DisableIdempotency;
 
-@PostMapping("/payments")
-public Mono<Payment> pay(@RequestBody PaymentRequest req) {
-    // Send header "X-Idempotency-Key: <uuid>"; a retry returns the same response.
-    return paymentService.charge(req);
-}
-
 @PostMapping("/heartbeat")
-@DisableIdempotency // never deduplicated, header hidden from OpenAPI
+@DisableIdempotency
 public Mono<Void> heartbeat() {
     return monitor.ping();
 }
@@ -133,6 +149,8 @@ The `firefly.web.cors` namespace is bound by [CorsProperties.java](https://githu
 
 The `firefly.web.error-handling` namespace is bound by [ErrorHandlingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/error/config/ErrorHandlingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
+Source coordinates and exception type attached by the metadata aspect follow `include-debug-info`; cause type/message follow `include-exception-cause`. Both are omitted by default and suppressed under the `prod` or `production` profile even when the flags are enabled. This applies to business, converted HTTP-status, and validation metadata. The response filter copies metadata, preserving the exception's internal diagnostic record and ordinary business fields such as an operation ID or retry delay. These controls cover the framework's known diagnostic metadata keys; application-provided messages and custom metadata still need an appropriate disclosure policy.
+
 | Setting | Java type | Source default |
 | --- | --- | --- |
 | `firefly.web.error-handling.include-stack-trace` | `boolean` | `false` |
@@ -156,6 +174,9 @@ The `firefly.web.idempotency` namespace is bound by [IdempotencyProperties.java]
 | --- | --- | --- |
 | `firefly.web.idempotency.enabled` | `boolean` | `true` |
 | `firefly.web.idempotency.header-name` | `String` | `"X-Idempotency-Key"` |
+| `firefly.web.idempotency.namespace` | `String` | unset; auto-configuration uses `spring.application.name` |
+| `firefly.web.idempotency.max-request-body-bytes` | `int` | `1048576` |
+| `firefly.web.idempotency.max-response-body-bytes` | `int` | `4194304` |
 | `firefly.web.idempotency.cache` | `Cache` | `new Cache()` |
 
 The `firefly.web.http-request-logging` namespace is bound by [HttpRequestLoggingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/logging/config/HttpRequestLoggingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
@@ -309,6 +330,9 @@ firefly:
     idempotency:
       enabled: true                    # matchIfMissing=true (on by default)
       header-name: X-Idempotency-Key
+      namespace: payment-service:sandbox # unique service/environment sharing a cache backend
+      max-request-body-bytes: 1048576
+      max-response-body-bytes: 4194304
       cache:
         ttl-hours: 24                  # TTL for cached idempotent responses
 
@@ -408,6 +432,43 @@ public class OpenApiGenApplication {
 ```
 
 The Maven profile and plugin configuration are inherited from `fireflyframework-parent`.
+
+### Named Instant schemas
+
+Use the named scalar when an owner field is a real `java.time.Instant` and its generated client must retain the instant, offset interpretation, and nanoseconds. Existing `LocalDateTime` fields can keep their current SDK configuration.
+
+Use a framework revision containing this registrar; earlier artifacts do not implement the flag. The capability is disabled by default. Enable it explicitly in the application configuration **and** in the original producer application's `openapi-gen` profile:
+
+```yaml
+firefly:
+  openapi:
+    instant-scalar:
+      enabled: true
+```
+
+Normal auto-configuration and `@EnableOpenApiGen` import the same property-gated registrar. A coincidentally named domain schema has no effect while this property is missing or false.
+
+Annotate only the actual Instant field:
+
+```java
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+
+public record Observation(
+        @Schema(ref = "#/components/schemas/FireflyInstant") Instant recordedAt) {}
+```
+
+When an enabled document references this reserved name, the registrar adds `FireflyInstant` as the primitive `type: string`, `format: date-time` schema. An existing different definition fails generation instead of being overwritten. The registrar does not change runtime JSON serializers or the global ModelConverters registry. It visits modeled OpenAPI 3.0/3.1 schema locations, including path parameters, webhooks, component path items, and encoding headers; examples, descriptions, and arbitrary extension data are not opt-in signals, and remote references are not resolved.
+
+In the owner SDK's original `openapi-generator-maven-plugin` execution, use the standard mapping **list** supported by generator 7.26:
+
+```xml
+<schemaMappings>
+    <schemaMapping>FireflyInstant=java.time.Instant</schemaMapping>
+</schemaMappings>
+```
+
+Keep an existing `<dateLibrary>java8-localdatetime</dateLibrary>` for legacy fields. The explicit named mapping applies to the annotated scalar, rather than changing all date-time models. Generate the schema and SDK through the owner's original producer; do not edit the generated schema or Java files. Inspect generated field types and verify client serialization/deserialization against the real owner response before adopting this in a service. Framework source tests and generator contract vectors do not establish that service's producer, transport, release, or deployment readiness.
 
 ## Continue the application
 

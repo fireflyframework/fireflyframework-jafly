@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.observability;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.model.JobStage;
 import io.micrometer.observation.Observation;
@@ -61,20 +62,29 @@ public class JobTracingService {
             return operation
                     .doOnSubscribe(s -> {
                         observation.start();
-                        log.debug("Started tracing for stage {} with execution ID {}", stage, executionId);
+                        log.debug("Started tracing for stage {} with execution ID {}",
+                                stage,
+                                LogFields.text(executionId));
                     })
                     .doOnSuccess(result -> {
                         observation.event(Observation.Event.of("job.stage.success", "Job stage completed successfully"));
-                        log.debug("Job stage {} completed successfully for execution {}", stage, executionId);
+                        log.debug("Job stage {} completed successfully for execution {}",
+                                stage,
+                                LogFields.text(executionId));
                     })
                     .doOnError(error -> {
                         observation.error(error);
                         observation.event(Observation.Event.of("job.stage.error", "Job stage failed: " + error.getMessage()));
-                        log.error("Job stage {} failed for execution {}: {}", stage, executionId, error.getMessage());
+                        log.error("Job stage {} failed for execution {}: {}",
+                                stage,
+                                LogFields.text(executionId),
+                                LogFields.errorType(error));
                     })
                     .doFinally(signalType -> {
                         observation.stop();
-                        log.debug("Stopped tracing for stage {} with execution ID {}", stage, executionId);
+                        log.debug("Stopped tracing for stage {} with execution ID {}",
+                                stage,
+                                LogFields.text(executionId));
                     });
         });
     }
@@ -97,22 +107,25 @@ public class JobTracingService {
         
         try {
             observation.start();
-            log.debug("Started tracing for stage {} with execution ID {}", stage, executionId);
+            log.debug("Started tracing for stage {} with execution ID {}", stage, LogFields.text(executionId));
             
             T result = operation.get();
             
             observation.event(Observation.Event.of("job.stage.success", "Job stage completed successfully"));
-            log.debug("Job stage {} completed successfully for execution {}", stage, executionId);
+            log.debug("Job stage {} completed successfully for execution {}", stage, LogFields.text(executionId));
             
             return result;
         } catch (Exception e) {
             observation.error(e);
             observation.event(Observation.Event.of("job.stage.error", "Job stage failed: " + e.getMessage()));
-            log.error("Job stage {} failed for execution {}: {}", stage, executionId, e.getMessage());
+            log.error("Job stage {} failed for execution {}: {}",
+                    stage,
+                    LogFields.text(executionId),
+                    LogFields.errorType(e));
             throw e;
         } finally {
             observation.stop();
-            log.debug("Stopped tracing for stage {} with execution ID {}", stage, executionId);
+            log.debug("Stopped tracing for stage {} with execution ID {}", stage, LogFields.text(executionId));
         }
     }
 
@@ -179,7 +192,8 @@ public class JobTracingService {
         if (currentObservation != null) {
             currentObservation.event(Observation.Event.of(eventName, eventDescription));
         } else {
-            log.debug("No current observation found when recording event '{}' - context may have switched threads", eventName);
+            log.debug("No current observation found when recording event '{}' - context may have switched threads",
+                    LogFields.text(eventName));
         }
     }
 
@@ -208,20 +222,29 @@ public class JobTracingService {
             return operation
                     .doOnSubscribe(s -> {
                         observation.start();
-                        log.debug("Started tracing for operation {} with ID {}", operationName, operationId);
+                        log.debug("Started tracing for operation {} with ID {}",
+                                LogFields.text(operationName),
+                                LogFields.text(operationId));
                     })
                     .doOnSuccess(result -> {
                         observation.event(Observation.Event.of("operation.success", "Operation completed successfully"));
-                        log.debug("Operation {} completed successfully for ID {}", operationName, operationId);
+                        log.debug("Operation {} completed successfully for ID {}",
+                                LogFields.text(operationName),
+                                LogFields.text(operationId));
                     })
                     .doOnError(error -> {
                         observation.error(error);
                         observation.event(Observation.Event.of("operation.error", "Operation failed: " + error.getMessage()));
-                        log.error("Operation {} failed for ID {}: {}", operationName, operationId, error.getMessage());
+                        log.error("Operation {} failed for ID {}: {}",
+                                LogFields.text(operationName),
+                                LogFields.text(operationId),
+                                LogFields.errorType(error));
                     })
                     .doFinally(signalType -> {
                         observation.stop();
-                        log.debug("Stopped tracing for operation {} with ID {}", operationName, operationId);
+                        log.debug("Stopped tracing for operation {} with ID {}",
+                                LogFields.text(operationName),
+                                LogFields.text(operationId));
                     });
         });
     }

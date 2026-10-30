@@ -21,6 +21,7 @@ import freemarker.template.TemplateException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -188,10 +189,15 @@ public class TemplateRenderUtilTest {
     }
 
     @Test
-    void testRenderTemplateToPdfFile() throws Exception {
+    void testRenderTemplateToPdfFile(@TempDir Path directory) throws Exception {
         // Create a temporary file for the PDF output
-        File tempFile = File.createTempFile("test-pdf-file-", ".pdf");
-        tempFile.deleteOnExit();
+        File tempFile = Files.createTempFile(directory, "test-pdf-file-", ".pdf").toFile();
+        if (tempFile.toPath().getFileSystem().supportedFileAttributeViews().contains("posix")) {
+            assertEquals(java.util.Set.of(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE),
+                    Files.getPosixFilePermissions(tempFile.toPath()));
+        }
 
         // Render the template to a PDF file
         TemplateRenderUtil.renderTemplateToPdfFile(
@@ -410,13 +416,18 @@ public class TemplateRenderUtilTest {
     }
 
     @Test
-    void testRenderHtmlToPdfFile() throws Exception {
+    void testRenderHtmlToPdfFile(@TempDir Path directory) throws Exception {
         // Create a simple HTML content
         String html = "<html><body><h1>Direct HTML to PDF File Test</h1></body></html>";
 
         // Create a temporary file for the PDF output
-        File tempFile = File.createTempFile("html-pdf-file-", ".pdf");
-        tempFile.deleteOnExit();
+        File tempFile = Files.createTempFile(directory, "html-pdf-file-", ".pdf").toFile();
+        if (tempFile.toPath().getFileSystem().supportedFileAttributeViews().contains("posix")) {
+            assertEquals(java.util.Set.of(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE),
+                    Files.getPosixFilePermissions(tempFile.toPath()));
+        }
 
         // Render HTML to PDF file
         TemplateRenderUtil.renderHtmlToPdfFile(html, tempFile.getAbsolutePath());

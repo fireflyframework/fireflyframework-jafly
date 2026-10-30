@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.fireflyframework</groupId>
         <artifactId>fireflyframework-parent</artifactId>
-        <version>26.10.21-SNAPSHOT</version>
+        <version>26.10.22</version>
         <relativePath>../../build/parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>fireflyframework-security-oauth2-client</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
     <packaging>jar</packaging>
 
     <name>Firefly Framework - Security OAuth2 Client</name>
@@ -31,6 +31,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-security-oauth2-client</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -43,6 +47,12 @@
         </dependency>
 
         <!-- ===== Test: stub token endpoint via WireMock ===== -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-security-resource-server</artifactId>
+            <version>${fireflyframework.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>

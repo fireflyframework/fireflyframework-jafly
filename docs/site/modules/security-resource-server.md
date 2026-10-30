@@ -24,7 +24,7 @@ Protect onboarding HTTP routes with JWTs from the configured identity authority.
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-security-resource-server</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -36,12 +36,13 @@ This binding configures JWT validation. Opaque-token introspection ports exist e
 
 Set `OIDC_ISSUER` to the expected token issuer and `OIDC_JWK_SET_URI` to that provider's JWKS endpoint. For an external identity provider, configure both: `issuer` validates the `iss` claim; it does not discover signing keys. Without `jwk-set-uri`, the decoder uses the configured `KeyManagementPort` signing key instead.
 
-With the module on the classpath, the resource server is active with zero code. Every route is locked down. Mark public routes explicitly and read the validated principal directly:
+With the module on the classpath, protected routes require a validated bearer token. Authentication alone does not grant financial or insurance operations. Enable strict policy mode, contribute the current project policy, and mark public routes explicitly:
 
 ```yaml
 firefly:
   security:
     resource-server:
+      strict-policy: true
       permit-matchers:
         - /actuator/health
         - /public/**
@@ -80,12 +81,29 @@ PolicyRule denyReports() {
 }
 ```
 
+## Header bearer authentication and CSRF
+
+The default API chain authenticates protected routes through an explicit `Authorization: Bearer <token>` header and never restores authentication from a session cookie. Basic, form, query-token and token-cookie credentials are not alternate authorities. Native Spring Security CSRF protection remains enabled with its bearer exemption: legitimate signed bearer POST/PUT/PATCH/DELETE requests do not need CSRF tokens, while unsafe non-bearer requests do. A missing CSRF token can return 403 before authentication, including on explicitly allowlisted browser routes. A valid CSRF token does not authenticate a request.
+
+Applications that need session login supply their own filter chain through the existing bean-backoff seam and retain appropriate CSRF controls. CSRF state may use WebSession without making that session an API authentication authority. The [canonical header bearer and browser CSRF contract](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/docs/bearer-api-and-csrf.md) documents exact transport/status compatibility, permitted browser token delivery, and the maintained real-HTTP boundaries.
+
+## Require an explicit current policy
+
+`firefly.security.resource-server.strict-policy: true` makes the fallback embedded policy deny when no rules are configured. A failed or empty rule publisher, or a decision without an effect, denies even when another rule permits. Normal `INDETERMINATE` results may abstain, but at least one explicit permit is required and any denial wins. The embedded provider retains permit obligations; an enforcing business boundary must fulfill them or deny access.
+
+The default URL chain cannot perform row filtering, masking, approval, or other policy obligations. In strict mode it rejects obligation-bearing permits and bounds the current policy publisher to five seconds. A project-owned `PolicyDecisionPort` remains the single authority and replaces the fallback provider; its errors, empty results, unresolved obligations, and timeouts cannot authorize an exchange. A custom filter chain must enforce those checks itself and preserve a catchall denial for unmatched routes.
+
+The property defaults to `false` for compatibility. In that legacy mode, the embedded provider with no rules permits in order to defer to a separate RBAC gate. Do not confuse a default provider bean with an approved current resource decision. Financial and insurance integrations that require strict mode must also reject missing or false configuration at their own business entry point. Public `permit-matchers` remain explicit authentication exceptions; do not put protected business paths there.
+
+A signed token proves its validated claims. It does not supply tenant ownership, staff impersonation approval, contract authority, a model approval, or permission to retry a financial effect. Bind each business request to its exact trusted principal/resource and evaluate current authority again on replay and recovery. Keep actor selection out of untrusted headers and request bodies.
+
 ## Configuration and wiring
 
 The `firefly.security.resource-server` namespace is bound by [ResourceServerProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
 | Setting | Java type | Source default |
 | --- | --- | --- |
+| `firefly.security.resource-server.strict-policy` | `boolean` | `false` |
 | `firefly.security.resource-server.permit-matchers` | `List<String>` | `new ArrayList<>()` |
 | `firefly.security.resource-server.issuer` | `String` | `not initialized` |
 | `firefly.security.resource-server.audiences` | `List<String>` | `new ArrayList<>()` |
@@ -177,10 +195,10 @@ This module depends only on `security-webflux` (which transitively brings `secur
 `ResourceServerAutoConfiguration` contributes, each gated by `@ConditionalOnMissingBean`:
 
 - A verifying JWT decoder. `NimbusReactiveJwtDecoder.withPublicKey(...)` built from the active RSA `SigningKey` resolved through `KeyManagementPort.activeSigningKey()`, pinned to `RS256`. If no RSA key resolves, the context fails to start (fail-closed) rather than booting an unprotected server.
-- A validator chain. A `DelegatingOAuth2TokenValidator<Jwt>` always enforcing `JwtTimestampValidator` (exp/nbf with skew), plus `JwtIssuerValidator` when `issuer` is configured and a custom audience validator when `audiences` is non-empty.
+- A validator chain. A `DelegatingOAuth2TokenValidator<Jwt>` always enforcing required expiration and timestamp validation through `AccessTokenValidators.timestamps()` (including nbf/skew validation), plus `JwtIssuerValidator` when `issuer` is configured and a custom audience validator when `audiences` is non-empty.
 - Claim-to-authority mapping. An `AuthorityMappingPort` (default `ConfigurableAuthorityMapper`) driven by configurable role/scope claim paths and authority prefix, normalizing provider-specific claims (Keycloak/Cognito/Entra) into a uniform authority/scope set.
 - A framework principal. `JwtToFireflyPrincipalConverter` replaces Spring's default `JwtAuthenticationToken` with a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` (built by `PrincipalFactory.fromClaims(...)`), so `@AuthenticationPrincipal SecurityPrincipal` works with its default configuration.
-- A default-deny filter chain. `fireflySecurityWebFilterChain` disables CSRF, HTTP-Basic, form-login, and logout; permits only the explicitly configured `permitMatchers`; and routes `anyExchange()` through a `PolicyAuthorizationManager` backed by `PolicyDecisionPort`. Unconfigured routes are denied.
+- An authenticated policy filter chain. `fireflySecurityWebFilterChain` disables CSRF, HTTP-Basic, form-login, and logout; permits only the explicitly configured `permitMatchers`; and routes `anyExchange()` through a `PolicyAuthorizationManager` backed by `PolicyDecisionPort`. Anonymous requests to unconfigured routes are denied. Authenticated authorization depends on the configured policy mode; strict mode requires an explicit permit.
 - Hardened response headers on every response: `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, a strict `Content-Security-Policy` (`default-src 'none'; frame-ancestors 'none'`), and HSTS (`includeSubDomains`, 365-day max-age).
 - Framework defaults for the remaining ports. `EmbeddedPolicyDecisionAdapter` (collecting any `PolicyRule` beans), `LoggingAuditEventAdapter`, and `ReactorSecurityContextAdapter`. all overridable.
 
@@ -202,7 +220,8 @@ All keys live under `firefly.security.resource-server`:
 
 | Property | Default | Description |
 | --- | --- | --- |
-| `permit-matchers` | _(empty)_ | Ant-style path patterns served without authentication. The only opt-out from default-deny. |
+| `strict-policy` | `false` | Require an explicit permit; reject failed/empty rules and unsupported URL obligations. |
+| `permit-matchers` | _(empty)_ | Ant-style path patterns served without authentication. |
 | `issuer` | _(none)_ | Expected `iss`; when set, a `JwtIssuerValidator` is enforced. |
 | `audiences` | _(empty)_ | Acceptable `aud` values; when non-empty, an audience validator is enforced. |
 | `authority-prefix` | `""` | Prefix applied to mapped authorities (e.g. `ROLE_`). |
@@ -218,7 +237,7 @@ Bearer token → fireflySecurityWebFilterChain
    → NimbusReactiveJwtDecoder (RS256, key from KeyManagementPort)
    → DelegatingOAuth2TokenValidator (timestamp [+ issuer] [+ audience])
    → JwtToFireflyPrincipalConverter → FireflyAuthenticationToken(SecurityPrincipal)
-   → authorizeExchange: permitMatchers → permitAll, else PolicyAuthorizationManager (PolicyDecisionPort, default-deny)
+   → authorizeExchange: permitMatchers → permitAll, else PolicyAuthorizationManager (PolicyDecisionPort, explicit strict mode or legacy RBAC deferral)
    → controller / handler
 ```
 

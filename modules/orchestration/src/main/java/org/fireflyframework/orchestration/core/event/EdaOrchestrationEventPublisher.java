@@ -18,6 +18,7 @@ package org.fireflyframework.orchestration.core.event;
 
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
+import org.fireflyframework.kernel.logging.LogFields;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -86,7 +87,7 @@ public class EdaOrchestrationEventPublisher implements OrchestrationEventPublish
                 : defaultTopic;
         if (destination == null || destination.isBlank()) {
             log.warn("[orchestration-eda-bridge] dropping event {} (executionName={} correlationId={}) — no topic and no default-topic configured",
-                    event.eventType(), event.executionName(), event.correlationId());
+                    LogFields.text(event.eventType()), LogFields.text(event.executionName()), LogFields.text(event.correlationId()));
             return Mono.empty();
         }
 
@@ -94,16 +95,16 @@ public class EdaOrchestrationEventPublisher implements OrchestrationEventPublish
         EventPublisher publisher = publisherFactory.getDefaultPublisher();
         if (publisher == null) {
             log.warn("[orchestration-eda-bridge] no EDA default publisher available — dropping event {} on topic {}",
-                    event.eventType(), destination);
+                    LogFields.text(event.eventType()), LogFields.text(destination));
             return Mono.empty();
         }
 
         Map<String, Object> headers = buildHeaders(event);
 
         return publisher.publish(event, destination, headers)
-                .doOnSuccess(v -> log.debug("[orchestration-eda-bridge] published {} to {}", event.eventType(), destination))
+                .doOnSuccess(v -> log.debug("[orchestration-eda-bridge] published {} to {}", LogFields.text(event.eventType()), LogFields.text(destination)))
                 .doOnError(err -> log.error("[orchestration-eda-bridge] failed to publish {} to {}: {}",
-                        event.eventType(), destination, err.getMessage()));
+                        LogFields.text(event.eventType()), LogFields.text(destination), LogFields.text(err.getMessage())));
     }
 
     /**

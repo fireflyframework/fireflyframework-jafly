@@ -18,10 +18,15 @@ package org.fireflyframework.security.rs;
 
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
 import org.fireflyframework.security.core.context.PrincipalFactory;
+import org.fireflyframework.security.spi.TenantResolverPort;
 import org.fireflyframework.security.webflux.authentication.FireflyAuthenticationToken;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+
+import java.util.Objects;
 import reactor.core.publisher.Mono;
 
 /**
@@ -32,15 +37,44 @@ import reactor.core.publisher.Mono;
 public class JwtToFireflyPrincipalConverter implements Converter<Jwt, Mono<AbstractAuthenticationToken>> {
 
     private final PrincipalFactory principalFactory;
+    private final TenantResolverPort tenantResolver;
+    private final boolean tenantRequired;
 
     public JwtToFireflyPrincipalConverter(PrincipalFactory principalFactory) {
-        this.principalFactory = principalFactory;
+        this(principalFactory, null, false);
+    }
+
+    public JwtToFireflyPrincipalConverter(PrincipalFactory principalFactory,
+                                        TenantResolverPort tenantResolver, boolean tenantRequired) {
+        this.principalFactory = Objects.requireNonNull(principalFactory);
+        if (tenantRequired && tenantResolver == null) {
+            throw new IllegalArgumentException("A configured tenant resolver is required");
+        }
+        this.tenantResolver = tenantResolver;
+        this.tenantRequired = tenantRequired;
     }
 
     @Override
     public Mono<AbstractAuthenticationToken> convert(Jwt jwt) {
-        String issuer = jwt.getIssuer() == null ? null : jwt.getIssuer().toString();
-        SecurityPrincipal principal = principalFactory.fromClaims(jwt.getSubject(), issuer, jwt.getClaims());
-        return Mono.just(new FireflyAuthenticationToken(principal));
+        return Mono.defer(() -> {
+            String issuer = jwt.getIssuer() == null ? null : jwt.getIssuer().toString();
+            SecurityPrincipal principal = principalFactory.fromClaims(jwt.getSubject(), issuer, jwt.getClaims());
+            if (tenantResolver == null) {
+                return Mono.just(new FireflyAuthenticationToken(principal));
+            }
+            return Mono.defer(() -> tenantResolver.resolveTenant(principal))
+                    .filter(tenant -> !tenant.isBlank())
+                    .<AbstractAuthenticationToken>map(tenant ->
+                            new FireflyAuthenticationToken(principal.toBuilder().tenantId(tenant).build()))
+                    .switchIfEmpty(Mono.defer(() -> tenantRequired
+                            ? Mono.error(tenantFailure())
+                            : Mono.just(new FireflyAuthenticationToken(principal.toBuilder().tenantId(null).build()))))
+                    .onErrorMap(error -> tenantFailure());
+        });
+    }
+
+    private static OAuth2AuthenticationException tenantFailure() {
+        return new OAuth2AuthenticationException(new OAuth2Error("invalid_token",
+                "Token tenant could not be resolved", null));
     }
 }

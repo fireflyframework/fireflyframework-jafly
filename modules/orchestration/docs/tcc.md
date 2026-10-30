@@ -10,6 +10,7 @@ Contents:
 - [§25 TccEngine API](#25-tccengine-api)
 - [§26 TccResult](#26-tccresult)
 - [§27 TCC Composition](#27-tcc-composition)
+- [Required persistence acknowledgment](#required-persistence-acknowledgment)
 
 ## 21. TCC Annotation Reference
 
@@ -1020,3 +1021,27 @@ String mermaid = viz.toMermaid(composition);
 [← Back to Index](README.md) | [Previous: Saga Pattern](saga.md) | [Next: Core Infrastructure →](core-infrastructure.md)
 
 *Copyright 2024-2026 Firefly Software Foundation. Licensed under the Apache License, Version 2.0.*
+
+
+## Required persistence acknowledgment
+
+TCC persistence defaults to `BEST_EFFORT`. Save failures are logged and execution continues. Existing engine and orchestrator constructors retain this default.
+
+To require the configured provider to acknowledge every existing TCC save:
+
+```yaml
+firefly:
+  orchestration:
+    tcc:
+      persistence-mode: REQUIRED
+```
+
+`REQUIRED` waits for the initial save before invoking any participant. It also waits for the existing `CONFIRMING`, post-confirm `CONFIRMED`, and `CANCELING` checkpoints, plus the final state/report save. Overall successful completion events and `@OnTccComplete` callbacks, including asynchronous callbacks, follow the final acknowledgment. Participant events and phase observations still describe individual calls and phases; they are not proof of overall transaction completion.
+
+A failed required save terminates the publisher with `TccPersistenceException`. Its message is sanitized; the original provider cause is available through `getCause()`. The exception exposes the correlation ID, save stage (`INITIAL`, `CHECKPOINT`, or `FINAL`), attempted status, `hasPossibleParticipantEffects()`, and the retained `getExecutionContext()`. The flag is false for an initial save failure and conservatively true for later failures. Use the cause and execution context in trusted diagnostics and operator-directed recovery.
+
+A persistence failure does not automatically cancel participants, invoke the generic engine error callback path, suppress the error into `CONFIRMED`, or overwrite the last saved state with `FAILED`. A provider may have applied a write before failing to acknowledge it. Participants may also have completed effects before a later checkpoint fails. Do not treat this exception as permission to retry the transaction or compensate automatically. Genuine participant failures keep the existing TCC cancellation and callback behavior.
+
+For manual construction, pass `TccPersistenceMode.REQUIRED` to the new engine and orchestrator constructor overloads and use the same non-null provider instance for both. A missing provider or inconsistent policy fails at construction. Spring Boot passes the configured policy to both default beans; a custom orchestrator must use the same policy as the configured engine.
+
+Acknowledgment means that the selected provider's save publisher completed. It does not establish disk durability; the default in-memory provider remains in-memory. The existing checkpoints are phase snapshots, not a per-participant journal. For example, a retained `CONFIRMED` checkpoint without the final report may precede a failed final acknowledgment. This option does not add durable pause/resume, complete automated recovery, distributed atomicity, or financial exactly-once guarantees.

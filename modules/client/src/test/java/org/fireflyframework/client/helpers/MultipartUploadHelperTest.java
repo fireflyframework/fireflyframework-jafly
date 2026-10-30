@@ -26,6 +26,30 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MultipartUploadHelperTest {
 
     @Test
+    void compressedTemporaryFileIsOwnerOnlyAndContainsTheOriginalBytes(@TempDir Path directory)
+            throws Exception {
+        Path input = java.nio.file.Files.writeString(directory.resolve("input.txt"), "owned upload content");
+        var helper = new MultipartUploadHelper("http://localhost:8080");
+        var compress = MultipartUploadHelper.class.getDeclaredMethod("compressFile", File.class);
+        compress.setAccessible(true);
+        File compressed = (File) compress.invoke(helper, input.toFile());
+        try {
+            if (compressed.toPath().getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                assertThat(java.nio.file.Files.getPosixFilePermissions(compressed.toPath()))
+                        .containsExactlyInAnyOrder(
+                                java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+                                java.nio.file.attribute.PosixFilePermission.OWNER_WRITE);
+            }
+            try (var gzip = new java.util.zip.GZIPInputStream(java.nio.file.Files.newInputStream(compressed.toPath()))) {
+                assertThat(new String(gzip.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8))
+                        .isEqualTo("owned upload content");
+            }
+        } finally {
+            java.nio.file.Files.deleteIfExists(compressed.toPath());
+        }
+    }
+
+    @Test
     @DisplayName("Should create upload helper with valid base URL")
     void shouldCreateUploadHelperWithValidBaseUrl() {
         // When

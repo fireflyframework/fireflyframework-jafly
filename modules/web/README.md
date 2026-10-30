@@ -20,7 +20,7 @@ The onboarding HTTP boundary needs consistent error responses and carefully chos
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-web</artifactId>
-    <version>26.10.21-SNAPSHOT</version>
+    <version>26.10.22</version>
 </dependency>
 ```
 
@@ -133,6 +133,20 @@ The `firefly.web.cors` namespace is bound by [CorsProperties.java](https://githu
 | [`IdempotencyProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/idempotency/config/IdempotencyProperties.java) | Configuration properties for the idempotency module. |
 | [`ErrorHandlingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/error/config/ErrorHandlingProperties.java) | Configuration properties for error handling. |
 | [`PiiMaskingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/logging/config/PiiMaskingProperties.java) | Configuration properties for PII (Personally Identifiable Information) masking in logs. |
+
+## Preserve Instant values in generated clients
+
+Use a framework revision containing this registrar; earlier artifacts do not implement the flag. The named Instant schema capability is off by default. Set `firefly.openapi.instant-scalar.enabled=true` in both the application and its original `openapi-gen` producer configuration. Mark an actual `Instant` field with `@Schema(ref = "#/components/schemas/FireflyInstant")`; enabled documents register a primitive string/date-time schema and reject a conflicting reserved definition. Default consumers, including coincidentally named domain schemas, remain unchanged.
+
+Use the generator's standard mapping list in the owner SDK execution:
+
+```xml
+<schemaMappings>
+    <schemaMapping>FireflyInstant=java.time.Instant</schemaMapping>
+</schemaMappings>
+```
+
+Keep existing legacy `dateLibrary` settings. The [named Instant schema guide](../../docs/site/modules/web.md#named-instant-schemas) shows the actual owner annotation and the application/producer opt-in. Qualify the owner's original producer, genuine SDK, and real responses before service adoption; these framework source controls do not establish that adoption or a released artifact.
 
 ## Continue the application
 

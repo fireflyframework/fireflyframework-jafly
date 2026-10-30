@@ -16,6 +16,7 @@
 
 package org.fireflyframework.data.controller;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.data.controller.dto.OperationCatalogResponse;
 import org.fireflyframework.data.enrichment.EnricherMetadataReader;
 import org.fireflyframework.data.operation.EnricherOperationInterface;
@@ -166,7 +167,7 @@ public class GlobalOperationsController {
             @Parameter(description = "Optional tenant ID to filter operations")
             @RequestParam(required = false) UUID tenantId) {
         
-        log.info("Received request to list operations - type: {}, tenantId: {}", type, tenantId);
+        log.info("Received request to list operations - type: {}, tenantId: {}", LogFields.text(type), tenantId);
 
         // Get enrichers (filtered or all)
         List<DataEnricher<?, ?, ?>> enrichers;
@@ -271,9 +272,9 @@ public class GlobalOperationsController {
             @RequestBody OperationExecutionRequest executionRequest) {
         
         log.info("Received operation execution request - type: {}, tenantId: {}, operationId: {}",
-                executionRequest.getType(),
+                LogFields.text(executionRequest.getType()),
                 executionRequest.getTenantId(),
-                executionRequest.getOperationId());
+                LogFields.text(executionRequest.getOperationId()));
 
         // Validate request
         if (executionRequest.getType() == null || executionRequest.getType().isBlank()) {
@@ -296,7 +297,7 @@ public class GlobalOperationsController {
                     executionRequest.getType(),
                     executionRequest.getTenantId()
             );
-            log.warn(message);
+            log.warn(LogFields.text(message));
             return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
         });
 
@@ -306,7 +307,7 @@ public class GlobalOperationsController {
                     "Enricher '%s' does not support operations",
                     enricher.getProviderName()
             );
-            log.warn(message);
+            log.warn(LogFields.text(message));
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, message);
         }
 
@@ -323,13 +324,13 @@ public class GlobalOperationsController {
                             executionRequest.getOperationId(),
                             enricher.getProviderName()
                     );
-                    log.warn(message);
+                    log.warn(LogFields.text(message));
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
                 });
 
         log.info("Executing operation '{}' from provider '{}' for tenant '{}'",
-                executionRequest.getOperationId(),
-                enricher.getProviderName(),
+                LogFields.text(executionRequest.getOperationId()),
+                LogFields.text(enricher.getProviderName()),
                 executionRequest.getTenantId());
 
         // Execute operation
@@ -337,16 +338,16 @@ public class GlobalOperationsController {
         .map(ResponseEntity::ok)
         .doOnSuccess(response -> {
             log.info("Operation '{}' executed successfully for provider '{}', tenant '{}'",
-                    executionRequest.getOperationId(),
-                    enricher.getProviderName(),
+                    LogFields.text(executionRequest.getOperationId()),
+                    LogFields.text(enricher.getProviderName()),
                     executionRequest.getTenantId());
         })
         .doOnError(error -> {
             log.error("Operation '{}' failed for provider '{}', tenant '{}': {}",
-                    executionRequest.getOperationId(),
-                    enricher.getProviderName(),
+                    LogFields.text(executionRequest.getOperationId()),
+                    LogFields.text(enricher.getProviderName()),
                     executionRequest.getTenantId(),
-                    error.getMessage(),
+                    LogFields.text(error.getMessage()),
                     error);
         });
     }
