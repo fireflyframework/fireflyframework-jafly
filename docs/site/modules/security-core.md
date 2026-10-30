@@ -182,6 +182,9 @@ Each type below is a default implementation of a `security-spi` port, or a self-
 
 Supporting types: `SecureRequirement` (a framework-neutral view of `@Secure`, built from the annotation or programmatically), `AuthorityMappingProperties` (role/scope claim paths + authority prefix; defaults cover Keycloak `realm_access.roles`, Cognito `cognito:groups`, and generic `roles`/`groups`/`scope`/`scp`), `ClaimPaths` (dot-path traversal + string-set coercion), and `PolicyRule` (a `@FunctionalInterface` ABAC rule returning PERMIT / DENY / INDETERMINATE).
 
+Scalar `scope` and configured `scp` strings use ASCII spaces as scope separators, as defined by [RFC 6749, section 3.3](https://www.rfc-editor.org/rfc/rfc6749#section-3.3). A comma belongs to its scope token: `read,write` does not grant separate `read` and `write` scopes. Malformed scalar strings, including tabs and line breaks, contribute no scopes. Array members remain opaque, and role/group mappings retain their existing generic claim normalization.
+
+
 ### Secure-by-default behavior
 
 The engine is deliberately fail-closed at every decision point:

@@ -50,9 +50,29 @@ public class ConfigurableAuthorityMapper implements AuthorityMappingPort {
     public Set<String> mapScopes(Map<String, Object> claims) {
         Set<String> out = new LinkedHashSet<>();
         for (String path : properties.scopeClaimPaths()) {
-            out.addAll(ClaimPaths.readStringSet(claims, path));
+            out.addAll(scopeValues(ClaimPaths.read(claims, path)));
         }
         return out;
+    }
+
+    private static Set<String> scopeValues(Object value) {
+        if (!(value instanceof String scope)) {
+            return ClaimPaths.toStringSet(value);
+        }
+        // RFC 6749 scope-token permits commas; only ASCII SP separates scopes.
+        for (int i = 0; i < scope.length(); i++) {
+            char character = scope.charAt(i);
+            if (character < 0x20 || character > 0x7e || character == '"' || character == '\\') {
+                return Set.of();
+            }
+        }
+        Set<String> scopes = new LinkedHashSet<>();
+        for (String token : scope.split(" ")) {
+            if (!token.isEmpty()) {
+                scopes.add(token);
+            }
+        }
+        return scopes;
     }
 
     private String applyPrefix(String authority) {
