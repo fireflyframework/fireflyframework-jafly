@@ -339,22 +339,14 @@ public class HttpRequestLoggingWebFilter implements WebFilter {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             int totalSize = 0;
             for (DataBuffer dataBuffer : dataBuffers) {
-                int bufferSize = dataBuffer.readableByteCount();
-                if (totalSize + bufferSize > maxSize) {
-                    // Only read up to maxSize
-                    int remainingSize = maxSize - totalSize;
-                    if (remainingSize > 0) {
-                        byte[] bytes = new byte[remainingSize];
-                        dataBuffer.read(bytes);
-                        outputStream.write(bytes);
-                    }
-                    break;
-                } else {
-                    byte[] bytes = new byte[bufferSize];
-                    dataBuffer.read(bytes);
-                    outputStream.write(bytes);
-                    totalSize += bufferSize;
+                int length = Math.min(dataBuffer.readableByteCount(), maxSize - totalSize);
+                int position = dataBuffer.readPosition();
+                // Diagnostic copies must not consume the buffers replayed to the request/response.
+                for (int offset = 0; offset < length; offset++) {
+                    outputStream.write(dataBuffer.getByte(position + offset));
                 }
+                totalSize += length;
+                if (totalSize >= maxSize) break;
             }
             return outputStream.toByteArray();
         } catch (Exception e) {

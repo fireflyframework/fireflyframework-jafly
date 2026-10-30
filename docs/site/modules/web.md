@@ -184,14 +184,16 @@ The `firefly.web.http-request-logging` namespace is bound by [HttpRequestLogging
 | Setting | Java type | Source default |
 | --- | --- | --- |
 | `firefly.web.http-request-logging.enabled` | `boolean` | `true` |
-| `firefly.web.http-request-logging.include-headers` | `boolean` | `true` |
+| `firefly.web.http-request-logging.include-headers` | `boolean` | `false` |
 | `firefly.web.http-request-logging.include-request-body` | `boolean` | `false` |
 | `firefly.web.http-request-logging.include-response-body` | `boolean` | `false` |
 | `firefly.web.http-request-logging.max-body-size` | `int` | `1024` |
 | `firefly.web.http-request-logging.sensitive-headers` | `Set<String>` | `nested/default initializer; see source` |
 | `firefly.web.http-request-logging.excluded-paths` | `Set<String>` | `new HashSet<>(Arrays.asList( "/health", "/actuator/**", "/metrics", "/info"))` |
 | `firefly.web.http-request-logging.log-level` | `String` | `"INFO"` |
-| `firefly.web.http-request-logging.include-query-params` | `boolean` | `true` |
+| `firefly.web.http-request-logging.include-query-params` | `boolean` | `false` |
+
+HTTP logging includes request method/path and response status/duration by default. Headers, query parameters, and bodies require explicit opt-in. Diagnostic body copies respect `max-body-size` without consuming bytes forwarded to the application or client. The limit applies to the logged copy; it is not a request-size limit. Configure data masking for any diagnostic fields you enable.
 
 The `firefly.web.pii-masking` namespace is bound by [PiiMaskingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/logging/config/PiiMaskingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
@@ -356,10 +358,10 @@ firefly:
     http-request-logging:
       enabled: true
       log-level: INFO
-      include-headers: true
+      include-headers: false
       include-request-body: false
       include-response-body: false
-      include-query-params: true
+      include-query-params: false
       max-body-size: 1024              # bytes
       sensitive-headers: [authorization, x-api-key, x-auth-token, cookie, set-cookie]
       excluded-paths: [/health, /actuator/**, /metrics, /info]
