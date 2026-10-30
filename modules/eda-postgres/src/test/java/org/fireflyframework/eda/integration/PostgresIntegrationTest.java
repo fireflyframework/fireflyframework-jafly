@@ -70,13 +70,13 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
             .withUsername("firefly")
             .withPassword("firefly");
 
-    @Autowired(required = false)
+    @Autowired
     private PostgresEventPublisher publisher;
 
     @Autowired(required = false)
     private PostgresEventConsumer consumer;
 
-    @Autowired(required = false)
+    @Autowired
     private EventPublisherFactory publisherFactory;
 
     @DynamicPropertySource
@@ -106,9 +106,6 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("publisher inserts events into the outbox table")
     void publishInsertsOutboxRow() {
-        if (publisher == null) {
-            return;
-        }
         TestEventModels.SimpleTestEvent event = TestEventModels.SimpleTestEvent.create("outbox row");
 
         StepVerifier.create(publisher.publish(event, "events", Map.of("source", "integration-test")))
@@ -121,9 +118,6 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("publisher exposes POSTGRES type and remains healthy")
     void publisherIdentifiesItself() {
-        if (publisher == null) {
-            return;
-        }
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.POSTGRES);
         assertThat(publisher.isAvailable()).isTrue();
         StepVerifier.create(publisher.getHealth())
@@ -138,13 +132,8 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("EventPublisherFactory resolves the POSTGRES publisher")
     void factoryReturnsPostgresPublisher() {
-        if (publisherFactory == null) {
-            return;
-        }
         EventPublisher resolved = publisherFactory.getPublisher(PublisherType.POSTGRES, "default");
-        if (resolved == null) {
-            return;
-        }
+        assertThat(resolved).isNotNull();
         assertThat(resolved.getPublisherType()).isEqualTo(PublisherType.POSTGRES);
         assertThat(resolved.isAvailable()).isTrue();
     }
@@ -152,9 +141,7 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("consumer LISTENs on configured channels and marks events PROCESSED")
     void consumerProcessesPublishedEvents() {
-        if (publisher == null || consumer == null) {
-            return;
-        }
+        assertThat(consumer).as("Configured PostgreSQL consumer must actually be wired").isNotNull();
         consumer.start().block(Duration.ofSeconds(10));
         try {
             AtomicLong seen = new AtomicLong();
@@ -175,7 +162,7 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
                         assertThat(processed).isGreaterThanOrEqualTo(1L);
                     });
 
-            assertThat(seen.get()).isGreaterThanOrEqualTo(0L);
+            assertThat(seen.get()).isGreaterThan(0L);
         } finally {
             consumer.stop().block(Duration.ofSeconds(5));
         }
@@ -184,9 +171,6 @@ class PostgresIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("channel mapper output matches the value inserted by the trigger")
     void channelColumnMatchesMapping() {
-        if (publisher == null) {
-            return;
-        }
         publisher.publish(TestEventModels.SimpleTestEvent.create("channel"), "report.daily",
                 Map.of()).block(Duration.ofSeconds(5));
 

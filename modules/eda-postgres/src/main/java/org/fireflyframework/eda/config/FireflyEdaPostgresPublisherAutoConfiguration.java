@@ -24,8 +24,14 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.eda.properties.EdaProperties;
+import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher;
+import org.fireflyframework.eda.serialization.MessageSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -78,7 +84,7 @@ public class FireflyEdaPostgresPublisherAutoConfiguration {
      * explicitly enabled and a host is configured under
      * {@code firefly.eda.publishers.postgres.default.host}.
      */
-    @Bean(name = "fireflyEdaPostgresPublisherConnectionFactory", destroyMethod = "dispose")
+    @Bean(name = "fireflyEdaPostgresPublisherConnectionFactory", destroyMethod = "dispose", defaultCandidate = false)
     @ConditionalOnMissingBean(name = "fireflyEdaPostgresPublisherConnectionFactory")
     @ConditionalOnExpression("${firefly.eda.publishers.enabled:false} && ${firefly.eda.publishers.postgres.default.enabled:false} && '${firefly.eda.publishers.postgres.default.host:}'.length() > 0")
     public ConnectionPool fireflyEdaPostgresPublisherConnectionFactory(EdaProperties props) {
@@ -128,6 +134,15 @@ public class FireflyEdaPostgresPublisherAutoConfiguration {
         log.info("PostgreSQL EDA publisher ConnectionFactory created successfully");
         log.info("--------------------------------------------------------------------------------");
         return pool;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PostgresEventPublisher.class)
+    @ConditionalOnBean(name = "fireflyEdaPostgresPublisherConnectionFactory")
+    public PostgresEventPublisher postgresEventPublisher(
+            @Qualifier("fireflyEdaPostgresPublisherConnectionFactory") ObjectProvider<ConnectionFactory> factory,
+            MessageSerializer serializer, EdaProperties properties, ObjectMapper mapper) {
+        return new PostgresEventPublisher(factory, serializer, properties, mapper);
     }
 
     /**
