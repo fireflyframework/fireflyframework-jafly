@@ -193,7 +193,9 @@ The `firefly.web.http-request-logging` namespace is bound by [HttpRequestLogging
 | `firefly.web.http-request-logging.log-level` | `String` | `"INFO"` |
 | `firefly.web.http-request-logging.include-query-params` | `boolean` | `false` |
 
-HTTP logging includes request method/path and response status/duration by default. Headers, query parameters, and bodies require explicit opt-in. Diagnostic body copies respect `max-body-size` without consuming bytes forwarded to the application or client. The limit applies to the logged copy; it is not a request-size limit. Configure data masking for any diagnostic fields you enable.
+HTTP logging includes request method/path and response status/duration by default. Headers, query parameters, and bodies require explicit opt-in. Diagnostic body logging copies only a byte prefix up to `max-body-size` per subscription. It forwards the original buffers as they arrive, preserves demand and response flush groups, and neither retains nor releases transport buffers. The limit applies to the diagnostic copy; it is not a request-size limit. A nonpositive limit captures nothing.
+
+A request body prefix is logged after that body completes. A response prefix is logged after both its body and the transport write complete successfully. Error or cancellation discards the diagnostic prefix; an endless stream continues delivering frames without waiting for a body log. UTF-8 is decoded after collecting the bounded prefix, so a limit inside a character may produce a replacement character. Ordinary diagnostic-copy failures omit that body log and preserve the business stream. Configure data masking for any diagnostic fields you enable; the existing masking and JSON logging policies are separate from stream delivery.
 
 The `firefly.web.pii-masking` namespace is bound by [PiiMaskingProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/web/src/main/java/org/fireflyframework/web/logging/config/PiiMaskingProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 

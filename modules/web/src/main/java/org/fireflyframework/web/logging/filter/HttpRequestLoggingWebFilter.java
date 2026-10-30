@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.core.JsonGenerator;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -56,6 +57,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -289,19 +291,15 @@ public class HttpRequestLoggingWebFilter implements WebFilter {
                     return super.getBody();
                 }
                 
-                return super.getBody().collectList().flatMapMany(dataBuffers -> {
-                    try {
-                        byte[] body = extractBody(dataBuffers, properties.getMaxBodySize());
-                        if (body.length > 0) {
-                            String sanitizedBodyString = sanitizeBodyForJson(body);
-                            if (sanitizedBodyString != null) {
-                                logRequestBody(requestId, sanitizedBodyString);
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error logging request body: {}", e.getMessage(), e);
-                    }
-                    return Flux.fromIterable(dataBuffers);
+                return Flux.defer(() -> {
+                    BodyCapture capture = new BodyCapture(body -> logRequestBody(requestId, body));
+                    return super.getBody()
+                            .doOnNext(capture::append)
+                            .doOnComplete(() -> {
+                                capture.complete();
+                                capture.log();
+                            })
+                            .doFinally(signal -> capture.discard());
                 });
             }
         };
@@ -310,48 +308,93 @@ public class HttpRequestLoggingWebFilter implements WebFilter {
     private ServerHttpResponseDecorator createResponseDecorator(ServerHttpResponse response, String requestId, long startTime) {
         return new ServerHttpResponseDecorator(response) {
             @Override
-            public Mono<Void> writeWith(org.reactivestreams.Publisher<? extends DataBuffer> body) {
+            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 logResponse(response, requestId, startTime);
                 
                 if (!properties.isIncludeResponseBody()) {
                     return super.writeWith(body);
                 }
 
-                return super.writeWith(Flux.from(body).collectList().map(dataBuffers -> {
-                    try {
-                        byte[] responseBody = extractBody(dataBuffers, properties.getMaxBodySize());
-                        if (responseBody.length > 0) {
-                            String sanitizedBodyString = sanitizeBodyForJson(responseBody);
-                            if (sanitizedBodyString != null) {
-                                logResponseBody(requestId, sanitizedBodyString);
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error logging response body: {}", e.getMessage(), e);
-                    }
-                    return getDelegate().bufferFactory().join(dataBuffers);
-                }).flux());
+                return Mono.defer(() -> {
+                    BodyCapture capture = new BodyCapture(bodyString -> logResponseBody(requestId, bodyString));
+                    return super.writeWith(Flux.from(body)
+                                    .doOnNext(capture::append)
+                                    .doOnComplete(capture::complete)
+                                    .doOnError(error -> capture.discard())
+                                    .doOnCancel(capture::discard))
+                            .doOnSuccess(ignored -> capture.log())
+                            .doFinally(signal -> capture.discard());
+                });
+            }
+
+            @Override
+            public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
+                logResponse(response, requestId, startTime);
+                if (!properties.isIncludeResponseBody()) {
+                    return super.writeAndFlushWith(body);
+                }
+
+                return Mono.defer(() -> {
+                    BodyCapture capture = new BodyCapture(bodyString -> logResponseBody(requestId, bodyString));
+                    return super.writeAndFlushWith(Flux.from(body)
+                                    .map(group -> Flux.from(group)
+                                            .doOnNext(capture::append)
+                                            .doOnError(error -> capture.discard())
+                                            .doOnCancel(capture::discard))
+                                    .doOnComplete(capture::complete)
+                                    .doOnError(error -> capture.discard())
+                                    .doOnCancel(capture::discard))
+                            .doOnSuccess(ignored -> capture.log())
+                            .doFinally(signal -> capture.discard());
+                });
             }
         };
     }
 
-    private byte[] extractBody(List<? extends DataBuffer> dataBuffers, int maxSize) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            int totalSize = 0;
-            for (DataBuffer dataBuffer : dataBuffers) {
-                int length = Math.min(dataBuffer.readableByteCount(), maxSize - totalSize);
+    private final class BodyCapture {
+        private final int maxSize = Math.max(0, properties.getMaxBodySize());
+        private final Consumer<String> bodyLogger;
+        private ByteArrayOutputStream prefix;
+        private boolean complete;
+
+        private BodyCapture(Consumer<String> bodyLogger) {
+            this.bodyLogger = bodyLogger;
+            prefix = new ByteArrayOutputStream(Math.min(maxSize, 1024));
+        }
+
+        private void append(DataBuffer dataBuffer) {
+            if (prefix == null || prefix.size() >= maxSize) return;
+            try {
+                int length = Math.min(dataBuffer.readableByteCount(), maxSize - prefix.size());
                 int position = dataBuffer.readPosition();
-                // Diagnostic copies must not consume the buffers replayed to the request/response.
+                // Borrow bytes only; the transport and consumer retain buffer ownership.
                 for (int offset = 0; offset < length; offset++) {
-                    outputStream.write(dataBuffer.getByte(position + offset));
+                    prefix.write(dataBuffer.getByte(position + offset));
                 }
-                totalSize += length;
-                if (totalSize >= maxSize) break;
+            } catch (RuntimeException error) {
+                discard();
             }
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            log.error("Error extracting body: {}", e.getMessage(), e);
-            return new byte[0];
+        }
+
+        private void complete() {
+            complete = true;
+        }
+
+        private void log() {
+            try {
+                if (complete && prefix != null && prefix.size() > 0) {
+                    String body = sanitizeBodyForJson(prefix.toByteArray());
+                    if (body != null) bodyLogger.accept(body);
+                }
+            } catch (RuntimeException error) {
+                // A failed diagnostic must not replace the original stream signal.
+            } finally {
+                discard();
+            }
+        }
+
+        private void discard() {
+            prefix = null;
         }
     }
 
