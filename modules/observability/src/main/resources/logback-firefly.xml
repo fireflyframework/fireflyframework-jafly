@@ -2,6 +2,7 @@
     <!-- JSON structured logging with Logstash encoder -->
     <appender name="FIREFLY_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>false</includeContext>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
                 <logger>logger</logger>

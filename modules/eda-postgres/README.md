@@ -10,7 +10,7 @@ Use this transport when PostgreSQL is the messaging boundary. Apply the document
 
 ## In the onboarding service
 
-A PostgreSQL delivery table can carry application lifecycle events without a separate broker. Its publisher connection is independent of the application write, so recovery must cover a saved application whose event was not published.
+A PostgreSQL delivery table can carry application lifecycle events without a separate broker. The default dedicated publisher pool is independent of an application write. Atomic business and event writes require the exact same connection factory and an owner transaction.
 
 ## Installation
 
@@ -28,7 +28,7 @@ A PostgreSQL delivery table can carry application lifecycle events without a sep
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-The outbox here is a persisted delivery queue, not an automatic atomic business-write/event-write boundary. `PostgresEventPublisher` obtains a separate connection for each publication. Design application recovery/idempotency for the case where a business write succeeds and event publication fails; use an explicitly transaction-bound outbox implementation when both writes must commit together.
+The publisher appends through Spring Data on `fireflyEdaPostgresPublisherConnectionFactory`. When that exact connection factory backs the owner's reactive transaction, the append shares its connection and commit, rollback, or cancellation. To couple a Core business write and its event, provide that named bean as the owner's exact connection factory and publish inside its transaction. Completion of the insert does not commit an enclosing transaction. The default dedicated transport pool remains separate from other business connection factories; recovery and idempotency are still required across those boundaries.
 
 1. Add the dependency (see above). The PostgreSQL transport beans light up only when you enable them.
 
@@ -106,7 +106,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`PostgresEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisher.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses its own database connection. |
+| [`PostgresEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisher.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses Spring Data and joins an owner transaction on its configured connection factory. |
 | [`PostgresEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumer.java) | PostgreSQL implementation of `EventConsumer`. |
 | [`FireflyEdaPostgresConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresConsumerAutoConfiguration.java) | Defines `FireflyEdaPostgresConsumerAutoConfiguration`, `fireflyEdaPostgresConsumerConnectionFactory` operations. |
 | [`FireflyEdaPostgresPublisherAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresPublisherAutoConfiguration.java) | Defines `FireflyEdaPostgresPublisherAutoConfiguration`, `fireflyEdaPostgresPublisherConnectionFactory`, `initialiseSchema`, `executeAll` operations. |

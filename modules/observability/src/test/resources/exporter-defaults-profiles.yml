@@ -1,0 +1,7 @@
+spring.config.activate.on-profile: export-opt-in
+management.tracing.export.otlp.enabled: true
+management.logging.export.otlp.enabled: true
+---
+spring.config.activate.on-profile: export-opt-out
+management.tracing.export.otlp.enabled: false
+management.logging.export.otlp.enabled: false

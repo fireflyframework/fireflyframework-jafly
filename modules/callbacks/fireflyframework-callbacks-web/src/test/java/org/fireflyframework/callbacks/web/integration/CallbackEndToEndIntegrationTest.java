@@ -21,6 +21,8 @@ import org.fireflyframework.callbacks.interfaces.dto.AuthorizedDomainDTO;
 import org.fireflyframework.callbacks.interfaces.dto.CallbackConfigurationDTO;
 import org.fireflyframework.callbacks.interfaces.enums.CallbackStatus;
 import org.fireflyframework.callbacks.interfaces.enums.HttpMethod;
+import org.fireflyframework.cache.core.CacheType;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.*;
@@ -50,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.main.allow-bean-definition-overriding=true"}
+        properties = {"spring.main.allow-bean-definition-overriding=true", "firefly.cache.default-cache-type=CAFFEINE"}
 )
 @AutoConfigureWebTestClient
 @Testcontainers
@@ -116,9 +118,13 @@ class CallbackEndToEndIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private FireflyCacheManager cacheManager;
+
     @Test
     @Order(1)
     void shouldStartContainersAndConnectToDatabase() {
+        assertEquals(CacheType.CAFFEINE, cacheManager.getCacheType());
         assertTrue(postgres.isRunning(), "PostgreSQL container should be running");
         assertTrue(kafka.isRunning(), "Kafka container should be running");
         

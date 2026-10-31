@@ -68,7 +68,7 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
         }
     }
 
-    @Bean(name = "fireflyEdaPostgresConsumerConnectionFactory")
+    @Bean(name = "fireflyEdaPostgresConsumerConnectionFactory", defaultCandidate = false)
     @ConditionalOnMissingBean(name = "fireflyEdaPostgresConsumerConnectionFactory")
     @ConditionalOnExpression("${firefly.eda.consumer.enabled:false} && ${firefly.eda.consumer.postgres.default.enabled:false} && '${firefly.eda.consumer.postgres.default.host:}'.length() > 0")
     public PostgresqlConnectionFactory fireflyEdaPostgresConsumerConnectionFactory(EdaProperties props) {

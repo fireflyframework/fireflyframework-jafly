@@ -25,19 +25,20 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for the core {@link CacheAutoConfiguration} default (Caffeine-only) wiring.
+ * Tests for explicit Caffeine selection in {@link CacheAutoConfiguration}.
  * <p>
- * The core module ships no distributed providers (Redis/Hazelcast/JCache/Postgres) on
- * its classpath, so the default cache manager must wire to Caffeine. These tests verify
- * that the library works correctly out of the box without referencing any provider type.
+ * Selecting Caffeine must wire the local provider without requiring distributed
+ * provider configuration. These controls preserve the original Caffeine coverage
+ * while the framework default selects PostgreSQL.
  */
 class CacheAutoConfigurationCaffeineDefaultTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class))
+            .withPropertyValues("firefly.cache.default-cache-type=CAFFEINE");
 
     @Test
-    void shouldStartWithCaffeineDefault() {
+    void shouldStartWithExplicitCaffeineSelection() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
             assertThat(context).hasSingleBean(FireflyCacheManager.class);
@@ -45,7 +46,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
     }
 
     @Test
-    void shouldCreateCaffeineCacheManagerByDefault() {
+    void shouldCreateCaffeineCacheManagerWhenExplicitlySelected() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
 
@@ -64,7 +65,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
 
-            // No distributed-provider beans should exist in the core-only classpath.
+            // Explicit local selection must not create distributed-provider beans.
             assertThat(context).doesNotHaveBean("redisConnectionFactory");
             assertThat(context).doesNotHaveBean("reactiveRedisTemplate");
             assertThat(context).doesNotHaveBean("redisCacheAdapter");

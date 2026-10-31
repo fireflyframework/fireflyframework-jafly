@@ -34,7 +34,7 @@ import java.util.Set;
  *   web:
  *     http-request-logging:
  *       enabled: true
- *       include-headers: true
+ *       include-headers: false
  *       include-request-body: false
  *       include-response-body: false
  *       max-body-size: 1024
@@ -58,7 +58,7 @@ public class HttpRequestLoggingProperties {
     /**
      * Whether to include request and response headers in logs
      */
-    private boolean includeHeaders = true;
+    private boolean includeHeaders = false;
 
     /**
      * Whether to include request body in logs
@@ -95,7 +95,7 @@ public class HttpRequestLoggingProperties {
     /**
      * Whether to include query parameters in logs
      */
-    private boolean includeQueryParams = true;
+    private boolean includeQueryParams = false;
 
     public boolean isEnabled() {
         return enabled;

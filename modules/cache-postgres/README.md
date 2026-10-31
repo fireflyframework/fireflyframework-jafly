@@ -54,8 +54,10 @@ firefly:
       host: localhost
       port: 5432
       database: appdb
-      username: app
-      password: secret
+      username: ${CACHE_POSTGRES_USERNAME}
+      password: ${CACHE_POSTGRES_PASSWORD}
+      schema: firefly_cache
+      auto-create-schema: false
 ```
 
 3. Use the unified cache API. Obtain a `CacheAdapter` from the core `FireflyCacheManager`; it is
@@ -91,6 +93,29 @@ the matching dependency. Application code stays the same.
 ## Configuration
 
 This module declares no `@ConfigurationProperties` class of its own. Use the constructor/port contracts above and the configuration of the host or related core module.
+
+The provider defaults to enabled, schema `firefly_cache`, table `firefly_cache_entries` and a 30-minute default TTL. Provision the technical schema/table before startup, or explicitly opt into `auto-create-schema=true` for technical cache DDL. The adapter creates no users, roles or grants. Existing deployments that use `public` must explicitly retain `firefly.cache.postgres.schema=public`.
+
+The framework-owned `fireflyCachePostgresConnectionFactory` is lazy and is not a default bean candidate. It reads only `firefly.cache.postgres.*`, remains separate from Core business `spring.r2dbc.*`, and is disposed once by its owning context. An externally supplied factory with this name is not disposed by the adapter; declare it as a non-default candidate to preserve business factory selection.
+
+Owned pool defaults are maximum 10/minimum 1 connections; zero minimum is supported. Connect/acquisition deadlines default to 5 seconds, selected-provider storage initialization to 30 seconds, and shutdown to 5 seconds. Override them with `connect-timeout`, `acquire-timeout`, `initialization-timeout` and `shutdown-timeout` under `firefly.cache.postgres`. Initialization checks the actual technical table; required failures stop cache startup.
+
+Domain/Experience starter roles exclude Boot business R2DBC factory, Spring Data repository/template and transaction auto-configuration. Their technical cache pool does not authorize business persistence. Core retains its business factory supplied by URL, `R2dbcConnectionDetails` or an explicit bean.
+
+## Namespace and conditional-write migration
+
+Set an explicit nonblank `firefly.cache.postgres.key-prefix`, or provide `spring.application.name` so cache bootstrap can use it as the fallback. Explicit prefixes take precedence. A selected PostgreSQL provider and direct programmatic PostgreSQL adapters require a namespace; other provider selections retain their existing behavior without PostgreSQL configuration.
+
+The physical `cache_name` is now `v2:` followed by SHA-256 of big-endian version `2` and independently length-prefixed UTF-8 service namespace, logical cache name and effective feature prefix. A caller's fixed feature prefix cannot replace the service namespace. Null feature prefixes fall back to the service prefix; explicit empty/ASCII-blank prefixes retain the legacy `cache:` key format and share one canonical feature identity. Malformed UTF-16 is rejected before encoding; well-formed supplementary Unicode remains supported. Public cache names and key APIs remain logical. Exact physical namespace equality isolates every read, write, clear, key listing and size operation, including nested prefixes. Separate instances of the same service and logical cache share entries. Different services need distinct application names or explicit namespaces.
+
+Both unversioned and `v1` physical rows are retained as cold cache entries. The framework performs no automatic row deletion, journal/counter migration or business idempotency reset. This service namespace is not tenant authorization: callers must still supply trusted tenant-scoped keys, and authoritative data and access decisions remain owned by Core services.
+
+The HTTP response cache is not authoritative business idempotency. Before rollout, verify that Core retains stable operation journals and retry keys across cache versions, and use an explicit mixed-version drain/cutover plan. Do not reinterpret shared legacy feature entries or silently replay non-idempotent commands after a cache miss. Cold-row retention is not complete-journey or retry acceptance.
+
+
+`putIfAbsent` atomically replaces an expired conflicting row while preserving live rows and rows without expiry. Both ordinary `put` and conditional replacement compute renewed TTL using PostgreSQL's actual database clock after the conflict row lock. Ordinary `put` acknowledges exactly one affected row; conditional writes accept zero or one. Missing/non-single ordinary-write counts fail. Null, zero and negative per-call TTLs retain no-expiry behavior. The preceding configuration checkpoint's stricter default-TTL validation remains: null/negative configured defaults are rejected; zero is allowed. Prefix eviction matches literal prefixes, including `%`, `_` and backslash characters.
+
+Programmatic factories/helpers must supply the service namespace through `CacheProperties.postgres.keyPrefix`, even when the caller supplies a separate feature prefix. The existing four-argument adapter constructor retains direct explicit-prefix callers; the added overload accepts a separate service namespace. Logical public names remain unchanged.
 
 ## API overview
 

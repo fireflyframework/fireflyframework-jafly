@@ -17,6 +17,7 @@
 package org.fireflyframework.rules.web.controllers;
 
 import org.fireflyframework.core.queries.PaginationResponse;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.rules.core.services.AuditTrailService;
 import org.fireflyframework.rules.interfaces.dtos.audit.AuditTrailDTO;
 import org.fireflyframework.rules.interfaces.dtos.audit.AuditTrailFilterDTO;
@@ -182,7 +183,7 @@ public class AuditTrailController {
             @RequestParam(defaultValue = "20") int size) {
         
         log.info("Getting audit trails by operation type: {} (page: {}, size: {})", 
-                operationType, page, size);
+                LogFields.text(operationType), page, size);
         
         AuditTrailFilterDTO filterDTO = AuditTrailFilterDTO.builder()
                 .operationType(operationType)
@@ -212,7 +213,7 @@ public class AuditTrailController {
             @Parameter(description = "Page size", example = "20")
             @RequestParam(defaultValue = "20") int size) {
         
-        log.info("Getting audit trails by user: {} (page: {}, size: {})", userId, page, size);
+        log.info("Getting audit trails by user: {} (page: {}, size: {})", LogFields.text(userId), page, size);
         
         AuditTrailFilterDTO filterDTO = AuditTrailFilterDTO.builder()
                 .userId(userId)

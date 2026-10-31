@@ -299,6 +299,278 @@ class PostgresCacheAdapterIntegrationTest {
         assertThat(stats.getCacheType()).isEqualTo(CacheType.POSTGRES);
     }
 
+    private static final Duration PROTOCOL_WAIT = Duration.ofSeconds(10);
+
+    private static PostgresCacheAdapter scoped(String namespace, String logicalName, io.r2dbc.spi.ConnectionFactory factory) {
+        return new PostgresCacheAdapter(logicalName, factory, PostgresCacheConfig.builder()
+                .keyPrefix(namespace).schema(SCHEMA).cacheTable(TABLE).build(),
+                new JsonCacheSerializer(new ObjectMapper()));
+    }
+
+    private static <T> Mono<T> technical(java.util.function.Function<Connection, Mono<T>> work) {
+        return Mono.usingWhen(Mono.from(pool.create()), work, Connection::close);
+    }
+
+    private static String qualified() { return "\"" + SCHEMA + "\".\"" + TABLE + "\""; }
+
+    @Test
+    void expiredEntryCanBeReplacedOnceAcrossIndependentInstances() {
+        String namespace = "expired-" + java.util.UUID.randomUUID();
+        var first = scoped(namespace, "default", pool);
+        var second = scoped(namespace, "default", pool);
+        first.put("key", "old", Duration.ofMillis(80)).block(PROTOCOL_WAIT);
+        await().atMost(PROTOCOL_WAIT).until(() -> !second.exists("key").block(PROTOCOL_WAIT));
+        assertThat(second.putIfAbsent("key", "renewed", Duration.ofSeconds(10)).block(PROTOCOL_WAIT)).isTrue();
+        assertThat(first.putIfAbsent("key", "loser", Duration.ofSeconds(10)).block(PROTOCOL_WAIT)).isFalse();
+        assertThat(first.get("key", String.class).block(PROTOCOL_WAIT)).contains("renewed");
+    }
+
+    @Test
+    void concurrentExpiredReplacementHasExactlyOneWinner() {
+        String namespace = "race-" + java.util.UUID.randomUUID();
+        var cache = scoped(namespace, "default", pool);
+        cache.put("key", "old", Duration.ofMillis(80)).block(PROTOCOL_WAIT);
+        await().atMost(PROTOCOL_WAIT).until(() -> !cache.exists("key").block(PROTOCOL_WAIT));
+        var outcomes = reactor.core.publisher.Flux.range(0, 12)
+                .flatMap(index -> scoped(namespace, "default", pool)
+                        .putIfAbsent("key", "candidate-" + index, Duration.ofSeconds(10))
+                        .map(won -> java.util.Map.entry("candidate-" + index, won)), 12)
+                .collectList().block(PROTOCOL_WAIT);
+        assertThat(outcomes).hasSize(12);
+        var winners = outcomes.stream().filter(java.util.Map.Entry::getValue).map(java.util.Map.Entry::getKey).toList();
+        assertThat(winners).hasSize(1);
+        assertThat(cache.get("key", String.class).block(PROTOCOL_WAIT)).contains(winners.getFirst());
+    }
+
+    @Test
+    void nullZeroAndNegativeTtlKeepPermanentEntriesAndCannotReplaceThem() {
+        String namespace = "permanent-" + java.util.UUID.randomUUID();
+        var cache = scoped(namespace, "default", pool);
+        Duration[] durations = {null, Duration.ZERO, Duration.ofSeconds(-1)};
+        for (int index = 0; index < durations.length; index++) {
+            String key = "key-" + index;
+            assertThat(cache.putIfAbsent(key, "permanent", durations[index]).block(PROTOCOL_WAIT)).isTrue();
+            assertThat(cache.putIfAbsent(key, "replacement", Duration.ofSeconds(10)).block(PROTOCOL_WAIT)).isFalse();
+            assertThat(cache.get(key, String.class).block(PROTOCOL_WAIT)).contains("permanent");
+        }
+        Long permanent = technical(connection -> Mono.from(connection.createStatement(
+                        "SELECT count(*) AS n FROM " + qualified() + " WHERE cache_key LIKE $1 AND expires_at IS NULL")
+                .bind("$1", namespace + ":default:%").execute())
+                .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("n", Long.class)))))
+                .block(PROTOCOL_WAIT);
+        assertThat(permanent).isEqualTo(3L);
+    }
+
+    @Test
+    void literalPrefixCannotDeleteWildcardLookalikes() {
+        var cache = scoped("literal-" + java.util.UUID.randomUUID(), "default", pool);
+        cache.put("group%_\\part:one", "target").block(PROTOCOL_WAIT);
+        cache.put("groupABpart:one", "lookalike").block(PROTOCOL_WAIT);
+        cache.put("group%X\\part:one", "underscore-lookalike").block(PROTOCOL_WAIT);
+        assertThat(cache.evictByPrefix("group%_\\part:").block(PROTOCOL_WAIT)).isEqualTo(1L);
+        assertThat(cache.exists("group%_\\part:one").block(PROTOCOL_WAIT)).isFalse();
+        assertThat(cache.get("groupABpart:one", String.class).block(PROTOCOL_WAIT)).contains("lookalike");
+        assertThat(cache.get("group%X\\part:one", String.class).block(PROTOCOL_WAIT)).contains("underscore-lookalike");
+    }
+
+    @Test
+    void nestedNamespacesKeepClearKeysSizeAndLogicalNamesSeparate() {
+        String namespace = "nested-" + java.util.UUID.randomUUID();
+        var first = scoped(namespace, "default", pool);
+        var second = scoped(namespace + ":default", "default", pool);
+        first.put("shared", "first").block(PROTOCOL_WAIT);
+        second.put("shared", "second").block(PROTOCOL_WAIT);
+        second.put("extra", "extra").block(PROTOCOL_WAIT);
+        assertThat(first.<String>keys().block(PROTOCOL_WAIT)).containsExactly("shared");
+        assertThat(first.size().block(PROTOCOL_WAIT)).isEqualTo(1L);
+        assertThat(second.size().block(PROTOCOL_WAIT)).isEqualTo(2L);
+        assertThat(first.getCacheName()).isEqualTo("default");
+        first.clear().block(PROTOCOL_WAIT);
+        assertThat(first.size().block(PROTOCOL_WAIT)).isZero();
+        assertThat(second.<String>keys().block(PROTOCOL_WAIT)).containsExactlyInAnyOrder("shared", "extra");
+        assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).contains("second");
+    }
+
+    @Test
+    void legacyPhysicalRowsRemainUntouchedAndCold() {
+        String namespace = "legacy-" + java.util.UUID.randomUUID();
+        String fullKey = namespace + ":legacy:old";
+        String versionOne = "v1:" + "a".repeat(64);
+        for (String legacyName : java.util.List.of("legacy", versionOne)) {
+            technical(connection -> Mono.from(connection.createStatement("INSERT INTO " + qualified()
+                            + " (cache_name,cache_key,value) VALUES ($1,$2,$3)")
+                    .bind("$1", legacyName).bind("$2", fullKey).bind("$3", new byte[] {1}).execute())
+                    .flatMap(result -> Mono.from(result.getRowsUpdated()))).block(PROTOCOL_WAIT);
+        }
+        var cache = scoped(namespace, "legacy", pool);
+        assertThat(cache.get("old", String.class).block(PROTOCOL_WAIT)).isEmpty();
+        cache.put("new", "new").block(PROTOCOL_WAIT);
+        cache.clear().block(PROTOCOL_WAIT);
+        Long retained = technical(connection -> Mono.from(connection.createStatement("SELECT count(*) AS n FROM "
+                        + qualified() + " WHERE cache_name IN ($1,$2) AND cache_key=$3")
+                .bind("$1", "legacy").bind("$2", versionOne).bind("$3", fullKey).execute())
+                .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("n", Long.class)))))
+                .block(PROTOCOL_WAIT);
+        assertThat(retained).isEqualTo(2L);
+    }
+
+    @Test
+    void applicationNameDefaultsSeparateActualPostgresCacheManagers() {
+        String suffix = java.util.UUID.randomUUID().toString();
+        var external = new io.r2dbc.spi.ConnectionFactory() {
+            public org.reactivestreams.Publisher<? extends Connection> create() { return pool.create(); }
+            public io.r2dbc.spi.ConnectionFactoryMetadata getMetadata() { return pool.getMetadata(); }
+        };
+        var contexts = new org.springframework.boot.test.context.runner.ApplicationContextRunner()
+                .withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations.of(
+                        org.fireflyframework.cache.config.CacheAutoConfiguration.class,
+                        org.fireflyframework.cache.config.PostgresCacheAutoConfiguration.class))
+                .withBean("fireflyCachePostgresConnectionFactory", io.r2dbc.spi.ConnectionFactory.class, () -> external)
+                .withPropertyValues("firefly.cache.postgres.schema=" + SCHEMA);
+        contexts.withPropertyValues("spring.application.name=service-a-" + suffix).run(firstContext -> {
+            assertThat(firstContext).hasNotFailed();
+            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+            first.put("shared", "first").block(PROTOCOL_WAIT);
+            contexts.withPropertyValues("spring.application.name=service-b-" + suffix).run(secondContext -> {
+                assertThat(secondContext).hasNotFailed();
+                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+                assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).isEmpty();
+                second.put("shared", "second").block(PROTOCOL_WAIT);
+                first.clear().block(PROTOCOL_WAIT);
+                assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).contains("second");
+            });
+        });
+        assertThat(pool.isDisposed()).isFalse();
+    }
+
+    @Test
+    void fixedHelperFeaturePrefixCannotJoinTwoServiceCaches() {
+        String suffix = java.util.UUID.randomUUID().toString();
+        var firstProperties = new org.fireflyframework.cache.properties.CacheProperties();
+        firstProperties.getPostgres().setSchema(SCHEMA);
+        firstProperties.getPostgres().setKeyPrefix("helper-a-" + suffix);
+        var secondProperties = new org.fireflyframework.cache.properties.CacheProperties();
+        secondProperties.getPostgres().setSchema(SCHEMA);
+        secondProperties.getPostgres().setKeyPrefix("helper-b-" + suffix);
+        var first = org.fireflyframework.cache.factory.PostgresCacheHelper.createPostgresCacheAdapter(
+                "shared-logical", "fixed-feature", Duration.ofMinutes(1), pool, firstProperties, new ObjectMapper());
+        var second = org.fireflyframework.cache.factory.PostgresCacheHelper.createPostgresCacheAdapter(
+                "shared-logical", "fixed-feature", Duration.ofMinutes(1), pool, secondProperties, new ObjectMapper());
+        first.put("same-key", "first").block(PROTOCOL_WAIT);
+        second.put("same-key", "second").block(PROTOCOL_WAIT);
+        assertThat(first.get("same-key", String.class).block(PROTOCOL_WAIT)).contains("first");
+        assertThat(second.get("same-key", String.class).block(PROTOCOL_WAIT)).contains("second");
+        first.clear().block(PROTOCOL_WAIT);
+        assertThat(second.get("same-key", String.class).block(PROTOCOL_WAIT)).contains("second");
+        assertThat(first.size().block(PROTOCOL_WAIT)).isZero();
+        assertThat(second.size().block(PROTOCOL_WAIT)).isEqualTo(1L);
+    }
+
+    @Test
+    void actualOwnedPoolsShareSameServiceEntriesExpireThemAndCloseWithTheirContexts() {
+        String service = "owned-service-" + java.util.UUID.randomUUID();
+        var firstPool = new java.util.concurrent.atomic.AtomicReference<ConnectionPool>();
+        var secondPool = new java.util.concurrent.atomic.AtomicReference<ConnectionPool>();
+        var contexts = new org.springframework.boot.test.context.runner.ApplicationContextRunner()
+                .withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations.of(
+                        org.fireflyframework.cache.config.CacheAutoConfiguration.class,
+                        org.fireflyframework.cache.config.PostgresCacheAutoConfiguration.class))
+                .withPropertyValues("spring.application.name=" + service,
+                        "firefly.cache.postgres.host=" + POSTGRES.getHost(),
+                        "firefly.cache.postgres.port=" + POSTGRES.getMappedPort(5432),
+                        "firefly.cache.postgres.database=" + POSTGRES.getDatabaseName(),
+                        "firefly.cache.postgres.username=" + POSTGRES.getUsername(),
+                        "firefly.cache.postgres.password=" + POSTGRES.getPassword(),
+                        "firefly.cache.postgres.schema=" + SCHEMA,
+                        "firefly.cache.postgres.auto-create-schema=false",
+                        "firefly.cache.postgres.min-pool-size=0", "firefly.cache.postgres.max-pool-size=2",
+                        "firefly.cache.postgres.connect-timeout=PT2S", "firefly.cache.postgres.acquire-timeout=PT2S",
+                        "firefly.cache.postgres.initialization-timeout=PT5S", "firefly.cache.postgres.shutdown-timeout=PT2S");
+        contexts.run(firstContext -> {
+            assertThat(firstContext).hasNotFailed();
+            firstPool.set(firstContext.getBean("fireflyCachePostgresConnectionFactory", ConnectionPool.class));
+            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+            contexts.run(secondContext -> {
+                assertThat(secondContext).hasNotFailed();
+                secondPool.set(secondContext.getBean("fireflyCachePostgresConnectionFactory", ConnectionPool.class));
+                assertThat(firstPool.get()).isNotSameAs(secondPool.get());
+                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+                first.put("shared", "cross-instance", Duration.ofSeconds(1)).block(PROTOCOL_WAIT);
+                assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).contains("cross-instance");
+                await().atMost(PROTOCOL_WAIT).until(() -> second.get("shared", String.class).block(PROTOCOL_WAIT).isEmpty());
+                assertThat(first.get("shared", String.class).block(PROTOCOL_WAIT)).isEmpty();
+            });
+            assertThat(secondPool.get().isDisposed()).isTrue();
+            assertThat(firstPool.get().isDisposed()).isFalse();
+        });
+        assertThat(firstPool.get().isDisposed()).isTrue();
+        assertThat(secondPool.get().isDisposed()).isTrue();
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    void conflictWaitRechecksExpiryAndRenewsTtlUsingPostLockDatabaseClock(boolean conditional) {
+        String namespace = "lock-" + java.util.UUID.randomUUID();
+        String fullKey = namespace + ":default:key";
+        var cache = scoped(namespace, "default", pool);
+        cache.put("key", "permanent", Duration.ZERO).block(PROTOCOL_WAIT);
+        Connection blocker = Mono.from(pool.create()).block(PROTOCOL_WAIT);
+        java.util.concurrent.CompletableFuture<Boolean> contender = null;
+        boolean committed = false;
+        try {
+            Mono.from(blocker.beginTransaction()).block(PROTOCOL_WAIT);
+            java.time.OffsetDateTime expires = Mono.from(blocker.createStatement("UPDATE " + qualified()
+                            + " SET expires_at=pg_catalog.clock_timestamp()+INTERVAL '500 milliseconds' WHERE cache_key=$1 RETURNING expires_at")
+                    .bind("$1", fullKey).execute()).flatMap(result -> Mono.from(result.map((row, metadata) ->
+                            row.get("expires_at", java.time.OffsetDateTime.class)))).block(PROTOCOL_WAIT);
+            var contenderPid = new java.util.concurrent.atomic.AtomicInteger();
+            var observedFactory = new io.r2dbc.spi.ConnectionFactory() {
+                public org.reactivestreams.Publisher<? extends Connection> create() {
+                    return Mono.from(pool.create()).flatMap(connection -> Mono.from(connection.createStatement(
+                                    "SELECT pg_backend_pid() AS pid").execute())
+                            .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("pid", Integer.class))))
+                            .doOnNext(contenderPid::set).thenReturn(connection)
+                            .onErrorResume(error -> Mono.from(connection.close()).then(Mono.error(error))));
+                }
+                public io.r2dbc.spi.ConnectionFactoryMetadata getMetadata() { return pool.getMetadata(); }
+            };
+            var writer = scoped(namespace, "default", observedFactory);
+            contender = (conditional
+                    ? writer.putIfAbsent("key", "renewed-after-wait", Duration.ofSeconds(2))
+                    : writer.put("key", "renewed-after-wait", Duration.ofSeconds(2)).thenReturn(true)).toFuture();
+            await().atMost(PROTOCOL_WAIT).until(() -> contenderPid.get() > 0);
+            await().atMost(PROTOCOL_WAIT).until(() -> Boolean.TRUE.equals(technical(connection -> Mono.from(
+                            connection.createStatement("SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_stat_activity WHERE pid=$1 AND wait_event_type='Lock') AS blocked")
+                                    .bind("$1", contenderPid.get()).execute())
+                    .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("blocked", Boolean.class)))))
+                    .block(PROTOCOL_WAIT)));
+            await().atMost(PROTOCOL_WAIT).until(() -> databaseClock().isAfter(expires.plusSeconds(3)));
+            java.time.OffsetDateTime releasedAt = databaseClock();
+            Mono.from(blocker.commitTransaction()).block(PROTOCOL_WAIT);
+            committed = true;
+            assertThat(Mono.fromFuture(contender).block(PROTOCOL_WAIT)).isTrue();
+            java.time.OffsetDateTime renewedExpiry = technical(connection -> Mono.from(connection.createStatement(
+                            "SELECT expires_at FROM " + qualified() + " WHERE cache_key=$1").bind("$1", fullKey).execute())
+                    .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("expires_at", java.time.OffsetDateTime.class)))))
+                    .block(PROTOCOL_WAIT);
+            assertThat(renewedExpiry).isAfter(releasedAt.plus(Duration.ofMillis(1800)));
+            assertThat(cache.get("key", String.class).block(PROTOCOL_WAIT)).contains("renewed-after-wait");
+        } finally {
+            if (contender != null && !contender.isDone()) contender.cancel(true);
+            try {
+                if (!committed) Mono.from(blocker.rollbackTransaction()).block(PROTOCOL_WAIT);
+            } finally {
+                Mono.from(blocker.close()).block(PROTOCOL_WAIT);
+            }
+        }
+    }
+
+    private static java.time.OffsetDateTime databaseClock() {
+        return technical(connection -> Mono.from(connection.createStatement("SELECT pg_catalog.clock_timestamp() AS at").execute())
+                .flatMap(result -> Mono.from(result.map((row, metadata) -> row.get("at", java.time.OffsetDateTime.class)))))
+                .block(PROTOCOL_WAIT);
+    }
+
     /**
      * Simple serializable DTO used to verify JSON round-trips through BYTEA.
      */
