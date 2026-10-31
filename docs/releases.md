@@ -15,6 +15,43 @@ The root aggregator has no parent and is not published. The standalone artifacts
 
 The root and nonpublishable samples must have both normal Maven deploy suppression and Central `skipPublishing` configured. The Central extension replaces the normal deploy binding; `maven.deploy.skip` alone cannot suppress its publication.
 
+## Read-only Portal reconciliation before version allocation
+
+The manual publishing preflight keeps its credential-presence check by default.
+On `main` or `develop`, explicitly enable `inspect-sonatype-deployments` to add
+an authenticated, read-only inventory of `org.fireflyframework` deployments
+visible to that Portal token. It uses only the official HTTPS
+[`GET /api/v1/publisher/deployments`](https://central.sonatype.com/api-doc),
+with the [Portal token-pair Bearer format](https://central.sonatype.org/publish/publish-portal-api/).
+It does not upload, publish, delete, reserve or allocate a version.
+
+The retained `sonatype-deployments.json` contains deployment IDs, states,
+timestamps and exact Maven coordinates; it omits deployment names, filenames,
+paths, warnings, errors and credentials. Every non-`PUBLISHED` state is retained
+as pending, including `FAILED`, so failed staging cannot silently free a counter.
+Reconcile these coordinates with published registry versions, source version
+and private reservations before selecting a new monthly counter.
+
+The check requires two identical complete paginated sweeps, consistent page
+metadata and unique deployment IDs. Its account-visible namespace scope is
+explicit: this API offers no documented atomic snapshot or proof of visibility
+into another account's deployments. Keep publishers and allocation serialized,
+and repeat this check immediately before allocation; the report never allocates
+or authorizes publication. An authenticated empty inventory is accepted only
+with consistent zero-count JSON. Authentication failures, redirects, missing or
+empty component lists, unsupported Maven PURLs or states (including `PENDING`,
+which is absent from the listing schema), changing inventories, invalid JSON and
+limit breaches fail closed. No missing namespace or error response becomes an
+empty inventory.
+
+Requests have a 10-second socket timeout; a dedicated child process has a
+120-second parent timeout covering both sweeps. Responses are capped at 2 MiB,
+100 pages per sweep, 100 deployments per page and 100,000 component entries per
+sweep. Environment-selected proxies and redirects are disabled. A failed or
+timed-out check retains an `INCOMPLETE` report and blocks reconciliation; it
+prints no API response bodies or token values. This is separate from GPG,
+publication authorization, and the complete release gates below.
+
 ## Final-version procedure
 
 1. Qualify the source changes and set every explicit project/parent reference and internal version property to the same final version, for example `26.10.21`. Inherited versions resolve to that train.
