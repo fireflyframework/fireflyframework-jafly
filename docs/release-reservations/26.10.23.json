@@ -1,0 +1,16 @@
+{
+  "status": "ATOMIC_PUBLIC_RELEASE_BRANCH_RESERVATION_CREATED",
+  "version": "26.10.23",
+  "versionMeaning": "YY.MM.numeric monthly patch counter",
+  "reservedRef": "refs/heads/release/26.10.23",
+  "base": "932a7cb3425a1a701fd38dfd051474231e926e0d",
+  "createdAtUtc": "2026-10-31T09:55:40.767959+00:00",
+  "counterReconciliationSHA256": "8a0c306ad0453bfab44f0a7db85ea80ec4d28281fdd6d0ee8800c22006e2f24f",
+  "portalInventorySHA256": "35d6b345f2178bd87b270fc92a5aa97bde6dd7a193993465889633708a27e3af",
+  "allKnownSourcePrivate22Protected": true,
+  "sourceBumpPending": true,
+  "finalTagCreated": false,
+  "releasePublished": false,
+  "globalOtherAccountVisibilityClaim": false,
+  "initialBatchPublicationStillRequiresGovernedPermissionAndStrictReadback": true
+}
