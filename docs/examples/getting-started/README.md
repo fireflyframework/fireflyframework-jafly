@@ -11,6 +11,6 @@ Use JDK 25. From the framework checkout, install the example's prerequisites and
 ./mvnw -B -ntp -f docs/examples/getting-started/pom.xml clean verify
 ```
 
-The eight tests cover the native `/hello` route, command/query behavior, application submission and retrieval, invalid input, and an unknown application. This project needs no database, broker, or Docker engine. Its records disappear when the application stops.
+The eight tests cover the native `/hello` route, command/query behavior, application submission and retrieval, invalid input, and an unknown application. These tests explicitly select the local Caffeine cache, so running the test suite needs no database, broker, or Docker engine. Running the application with the framework default PostgreSQL cache requires the PostgreSQL adapter and configured database; see [PostgreSQL cache configuration](../../site/modules/cache-postgres.md#configuration-and-wiring). The application-owned records disappear when the application stops.
 
 Read [your first service](../../site/getting-started.md) for the HTTP commands, expected responses, complete source, and next steps. Event history and coordinated review have separate runnable examples alongside this project.
