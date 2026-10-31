@@ -79,8 +79,14 @@ class PostgresDeliveryRepositoryIntegrationTest {
         Mono.usingWhen(Mono.from(pool.create()), connection -> Flux.from(connection.createStatement(
                         PostgresDeliverySchema.installationSql(schema, table)).execute())
                 .concatMap(result -> Mono.from(result.getRowsUpdated())).then(), Connection::close,
-                (connection, error) -> Mono.from(connection.rollbackTransaction()).then(Mono.from(connection.close())),
-                connection -> Mono.from(connection.rollbackTransaction()).then(Mono.from(connection.close()))).block(WAIT);
+                (connection, error) -> rollbackFailedInstallation(connection),
+                this::rollbackFailedInstallation).block(WAIT);
+    }
+    private Mono<Void> rollbackFailedInstallation(Connection connection) {
+        // The script owns BEGIN; send ROLLBACK even if the driver has not observed its final transaction status yet.
+        return Mono.usingWhen(Mono.just(connection), held -> Flux.from(held.createStatement("ROLLBACK").execute())
+                .concatMap(result -> Mono.from(result.getRowsUpdated())).then(),
+                held -> Mono.defer(() -> Mono.from(held.close())));
     }
     private SpringDataPostgresDeliveryRepository repository(ConnectionFactory factory) {
         return new SpringDataPostgresDeliveryRepository(factory, schema, table, Duration.ofSeconds(10));
@@ -200,7 +206,10 @@ class PostgresDeliveryRepositoryIntegrationTest {
         assertThat(storedPayload(dead)).containsExactly(beforeDead);
     }
     @Test void migrationRerunFailsAtomicallyAndMarkerCannotBeGuessed() {
-        var repository = ready(); assertThatThrownBy(this::install).isInstanceOf(RuntimeException.class); repository.verifyProtocol().block(WAIT);
+        var repository = ready(); assertThatThrownBy(this::install).isInstanceOf(RuntimeException.class);
+        assertThat(pool.getMetrics().orElseThrow().acquiredSize()).isZero();
+        assertThat(database.sql("SELECT 1 AS restored").map((row, metadata) -> row.get("restored", Integer.class)).one().block(WAIT)).isEqualTo(1);
+        repository.verifyProtocol().block(WAIT);
         database.sql("COMMENT ON COLUMN " + qualified() + ".lease_generation IS 'unknown'").then().block(WAIT);
         assertThatThrownBy(() -> repository.verifyProtocol().block(WAIT)).isInstanceOf(IllegalStateException.class);
     }

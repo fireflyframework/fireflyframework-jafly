@@ -66,6 +66,8 @@ public final class PostgresConsumerNativeFixture implements AutoCloseable {
     public static void run(PostgreSQLContainer<?> postgres,boolean manual,boolean observeListen,Consumer<PostgresConsumerNativeFixture> action){
         String schema="c_native_"+UUID.randomUUID().toString().replace("-","");String destination="event-"+UUID.randomUUID();
         var raw=new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder().host(postgres.getHost()).port(postgres.getFirstMappedPort()).database(postgres.getDatabaseName()).username(postgres.getUsername()).password(postgres.getPassword()).connectTimeout(Duration.ofSeconds(5)).build());
+        Mono.usingWhen(raw.create(),connection->Flux.from(connection.createStatement("CREATE SCHEMA "+PostgresDeliverySchema.quoted(schema)).execute())
+                .concatMap(result->result.getRowsUpdated()).then(),Connection::close).block(Duration.ofSeconds(10));
         var listen=new AtomicReference<PostgresqlConnection>();var creates=new AtomicInteger();ConnectionPool external=observeListen?new ConnectionPool(ConnectionPoolConfiguration.builder(raw).initialSize(0).maxSize(2).maxAcquireTime(Duration.ofSeconds(5)).maxCreateConnectionTime(Duration.ofSeconds(5)).acquireRetry(0).build()):null;
         var runner=new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FireflyEdaPostgresPublisherAutoConfiguration.class,FireflyEdaPostgresConsumerAutoConfiguration.class)).withUserConfiguration(Dependencies.class)
                 .withPropertyValues("firefly.eda.enabled=true","firefly.eda.consumer.enabled=true","firefly.eda.consumer.concurrency=2",
