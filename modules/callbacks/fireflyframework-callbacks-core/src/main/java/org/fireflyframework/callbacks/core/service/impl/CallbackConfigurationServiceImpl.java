@@ -16,6 +16,7 @@
 
 package org.fireflyframework.callbacks.core.service.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.callbacks.core.filters.FilterRequest;
 import org.fireflyframework.callbacks.core.filters.FilterUtils;
 import org.fireflyframework.callbacks.core.filters.PaginationResponse;
@@ -73,9 +74,8 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
                 })
                 .flatMap(configurationRepository::save)
                 .map(configurationMapper::toDto)
-                .doOnSuccess(created -> log.info("Created callback configuration: id={}, name={}, url={}", 
-                        created.getId(), created.getName(), created.getUrl()))
-                .doOnError(error -> log.error("Error creating callback configuration: {}", dto.getName(), error));
+                .doOnSuccess(created -> log.info("Created callback configuration: id={}", created.getId()))
+                .doOnError(error -> log.error("Error creating callback configuration: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -99,9 +99,8 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
                     return configurationRepository.save(updated);
                 })
                 .map(configurationMapper::toDto)
-                .doOnSuccess(updated -> log.info("Updated callback configuration: id={}, name={}", 
-                        id, updated.getName()))
-                .doOnError(error -> log.error("Error updating callback configuration: {}", id, error));
+                .doOnSuccess(updated -> log.info("Updated callback configuration: id={}", id))
+                .doOnError(error -> log.error("Error updating callback configuration: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -111,7 +110,7 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
     public Mono<Void> delete(UUID id) {
         return configurationRepository.deleteById(id)
                 .doOnSuccess(v -> log.info("Deleted callback configuration: id={}", id))
-                .doOnError(error -> log.error("Error deleting callback configuration: {}", id, error));
+                .doOnError(error -> log.error("Error deleting callback configuration: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -121,7 +120,7 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
     public Mono<CallbackConfigurationDTO> findById(UUID id) {
         return configurationRepository.findById(id)
                 .map(configurationMapper::toDto)
-                .doOnError(error -> log.error("Error finding callback configuration: {}", id, error));
+                .doOnError(error -> log.error("Error finding callback configuration: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -131,8 +130,7 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
     public Flux<CallbackConfigurationDTO> findActiveByEventType(String eventType) {
         return configurationRepository.findActiveByEventType(eventType)
                 .map(configurationMapper::toDto)
-                .doOnError(error -> log.error("Error finding callback configurations for event type: {}",
-                        eventType, error));
+                .doOnError(error -> log.error("Error finding callback configurations for event type: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -157,8 +155,7 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
                 })
                 .then()
                 .doOnSuccess(v -> log.debug("Recorded success for callback configuration: {}", configurationId))
-                .doOnError(error -> log.error("Error recording success for callback configuration: {}", 
-                        configurationId, error));
+                .doOnError(error -> log.error("Error recording success for callback configuration: id={}, errorType={}", configurationId, LogFields.errorType(error)));
     }
 
     /**
@@ -184,8 +181,7 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
                 })
                 .then()
                 .doOnSuccess(v -> log.debug("Recorded failure for callback configuration: {}", configurationId))
-                .doOnError(error -> log.error("Error recording failure for callback configuration: {}", 
-                        configurationId, error));
+                .doOnError(error -> log.error("Error recording failure for callback configuration: id={}, errorType={}", configurationId, LogFields.errorType(error)));
     }
 
     /**
@@ -205,7 +201,6 @@ public class CallbackConfigurationServiceImpl implements CallbackConfigurationSe
                     return failureCount >= threshold;
                 })
                 .defaultIfEmpty(false)
-                .doOnError(error -> log.error("Error checking if should pause callback configuration: {}", 
-                        configurationId, error));
+                .doOnError(error -> log.error("Error checking if should pause callback configuration: id={}, errorType={}", configurationId, LogFields.errorType(error)));
     }
 }

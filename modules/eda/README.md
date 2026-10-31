@@ -81,6 +81,32 @@ The `firefly.eda` namespace is bound by [EdaProperties.java](https://github.com/
 
 Use the [EDA - Kafka guide](../../docs/site/modules/eda-kafka.md) for the next part of this integration.
 
+## Explicit Avro type contracts
+
+Avro decoding requires the caller's exact `Class<T>` contract. The serializer derives a bounded field and schema graph from that class, including typed collections, arrays, enums, nullable records, and finite field-level `@Union` declarations. Each operation owns its data model, reader, writer, and buffers. It does not change Avro's global validator, trust properties, or package policy. This also supports Avro 1.12.2's class-loading hardening without granting wire-provided class names authority.
+
+Per-operation models register Avro's standard UUID, big-decimal, duration, and date/time logical conversions. No custom conversion registration is offered.
+
+The default serializer refuses nonempty decoding to `Object.class`. An explicitly constructed serializer may bind that request to one concrete root; this is equivalent to supplying that root class directly, not payload type detection:
+
+```java
+AvroMessageSerializer serializer = new AvroMessageSerializer(
+        new AvroTypeBindings(Set.of(), ApplicationSubmitted.class));
+```
+
+Generated `SpecificRecord` types must expose their declared public `SCHEMA$`. A nested schema branch whose Java class cannot be recovered from declared fields (for example, an `Object` union field) requires an exact additional class token in `schemaTypes`. At most 16 additional tokens are accepted. These bindings do not configure Spring automatically and do not replace application authorization or an explicit consumer decoder registry. Generic records retain encoding support for bounded schemas without Java class hints; generic-record decoding still requires a separate schema contract and is unsupported here.
+
+Supported collection declarations are typed `Collection`, `List`, `Set`, `ArrayList`, `HashSet`, `LinkedHashSet`, and string-keyed `Map`, `HashMap`, or `LinkedHashMap`. Values use standard JDK collections; decoding allocates a compatible canonical collection. Raw or unresolved generics, plain `Object` fields without a finite union, non-string map keys, unknown subclasses, custom containers, executable encodings/stringable metadata, explicit schema overrides, and unsupported platform types are refused. Schema Java hints must match their already-approved type at that location. No class is loaded from a schema hint, event header, or payload name.
+
+A contract is limited to 256 distinct declared types, 32 levels of graph depth, 4,096 fields, and 16 union branches. Value traversal is limited to 32 levels and 100,000 visits. Each operation also admits at most 32 levels and 100,000 recursive SDK read calls before descending into a value. SDK optimized scalar and primitive-array I/O retains its inherited checks; the final full-value traversal limit still applies. Terminating nullable recursive records and shared acyclic children are supported; actual object cycles are refused. Avro's inherited binary parsing and collection allocation checks remain in use. These bounds do not establish constant-memory parsing for arbitrary inputs. Null payloads, empty input, and raw byte-array pass-through retain their existing behavior. JSON and Protobuf selection and contracts are unchanged.
+
+To include the optional serializer tests in a normal repository validation, enable their existing conditions:
+
+```bash
+./mvnw -pl :fireflyframework-eda -am verify \
+  -Dtest.serialization.avro=true -Dtest.serialization.protobuf=true
+```
+
 ## Build and validation
 
 Use Java 25. From the repository root, build this component with its required dependencies:

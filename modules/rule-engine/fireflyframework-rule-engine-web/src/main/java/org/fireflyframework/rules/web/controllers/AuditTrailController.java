@@ -17,6 +17,7 @@
 package org.fireflyframework.rules.web.controllers;
 
 import org.fireflyframework.core.queries.PaginationResponse;
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.rules.core.services.AuditTrailService;
 import org.fireflyframework.rules.interfaces.dtos.audit.AuditTrailDTO;
 import org.fireflyframework.rules.interfaces.dtos.audit.AuditTrailFilterDTO;
@@ -63,12 +64,12 @@ public class AuditTrailController {
             @Parameter(description = "Filter criteria and pagination parameters", required = true)
             @Valid @RequestBody AuditTrailFilterDTO filterDTO) {
         
-        log.info("Getting audit trails with filter: {}", filterDTO);
+        log.info("Getting audit trails: page={}, size={}", filterDTO == null ? null : filterDTO.getPage(), filterDTO == null ? null : filterDTO.getSize());
         
         return auditTrailService.getAuditTrails(filterDTO)
                 .map(ResponseEntity::ok)
                 .doOnSuccess(result -> log.info("Audit trails retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving audit trails", error));
+                .doOnError(error -> log.error("Error retrieving audit trails: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Get audit trail by ID",
@@ -89,7 +90,7 @@ public class AuditTrailController {
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
                 .doOnSuccess(result -> log.info("Audit trail retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving audit trail", error));
+                .doOnError(error -> log.error("Error retrieving audit trail: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Get recent audit trails for entity",
@@ -111,7 +112,7 @@ public class AuditTrailController {
         return auditTrailService.getRecentAuditTrailsForEntity(entityId, limit)
                 .map(ResponseEntity::ok)
                 .doOnSuccess(result -> log.info("Recent audit trails retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving recent audit trails", error));
+                .doOnError(error -> log.error("Error retrieving recent audit trails: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Get audit trail statistics",
@@ -129,7 +130,7 @@ public class AuditTrailController {
         return auditTrailService.getAuditTrailStatistics()
                 .map(ResponseEntity::ok)
                 .doOnSuccess(result -> log.info("Audit trail statistics retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving audit trail statistics", error));
+                .doOnError(error -> log.error("Error retrieving audit trail statistics: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Delete old audit trails",
@@ -161,7 +162,7 @@ public class AuditTrailController {
                     return ResponseEntity.ok(response);
                 })
                 .doOnSuccess(result -> log.info("Old audit trails deleted successfully"))
-                .doOnError(error -> log.error("Error deleting old audit trails", error));
+                .doOnError(error -> log.error("Error deleting old audit trails: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Get audit trails by operation type",
@@ -182,7 +183,7 @@ public class AuditTrailController {
             @RequestParam(defaultValue = "20") int size) {
         
         log.info("Getting audit trails by operation type: {} (page: {}, size: {})", 
-                operationType, page, size);
+                LogFields.text(operationType), page, size);
         
         AuditTrailFilterDTO filterDTO = AuditTrailFilterDTO.builder()
                 .operationType(operationType)
@@ -193,7 +194,7 @@ public class AuditTrailController {
         return auditTrailService.getAuditTrails(filterDTO)
                 .map(ResponseEntity::ok)
                 .doOnSuccess(result -> log.info("Audit trails by operation type retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving audit trails by operation type", error));
+                .doOnError(error -> log.error("Error retrieving audit trails by operation type: errorType={}", LogFields.errorType(error)));
     }
 
     @Operation(summary = "Get audit trails by user",
@@ -212,7 +213,7 @@ public class AuditTrailController {
             @Parameter(description = "Page size", example = "20")
             @RequestParam(defaultValue = "20") int size) {
         
-        log.info("Getting audit trails by user: {} (page: {}, size: {})", userId, page, size);
+        log.info("Getting audit trails by user: {} (page: {}, size: {})", LogFields.text(userId), page, size);
         
         AuditTrailFilterDTO filterDTO = AuditTrailFilterDTO.builder()
                 .userId(userId)
@@ -223,6 +224,6 @@ public class AuditTrailController {
         return auditTrailService.getAuditTrails(filterDTO)
                 .map(ResponseEntity::ok)
                 .doOnSuccess(result -> log.info("Audit trails by user retrieved successfully"))
-                .doOnError(error -> log.error("Error retrieving audit trails by user", error));
+                .doOnError(error -> log.error("Error retrieving audit trails by user: errorType={}", LogFields.errorType(error)));
     }
 }

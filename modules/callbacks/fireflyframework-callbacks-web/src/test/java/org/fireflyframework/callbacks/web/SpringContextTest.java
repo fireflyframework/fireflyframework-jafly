@@ -18,6 +18,8 @@ package org.fireflyframework.callbacks.web;
 
 import org.fireflyframework.callbacks.web.controller.AuthorizedDomainController;
 import org.fireflyframework.callbacks.web.controller.CallbackConfigurationController;
+import org.fireflyframework.cache.core.CacheType;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,7 +36,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "firefly.cache.default-cache-type=CAFFEINE")
 @Testcontainers
 @ActiveProfiles("test")
 class SpringContextTest {
@@ -65,6 +68,7 @@ class SpringContextTest {
     @Test
     void contextLoads() {
         assertThat(context).isNotNull();
+        assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
     }
 
     @Test

@@ -63,7 +63,7 @@ public class CallbackConfigurationController {
     })
     public Mono<ResponseEntity<PaginationResponse<CallbackConfigurationDTO>>> filterConfigurations(
             @Valid @RequestBody FilterRequest<CallbackConfigurationDTO> filterRequest) {
-        log.debug("Filtering callback configurations with request: {}", filterRequest);
+        log.debug("Filtering callback configurations: page={}, size={}", filterRequest == null ? null : filterRequest.getPage(), filterRequest == null ? null : filterRequest.getSize());
         return configurationService.filterConfigurations(filterRequest)
                 .map(ResponseEntity::ok);
     }
@@ -77,7 +77,7 @@ public class CallbackConfigurationController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     public Mono<CallbackConfigurationDTO> create(@Valid @RequestBody CallbackConfigurationDTO dto) {
-        log.info("Creating callback configuration: name={}, url={}", dto.getName(), dto.getUrl());
+        log.info("Creating callback configuration: id={}", dto.getId());
         return configurationService.create(dto);
     }
 

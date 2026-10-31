@@ -18,23 +18,21 @@ package org.fireflyframework.eda.publisher.postgres;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.r2dbc.postgresql.codec.Json;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.Result;
-import io.r2dbc.spi.Statement;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.publisher.ConnectionAwarePublisher;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.PublisherHealth;
+import org.fireflyframework.eda.publisher.postgres.impl.SpringDataPostgresOutboxWriter;
+import org.fireflyframework.eda.publisher.postgres.model.PostgresOutboxAppend;
 import org.fireflyframework.eda.serialization.MessageSerializer;
-import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.stereotype.Component;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -57,13 +55,11 @@ import java.util.Map;
  *   <li>Events survive consumer crashes (status remains {@code PENDING}
  *       until processed).</li>
  *   <li>Retry counts and dead-letter status are tracked per row.</li>
- *   <li>The {@code INSERT} can participate in the caller's transaction so a
- *       publish failure rolls back the business write.</li>
+ *   <li>The {@code INSERT} participates in an owner transaction bound to the
+ *       exact configured connection factory; a separate transport pool does
+ *       not join another business connection factory's transaction.</li>
  * </ul>
  */
-@Component
-@ConditionalOnClass(ConnectionFactory.class)
-@ConditionalOnBean(name = "fireflyEdaPostgresPublisherConnectionFactory")
 @Slf4j
 public class PostgresEventPublisher implements EventPublisher, ConnectionAwarePublisher {
 
@@ -72,6 +68,7 @@ public class PostgresEventPublisher implements EventPublisher, ConnectionAwarePu
     private final EdaProperties edaProperties;
     private final ObjectMapper objectMapper;
     private String connectionId = "default";
+    private volatile WriterBinding writerBinding;
 
     public PostgresEventPublisher(
             @Qualifier("fireflyEdaPostgresPublisherConnectionFactory")
@@ -119,61 +116,40 @@ public class PostgresEventPublisher implements EventPublisher, ConnectionAwarePu
         String transactionId = extractStringHeader(headers, "transaction_id");
         String eventClass = event.getClass().getName();
 
-        String sql = "INSERT INTO " + table + " ("
-                + "destination, channel, event_type, payload, headers, "
-                + "transaction_id, publisher_type, connection_id, event_class, status, attempts, created_at"
-                + ") VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, 'PENDING', 0, NOW())";
-
-        return Mono.usingWhen(
-                Mono.from(connectionFactory.create()),
-                connection -> executeInsert(connection, sql, effectiveDestination, channel, eventType,
-                        payload, headersJson, transactionId, eventClass)
-                        .doOnSuccess(rows -> log.debug(
-                                "Inserted outbox row for destination={}, channel={}, rows={}",
-                                effectiveDestination, channel, rows))
-                        .then(),
-                Connection::close,
-                (connection, throwable) -> Mono.from(connection.close()).then(Mono.error(throwable)),
-                Connection::close)
+        String schema = schema(config);
+        String tableName = tableName(config);
+        return Mono.defer(() -> {
+                    var row = new PostgresOutboxAppend(null, effectiveDestination, channel, eventType,
+                            payload, Json.of(headersJson), transactionId, PublisherType.POSTGRES.name(),
+                            connectionId != null ? connectionId : "default", eventClass);
+                    return outboxWriter(connectionFactory).append(schema, tableName, row);
+                })
+                .doOnSuccess(rows -> log.debug(
+                        "Inserted outbox row for destination={}, channel={}, rows={}",
+                        effectiveDestination, channel, rows))
+                .then()
                 .onErrorMap(e -> {
                     log.error("Failed to publish event to PostgreSQL outbox table {}", table, e);
                     return new RuntimeException("Failed to publish event to PostgreSQL", e);
                 });
     }
 
-    private Mono<Long> executeInsert(Connection connection, String sql,
-                                     String destination, String channel, String eventType,
-                                     byte[] payload, String headersJson, String transactionId,
-                                     String eventClass) {
-        Statement statement = connection.createStatement(sql)
-                .bind("$1", destination)
-                .bind("$2", channel)
-                .bind("$4", payload)
-                .bind("$5", headersJson)
-                .bind("$9", eventClass);
-        bindOrNull(statement, "$3", eventType, String.class);
-        bindOrNull(statement, "$6", transactionId, String.class);
-        statement.bind("$7", PublisherType.POSTGRES.name());
-        statement.bind("$8", connectionId != null ? connectionId : "default");
-
-        Publisher<? extends Result> execute = statement.execute();
-        return Mono.from(execute).flatMap(result -> Mono.from(result.getRowsUpdated()).map(this::asLong));
-    }
-
-    private long asLong(Object value) {
-        if (value instanceof Number n) {
-            return n.longValue();
+    private PostgresOutboxWriter outboxWriter(ConnectionFactory factory) {
+        WriterBinding current = writerBinding;
+        if (current == null || current.factory() != factory) {
+            synchronized (this) {
+                current = writerBinding;
+                if (current == null || current.factory() != factory) {
+                    current = new WriterBinding(factory,
+                            new SpringDataPostgresOutboxWriter(new R2dbcEntityTemplate(factory)));
+                    writerBinding = current;
+                }
+            }
         }
-        return 0L;
+        return current.writer();
     }
 
-    private void bindOrNull(Statement statement, String name, Object value, Class<?> type) {
-        if (value == null) {
-            statement.bindNull(name, type);
-        } else {
-            statement.bind(name, value);
-        }
-    }
+    private record WriterBinding(ConnectionFactory factory, PostgresOutboxWriter writer) { }
 
     @Override
     public PublisherType getPublisherType() {
@@ -262,12 +238,15 @@ public class PostgresEventPublisher implements EventPublisher, ConnectionAwarePu
     }
 
     private String qualifiedTable(EdaProperties.Publishers.PostgresConfig config) {
-        if (config == null) {
-            return "public.firefly_eda_outbox";
-        }
-        String schema = config.getSchema() != null ? config.getSchema() : "public";
-        String table = config.getOutboxTable() != null ? config.getOutboxTable() : "firefly_eda_outbox";
-        return schema + "." + table;
+        return schema(config) + "." + tableName(config);
+    }
+
+    private String schema(EdaProperties.Publishers.PostgresConfig config) {
+        return config != null && config.getSchema() != null ? config.getSchema() : "public";
+    }
+
+    private String tableName(EdaProperties.Publishers.PostgresConfig config) {
+        return config != null && config.getOutboxTable() != null ? config.getOutboxTable() : "firefly_eda_outbox";
     }
 
     private Map<String, Object> mergeHeaders(Map<String, Object> headers, Object event) {

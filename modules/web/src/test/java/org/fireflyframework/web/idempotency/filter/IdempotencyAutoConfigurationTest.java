@@ -37,7 +37,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class IdempotencyAutoConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(IdempotencyAutoConfiguration.class))
-            .withBean(CacheManagerFactory.class, () -> new CacheManagerFactory(new CacheProperties(), new com.fasterxml.jackson.databind.ObjectMapper(), null, null, null));
+            .withBean(CacheManagerFactory.class, () -> {
+                var properties = new CacheProperties();
+                properties.setDefaultCacheType(org.fireflyframework.cache.core.CacheType.CAFFEINE);
+                return new CacheManagerFactory(properties, new com.fasterxml.jackson.databind.ObjectMapper(), null, null, null);
+            });
 
     @Test void applicationNamespaceAndCustomTrustedResolverAreUsedByAutoConfiguredFilter() {
         runner.withPropertyValues("spring.application.name=synthetic-auto-service")

@@ -104,6 +104,14 @@ public class CacheAutoConfiguration {
             @Qualifier("cacheObjectMapper") ObjectMapper objectMapper,
             org.springframework.context.ApplicationContext applicationContext) {
         log.info("Creating CacheManagerFactory");
+        String configuredNamespace = properties.getPostgres().getKeyPrefix();
+        if (configuredNamespace == null || configuredNamespace.isBlank()) {
+            String applicationName = applicationContext.getEnvironment().getProperty("spring.application.name");
+            if (applicationName != null && !applicationName.isBlank()) {
+                properties.getPostgres().setKeyPrefix(applicationName);
+            }
+        }
+
 
         // Resolve optional Redis ReactiveRedisConnectionFactory via reflection
         Object redisConnectionFactory = null;
@@ -131,12 +139,9 @@ public class CacheAutoConfiguration {
             jcacheManager = applicationContext.getBeanProvider(jcacheClazz).getIfAvailable();
         } catch (ClassNotFoundException ignored) { }
 
-        // Resolve optional R2DBC ConnectionFactory (Postgres) via reflection
-        Object r2dbcConnectionFactory = null;
-        try {
-            Class<?> cf = Class.forName("io.r2dbc.spi.ConnectionFactory");
-            r2dbcConnectionFactory = applicationContext.getBeanProvider(cf).getIfAvailable();
-        } catch (ClassNotFoundException ignored) { }
+        java.util.function.Supplier<Object> postgresFactory = () ->
+                applicationContext.containsBean("fireflyCachePostgresConnectionFactory")
+                        ? applicationContext.getBean("fireflyCachePostgresConnectionFactory") : null;
 
         return new org.fireflyframework.cache.factory.CacheManagerFactory(
                 properties,
@@ -144,7 +149,8 @@ public class CacheAutoConfiguration {
                 redisConnectionFactory,
                 hazelcastInstance,
                 jcacheManager,
-                r2dbcConnectionFactory
+                null,
+                postgresFactory
         );
     }
 

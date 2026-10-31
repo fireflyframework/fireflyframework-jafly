@@ -23,9 +23,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link DateTimeValidator}.
@@ -163,24 +168,27 @@ class DateTimeValidatorTest {
 
     @Test
     void shouldValidateFuturePastConstraints() throws Exception {
-        // Get current date-time
+        // Bind validation and its inputs to the same clock, independently of test execution time.
+        Clock clock = Clock.fixed(Instant.parse("2026-01-01T12:00:00Z"), ZoneId.systemDefault());
+        jakarta.validation.ConstraintValidatorContext context = mock(jakarta.validation.ConstraintValidatorContext.class);
+        when(context.getClockProvider()).thenReturn(() -> clock);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         
         // Calculate a date-time in the past (1 hour ago)
-        Date pastDateTime = new Date(System.currentTimeMillis() - 60 * 60 * 1000);
+        Date pastDateTime = new Date(clock.millis() - 60 * 60 * 1000);
         String pastDateTimeStr = sdf.format(pastDateTime);
         
         // Calculate a date-time in the future (1 hour from now)
-        Date futureDateTime = new Date(System.currentTimeMillis() + 60 * 60 * 1000);
+        Date futureDateTime = new Date(clock.millis() + 60 * 60 * 1000);
         String futureDateTimeStr = sdf.format(futureDateTime);
         
         // Current date-time
-        String now = sdf.format(new Date());
+        String now = sdf.format(Date.from(clock.instant()));
         
         // Default validator allows both past and future
-        assertThat(validator.isValid(pastDateTimeStr, null)).isTrue();
-        assertThat(validator.isValid(now, null)).isTrue();
-        assertThat(validator.isValid(futureDateTimeStr, null)).isTrue();
+        assertThat(validator.isValid(pastDateTimeStr, context)).isTrue();
+        assertThat(validator.isValid(now, context)).isTrue();
+        assertThat(validator.isValid(futureDateTimeStr, context)).isTrue();
         
         // Create validator that doesn't allow past date-times
         DateTimeValidator noPastValidator = new DateTimeValidator();
@@ -209,9 +217,9 @@ class DateTimeValidatorTest {
             public boolean allowPast() { return false; }
         });
         
-        assertThat(noPastValidator.isValid(pastDateTimeStr, null)).isFalse();
-        assertThat(noPastValidator.isValid(now, null)).isTrue();
-        assertThat(noPastValidator.isValid(futureDateTimeStr, null)).isTrue();
+        assertThat(noPastValidator.isValid(pastDateTimeStr, context)).isFalse();
+        assertThat(noPastValidator.isValid(now, context)).isTrue();
+        assertThat(noPastValidator.isValid(futureDateTimeStr, context)).isTrue();
         
         // Create validator that doesn't allow future date-times
         DateTimeValidator noFutureValidator = new DateTimeValidator();
@@ -240,9 +248,9 @@ class DateTimeValidatorTest {
             public boolean allowPast() { return true; }
         });
         
-        assertThat(noFutureValidator.isValid(pastDateTimeStr, null)).isTrue();
-        assertThat(noFutureValidator.isValid(now, null)).isTrue();
-        assertThat(noFutureValidator.isValid(futureDateTimeStr, null)).isFalse();
+        assertThat(noFutureValidator.isValid(pastDateTimeStr, context)).isTrue();
+        assertThat(noFutureValidator.isValid(now, context)).isTrue();
+        assertThat(noFutureValidator.isValid(futureDateTimeStr, context)).isFalse();
     }
 
     @Test

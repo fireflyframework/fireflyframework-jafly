@@ -36,7 +36,7 @@ public class PostgresProvider implements CacheProviderFactory {
 
     @Override
     public int priority() {
-        return 15;
+        return 5;
     }
 
     @Override

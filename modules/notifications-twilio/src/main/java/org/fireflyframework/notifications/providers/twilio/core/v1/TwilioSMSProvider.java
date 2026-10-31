@@ -22,6 +22,9 @@ import org.fireflyframework.notifications.interfaces.dtos.sms.v1.SMSResponseDTO;
 import org.fireflyframework.notifications.interfaces.providers.sms.v1.SMSProvider;
 import org.fireflyframework.notifications.providers.twilio.properties.v1.TwilioProperties;
 import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.exception.TwilioException;
+import com.twilio.http.TwilioRestClient;
+import java.util.Objects;
 import com.twilio.type.PhoneNumber;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
@@ -30,9 +33,15 @@ import reactor.core.scheduler.Schedulers;
 public class TwilioSMSProvider implements SMSProvider {
 
     private final TwilioProperties twilioProperties;
+    private volatile TwilioRestClient client;
 
     public TwilioSMSProvider(TwilioProperties twilioProperties) {
         this.twilioProperties = twilioProperties;
+    }
+
+    public TwilioSMSProvider(TwilioProperties twilioProperties, TwilioRestClient client) {
+        this(twilioProperties);
+        this.client = Objects.requireNonNull(client, "Twilio client");
     }
 
     @Override
@@ -55,9 +64,49 @@ public class TwilioSMSProvider implements SMSProvider {
                     new PhoneNumber(request.getPhoneNumber().trim()),
                     new PhoneNumber(twilioProperties.getPhoneNumber().trim()),
                     request.getMessage().trim()
-            ).create();
+            ).create(client());
 
-            return SMSResponseDTO.success(message.getSid());
-        }).subscribeOn(Schedulers.boundedElastic());
+            return response(message);
+        }).onErrorMap(TwilioException.class, error -> new IllegalStateException("Twilio SMS request failed"))
+                .subscribeOn(Schedulers.boundedElastic());
     }
+
+    private TwilioRestClient client() {
+        TwilioRestClient selected = client;
+        if (selected == null) {
+            synchronized (this) {
+                selected = client;
+                if (selected == null) {
+                    if (!StringUtils.hasText(twilioProperties.getAccountSid()) || !StringUtils.hasText(twilioProperties.getAuthToken())) {
+                        throw new IllegalStateException("Twilio SMS credentials not configured");
+                    }
+                    selected = new TwilioRestClient.Builder(twilioProperties.getAccountSid(), twilioProperties.getAuthToken()).build();
+                    client = selected;
+                }
+            }
+        }
+        return selected;
+    }
+
+    private static SMSResponseDTO response(Message message) {
+        String sid = message == null ? null : message.getSid();
+        if (!StringUtils.hasText(sid)) {
+            return failed(null, "Twilio SMS provider response is invalid");
+        }
+        if (message.getStatus() == null) {
+            return failed(sid, "Twilio SMS provider response is invalid");
+        }
+        return switch (message.getStatus()) {
+            case QUEUED, SENDING, SENT, DELIVERED, ACCEPTED, SCHEDULED, READ -> SMSResponseDTO.success(sid);
+            case FAILED, UNDELIVERED, CANCELED, PARTIALLY_DELIVERED -> failed(sid, "Twilio SMS provider reported a failure");
+            default -> failed(sid, "Twilio SMS provider response is invalid");
+        };
+    }
+
+    private static SMSResponseDTO failed(String sid, String error) {
+        SMSResponseDTO response = SMSResponseDTO.error(error);
+        response.setMessageId(sid);
+        return response;
+    }
+
 }

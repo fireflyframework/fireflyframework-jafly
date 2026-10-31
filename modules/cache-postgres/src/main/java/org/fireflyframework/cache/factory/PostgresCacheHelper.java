@@ -70,11 +70,14 @@ public final class PostgresCacheHelper {
                 .cacheName(cacheName)
                 .keyPrefix(prefix)
                 .defaultTtl(ttl)
-                .schema(postgres.getSchema() != null ? postgres.getSchema() : "public")
+                .schema(postgres.getSchema() != null ? postgres.getSchema() : "firefly_cache")
                 .cacheTable(postgres.getCacheTable() != null ? postgres.getCacheTable() : "firefly_cache_entries")
                 .build();
 
+        String serviceNamespace = postgres.getKeyPrefix();
+        config.validate(cacheName, serviceNamespace);
         ConnectionFactory connectionFactory = (ConnectionFactory) r2dbcConnectionFactory;
-        return new PostgresCacheAdapter(cacheName, connectionFactory, config, serializer);
+        PostgresCacheInitializer.initialize(connectionFactory, postgres, config);
+        return new PostgresCacheAdapter(cacheName, connectionFactory, config, serializer, serviceNamespace);
     }
 }

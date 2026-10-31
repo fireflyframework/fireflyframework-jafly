@@ -74,6 +74,7 @@ jobs:
           ./mvnw -B -ntp -Dmaven.repo.local="$MAVEN_REPO" install -Prelease -DskipTests
           python3 scripts/github_packages.py plan --root . \
             --associations scripts/package-associations.jsonl \
+            --initial-intent scripts/initial-package-intent.json \
             --repository "$MAVEN_REPO" --output "$RUNNER_TEMP/github-stage"
           mkdir -p target
           cp "$RUNNER_TEMP/github-stage/github-manifest.json" target/github-manifest.json
@@ -84,7 +85,8 @@ jobs:
           JAFLY_PACKAGES_USER: ${{ vars.JAFLY_PACKAGES_USER || github.actor }}
         run: |
           python3 scripts/release_tools.py check --tag "$RELEASE_TAG" --remote origin
-          python3 scripts/github_packages.py execute --plan "$RUNNER_TEMP/github-stage" --maven ./mvnw
+          python3 scripts/github_packages.py execute --plan "$RUNNER_TEMP/github-stage" --maven ./mvnw \
+            --allow-initial-batch-publication
       - name: Verify every GitHub Packages artifact
         env:
           JAFLY_PACKAGES_TOKEN: ${{ secrets.JAFLY_PACKAGES_TOKEN }}
@@ -93,6 +95,7 @@ jobs:
           python3 scripts/github_packages.py verify \
             --projects "$RUNNER_TEMP/github-stage/reactor-inventory.json" \
             --homes "$RUNNER_TEMP/github-stage/package-homes.json" \
+            --initial-intent "$RUNNER_TEMP/github-stage/source-initial-intent.json" \
             --manifest target/github-manifest.json \
             --output target/github-verification.json --attempts 12 --delay 10
       - name: Deploy and wait for Maven Central publication

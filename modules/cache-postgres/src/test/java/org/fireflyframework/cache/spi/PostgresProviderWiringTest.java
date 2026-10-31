@@ -39,7 +39,7 @@ class PostgresProviderWiringTest {
             if (factory.getType() == CacheType.POSTGRES) {
                 found = true;
                 assertThat(factory).isInstanceOf(PostgresProvider.class);
-                assertThat(factory.priority()).isEqualTo(15);
+                assertThat(factory.priority()).isEqualTo(5);
             }
         }
 
@@ -52,6 +52,6 @@ class PostgresProviderWiringTest {
     void postgresProviderReportsExpectedType() {
         PostgresProvider provider = new PostgresProvider();
         assertThat(provider.getType()).isEqualTo(CacheType.POSTGRES);
-        assertThat(provider.priority()).isEqualTo(15);
+        assertThat(provider.priority()).isEqualTo(5);
     }
 }

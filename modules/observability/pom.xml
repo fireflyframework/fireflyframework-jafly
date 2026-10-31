@@ -37,6 +37,12 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
+        <!-- Native propagation ownership must also be available to standalone consumers. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-reactor</artifactId>
+        </dependency>
+
         <!-- Configuration Processor (compile-time metadata generation) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -5,7 +5,7 @@
 firefly:
   cache:
     enabled: true
-    default-cache-type: CAFFEINE  # Use in-memory cache by default (Redis available if dependencies present)
+    default-cache-type: POSTGRES  # Technical cache storage is configured through firefly.cache.postgres
     metrics-enabled: true
     health-enabled: true
     

@@ -23,6 +23,8 @@ import org.fireflyframework.callbacks.interfaces.dto.CallbackConfigurationDTO;
 import org.fireflyframework.callbacks.interfaces.dto.EventSubscriptionDTO;
 import org.fireflyframework.callbacks.interfaces.enums.HttpMethod;
 import org.fireflyframework.callbacks.web.config.TestKafkaListenerConfig;
+import org.fireflyframework.cache.core.CacheType;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -67,7 +69,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 7. Verify execution is recorded in database
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        classes = CallbackManagementApplication.class)
+        classes = CallbackManagementApplication.class,
+        properties = "firefly.cache.default-cache-type=CAFFEINE")
 @Import(TestKafkaListenerConfig.class)
 @Testcontainers
 @ActiveProfiles("test")
@@ -95,6 +98,9 @@ class CallbackManagementEndToEndTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private FireflyCacheManager cacheManager;
 
     @Autowired
     private TestKafkaListenerConfig.TestDynamicEventListenerRegistry testRegistry;
@@ -164,6 +170,7 @@ class CallbackManagementEndToEndTest {
     @Order(1)
     @DisplayName("1. Create authorized domain")
     void testCreateAuthorizedDomain() {
+        assertThat(cacheManager.getCacheType()).isEqualTo(CacheType.CAFFEINE);
         AuthorizedDomainDTO domain = AuthorizedDomainDTO.builder()
                 .domain("localhost:8089")
                 .organization("Test Organization")

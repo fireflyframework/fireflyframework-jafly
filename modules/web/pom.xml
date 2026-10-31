@@ -156,6 +156,13 @@
             <artifactId>jackson-databind-nullable</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- Actual cache-provider regression coverage without a runtime provider dependency. -->
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-cache-postgres</artifactId>
+            <version>${fireflyframework.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

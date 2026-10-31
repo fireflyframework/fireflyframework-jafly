@@ -62,12 +62,12 @@ def required_paths(projects):
 
 
 def validate_initial_intent(projects, intent):
-    expected = {'schema': 1, 'kind': 'SOURCE_OWNED_INITIAL_NAMESPACE_INTENT',
+    expected = {'schema': 2, 'kind': 'SOURCE_OWNED_INITIAL_NAMESPACE_INTENT',
                 'owner': OWNER, 'groupId': 'org.fireflyframework',
                 'artifactId': 'fireflyframework-batch', 'repository': JAFLY_REPOSITORY,
                 'repositoryId': JAFLY_REPOSITORY_ID, 'visibility': 'public',
-                'requiredProviderQualification': 'EXISTING_EXACT_PACKAGE_GET_200',
-                'on404': 'UNKNOWN_REFUSE'}
+                'requiredProviderQualification': 'EXACT_PACKAGE_GET_200_BEFORE_COMPLETION',
+                'on404': 'UNKNOWN_REQUIRE_EXPLICIT_FINAL_ATTEMPT'}
     if (initial_intent_digest(intent) != initial_intent_digest(expected)
             or initial_intent_digest(intent) != initial_intent_digest(json.loads(CANONICAL_INITIAL_INTENT.read_text()))
             or ('org.fireflyframework', 'fireflyframework-batch') not in
@@ -372,7 +372,46 @@ class NoApiRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def preflight_associations(projects, homes, token, initial_intent=None):
+def preflight_initial_repository(opener, token):
+    request = urllib.request.Request('https://api.github.com/repos/' + OWNER + '/' + JAFLY_REPOSITORY,
+        headers={'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json',
+                 'X-GitHub-Api-Version': '2022-11-28'})
+    try:
+        with opener.open(request, timeout=60) as response:
+            if getattr(response, 'status', None) != 200:
+                raise ValueError('initial publication repository requires actual GET200')
+            data = response.read(1024 * 1024 + 1)
+    except urllib.error.HTTPError as error:
+        status = error.code
+        error.close()
+        raise ValueError(f'HTTP {status} checking initial publication repository') from None
+    except (urllib.error.URLError, TimeoutError, OSError):
+        raise ValueError('initial publication repository read failed') from None
+    try:
+        if len(data) > 1024 * 1024:
+            raise ValueError('oversized response')
+        repository = json.loads(data)
+        if (repository.get('id') != JAFLY_REPOSITORY_ID
+                or repository.get('full_name') != OWNER + '/' + JAFLY_REPOSITORY
+                or repository.get('owner', {}).get('login') != OWNER
+                or repository.get('private') is not False
+                or repository.get('archived') is not False
+                or repository.get('disabled') is not False
+                or repository.get('permissions', {}).get('push') is not True):
+            raise ValueError('repository identity or permission mismatch')
+    except (ValueError, TypeError, AttributeError, UnicodeError):
+        raise ValueError('initial publication repository identity or push permission refused') from None
+
+
+def preflight_associations(projects, homes, token, initial_intent=None,
+                           allow_initial_batch_publication=False):
+    if not isinstance(allow_initial_batch_publication, bool):
+        raise ValueError('explicit initial publication flag must be boolean')
+    if allow_initial_batch_publication:
+        if initial_intent is None:
+            raise ValueError('initial publication requires bound source intent')
+        if any(p['version'].endswith('-SNAPSHOT') for p in publishable(projects)):
+            raise ValueError('initial publication requires a final version')
     entries = validate_homes(projects, homes)
     initial_name = None
     if initial_intent is not None:
@@ -404,7 +443,10 @@ def preflight_associations(projects, homes, token, initial_intent=None):
             error.close()
             if status == 404:
                 if name == initial_name:
-                    raise ValueError('initial namespace provider association UNKNOWN: ' + name) from None
+                    if not allow_initial_batch_publication:
+                        raise ValueError('initial namespace provider association UNKNOWN: ' + name) from None
+                    proof.append({'name': name, 'status': 'initial-publish-attempt-authorized'})
+                    continue
                 proof.append({'name': name, 'status': 'absent'})
                 continue
             raise ValueError(f'HTTP {status} checking package association: {name}') from None
@@ -424,10 +466,15 @@ def preflight_associations(projects, homes, token, initial_intent=None):
         except (ValueError, TypeError, AttributeError, UnicodeError):
             raise ValueError('conflicting or invalid package association: ' + name) from None
         proof.append({'name': name, 'status': 'jafly-associated'})
+    if any(row['status'] == 'initial-publish-attempt-authorized' for row in proof):
+        # A 404 is still unknown; repository permission authorizes only the attempt.
+        preflight_initial_repository(opener, token)
     return proof
 
 
-def run_batch(maven, plan, local=False):
+def run_batch(maven, plan, local=False, allow_initial_batch_publication=False):
+    if local and allow_initial_batch_publication:
+        raise ValueError('initial publication cannot be authorized in local mode')
     plan = Path(plan).resolve()
     projects = json.loads((plan / 'reactor-inventory.json').read_text())
     homes = json.loads((plan / 'package-homes.json').read_text())
@@ -435,6 +482,8 @@ def run_batch(maven, plan, local=False):
     associations = json.loads((plan / 'source-associations.json').read_text())
     intent_path = plan / 'source-initial-intent.json'
     initial_intent = json.loads(intent_path.read_text()) if intent_path.exists() else None
+    if allow_initial_batch_publication and initial_intent is None:
+        raise ValueError('initial publication requires bound source intent')
     validate_associations(projects, homes, associations, initial_intent=initial_intent)
     validate_canonical_homes(projects, homes, initial_intent=initial_intent)
     validate_inventory(projects, inventory)
@@ -449,7 +498,8 @@ def run_batch(maven, plan, local=False):
         token = os.environ.get('JAFLY_PACKAGES_TOKEN')
         username = os.environ.get('JAFLY_PACKAGES_USER') or os.environ.get('GITHUB_ACTOR')
         if not token or not username: raise ValueError('JAFLY_PACKAGES_TOKEN and JAFLY_PACKAGES_USER/GITHUB_ACTOR are required')
-        association_proof = preflight_associations(projects, homes, token, initial_intent=initial_intent)
+        association_proof = preflight_associations(projects, homes, token, initial_intent=initial_intent,
+                                                  allow_initial_batch_publication=allow_initial_batch_publication)
         settings = '<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"><servers><server><id>github-packages</id><username>${env.JAFLY_PACKAGES_USER}</username><password>${env.JAFLY_PACKAGES_TOKEN}</password></server></servers></settings>\n'
         rendered, goals = render_publisher(projects, homes, plan / 'artifacts')
     pom = plan / ('local-publisher.pom.xml' if local else 'publisher.pom.xml')
@@ -471,6 +521,9 @@ def run_batch(maven, plan, local=False):
             output = output.replace(sensitive, '[REDACTED]')
     (plan / ('local-maven.log' if local else 'publish-maven.log')).write_text(output)
     if result.returncode: raise ValueError('Maven deployment failed; inspect the redacted log')
+    if not local and any(row['status'] == 'initial-publish-attempt-authorized' for row in association_proof):
+        postflight = preflight_associations(projects, homes, token, initial_intent=initial_intent)
+        (plan / 'association-postflight.json').write_text(json.dumps(postflight, indent=2) + '\n')
 
 
 def main():
@@ -485,6 +538,8 @@ def main():
     execute = commands.add_parser('execute')
     execute.add_argument('--plan', required=True, type=Path)
     execute.add_argument('--maven', required=True, type=Path)
+    execute.add_argument('--allow-initial-batch-publication', action='store_true',
+                         help='Authorize one final-version Batch upload attempt, not namespace existence or success')
     verify = commands.add_parser('verify')
     verify.add_argument('--projects', required=True, type=Path)
     verify.add_argument('--homes', required=True, type=Path)
@@ -516,7 +571,7 @@ def main():
             (args.output / 'goals.json').write_text(json.dumps(goals, indent=2) + '\n')
         print(f'Prepared {len(homes["artifacts"])} package homes and {len(inventory)} staged files; no upload performed')
     elif args.command == 'execute':
-        run_batch(args.maven, args.plan)
+        run_batch(args.maven, args.plan, allow_initial_batch_publication=args.allow_initial_batch_publication)
         print('Maven upload finished; independent verification is still required')
     else:
         if not re.fullmatch(r'[A-Z][A-Z0-9_]*', args.token_env): raise ValueError('invalid credential environment variable name')

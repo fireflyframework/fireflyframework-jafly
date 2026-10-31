@@ -16,6 +16,7 @@
 
 package org.fireflyframework.rules.core.dsl.parser;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.fireflyframework.rules.core.dsl.action.Action;
@@ -92,7 +93,7 @@ public class ASTRulesDSLParser {
                         if (e instanceof ASTException) {
                             return e;
                         }
-                        JsonLogger.error(log, "Error parsing rules definition", e);
+                        log.error("Error parsing rules definition: errorType={}", LogFields.errorType(e));
                         return new ASTException("Failed to parse rules definition: " + e.getMessage());
                     });
         } else {
@@ -102,7 +103,7 @@ public class ASTRulesDSLParser {
                 ASTRulesDSL parsedAST = parseRulesInternal(rulesDefinition);
                 return Mono.just(parsedAST);
             } catch (Exception e) {
-                JsonLogger.error(log, "Error parsing rules definition", e);
+                log.error("Error parsing rules definition: errorType={}", LogFields.errorType(e));
                 return Mono.error(new ASTException("Failed to parse rules definition: " + e.getMessage()));
             }
         }
@@ -553,7 +554,7 @@ public class ASTRulesDSLParser {
                     try {
                         return dslParser.parseAction(actionString);
                     } catch (Exception e) {
-                        log.debug("Reconstructed loop parse failed for '{}', retrying as structured map", actionString);
+                        log.debug("Reconstructed loop parse failed; retrying as structured map: errorType={}", LogFields.errorType(e));
                         // Fall through to complex action parsing.
                     }
                 }
@@ -746,7 +747,7 @@ public class ASTRulesDSLParser {
                                 return dslParser.parseAction(item.toString());
                             }
                         } catch (Exception e) {
-                            log.error("Error parsing action: {}", item, e);
+                            log.error("Error parsing action: errorType={}", LogFields.errorType(e));
                             throw e;
                         }
                     })

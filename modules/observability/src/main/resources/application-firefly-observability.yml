@@ -80,10 +80,19 @@ management:
         firefly: ${FIREFLY_OBSERVABILITY_METRICS_HISTOGRAMS_ENABLED:false}
   tracing:
     enabled: ${firefly.observability.tracing.enabled:true}
+    export:
+      otlp:
+        enabled: false
+      zipkin:
+        enabled: false
     sampling:
       probability: ${firefly.observability.tracing.sampling-probability:1.0}
     propagation:
       type: W3C,B3
+  logging:
+    export:
+      otlp:
+        enabled: false
 
   ## OTLP Export — targets open-source otel-collector-contrib
   ## Both gRPC and HTTP senders are on the classpath. Switch via env var or property.
