@@ -66,8 +66,9 @@ public final class ScopedSdkConnector {
                         request.setStreamProvider(length -> bytes);
                         if (request.hasEntity()) request.writeEntity();
                     } catch (IOException error) { throw new IllegalStateException("Owned serialization failed", error); }
-                    if (bytes.size() > 131072) throw new IllegalStateException("Owned bounded wire required");
-                    Wire wire = new Wire(request.getMethod(), request.getUri(), bytes.toByteArray(),
+                    byte[] serialized = bytes.toByteArray();
+                    if (serialized.length > 131072) throw new IllegalStateException("Owned bounded wire required");
+                    Wire wire = new Wire(request.getMethod(), request.getUri(), serialized,
                             request.getHeaderString("Authorization"),
                             request.getConfiguration().getProperty(ClientProperties.CONNECT_TIMEOUT),
                             request.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT));
