@@ -16,6 +16,7 @@
 
 package org.fireflyframework.rules.core.services.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.core.queries.PaginationResponse;
@@ -70,8 +71,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
             String sessionId,
             String correlationId) {
 
-        log.debug("Recording audit event: {} for user: {} on entity: {}", 
-                 eventType, userId, entityId);
+        log.debug("Recording audit event: type={}, entityId={}", eventType, entityId);
 
         AuditTrail auditTrail = AuditTrail.builder()
                 .id(UUID.randomUUID())
@@ -100,7 +100,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
                 .doOnNext(savedEntity -> savedEntity.markNotNew()) // Mark as not new after saving
                 .map(this::convertToDTO)
                 .doOnSuccess(dto -> log.debug("Audit event recorded successfully with ID: {}", dto.getId()))
-                .doOnError(error -> log.error("Failed to record audit event: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to record audit event: errorType={}", LogFields.errorType(error)));
     }
 
     @Override
@@ -142,7 +142,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
             try {
                 metadataJson = objectMapper.writeValueAsString(metadataMap);
             } catch (JsonProcessingException e) {
-                log.warn("Failed to serialize metadata map to JSON: {}", e.getMessage());
+                log.warn("Failed to serialize metadata map to JSON: errorType={}", LogFields.errorType(e));
             }
         }
 
@@ -153,7 +153,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
     @Override
     public Mono<PaginationResponse<AuditTrailDTO>> getAuditTrails(AuditTrailFilterDTO filterDTO) {
-        log.debug("Getting audit trails with filter: {}", filterDTO);
+        log.debug("Getting audit trails: page={}, size={}", filterDTO == null ? null : filterDTO.getPage(), filterDTO == null ? null : filterDTO.getSize());
 
         // Create pageable
         Sort.Direction direction = "ASC".equalsIgnoreCase(filterDTO.getSortDirection()) 
@@ -198,7 +198,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
                             .build();
                 })
                 .doOnSuccess(result -> log.debug("Retrieved {} audit trails", result.getContent().size()))
-                .doOnError(error -> log.error("Failed to get audit trails: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to get audit trails: errorType={}", LogFields.errorType(error)));
     }
 
     @Override
@@ -208,7 +208,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
         return auditTrailRepository.findById(id)
                 .map(this::convertToDTO)
                 .doOnSuccess(dto -> log.debug("Retrieved audit trail: {}", dto.getId()))
-                .doOnError(error -> log.error("Failed to get audit trail by ID {}: {}", id, error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to get audit trail by ID: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     @Override
@@ -220,8 +220,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
                 .collectList()
                 .doOnSuccess(results -> log.debug("Retrieved {} recent audit trails for entity: {}", 
                            results.size(), entityId))
-                .doOnError(error -> log.error("Failed to get recent audit trails for entity {}: {}", 
-                          entityId, error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to get recent audit trails for entity: id={}, errorType={}", entityId, LogFields.errorType(error)));
     }
 
     @Override
@@ -258,7 +257,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
                     return stats;
                 })
                 .doOnSuccess(stats -> log.debug("Retrieved audit trail statistics: {}", stats))
-                .doOnError(error -> log.error("Failed to get audit trail statistics: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to get audit trail statistics: errorType={}", LogFields.errorType(error)));
     }
 
     @Override
@@ -271,7 +270,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
                 .flatMap(auditTrailRepository::delete)
                 .count()
                 .doOnSuccess(count -> log.info("Deleted {} old audit trail records", count))
-                .doOnError(error -> log.error("Failed to delete old audit trails: {}", error.getMessage(), error));
+                .doOnError(error -> log.error("Failed to delete old audit trails: errorType={}", LogFields.errorType(error)));
     }
 
     /**

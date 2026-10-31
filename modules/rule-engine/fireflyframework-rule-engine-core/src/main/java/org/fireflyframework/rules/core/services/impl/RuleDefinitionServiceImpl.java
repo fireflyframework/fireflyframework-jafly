@@ -16,6 +16,7 @@
 
 package org.fireflyframework.rules.core.services.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.core.filters.FilterRequest;
 import org.fireflyframework.core.filters.FilterUtils;
 import org.fireflyframework.core.queries.PaginationResponse;
@@ -59,7 +60,7 @@ public class RuleDefinitionServiceImpl implements RuleDefinitionService {
     @Override
     public Mono<PaginationResponse<RuleDefinitionDTO>> filterRuleDefinitions(
             FilterRequest<RuleDefinitionDTO> filterRequest) {
-        log.info("Filtering rule definitions with criteria: {}", filterRequest);
+        log.info("Filtering rule definitions: filterPresent={}", filterRequest != null);
 
         return FilterUtils
                 .createFilter(
@@ -71,7 +72,7 @@ public class RuleDefinitionServiceImpl implements RuleDefinitionService {
 
     @Override
     public Mono<RuleDefinitionDTO> createRuleDefinition(RuleDefinitionDTO ruleDefinitionDTO) {
-        log.info("Creating rule definition with code: {}", ruleDefinitionDTO.getCode());
+        log.info("Creating rule definition: codePresent={}", ruleDefinitionDTO.getCode() != null);
         
         return validateRuleDefinition(ruleDefinitionDTO.getYamlContent())
                 .flatMap(validationResult -> {
@@ -150,7 +151,7 @@ public class RuleDefinitionServiceImpl implements RuleDefinitionService {
 
     @Override
     public Mono<RuleDefinitionDTO> getRuleDefinitionByCode(String code) {
-        log.info("Getting rule definition by code: {}", code);
+        log.info("Getting rule definition by code: codePresent={}", code != null);
         
         return ruleDefinitionRepository.findByCode(code)
                 .map(ruleDefinitionMapper::toDTO);
@@ -163,7 +164,7 @@ public class RuleDefinitionServiceImpl implements RuleDefinitionService {
         return Mono.fromCallable(() -> yamlDslValidator.validate(yamlContent))
                 .doOnSuccess(result -> log.info("Validation completed: valid={}, issues={}",
                         result.isValid(), result.getSummary() != null ? result.getSummary().getTotalIssues() : 0))
-                .doOnError(error -> log.error("Error during rule definition validation", error))
+                .doOnError(error -> log.error("Error during rule definition validation: errorType={}", LogFields.errorType(error)))
                 .onErrorReturn(ValidationResult.builder()
                         .status(ValidationResult.ValidationStatus.CRITICAL_ERROR)
                         .summary(ValidationResult.ValidationSummary.builder()
@@ -178,7 +179,7 @@ public class RuleDefinitionServiceImpl implements RuleDefinitionService {
 
     @Override
     public Mono<ASTRulesEvaluationResult> evaluateRuleByCode(String code, java.util.Map<String, Object> inputData) {
-        log.info("Evaluating rule definition by code: {} with input data: {}", code, inputData);
+        log.info("Evaluating rule definition by code: codePresent={}, inputCount={}", code != null, inputData == null ? 0 : inputData.size());
 
         return getRuleDefinitionByCode(code)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException(

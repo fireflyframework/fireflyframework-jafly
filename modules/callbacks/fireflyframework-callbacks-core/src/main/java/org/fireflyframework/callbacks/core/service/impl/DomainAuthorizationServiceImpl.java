@@ -16,6 +16,7 @@
 
 package org.fireflyframework.callbacks.core.service.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.callbacks.core.filters.FilterRequest;
 import org.fireflyframework.callbacks.core.filters.FilterUtils;
 import org.fireflyframework.callbacks.core.filters.PaginationResponse;
@@ -71,7 +72,7 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
             String domain = extractDomain(uri);
             String path = uri.getPath();
             
-            log.debug("Checking authorization for URL: {}, domain: {}, path: {}", url, domain, path);
+            log.debug("Checking callback URL authorization");
 
             return domainRepository.findByDomain(domain)
                     .filter(AuthorizedDomain::getActive)
@@ -82,13 +83,13 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
                     .hasElement()
                     .doOnNext(authorized -> {
                         if (authorized) {
-                            log.debug("URL authorized: {}", url);
+                            log.debug("Callback URL authorized");
                         } else {
-                            log.warn("URL not authorized: {}", url);
+                            log.warn("Callback URL not authorized");
                         }
                     });
         } catch (Exception e) {
-            log.error("Error validating URL authorization: {}", url, e);
+            log.error("Error validating URL authorization: errorType={}", LogFields.errorType(e));
             return Mono.just(false);
         }
     }
@@ -111,9 +112,8 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
                 })
                 .flatMap(domainRepository::save)
                 .map(domainMapper::toDto)
-                .doOnSuccess(created -> log.info("Created authorized domain: id={}, domain={}", 
-                        created.getId(), created.getDomain()))
-                .doOnError(error -> log.error("Error creating domain: {}", dto.getDomain(), error));
+                .doOnSuccess(created -> log.info("Created authorized domain: id={}", created.getId()))
+                .doOnError(error -> log.error("Error creating domain: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -141,9 +141,8 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
                     return domainRepository.save(existing);
                 })
                 .map(domainMapper::toDto)
-                .doOnSuccess(updated -> log.info("Updated authorized domain: id={}, domain={}", 
-                        id, updated.getDomain()))
-                .doOnError(error -> log.error("Error updating domain: {}", id, error));
+                .doOnSuccess(updated -> log.info("Updated authorized domain: id={}", id))
+                .doOnError(error -> log.error("Error updating domain: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -153,8 +152,8 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
     @CacheEvict(value = "authorizedDomains", key = "#domain")
     public Mono<Void> delete(UUID id, String domain) {
         return domainRepository.deleteById(id)
-                .doOnSuccess(v -> log.info("Deleted authorized domain: id={}, domain={}", id, domain))
-                .doOnError(error -> log.error("Error deleting domain: {}", id, error));
+                .doOnSuccess(v -> log.info("Deleted authorized domain: id={}", id))
+                .doOnError(error -> log.error("Error deleting domain: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -173,8 +172,8 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
                     return domainRepository.save(entity);
                 })
                 .then()
-                .doOnSuccess(v -> log.info("Verified domain: {}, method: {}", domain, verificationMethod))
-                .doOnError(error -> log.error("Error verifying domain: {}", domain, error));
+                .doOnSuccess(v -> log.info("Verified authorized domain: methodPresent={}", verificationMethod != null))
+                .doOnError(error -> log.error("Error verifying domain: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -197,10 +196,10 @@ public class DomainAuthorizationServiceImpl implements DomainAuthorizationServic
                         return domainRepository.save(entity);
                     })
                     .then()
-                    .doOnSuccess(v -> log.debug("Recorded callback for domain: {}, success: {}", domain, success))
-                    .doOnError(error -> log.error("Error recording callback for domain: {}", domain, error));
+                    .doOnSuccess(v -> log.debug("Recorded callback: success={}", success))
+                    .doOnError(error -> log.error("Error recording callback for domain: errorType={}", LogFields.errorType(error)));
         } catch (Exception e) {
-            log.error("Error parsing URL for callback recording: {}", url, e);
+            log.error("Error parsing URL for callback recording: errorType={}", LogFields.errorType(e));
             return Mono.empty();
         }
     }

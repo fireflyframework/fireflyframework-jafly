@@ -16,6 +16,7 @@
 
 package org.fireflyframework.rules.core.services.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.rules.core.audit.AuditHelper;
 import org.fireflyframework.rules.core.dsl.evaluation.ASTRulesEvaluationEngine;
 import org.fireflyframework.rules.core.dsl.evaluation.ASTRulesEvaluationResult;
@@ -54,7 +55,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
     public Mono<RulesEvaluationResponseDTO> evaluateRulesDirectWithAudit(
             RulesEvaluationRequestDTO request, ServerWebExchange exchange) {
         
-        log.info("Evaluating base64-encoded YAML rules definition with input data: {}", request.getInputData());
+        log.info("Evaluating base64-encoded YAML rules definition: inputCount={}", request.getInputData() == null ? 0 : request.getInputData().size());
         
         long startTime = System.currentTimeMillis();
         
@@ -87,7 +88,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
                     })
                     .onErrorResume(error -> {
                         long executionTime = System.currentTimeMillis() - startTime;
-                        log.error("Rules evaluation failed", error);
+                        log.error("Rules evaluation failed: errorType={}", LogFields.errorType(error));
 
                         // Record audit event for error and return error response
                         return auditHelper.recordAuditEventWithError(
@@ -107,7 +108,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
                     });
         } catch (IllegalArgumentException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            log.error("Invalid base64 encoding in rules definition", e);
+            log.error("Invalid base64 encoding in rules definition: errorType={}", LogFields.errorType(e));
 
             // Record audit event for encoding error and return error response
             return auditHelper.recordAuditEventWithError(
@@ -131,7 +132,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
             PlainYamlEvaluationRequestDTO request, ServerWebExchange exchange) {
         
 
-        log.info("Evaluating plain YAML rules definition with input data: {}", request.getInputData());
+        log.info("Evaluating plain YAML rules definition: inputCount={}", request.getInputData() == null ? 0 : request.getInputData().size());
 
         long startTime = System.currentTimeMillis();
         
@@ -160,7 +161,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
                 })
                 .onErrorResume(error -> {
                     long executionTime = System.currentTimeMillis() - startTime;
-                    log.error("Plain YAML rules evaluation failed", error);
+                    log.error("Plain YAML rules evaluation failed: errorType={}", LogFields.errorType(error));
 
                     // Record audit event for error and return error response
                     return auditHelper.recordAuditEventWithError(
@@ -184,7 +185,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
     public Mono<RulesEvaluationResponseDTO> evaluateRuleByCodeWithAudit(
             RuleEvaluationByCodeRequestDTO request, ServerWebExchange exchange) {
         
-        log.info("Evaluating rule by code: {} with input data: {}", request.getRuleDefinitionCode(), request.getInputData());
+        log.info("Evaluating rule by code: codePresent={}, inputCount={}", request.getRuleDefinitionCode() != null, request.getInputData() == null ? 0 : request.getInputData().size());
         
         long startTime = System.currentTimeMillis();
         
@@ -213,7 +214,7 @@ public class RulesEvaluationServiceImpl implements RulesEvaluationService {
                 })
                 .onErrorResume(error -> {
                     long executionTime = System.currentTimeMillis() - startTime;
-                    log.error("Rule evaluation by code failed", error);
+                    log.error("Rule evaluation by code failed: errorType={}", LogFields.errorType(error));
 
                     // Record audit event for error and return error response
                     return auditHelper.recordAuditEventWithError(
