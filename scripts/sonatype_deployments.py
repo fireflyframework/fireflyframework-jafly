@@ -21,11 +21,15 @@ MAX_PAGES = 100
 MAX_COMPONENTS = 100000
 WORK_SECONDS = 120
 PURL = re.compile(r'pkg:maven/org\.fireflyframework/([A-Za-z0-9][A-Za-z0-9_.-]{0,199})@([A-Za-z0-9][A-Za-z0-9_.+-]{0,127})')
+QUALIFIER_VALUE = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.+-]{0,127}')
 IDENTIFIER = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,127}')
 
 
 class InventoryError(ValueError):
     """Only fixed, credential-free diagnostics may cross this boundary."""
+    def __init__(self, message, reason_code=None):
+        super().__init__(message)
+        self.reason_code = reason_code
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -96,6 +100,76 @@ def timestamp(value):
     return value
 
 
+
+def coordinate_error(code):
+    raise InventoryError('Portal component Maven coordinates are unsupported.', code) from None
+
+
+def decode_coordinate(value):
+    if re.search(r'%(?![0-9A-Fa-f]{2})', value):
+        coordinate_error('PURL_ENCODING')
+    try:
+        decoded = urllib.parse.unquote_to_bytes(value).decode('utf-8')
+    except UnicodeError:
+        coordinate_error('PURL_ENCODING')
+    if any(ord(c) <= 32 or ord(c) == 127 or c in '/@?#&=:%' for c in decoded):
+        coordinate_error('PURL_ENCODING')
+    return decoded
+
+
+def maven_coordinate(component):
+    if not isinstance(component, dict):
+        coordinate_error('PURL_COMPONENT')
+    purl = component.get('purl')
+    if not isinstance(purl, str) or not purl:
+        coordinate_error('PURL_MISSING')
+    if len(purl) > 2048:
+        coordinate_error('PURL_BOUNDS')
+    scheme, colon, rest = purl.partition(':')
+    if colon != ':' or scheme != 'pkg':
+        coordinate_error('PURL_SCHEME')
+    package_type, slash, path = rest.partition('/')
+    if slash != '/' or package_type != 'maven':
+        coordinate_error('PURL_TYPE')
+    if '#' in path:
+        coordinate_error('PURL_SUBPATH')
+    base, question, query = path.partition('?')
+    namespace, slash, artifact_version = base.partition('/')
+    if slash != '/' or '/' in artifact_version:
+        coordinate_error('PURL_COORDINATES')
+    namespace = decode_coordinate(namespace)
+    if namespace != NAMESPACE:
+        coordinate_error('PURL_NAMESPACE')
+    artifact, at, version = artifact_version.rpartition('@')
+    if at != '@':
+        coordinate_error('PURL_COORDINATES')
+    artifact, version = decode_coordinate(artifact), decode_coordinate(version)
+    if not PURL.fullmatch('pkg:maven/' + namespace + '/' + artifact + '@' + version):
+        coordinate_error('PURL_COORDINATES')
+    qualifiers = {}
+    if question:
+        pairs = query.split('&')
+        if not query or '?' in query or len(pairs) > 2:
+            coordinate_error('PURL_QUALIFIER')
+        for pair in pairs:
+            key, equal, value = pair.partition('=')
+            if '%' in key:
+                coordinate_error('PURL_ENCODING')
+            key = key.lower()
+            if equal != '=' or key not in ('type', 'classifier'):
+                coordinate_error('PURL_QUALIFIER')
+            if key in qualifiers:
+                coordinate_error('PURL_QUALIFIER_DUPLICATE')
+            value = decode_coordinate(value)
+            if not QUALIFIER_VALUE.fullmatch(value):
+                coordinate_error('PURL_QUALIFIER')
+            qualifiers[key] = value
+    # Maven defaults to jar; other type/classifier values remain part of stable identity.
+    if qualifiers.get('type') == 'jar':
+        del qualifiers['type']
+    return artifact, version, tuple(sorted(qualifiers.items()))
+
+
 def project(row):
     if not isinstance(row, dict):
         raise InventoryError('Portal deployment is unsupported.')
@@ -109,16 +183,13 @@ def project(row):
         raise InventoryError('Portal deployment components are missing or unsupported.')
     coordinates = set()
     for component in components:
-        purl = component.get('purl') if isinstance(component, dict) else None
-        match = PURL.fullmatch(purl) if isinstance(purl, str) else None
-        if not match:
-            raise InventoryError('Portal component Maven coordinates are unsupported.')
-        coordinates.add(match.groups())
+        coordinates.add(maven_coordinate(component))
     return {'deploymentId': identifier, 'state': state,
             'createTimestamp': timestamp(row.get('createTimestamp')),
             'updateTimestamp': timestamp(row.get('updateTimestamp')),
-            'components': [{'groupId': NAMESPACE, 'artifactId': artifact, 'version': version}
-                           for artifact, version in sorted(coordinates)]}
+            'components': [{'groupId': NAMESPACE, 'artifactId': artifact, 'version': version,
+                            **({'qualifiers': dict(qualifiers)} if qualifiers else {})}
+                           for artifact, version, qualifiers in sorted(coordinates)]}
 
 
 def sweep(opener, bearer, page_size):
@@ -189,8 +260,9 @@ def write_report(output, report):
         stream.write('\n')
 
 
-def incomplete(reason='Portal reconciliation did not complete.'):
+def incomplete(reason='Portal reconciliation did not complete.', reason_code=None):
     return {'schema': 1, 'status': 'INCOMPLETE', 'namespace': NAMESPACE, 'reason': reason,
+            **({'reasonCode': reason_code} if reason_code is not None else {}),
             'versionAllocated': False, 'releasePublished': False}
 
 
@@ -201,7 +273,7 @@ def worker(output):
         write_report(output, report)
         return 0
     except InventoryError as error:
-        write_report(output, incomplete(str(error)))
+        write_report(output, incomplete(str(error), error.reason_code))
         return 1
     except Exception:
         # Third-party exceptions can include URLs, headers or response bodies.

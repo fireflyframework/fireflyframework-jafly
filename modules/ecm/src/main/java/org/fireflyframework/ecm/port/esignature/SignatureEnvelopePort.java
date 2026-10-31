@@ -16,6 +16,8 @@
 package org.fireflyframework.ecm.port.esignature;
 
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeAccountBinding;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeDocument;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import reactor.core.publisher.Flux;
@@ -23,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Port interface for signature envelope management operations in the Firefly ECM system.
@@ -69,6 +72,16 @@ import java.util.UUID;
  * @see SignatureProvider
  */
 public interface SignatureEnvelopePort {
+
+    /** Creates a draft only from supplied immutable content; no mutable document-port fallback. */
+    default Mono<SignatureEnvelope> createEnvelope(SignatureEnvelope envelope, List<SignatureEnvelopeDocument> documents) {
+        return Mono.error(new UnsupportedOperationException("Immutable envelope content is not supported"));
+    }
+
+    /** Returns immutable nonsecret configuration without authenticating or performing provider IO. */
+    default Mono<SignatureEnvelopeAccountBinding> accountBinding() {
+        return Mono.error(new UnsupportedOperationException("Envelope account binding is not supported"));
+    }
     
     /**
      * Creates a new signature envelope with documents and signature requests.
@@ -165,6 +178,13 @@ public interface SignatureEnvelopePort {
      * @return Flux of envelopes with the specified status
      */
     Flux<SignatureEnvelope> getEnvelopesByStatus(EnvelopeStatus status, Integer limit);
+
+    /** Queries provider changes in an explicit provider date window; support is adapter-specific. */
+    default Flux<SignatureEnvelope> getEnvelopesByStatus(EnvelopeStatus status, Instant fromTime,
+                                                       Instant toTime, Integer limit) {
+        return Flux.error(new UnsupportedOperationException("Date-scoped envelope query is not supported"));
+    }
+
     
     /**
      * Get envelopes created by a user.
