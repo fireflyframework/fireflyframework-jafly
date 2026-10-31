@@ -16,191 +16,144 @@
 
 package org.fireflyframework.eda.serialization;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
-import org.apache.avro.reflect.ReflectData;
-import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.avro.reflect.ReflectDatumWriter;
-import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.specific.SpecificRecord;
+import org.fireflyframework.eda.serialization.avro.DeclaredAvroData;
+import org.fireflyframework.eda.serialization.avro.DeclaredAvroReaders;
+import org.fireflyframework.eda.serialization.avro.DeclaredAvroTypes;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.Objects;
 
-/**
- * Apache Avro-based message serializer.
- * <p>
- * This serializer provides efficient binary serialization using Apache Avro.
- * It supports both specific records (generated from schema) and reflection-based
- * serialization for POJOs.
- * <p>
- * Features:
- * <ul>
- *   <li>Compact binary format</li>
- *   <li>Schema evolution support</li>
- *   <li>High performance</li>
- *   <li>Support for both specific and generic records</li>
- * </ul>
- */
+/** Avro serialization with operation-local authority from exact declared class tokens. */
 @Component
 @ConditionalOnClass(Schema.class)
-@Slf4j
 public class AvroMessageSerializer implements MessageSerializer {
+    private final AvroTypeBindings bindings;
+
+    public AvroMessageSerializer() {
+        this(AvroTypeBindings.strict());
+    }
+
+    public AvroMessageSerializer(AvroTypeBindings bindings) {
+        this.bindings = Objects.requireNonNull(bindings, "Avro type bindings");
+        Class<?> objectRoot = bindings.objectRoot();
+        if (objectRoot != null) {
+            if (objectRoot == Object.class || objectRoot.isInterface() || Modifier.isAbstract(objectRoot.getModifiers())) {
+                throw new IllegalArgumentException("Object binding requires one concrete Avro root");
+            }
+            new DeclaredAvroTypes(objectRoot, bindings);
+        }
+    }
 
     @Override
     public byte[] serialize(Object payload) throws SerializationException {
-        if (payload == null) {
-            return new byte[0];
-        }
-
-        if (payload instanceof byte[] bytePayload) {
-            return bytePayload;
-        }
-
+        if (payload == null) { return new byte[0]; }
+        if (payload instanceof byte[] bytes) { return bytes; }
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            
-            if (payload instanceof SpecificRecord specificRecord) {
-                // Handle Avro-generated specific records
-                serializeSpecificRecord(specificRecord, outputStream);
-            } else if (payload instanceof GenericRecord genericRecord) {
-                // Handle generic records
-                serializeGenericRecord(genericRecord, outputStream);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(output, null);
+            if (payload instanceof GenericRecord generic && !(payload instanceof SpecificRecord)) {
+                DeclaredAvroTypes.validateGeneric(generic.getSchema());
+                DeclaredAvroTypes.validateGenericValue(generic, generic.getSchema());
+                new GenericDatumWriter<GenericRecord>(generic.getSchema()).write(generic, encoder);
             } else {
-                // Handle POJOs using reflection
-                serializeReflection(payload, outputStream);
+                DeclaredAvroTypes types = new DeclaredAvroTypes(payload.getClass(), bindings);
+                Schema schema;
+                DatumWriter<Object> writer;
+                if (payload instanceof SpecificRecord specific) {
+                    var model = DeclaredAvroData.specific(types);
+                    schema = snapshotSpecificSchema(payload.getClass(), types);
+                    if (!schema.equals(specific.getSchema())) { throw new IllegalArgumentException("Specific record schema differs from its declared class"); }
+                    writer = new SpecificDatumWriter<>(schema, model);
+                } else {
+                    var model = DeclaredAvroData.reflection(types);
+                    schema = model.getSchema(payload.getClass());
+                    writer = new ReflectDatumWriter<>(schema, model);
+                }
+                types.bind(schema);
+                types.validateValue(payload, schema);
+                writer.write(payload, encoder);
             }
-            
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw new SerializationException("Failed to serialize object with Avro", e);
+            encoder.flush();
+            return output.toByteArray();
+        } catch (IOException | RuntimeException error) {
+            throw new SerializationException("Failed to serialize object with Avro", error);
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] data, Class<T> targetType) throws SerializationException {
-        if (data == null || data.length == 0) {
-            return null;
-        }
-        
-        if (targetType == byte[].class) {
-            return (T) data;
-        }
-
+        if (data == null || data.length == 0) { return null; }
+        if (targetType == byte[].class) { return (T) data; }
         try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            
-            if (SpecificRecord.class.isAssignableFrom(targetType)) {
-                // Handle Avro-generated specific records
-                return deserializeSpecificRecord(inputStream, targetType);
-            } else if (GenericRecord.class.isAssignableFrom(targetType)) {
-                // Handle generic records
-                return deserializeGenericRecord(inputStream, targetType);
-            } else {
-                // Handle POJOs using reflection
-                return deserializeReflection(inputStream, targetType);
+            Class<?> contract = targetType == Object.class ? bindings.objectRoot() : targetType;
+            if (contract == null) { throw new IllegalArgumentException("Nonempty Object decoding requires one explicit root Class token"); }
+            if (GenericRecord.class.isAssignableFrom(contract) && !SpecificRecord.class.isAssignableFrom(contract)) {
+                throw new IllegalArgumentException("GenericRecord deserialization requires a separate schema contract");
             }
-        } catch (IOException | RuntimeException e) {
-            throw new SerializationException("Failed to deserialize Avro data to " + targetType.getName(), e);
+            DeclaredAvroTypes types = new DeclaredAvroTypes(contract, bindings);
+            Schema schema;
+            DatumReader<Object> reader;
+            if (SpecificRecord.class.isAssignableFrom(contract)) {
+                var model = DeclaredAvroData.specific(types);
+                schema = snapshotSpecificSchema(contract, types);
+                types.bind(schema);
+                reader = DeclaredAvroReaders.specific(schema, model, types);
+            } else {
+                var model = DeclaredAvroData.reflection(types);
+                schema = model.getSchema(contract);
+                types.bind(schema);
+                reader = DeclaredAvroReaders.reflection(schema, model, types);
+            }
+            Object value = reader.read(null, DecoderFactory.get().binaryDecoder(data, null));
+            types.validateValue(value, schema);
+            return (T) value;
+        } catch (IOException | RuntimeException error) {
+            throw new SerializationException("Failed to deserialize Avro data", error);
         }
     }
 
-    @Override
-    public SerializationFormat getFormat() {
-        return SerializationFormat.AVRO;
+    private static Schema snapshotSpecificSchema(Class<?> type, DeclaredAvroTypes types) throws IOException {
+        Schema declared = specificSchema(type);
+        types.bind(declared);
+        return new Schema.Parser().parse(declared.toString());
     }
 
-    @Override
-    public String getContentType() {
-        return SerializationFormat.AVRO.getContentType();
+    private static Schema specificSchema(Class<?> type) throws IOException {
+        try {
+            // Generated records expose SCHEMA$; read it from the exact approved class, never a wire name.
+            Schema schema = (Schema) type.getField("SCHEMA$").get(null);
+            return schema;
+        } catch (ReflectiveOperationException | ClassCastException error) {
+            throw new IOException("SpecificRecord requires its declared public SCHEMA$", error);
+        }
     }
 
-    @Override
-    public int getPriority() {
-        return 80; // High priority for binary efficiency
-    }
+    @Override public SerializationFormat getFormat() { return SerializationFormat.AVRO; }
+    @Override public String getContentType() { return SerializationFormat.AVRO.getContentType(); }
+    @Override public int getPriority() { return 80; }
 
     @Override
     public boolean canSerialize(Class<?> type) {
-        // Can serialize SpecificRecord, GenericRecord, or simple POJOs
-        // Avoid complex types that Avro reflection can't handle well
-        return SpecificRecord.class.isAssignableFrom(type) ||
-               GenericRecord.class.isAssignableFrom(type) ||
-               (!type.isPrimitive() &&
-                !type.getName().startsWith("java.time.") && // Avoid Java Time types
-                !type.isInterface() &&
-                !type.isEnum()); // Keep it simple for reflection
-    }
-
-    private void serializeSpecificRecord(SpecificRecord record, ByteArrayOutputStream outputStream) throws IOException {
-        Schema schema = record.getSchema();
-        DatumWriter<SpecificRecord> datumWriter = new SpecificDatumWriter<>(schema);
-        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
-        datumWriter.write(record, encoder);
-        encoder.flush();
-        log.debug("Serialized SpecificRecord with schema: {}", schema.getName());
-    }
-
-    private void serializeGenericRecord(GenericRecord record, ByteArrayOutputStream outputStream) throws IOException {
-        Schema schema = record.getSchema();
-        DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
-        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
-        datumWriter.write(record, encoder);
-        encoder.flush();
-        log.debug("Serialized GenericRecord with schema: {}", schema.getName());
-    }
-
-    private void serializeReflection(Object payload, ByteArrayOutputStream outputStream) throws IOException {
-        Schema schema = ReflectData.get().getSchema(payload.getClass());
-        DatumWriter<Object> datumWriter = new ReflectDatumWriter<>(schema);
-        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
-        datumWriter.write(payload, encoder);
-        encoder.flush();
-        log.debug("Serialized POJO {} using reflection with schema: {}", 
-                 payload.getClass().getSimpleName(), schema.getName());
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T deserializeSpecificRecord(ByteArrayInputStream inputStream, Class<T> targetType) throws IOException {
+        if (type == null) { return false; }
+        if (type == SpecificRecord.class || GenericRecord.class.isAssignableFrom(type) && !SpecificRecord.class.isAssignableFrom(type)) { return true; }
+        if (type.isPrimitive() || type.isEnum() || type.isInterface() || type.getName().startsWith("java.time.")) { return false; }
         try {
-            // Get schema from the class
-            SpecificRecord instance = (SpecificRecord) targetType.getDeclaredConstructor().newInstance();
-            Schema schema = instance.getSchema();
-            
-            DatumReader<SpecificRecord> datumReader = new SpecificDatumReader<>(schema);
-            BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(inputStream, null);
-            SpecificRecord result = datumReader.read(null, decoder);
-            log.debug("Deserialized SpecificRecord with schema: {}", schema.getName());
-            return (T) result;
-        } catch (Exception e) {
-            throw new IOException("Failed to deserialize SpecificRecord", e);
+            new DeclaredAvroTypes(type, bindings);
+            return true;
+        } catch (RuntimeException unsupported) {
+            return false;
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T deserializeGenericRecord(ByteArrayInputStream inputStream, Class<T> targetType) throws IOException {
-        // For GenericRecord, we need the schema to be provided somehow
-        // This is a simplified implementation - in practice, you'd need schema registry
-        throw new IOException("GenericRecord deserialization requires schema information");
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T deserializeReflection(ByteArrayInputStream inputStream, Class<T> targetType) throws IOException {
-        Schema schema = ReflectData.get().getSchema(targetType);
-        DatumReader<T> datumReader = new ReflectDatumReader<>(schema);
-        BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(inputStream, null);
-        T result = datumReader.read(null, decoder);
-        log.debug("Deserialized POJO {} using reflection with schema: {}", 
-                 targetType.getSimpleName(), schema.getName());
-        return result;
     }
 }
