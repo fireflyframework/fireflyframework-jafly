@@ -4,6 +4,7 @@ import org.fireflyframework.client.websocket.WebSocketClientHelper;
 import org.fireflyframework.client.websocket.WebSocketClientHelper.WebSocketConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -14,6 +15,8 @@ import reactor.netty.http.websocket.WebsocketOutbound;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Integration tests for WebSocketClientHelper with real WebSocket server.
@@ -33,20 +37,26 @@ class WebSocketClientHelperIntegrationTest {
     private DisposableServer server;
     private String wsUrl;
     private int port;
-
-    @BeforeEach
-    void setUp() {
-        // Start a simple echo WebSocket server
-        port = findAvailablePort();
-        wsUrl = "ws://localhost:" + port + "/ws";
-    }
+    private final CopyOnWriteArrayList<Disposable> subscriptions = new CopyOnWriteArrayList<>();
+    private final AtomicInteger rejectedUpgrades = new AtomicInteger();
 
     @AfterEach
     void tearDown() {
-        if (server != null) {
-            server.disposeNow();
+        try {
+            subscriptions.forEach(Disposable::dispose);
+        } finally {
+            try {
+                if (server != null) {
+                    server.disposeNow();
+                }
+            } finally {
+                WebSocketClientHelper.clearPool();
+            }
         }
-        WebSocketClientHelper.clearPool();
+        assertThat(subscriptions).allMatch(Disposable::isDisposed);
+        if (server != null) {
+            assertThat(server.isDisposed()).isTrue();
+        }
     }
 
     @Test
@@ -62,14 +72,14 @@ class WebSocketClientHelperIntegrationTest {
         // When: Connect and send messages
         Flux<String> outgoingMessages = Flux.just("Hello", "World", "Test");
 
-        helper.bidirectional(
+        track(helper.bidirectional(
             outgoingMessages,
             message -> {
                 log.info("Received: {}", message);
                 receivedMessages.add(message);
                 latch.countDown();
             }
-        ).subscribe();
+        ).subscribe());
 
         // Then: Verify messages received
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
@@ -87,7 +97,7 @@ class WebSocketClientHelperIntegrationTest {
         CopyOnWriteArrayList<String> received = new CopyOnWriteArrayList<>();
 
         // When: Send single message
-        helper.connect(session -> {
+        track(helper.connect(session -> {
             return session.send(Mono.just(session.textMessage("Test Message")))
                 .then(session.receive()
                     .map(msg -> msg.getPayloadAsText())
@@ -96,7 +106,7 @@ class WebSocketClientHelperIntegrationTest {
                         latch.countDown();
                     })
                     .then());
-        }).subscribe();
+        }).subscribe());
 
         // Then
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
@@ -113,10 +123,10 @@ class WebSocketClientHelperIntegrationTest {
         CountDownLatch connectLatch = new CountDownLatch(1);
 
         // When: Connect
-        helper.connect(session -> {
+        track(helper.connect(session -> {
             connectLatch.countDown();
             return Mono.delay(Duration.ofMillis(100)).then();
-        }).subscribe();
+        }).subscribe());
 
         // Then: Verify connection
         assertThat(connectLatch.await(5, TimeUnit.SECONDS)).isTrue();
@@ -131,9 +141,9 @@ class WebSocketClientHelperIntegrationTest {
     @Test
     @DisplayName("Should attempt reconnection on connection failure")
     void shouldAttemptReconnectionOnFailure() throws InterruptedException {
-        // Given: Invalid server URL (server not running)
-        int invalidPort = findAvailablePort();
-        String invalidUrl = "ws://localhost:" + invalidPort + "/ws";
+        // Given: An owned server that rejects WebSocket upgrades
+        startRejectingUpgradeServer();
+        String invalidUrl = wsUrl;
 
         WebSocketConfig config = WebSocketConfig.builder()
             .enableReconnection(true)
@@ -147,7 +157,7 @@ class WebSocketClientHelperIntegrationTest {
         AtomicReference<Throwable> capturedError = new AtomicReference<>();
 
         // When: Try to connect (will fail and retry)
-        helper.connectWithReconnection(session -> {
+        track(helper.connectWithReconnection(session -> {
             int attempt = connectionAttempts.incrementAndGet();
             log.info("Connection attempt #{}", attempt);
             return session.receive().then();
@@ -158,7 +168,7 @@ class WebSocketClientHelperIntegrationTest {
                 capturedError.set(error);
                 errorLatch.countDown();
             }
-        );
+        ));
 
         // Then: Wait for all reconnection attempts to fail
         assertThat(errorLatch.await(2, TimeUnit.SECONDS)).isTrue();
@@ -170,6 +180,8 @@ class WebSocketClientHelperIntegrationTest {
         // Note: connectionAttempts might be 0 if connection fails before handler is called
         assertThat(capturedError.get()).isNotNull();
         assertThat(capturedError.get().getMessage()).contains("reconnect");
+        assertThat(rejectedUpgrades).hasValue(4);
+        assertThat(helper.getReconnectAttempts()).isEqualTo(3);
     }
 
     @Test
@@ -192,7 +204,7 @@ class WebSocketClientHelperIntegrationTest {
         Flux<String> testMessages = Flux.just("test-1", "test-2", "test-3")
             .delayElements(Duration.ofMillis(100));
 
-        helper.connect(session -> {
+        track(helper.connect(session -> {
             connectionLatch.countDown();
             log.info("WebSocket connected with heartbeat enabled");
 
@@ -208,7 +220,7 @@ class WebSocketClientHelperIntegrationTest {
         }).subscribe(
             v -> log.info("Connection completed"),
             error -> log.error("Connection error: {}", error.getMessage())
-        );
+        ));
 
         // Wait for connection
         assertThat(connectionLatch.await(3, TimeUnit.SECONDS)).isTrue();
@@ -236,7 +248,9 @@ class WebSocketClientHelperIntegrationTest {
             .enableReconnection(true)
             .build();
 
+        startEchoServer();
         WebSocketClientHelper helper = new WebSocketClientHelper(wsUrl, config);
+        assertThat(helper.isConnected()).isFalse();
 
         // When: Send message without connection
         StepVerifier.create(helper.sendMessageWithAck("Queued message", null))
@@ -245,13 +259,13 @@ class WebSocketClientHelperIntegrationTest {
 
         // Then: Verify message is queued
         assertThat(helper.getQueueSize()).isEqualTo(1);
+        assertThat(helper.isConnected()).isFalse();
 
         // When: Connect to server
-        startEchoServer();
         CountDownLatch latch = new CountDownLatch(1);
         CopyOnWriteArrayList<String> received = new CopyOnWriteArrayList<>();
 
-        helper.connectWithReconnection(session ->
+        track(helper.connectWithReconnection(session ->
             session.receive()
                 .map(msg -> msg.getPayloadAsText())
                 .doOnNext(msg -> {
@@ -259,7 +273,7 @@ class WebSocketClientHelperIntegrationTest {
                     latch.countDown();
                 })
                 .then()
-        ).subscribe();
+        ).subscribe());
 
         // Then: Verify queued message was sent
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
@@ -283,7 +297,7 @@ class WebSocketClientHelperIntegrationTest {
         CopyOnWriteArrayList<byte[]> receivedData = new CopyOnWriteArrayList<>();
 
         // When: Connect and send binary message
-        helper.connect(session -> {
+        track(helper.connect(session -> {
             return session.send(Mono.just(
                 session.binaryMessage(buffer -> buffer.wrap(testData))
             ))
@@ -295,7 +309,7 @@ class WebSocketClientHelperIntegrationTest {
                     latch.countDown();
                 })
                 .then());
-        }).subscribe();
+        }).subscribe());
 
         // Then: Verify binary message received
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
@@ -339,7 +353,7 @@ class WebSocketClientHelperIntegrationTest {
             final String message = "Message-" + i;
             WebSocketClientHelper helper = new WebSocketClientHelper(wsUrl);
 
-            helper.connect(session ->
+            track(helper.connect(session ->
                 session.send(Mono.just(session.textMessage(message)))
                     .then(session.receive()
                         .map(msg -> msg.getPayloadAsText())
@@ -348,7 +362,7 @@ class WebSocketClientHelperIntegrationTest {
                             latch.countDown();
                         })
                         .then())
-            ).subscribe();
+            ).subscribe());
         }
 
         // Then: Verify all messages received
@@ -356,11 +370,30 @@ class WebSocketClientHelperIntegrationTest {
         assertThat(allReceived).hasSize(connectionCount);
     }
 
+    @Test
+    void shouldBindAnOwnedEphemeralPortEvenWhenAnEarlierCandidateIsOccupied() throws Exception {
+        ServerSocket occupied = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        try (occupied) {
+            port = occupied.getLocalPort();
+            assertThatCode(this::startEchoServer).doesNotThrowAnyException();
+            assertThat(server.host()).isEqualTo("127.0.0.1");
+            assertThat(port).isNotEqualTo(occupied.getLocalPort());
+            AtomicReference<String> echoed = new AtomicReference<>();
+            new WebSocketClientHelper(wsUrl).connect(session ->
+                session.send(Mono.just(session.textMessage("owned-port-echo")))
+                    .then(session.receive().take(1).doOnNext(message -> echoed.set(message.getPayloadAsText())).then())
+            ).block(Duration.ofSeconds(5));
+            assertThat(echoed.get()).isEqualTo("owned-port-echo");
+        }
+        assertThat(occupied.isClosed()).isTrue();
+    }
+
     // Helper methods
 
     private void startEchoServer() {
         server = HttpServer.create()
-            .port(port)
+            .host("127.0.0.1")
+            .port(0)
             .route(routes ->
                 routes.ws("/ws", (in, out) ->
                     out.send(in.receive()
@@ -372,15 +405,17 @@ class WebSocketClientHelperIntegrationTest {
                 )
             )
             .bindNow();
+        recordBoundAddress();
         log.info("Echo WebSocket server started on port {}", port);
     }
 
     private void startServerWithPingHandler(AtomicInteger pingCount) {
         server = HttpServer.create()
-            .port(port)
+            .host("127.0.0.1")
+            .port(0)
             .route(routes ->
                 routes.ws("/ws", (in, out) -> {
-                    in.receive()
+                    track(in.receive()
                         .doOnNext(msg -> {
                             String text = msg.toString(java.nio.charset.StandardCharsets.UTF_8);
                             if ("PING".equals(text)) {
@@ -388,29 +423,49 @@ class WebSocketClientHelperIntegrationTest {
                                 log.debug("Server received PING #{}", pingCount.get());
                             }
                         })
-                        .subscribe();
+                        .subscribe());
                     return Mono.never();
                 })
             )
             .bindNow();
+        recordBoundAddress();
         log.info("Ping handler WebSocket server started on port {}", port);
     }
 
     private void startBinaryEchoServer() {
         server = HttpServer.create()
-            .port(port)
+            .host("127.0.0.1")
+            .port(0)
             .route(routes ->
                 routes.ws("/ws", (in, out) ->
                     out.send(in.receive().retain())
                 )
             )
             .bindNow();
+        recordBoundAddress();
         log.info("Binary echo WebSocket server started on port {}", port);
     }
 
-    private int findAvailablePort() {
-        // Use a random port in the range 50000-60000
-        return 50000 + (int) (Math.random() * 10000);
+    private void startRejectingUpgradeServer() {
+        server = HttpServer.create()
+            .host("127.0.0.1")
+            .port(0)
+            .handle((request, response) -> {
+                rejectedUpgrades.incrementAndGet();
+                return response.status(503).send();
+            })
+            .bindNow();
+        recordBoundAddress();
+    }
+
+    private void recordBoundAddress() {
+        assertThat(server.host()).isEqualTo("127.0.0.1");
+        port = server.port();
+        wsUrl = "ws://127.0.0.1:" + port + "/ws";
+    }
+
+    private void track(Disposable subscription) {
+        subscriptions.add(subscription);
     }
 }
 
