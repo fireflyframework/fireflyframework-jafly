@@ -6,6 +6,10 @@ on:
         description: Require the configured Jafly Maven publishing token
         type: boolean
         default: true
+      inspect-sonatype-deployments:
+        description: Reconcile account-visible Sonatype staged GAVs using read-only GETs
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -49,5 +53,25 @@ jobs:
         with:
           name: publishing-configuration-${{ github.run_id }}
           path: publishing-configuration.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Check out the exact workflow source for read-only Portal inventory
+        if: inputs.inspect-sonatype-deployments
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Read account-visible Sonatype deployment coordinates
+        if: inputs.inspect-sonatype-deployments
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: python3 -B scripts/sonatype_deployments.py --output sonatype-deployments.json
+      - name: Retain the read-only Portal reconciliation report
+        if: always() && inputs.inspect-sonatype-deployments
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sonatype-deployments-${{ github.run_id }}
+          path: sonatype-deployments.json
           if-no-files-found: error
           retention-days: 14
