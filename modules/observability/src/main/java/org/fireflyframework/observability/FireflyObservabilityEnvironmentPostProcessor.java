@@ -82,6 +82,7 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
 
     private static final String PROPERTY_SOURCE_NAME = "fireflyObservabilityPostProcessor";
     private static final String DEFAULTS_SOURCE_NAME = "fireflyObservabilityDefaults";
+    private static final String REACTOR_DEFAULTS_SOURCE_NAME = "fireflyReactorContextPropagationDefaults";
     private static final String DEFAULTS_YAML = "application-firefly-observability.yml";
 
     // Spring Boot auto-configuration classes for each tracing bridge.
@@ -98,6 +99,7 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
         //    health groups, OTLP endpoints, etc.) — added with LOWEST precedence so the
         //    user's own application.yml always wins.
         loadFrameworkDefaults(environment);
+        configureReactorContextPropagationDefault(environment);
 
         // 2. Resolve the active tracing bridge & metrics exporter and install the
         //    corresponding Spring Boot auto-config exclusions / enable flags with
@@ -163,6 +165,14 @@ public class FireflyObservabilityEnvironmentPostProcessor implements Environment
         List<String> merged = new ArrayList<>(existing);
         merged.add(toExclude);
         props.put(EXCLUDE_PROPERTY, String.join(",", merged));
+    }
+
+    /** Keeps the legacy opt-in as a fallback while native Boot configuration takes precedence. */
+    private void configureReactorContextPropagationDefault(ConfigurableEnvironment environment) {
+        boolean automatic = environment.getProperty(
+                "firefly.observability.context-propagation.reactor-hooks-enabled", Boolean.class, true);
+        environment.getPropertySources().addLast(new MapPropertySource(REACTOR_DEFAULTS_SOURCE_NAME,
+                Map.of("spring.reactor.context-propagation", automatic ? "auto" : "limited")));
     }
 
     private void configureMetricsExporter(ConfigurableEnvironment environment, Map<String, Object> props) {

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "kind": "SOURCE_OWNED_INITIAL_NAMESPACE_INTENT",
   "owner": "fireflyframework",
   "groupId": "org.fireflyframework",
@@ -7,6 +7,6 @@
   "repository": "fireflyframework-jafly",
   "repositoryId": 1423952543,
   "visibility": "public",
-  "requiredProviderQualification": "EXISTING_EXACT_PACKAGE_GET_200",
-  "on404": "UNKNOWN_REFUSE"
+  "requiredProviderQualification": "EXACT_PACKAGE_GET_200_BEFORE_COMPLETION",
+  "on404": "UNKNOWN_REQUIRE_EXPLICIT_FINAL_ATTEMPT"
 }

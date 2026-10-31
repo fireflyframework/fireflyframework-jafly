@@ -107,6 +107,8 @@ Deployments that relied on implicit localhost collection must now enable the ind
 
 The global `management.tracing.export.enabled` property keeps its standard Boot behavior. Boot 4.1.1 also gates its propagation factories on that global flag, so explicitly setting it to `false` disables W3C/B3 injection. The framework leaves it unset and does not counteract an application's explicit choice.
 
+Native Boot owns Reactor context propagation through `spring.reactor.context-propagation=auto|limited`. The legacy `firefly.observability.context-propagation.reactor-hooks-enabled` flag supplies only a lowest-precedence fallback: `true` (the default) maps to `auto`, and `false` maps to `limited`. An explicit native setting always wins, including `limited` with the legacy flag enabled. Existing imports of `ReactiveContextPropagationAutoConfiguration` remain compatible, but that deprecated class no longer toggles global hooks. Actual Micrometer accessors carry their registered context; this does not register arbitrary MDC fields.
+
 The `firefly.observability` namespace is bound by [FireflyObservabilityProperties.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java). Nested configuration is declared in the linked class. Defaults are the field initializers.
 
 | Setting | Java type | Source default |
