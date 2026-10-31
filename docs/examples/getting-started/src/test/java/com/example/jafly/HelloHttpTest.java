@@ -5,7 +5,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "firefly.cache.default-cache-type=CAFFEINE")
 class HelloHttpTest {
     @LocalServerPort
     int port;
