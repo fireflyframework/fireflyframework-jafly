@@ -79,7 +79,20 @@ public class OtpService {
 }
 ```
 
-A successful send returns an `SMSResponseDTO` with status `SENT` and the Twilio message SID in `messageId`. Validation failures (null request, blank number, blank message, or missing sender number) return status `FAILED` with a populated `errorMessage`.
+`SENT` means that the provider API accepted the outbound message; it does not prove delivery. The exact nonblank provider SID is returned in `messageId`.
+
+| SDK response status | DTO result |
+| --- | --- |
+| `queued`, `sending`, `sent`, `delivered`, `accepted`, `scheduled`, `read` | `SENT`, representing API acceptance only |
+| `failed`, `undelivered`, `canceled`, deprecated `partially_delivered` | `FAILED` with a fixed safe error; retain the SID |
+| Inbound-only `receiving` or `received`, missing or unrecognized status | `FAILED` with a fixed safe error; retain a nonblank SID |
+| Missing or blank SID | `FAILED`; no invented message ID |
+
+The partial-delivery classification is a conservative adapter policy. These states follow the [Twilio Message resource reference](https://www.twilio.com/docs/messaging/api/message-resource#message-status-values); normalizing `read` also makes no delivery/read-receipt promise. Recipient, sender, and body trimming remain unchanged. Validation failures (null request, blank number, blank message, or missing sender number) still return `FAILED`.
+
+Each configured application uses an instance `TwilioRestClient`. A custom SDK client bean overrides the default client. The original one-argument provider constructor and factory remain available and create an instance client lazily from their properties; the additive constructor accepts an explicit SDK client. The deprecated `twilioInit` compatibility hook is a no-op. Calling `Twilio.init` no longer configures this adapter. Unselected configuration performs no provider IO; an explicit `SMSProvider` override does not require unused Twilio credentials. The selected default client requires account credentials.
+
+SDK exceptions remain reactive errors with the fixed message `Twilio SMS request failed` and no raw SDK cause. The unchanged shared SMS service converts that safe message into `FAILED`. Provider response error text and initialization credentials are not logged by this adapter. Twilio SDK debug logging remains application-controlled.
 
 ## Configuration
 
