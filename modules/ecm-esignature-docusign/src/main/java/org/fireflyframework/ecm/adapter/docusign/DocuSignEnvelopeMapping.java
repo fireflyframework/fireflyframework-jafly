@@ -69,6 +69,46 @@ final class DocuSignEnvelopeMapping {
                 || envelope.getAuthRequirements() != null || envelope.getCallbackUrl() != null
                 || envelope.getExpiresAt() != null || envelope.getVoided() != null || envelope.getVoidReason() != null) throw unsupported();
     }
+    static SignatureEnvelope snapshotDraftIntent(SignatureEnvelope envelope) {
+        if (envelope == null) throw invalid();
+        var ids = snapshotList(envelope.getDocumentIds(), MAX_DOCUMENTS);
+        var requests = snapshotList(envelope.getSignatureRequests(), MAX_RECIPIENTS);
+        var captured = new ArrayList<SignatureRequest>(requests.size());
+        int tabs = 0;
+        for (var request : requests) {
+            List<SignatureField> fields = null;
+            if (request.getSignatureFields() != null) {
+                var selected = snapshotList(request.getSignatureFields(), MAX_TABS - tabs);
+                tabs += selected.size();
+                fields = selected.stream().map(field -> field.toBuilder()
+                        .metadata(snapshotMetadata(field.getMetadata())).build()).toList();
+            }
+            captured.add(request.toBuilder().signatureFields(fields)
+                    .metadata(snapshotMetadata(request.getMetadata())).build());
+        }
+        return envelope.toBuilder().documentIds(ids).signatureRequests(List.copyOf(captured))
+                .metadata(snapshotMetadata(envelope.getMetadata())).build();
+    }
+    private static Map<String, Object> snapshotMetadata(Map<String, Object> metadata) {
+        if (metadata == null) return null;
+        if (!metadata.isEmpty()) throw unsupported();
+        return Map.of();
+    }
+    private static <T> List<T> snapshotList(List<T> values, int maximum) {
+        if (values == null) throw invalid();
+        int size = values.size();
+        if (size > maximum) throw invalid();
+        var captured = new ArrayList<T>(size);
+        try {
+            for (int i = 0; i < size; i++) {
+                T value = values.get(i);
+                if (value == null) throw invalid();
+                captured.add(value);
+            }
+        } catch (IndexOutOfBoundsException error) { throw invalid(); }
+        if (values.size() != size) throw invalid();
+        return List.copyOf(captured);
+    }
     static EnvelopeDefinition draft(SignatureEnvelope envelope) {
         if (envelope == null) throw invalid();
         text(envelope.getTitle(), 100);

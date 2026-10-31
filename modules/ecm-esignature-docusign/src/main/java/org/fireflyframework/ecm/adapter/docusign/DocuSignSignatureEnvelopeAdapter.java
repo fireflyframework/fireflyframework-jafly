@@ -11,6 +11,7 @@ import org.fireflyframework.ecm.adapter.AdapterFeature;
 import org.fireflyframework.ecm.adapter.EcmAdapter;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeAccountBinding;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeDocument;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
@@ -26,6 +27,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.List;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopeReferenceResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.jspecify.annotations.Nullable;
@@ -93,17 +95,64 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
                                     })))
                     .collectList().flatMap(documents -> {
                         definition.setDocuments(documents);
-                        return sdkCallable(() -> {
-                            EnvelopeSummary summary = envelopesApi.createEnvelope(accountBinding.accountId(), definition);
-                            if (summary == null || summary.getErrorDetails() != null || summary.getEnvelopeId() == null
-                                    || !summary.getEnvelopeId().matches("[A-Za-z0-9_-]{1,128}")
-                                    || !"created".equals(summary.getStatus())) throw DocuSignEnvelopeMapping.response();
-                            return envelope.toBuilder().id(envelope.getId() == null ? UUID.randomUUID() : envelope.getId())
-                                    .externalEnvelopeId(summary.getEnvelopeId()).provider(SignatureProvider.DOCUSIGN)
-                                    .status(EnvelopeStatus.DRAFT).createdAt(DocuSignEnvelopeMapping.instant(summary.getStatusDateTime())).build();
-                        });
+                        return createDraft(envelope, definition, () -> { });
                     });
         }).onErrorMap(error -> DocuSignAdapterException.safe(error, DocuSignAdapterException.Operation.ENVELOPE));
+    }
+
+    @Override
+    public Mono<SignatureEnvelope> createEnvelope(SignatureEnvelope envelope, List<SignatureEnvelopeDocument> documents) {
+        try {
+            if (envelope == null || documents == null || documents.isEmpty()
+                    || documents.size() > DocuSignEnvelopeMapping.MAX_DOCUMENTS || envelope.getDocumentIds() == null
+                    || envelope.getDocumentIds().size() > DocuSignEnvelopeMapping.MAX_DOCUMENTS) throw DocuSignEnvelopeMapping.invalid();
+            var selected = List.copyOf(documents);
+            var ids = List.copyOf(envelope.getDocumentIds());
+            Runnable unchanged = () -> {
+                if (!selected.equals(documents) || !ids.equals(envelope.getDocumentIds())) throw DocuSignEnvelopeMapping.invalid();
+            };
+            return Mono.defer(() -> {
+                unchanged.run();
+                SignatureEnvelope intent = DocuSignEnvelopeMapping.snapshotDraftIntent(envelope);
+                if (!ids.equals(intent.getDocumentIds())) throw DocuSignEnvelopeMapping.invalid();
+                EnvelopeDefinition definition = DocuSignEnvelopeMapping.draft(intent);
+                if (selected.size() != ids.size()) throw DocuSignEnvelopeMapping.invalid();
+                long total = 0;
+                for (int i = 0; i < selected.size(); i++) {
+                    SignatureEnvelopeDocument snapshot = selected.get(i);
+                    if (!ids.get(i).equals(snapshot.documentId()) || !"application/pdf".equalsIgnoreCase(snapshot.mediaType())
+                            || snapshot.contentLength() > DocuSignEnvelopeMapping.MAX_DOCUMENT_BYTES) throw DocuSignEnvelopeMapping.invalid();
+                    total += snapshot.contentLength();
+                }
+                if (total > DocuSignEnvelopeMapping.MAX_TOTAL_BYTES) throw DocuSignEnvelopeMapping.invalid();
+                var payload = new ArrayList<com.docusign.esign.model.Document>(selected.size());
+                for (int i = 0; i < selected.size(); i++) {
+                    SignatureEnvelopeDocument snapshot = selected.get(i);
+                    var document = new com.docusign.esign.model.Document();
+                    document.setDocumentId(Integer.toString(i + 1)); document.setName(snapshot.fileName());
+                    document.setFileExtension("pdf"); document.setDocumentBase64(Base64.getEncoder().encodeToString(snapshot.content()));
+                    payload.add(document);
+                }
+                definition.setDocuments(payload);
+                return createDraft(intent, definition, unchanged)
+                        .map(created -> created.toBuilder().documentIds(ids).build());
+            }).onErrorMap(error -> DocuSignAdapterException.safe(error, DocuSignAdapterException.Operation.ENVELOPE));
+        } catch (RuntimeException error) {
+            return Mono.error(DocuSignEnvelopeMapping.invalid());
+        }
+    }
+
+    private Mono<SignatureEnvelope> createDraft(SignatureEnvelope envelope, EnvelopeDefinition definition, Runnable beforeCall) {
+        return sdkCallable(() -> {
+            beforeCall.run();
+            EnvelopeSummary summary = envelopesApi.createEnvelope(accountBinding.accountId(), definition);
+            if (summary == null || summary.getErrorDetails() != null || summary.getEnvelopeId() == null
+                    || !summary.getEnvelopeId().matches("[A-Za-z0-9_-]{1,128}")
+                    || !"created".equals(summary.getStatus())) throw DocuSignEnvelopeMapping.response();
+            return envelope.toBuilder().id(envelope.getId() == null ? UUID.randomUUID() : envelope.getId())
+                    .externalEnvelopeId(summary.getEnvelopeId()).provider(SignatureProvider.DOCUSIGN)
+                    .status(EnvelopeStatus.DRAFT).createdAt(DocuSignEnvelopeMapping.instant(summary.getStatusDateTime())).build();
+        });
     }
 
     private static com.docusign.esign.model.Document document(
