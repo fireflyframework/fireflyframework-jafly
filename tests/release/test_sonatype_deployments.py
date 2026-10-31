@@ -131,7 +131,7 @@ class PortalInventoryTests(unittest.TestCase):
     def test_missing_duplicate_wrong_namespace_and_malformed_purls_refuse(self):
         for purl in ('pkg:maven/another/group@26.10.22', 'pkg:npm/foo@1',
                      'pkg:maven/org.fireflyframework/a@',
-                     'pkg:maven/org.fireflyframework/a@26.10.22?classifier=sources',
+                     'pkg:maven/org.fireflyframework/a@26.10.22?repository_url=evil.example',
                      'pkg:maven/org.fireflyframework/a@26.10.22%0Asecret'):
             row = deployment(); row['deploymentComponents'][0]['purl'] = purl
             with self.subTest(purl=purl), self.assertRaises(m.InventoryError):
@@ -253,6 +253,111 @@ class PortalInventoryTests(unittest.TestCase):
             self.assertEqual(1, result.returncode)
             self.assertEqual('INCOMPLETE', json.loads(out.read_text())['status'])
             self.assertNotIn('Traceback', result.stderr)
+
+
+class MavenPurlContractTests(unittest.TestCase):
+    def project(self, purl):
+        row = deployment(); row['deploymentComponents'][0]['purl'] = purl
+        return m.project(row)['components']
+
+    def code(self, purl):
+        with self.assertRaises(m.InventoryError) as caught:
+            self.project(purl)
+        self.assertNotIn('PRIVATE', str(caught.exception))
+        self.assertTrue(caught.exception.__suppress_context__)
+        return getattr(caught.exception, 'reason_code', None)
+
+    def test_maven_type_is_retained_without_changing_the_gav(self):
+        result = self.project('pkg:maven/org.fireflyframework/a@26.10.22?type=pom')
+        self.assertEqual([{'groupId': 'org.fireflyframework', 'artifactId': 'a', 'version': '26.10.22',
+                           'qualifiers': {'type': 'pom'}}], result)
+
+    def test_maven_classifier_is_retained_as_identity(self):
+        result = self.project('pkg:maven/org.fireflyframework/a@26.10.22?classifier=sources')
+        self.assertEqual({'classifier': 'sources'}, result[0]['qualifiers'])
+
+    def test_explicit_default_jar_is_canonical_with_the_plain_purl(self):
+        self.assertEqual(self.project('pkg:maven/org.fireflyframework/a@26.10.22'),
+                         self.project('pkg:maven/org.fireflyframework/a@26.10.22?type=jar'))
+
+    def test_qualifier_order_and_one_encoding_pass_are_canonical(self):
+        first = self.project('pkg:maven/org.fireflyframework/a@26.10.22%2Bbuild?type=jar&classifier=%73ources')
+        second = self.project('pkg:maven/org.fireflyframework/a@26.10.22+build?classifier=sources')
+        self.assertEqual(first, second)
+        self.assertEqual('26.10.22+build', first[0]['version'])
+
+    def test_same_gav_different_type_or_classifier_is_not_collapsed(self):
+        row = deployment(); row['deploymentComponents'] = [
+            {'purl': 'pkg:maven/org.fireflyframework/a@26.10.22'},
+            {'purl': 'pkg:maven/org.fireflyframework/a@26.10.22?type=jar'},
+            {'purl': 'pkg:maven/org.fireflyframework/a@26.10.22?type=pom'},
+            {'purl': 'pkg:maven/org.fireflyframework/a@26.10.22?classifier=sources'}]
+        result = m.project(row)['components']
+        self.assertEqual(3, len(result))
+        self.assertEqual(3, len({json.dumps(value, sort_keys=True) for value in result}))
+
+    def test_classifier_change_between_sweeps_is_not_hidden_by_gav_projection(self):
+        first = deployment(); second = deployment()
+        first['deploymentComponents'][0]['purl'] += '?classifier=sources'
+        second['deploymentComponents'][0]['purl'] += '?classifier=javadoc'
+        api = Api([page([first]), page([second])])
+        with self.assertRaises(m.InventoryError) as caught:
+            m.collect('TOKEN', opener=api, page_size=2)
+        self.assertEqual('Portal inventory changed between complete sweeps.', str(caught.exception))
+        self.assertEqual(2, len(api.requests))
+
+    def test_missing_purl_has_a_fixed_non_sensitive_classification(self):
+        self.assertEqual('PURL_MISSING', self.code(None))
+
+    def test_wrong_scheme_has_a_fixed_non_sensitive_classification(self):
+        self.assertEqual('PURL_SCHEME', self.code('PRIVATE:maven/org.fireflyframework/a@1'))
+
+    def test_wrong_package_type_has_a_fixed_non_sensitive_classification(self):
+        self.assertEqual('PURL_TYPE', self.code('pkg:PRIVATE/org.fireflyframework/a@1'))
+
+    def test_wrong_namespace_remains_refused_after_decoding(self):
+        self.assertEqual('PURL_NAMESPACE', self.code('pkg:maven/org.fireflyframework.PRIVATE/a@1'))
+        self.assertEqual('PURL_NAMESPACE', self.code('pkg:maven/%6Frg.fireflyframework.PRIVATE/a@1'))
+
+    def test_subpaths_are_not_silently_discarded(self):
+        self.assertEqual('PURL_SUBPATH', self.code('pkg:maven/org.fireflyframework/a@1#PRIVATE'))
+
+    def test_malformed_percent_double_encoding_and_encoded_separators_refuse(self):
+        suffixes = ('%ZZ', '%252FPRIVATE', '%2FPRIVATE', '%0APRIVATE', '%FF', '%3FPRIVATE')
+        self.assertEqual(['PURL_ENCODING'] * len(suffixes),
+                         [self.code('pkg:maven/org.fireflyframework/a@1' + value) for value in suffixes])
+
+    def test_duplicate_qualifiers_cannot_hide_an_identity_collision(self):
+        self.assertEqual('PURL_QUALIFIER_DUPLICATE', self.code(
+            'pkg:maven/org.fireflyframework/a@1?type=jar&type=pom'))
+        self.assertEqual('PURL_QUALIFIER_DUPLICATE', self.code(
+            'pkg:maven/org.fireflyframework/a@1?type=jar&TYPE=pom'))
+        self.assertEqual('PURL_QUALIFIER_DUPLICATE', self.code(
+            'pkg:maven/org.fireflyframework/a@1?classifier=sources&classifier=javadoc'))
+
+    def test_unknown_or_malformed_qualifiers_are_not_stripped(self):
+        queries = ('repository_url=PRIVATE', 'type=', 'classifier=x&PRIVATE=y', 'type=jar&', 'type=jar?PRIVATE')
+        self.assertEqual(['PURL_QUALIFIER'] * len(queries),
+                         [self.code('pkg:maven/org.fireflyframework/a@1?' + query) for query in queries])
+
+    def test_existing_ascii_artifact_version_profile_and_bounds_remain_strict(self):
+        self.assertEqual('PURL_COORDINATES', self.code('pkg:maven/org.fireflyframework/a@'))
+        self.assertEqual('PURL_COORDINATES', self.code('pkg:maven/org.fireflyframework/' + 'a' * 201 + '@1'))
+        self.assertEqual('PURL_BOUNDS', self.code('pkg:maven/org.fireflyframework/a@1?' + 'x' * 2048))
+
+    def test_worker_report_contains_only_fixed_failure_code_not_the_purl(self):
+        with self.assertRaises(m.InventoryError) as caught:
+            self.project('pkg:maven/org.fireflyframework/a@1#PRIVATE')
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory) / 'report.json'
+            with patch.dict(os.environ, {'SONATYPE_USERNAME': 'synthetic', 'SONATYPE_PASSWORD': 'synthetic'}, clear=True), \
+                 patch.object(m, 'collect', side_effect=caught.exception):
+                self.assertEqual(1, m.worker(out))
+            report = json.loads(out.read_text())
+            self.assertEqual('INCOMPLETE', report['status'])
+            self.assertEqual('PURL_SUBPATH', report['reasonCode'])
+            self.assertNotIn('PRIVATE', out.read_text())
+            self.assertFalse(report['versionAllocated'])
 
 
 if __name__ == '__main__':
