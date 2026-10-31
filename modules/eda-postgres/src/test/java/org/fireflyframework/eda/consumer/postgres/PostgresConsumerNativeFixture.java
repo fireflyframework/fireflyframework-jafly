@@ -85,7 +85,8 @@ public final class PostgresConsumerNativeFixture implements AutoCloseable {
                 assertThat(context).hasNotFailed().hasSingleBean(PostgresEventConsumer.class).hasSingleBean(PostgresDeliveryRepository.class);
                 // Explicit fixture/operator migration, never a runtime auto-install path.
                 Mono.usingWhen(raw.create(),c->Flux.from(c.createStatement(PostgresDeliverySchema.installationSql(schema,"firefly_eda_outbox")).execute()).concatMap(r->r.getRowsUpdated()).then(),Connection::close).block(Duration.ofSeconds(10));
-                context.getBean(PostgresDeliveryRepository.class).verifyProtocol().block(Duration.ofSeconds(5));
+                new org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository(
+                        raw,schema,"firefly_eda_outbox",Duration.ofSeconds(5)).verifyProtocol().block(Duration.ofSeconds(5));
                 try(var fixture=new PostgresConsumerNativeFixture(context,raw,schema,destination,listen,creates,observeListen)){action.accept(fixture);}
             });
         } finally {if(external!=null)external.disposeLater().block(Duration.ofSeconds(5));}
