@@ -89,7 +89,7 @@ public class DateTimeValidator implements ConstraintValidator<ValidDateTime, Str
             }
 
             // Check future/past constraints
-            Date now = new Date();
+            Date now = context == null ? new Date() : Date.from(context.getClockProvider().getClock().instant());
 
             // Special case for "now" values - add a small tolerance (1 second)
             long timeDifference = Math.abs(dateTime.getTime() - now.getTime());
