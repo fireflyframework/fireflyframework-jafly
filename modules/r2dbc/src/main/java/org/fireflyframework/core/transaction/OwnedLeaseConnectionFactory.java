@@ -71,16 +71,17 @@ public final class OwnedLeaseConnectionFactory extends DelegatingConnectionFacto
                                 @Override public Mono<Void> afterCompletion(int state){return Mono.fromRunnable(()->{if(state==STATUS_ROLLED_BACK)owned.rollbackAcknowledged.set(true);});}
                             });
                             owned.stage.set(RootTransactionException.Stage.WORK);
-                            return Mono.defer(()->work.apply(owned)).switchIfEmpty(Mono.error(new IllegalStateException("One bounded root result required")));
+                            return Mono.defer(()->work.apply(owned)).switchIfEmpty(Mono.error(new IllegalStateException("One bounded root result required")))
+                                .doOnError(owned::observeWorkRejection);
                         }).flux()).collectList().doOnSuccess(values->owned.boundaryCompleted.set(true)).flatMap(values->
                             values.size()==1?Mono.just(values.getFirst()):Mono.error(new IllegalStateException("One bounded root result required")));
-                    return transaction.timeout(owned.deadline()).doOnError(error->owned.captureFailure());
+                    return transaction.timeout(owned.deadline()).doOnError(owned::captureFailure);
                 },Invocation::cleanup,(owned,error)->owned.cleanup(),Invocation::cleanup);
                 return bounded.flatMap(value->{
                     scope.stage.set(RootTransactionException.Stage.FINAL_BUDGET);
                     scope.remaining();
                     return Mono.just(new RootCompletion<>(value,scope.facts()));
-                }).onErrorMap(error->scope.failure()).contextWrite(c->c.put(INVOCATION,scope));
+                }).onErrorMap(scope::failure).contextWrite(c->c.put(INVOCATION,scope));
             });
         });
     }
@@ -99,16 +100,47 @@ public final class OwnedLeaseConnectionFactory extends DelegatingConnectionFacto
         final AtomicReference<Mono<Void>> rollback=new AtomicReference<>();
         final AtomicBoolean incompleteCleanup=new AtomicBoolean();
         final AtomicReference<CleanupFact> cleanupFact=new AtomicReference<>(CleanupFact.UNKNOWN);
+        final Object rejectionOwner=new Object();
+        final AtomicReference<WorkRejectionSignal> registeredRejection=new AtomicReference<>(),workRejection=new AtomicReference<>(),terminalRejection=new AtomicReference<>();
         final Sinks.Many<Boolean> narrowed=Sinks.many().replay().latest();
         reactor.util.context.Context transactionContext;
         Invocation(OwnedLeaseConnectionFactory factory,BoundedR2dbcResources resources,R2dbcOperationBudget original,CleanupPolicy policy){this.factory=factory;this.resources=resources;this.original=original;this.cap=new AtomicReference<>(original);this.policy=policy;}
         @Override public Duration remaining(){var a=original.remaining();var b=cap.get().remaining();return a.compareTo(b)<0?a:b;}
         @Override public void narrow(R2dbcOperationBudget observedCap){cap.updateAndGet(current->current.intersect(observedCap));remaining();if(narrowed.tryEmitNext(true).isFailure())throw new IllegalStateException("Bounded deadline observation unavailable");}
+        @Override public <T> Mono<T> reject(RootWorkRejectionKey key){
+            return factory.requireBoundScope(resources,this).then(Mono.defer(()->{
+                remaining();var status=transaction.get();
+                if(key==null||stage.get()!=RootTransactionException.Stage.WORK||status==null||status.isCompleted()
+                        ||registeredRejection.get()!=null||!key.bind(rejectionOwner))return Mono.error(rejectionUnavailable());
+                var signal=new WorkRejectionSignal(rejectionOwner,key);
+                if(!registeredRejection.compareAndSet(null,signal))return Mono.error(rejectionUnavailable());
+                status.setRollbackOnly();remaining();return Mono.error(signal);
+            }));
+        }
         Mono<Long> deadline(){return narrowed.asFlux().startWith(false).switchMap(signal->Mono.defer(()->Mono.delay(remaining()))).next();}
         Connection own(Connection raw){var lease=new Lease(raw,this);leases.add(lease);return lease;}
         void captureFailure(){failureStage.compareAndSet(null,stage.get());}
+        void observeWorkRejection(Throwable error){
+            var expected=registeredRejection.get();
+            if(expected!=null&&error==expected)workRejection.compareAndSet(null,expected);
+        }
+        void captureFailure(Throwable error){
+            captureFailure();var expected=workRejection.get();
+            terminalRejection.set(expected!=null&&error==expected?expected:null);
+        }
         TransactionFacts facts(){return new TransactionFacts(nativeAttempted.get(),commitAcknowledged.get(),boundaryCompleted.get(),rollbackAcknowledged.get());}
         RootTransactionException failure(){return new RootTransactionException(facts(),cleanupFact.get(),Optional.ofNullable(failureStage.get()).orElse(stage.get()));}
+        RootTransactionException failure(Throwable error){
+            var observed=facts();var cleaned=cleanupFact.get();var expected=terminalRejection.get();RootWorkRejectionKey key=null;
+            var status=transaction.get();
+            if(expected!=null&&error==expected&&expected==workRejection.get()&&expected==registeredRejection.get()
+                    &&expected.owner==rejectionOwner&&expected.key.belongsTo(rejectionOwner)&&resources.current()
+                    &&status!=null&&status.isCompleted()&&observed.nativeAttempted()&&observed.rollbackAcknowledged()
+                    &&!observed.commitAcknowledged()&&!observed.boundaryCompleted()&&cleaned==CleanupFact.COMPLETE){
+                try{remaining();key=expected.key;}catch(RuntimeException expired){key=null;}
+            }
+            return new RootTransactionException(observed,cleaned,Optional.ofNullable(failureStage.get()).orElse(stage.get()),key);
+        }
         ReactiveTransactionManager manager(){return new ReactiveTransactionManager(){
             @Override public Mono<ReactiveTransaction> getReactiveTransaction(TransactionDefinition d){return Mono.deferContextual(context->{
                 if(!resources.current())return Mono.error(gateFailure());transactionContext=reactor.util.context.Context.of(context);var limit=remaining();return resources.manager().getReactiveTransaction(d).timeout(limit);
@@ -132,6 +164,12 @@ public final class OwnedLeaseConnectionFactory extends DelegatingConnectionFacto
               .onErrorResume(error->{cleanupFact.set(CleanupFact.INCOMPLETE);captureFailure();return Mono.error(failure());})
               .then(Mono.defer(()->incomplete.get()?Mono.error(failure()):Mono.empty()));
         });}
+    }
+    private static IllegalStateException rejectionUnavailable(){return new IllegalStateException("Safe owned work rejection unavailable");}
+    private static final class WorkRejectionSignal extends RuntimeException {
+        private static final long serialVersionUID=1L;
+        final transient Object owner;final transient RootWorkRejectionKey key;
+        WorkRejectionSignal(Object owner,RootWorkRejectionKey key){super("BOUNDED_ROOT_WORK_REJECTED",null,false,false);this.owner=owner;this.key=key;}
     }
     private static final class Lease implements Connection {
         final Connection raw;final Invocation scope;final Mono<Void> close;
