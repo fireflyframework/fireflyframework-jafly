@@ -22,7 +22,7 @@
 
     <properties>
         <!-- Dependency versions for adapter modules -->
-        <docusign-esign.version>4.3.0</docusign-esign.version>
+        <docusign-esign.version>6.9.0</docusign-esign.version>
         <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
         <jjwt.version>0.11.5</jjwt.version>
 
