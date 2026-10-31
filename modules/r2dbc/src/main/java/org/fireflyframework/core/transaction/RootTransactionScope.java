@@ -5,7 +5,12 @@
  */
 package org.fireflyframework.core.transaction;
 import java.time.Duration;
+import reactor.core.publisher.Mono;
 public interface RootTransactionScope {
     Duration remaining();
     void narrow(R2dbcOperationBudget observedCap);
+    /** Explicit opt-in; custom scopes cannot manufacture a successful rejection correlation. */
+    default <T> Mono<T> reject(RootWorkRejectionKey key){
+        return Mono.error(new IllegalStateException("Safe owned work rejection unavailable"));
+    }
 }
