@@ -46,7 +46,7 @@ jobs:
           cache: maven
           cache-dependency-path: '**/pom.xml'
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -62,7 +62,7 @@ jobs:
         run: bash scripts/verify_examples.sh -DskipTests
       - name: Analyze without publishing scan results
         id: analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           category: jafly-advanced/language:${{ matrix.language }}
           output: ${{ runner.temp }}/jafly-sarif
@@ -100,7 +100,7 @@ jobs:
           name: jafly-codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/jafly-sarif
       - name: Upload the qualified analysis
-        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
         with:
           sarif_file: ${{ runner.temp }}/jafly-sarif
           category: jafly-advanced/language:${{ matrix.language }}
