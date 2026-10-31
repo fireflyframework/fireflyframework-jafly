@@ -16,6 +16,7 @@
 package org.fireflyframework.ecm.port.esignature;
 
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeAccountBinding;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import reactor.core.publisher.Flux;
@@ -69,6 +70,11 @@ import java.util.UUID;
  * @see SignatureProvider
  */
 public interface SignatureEnvelopePort {
+
+    /** Returns immutable nonsecret configuration without authenticating or performing provider IO. */
+    default Mono<SignatureEnvelopeAccountBinding> accountBinding() {
+        return Mono.error(new UnsupportedOperationException("Envelope account binding is not supported"));
+    }
     
     /**
      * Creates a new signature envelope with documents and signature requests.

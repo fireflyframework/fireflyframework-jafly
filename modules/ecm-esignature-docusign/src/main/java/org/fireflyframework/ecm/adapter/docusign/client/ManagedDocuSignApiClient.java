@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import org.fireflyframework.ecm.adapter.docusign.DocuSignAdapterException;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeAccountBinding;
+import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import org.fireflyframework.ecm.adapter.docusign.authentication.DocuSignAuthentication;
 import org.fireflyframework.ecm.adapter.docusign.authentication.impl.JwtDocuSignAuthentication;
 import org.glassfish.jersey.client.ClientProperties;
@@ -49,6 +51,7 @@ public final class ManagedDocuSignApiClient extends ApiClient implements AutoClo
     private final AtomicBoolean closed = new AtomicBoolean();
     private final ReentrantLock lifecycle = new ReentrantLock();
     private final DocuSignClientSettings settings;
+    private final SignatureEnvelopeAccountBinding accountBinding;
     private final Scheduler scheduler;
 
     public ManagedDocuSignApiClient(DocuSignClientSettings settings) {
@@ -58,6 +61,7 @@ public final class ManagedDocuSignApiClient extends ApiClient implements AutoClo
     public ManagedDocuSignApiClient(DocuSignClientSettings settings, Clock clock) {
         super(isolatedProxyAuthentication(settings, clock));
         this.settings = java.util.Objects.requireNonNull(settings);
+        accountBinding = new SignatureEnvelopeAccountBinding(SignatureProvider.DOCUSIGN, settings.accountId(), settings.baseUrl());
         ownedClients.add(getHttpClient());
         observeOwnedClient(getHttpClient());
         setBasePath(settings.baseUrl());
@@ -102,6 +106,15 @@ public final class ManagedDocuSignApiClient extends ApiClient implements AutoClo
             throw new DocuSignAdapterException(DocuSignAdapterException.Code.CONFIGURATION,
                     DocuSignAdapterException.Operation.CONFIGURATION);
         return true;
+    }
+
+    public SignatureEnvelopeAccountBinding accountBinding() { return accountBinding; }
+
+    @Override public ApiClient setBasePath(String basePath) {
+        if (accountBinding != null && !accountBinding.endpoint().equals(basePath))
+            throw new DocuSignAdapterException(DocuSignAdapterException.Code.CONFIGURATION,
+                    DocuSignAdapterException.Operation.CONFIGURATION);
+        return super.setBasePath(basePath);
     }
 
     public void ensureOpen() {

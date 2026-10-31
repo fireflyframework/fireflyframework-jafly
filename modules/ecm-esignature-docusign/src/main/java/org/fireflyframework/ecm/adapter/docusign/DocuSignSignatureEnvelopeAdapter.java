@@ -10,6 +10,7 @@ import com.docusign.esign.model.*;
 import org.fireflyframework.ecm.adapter.AdapterFeature;
 import org.fireflyframework.ecm.adapter.EcmAdapter;
 import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
+import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelopeAccountBinding;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import org.fireflyframework.ecm.port.esignature.SignatureEnvelopePort;
@@ -45,7 +46,7 @@ import java.util.concurrent.Callable;
 public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
     private final ApiClient apiClient;
     private final EnvelopesApi envelopesApi;
-    private final DocuSignAdapterProperties properties;
+    private final SignatureEnvelopeAccountBinding accountBinding;
     private final DocumentContentPort documentContentPort;
     private final DocumentPort documentPort;
     private final @Nullable SignatureEnvelopeReferenceResolver references;
@@ -60,7 +61,17 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
                                            DocumentContentPort documentContentPort, DocumentPort documentPort,
                                            @Nullable SignatureEnvelopeReferenceResolver references) {
         this.apiClient = Objects.requireNonNull(apiClient);
-        this.properties = Objects.requireNonNull(properties);
+        try {
+            var snapshot = new SignatureEnvelopeAccountBinding(SignatureProvider.DOCUSIGN,
+                    Objects.requireNonNull(properties).getAccountId(), apiClient.getBasePath());
+            if (apiClient instanceof ManagedDocuSignApiClient managed) {
+                if (!managed.accountBinding().equals(snapshot)) throw new IllegalArgumentException();
+                accountBinding = managed.accountBinding();
+            } else accountBinding = snapshot;
+        } catch (RuntimeException error) {
+            throw new DocuSignAdapterException(DocuSignAdapterException.Code.CONFIGURATION,
+                    DocuSignAdapterException.Operation.CONFIGURATION);
+        }
         this.documentContentPort = Objects.requireNonNull(documentContentPort);
         this.documentPort = Objects.requireNonNull(documentPort);
         this.references = references;
@@ -83,7 +94,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
                     .collectList().flatMap(documents -> {
                         definition.setDocuments(documents);
                         return sdkCallable(() -> {
-                            EnvelopeSummary summary = envelopesApi.createEnvelope(properties.getAccountId(), definition);
+                            EnvelopeSummary summary = envelopesApi.createEnvelope(accountBinding.accountId(), definition);
                             if (summary == null || summary.getErrorDetails() != null || summary.getEnvelopeId() == null
                                     || !summary.getEnvelopeId().matches("[A-Za-z0-9_-]{1,128}")
                                     || !"created".equals(summary.getStatus())) throw DocuSignEnvelopeMapping.response();
@@ -123,7 +134,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
     private Mono<SignatureEnvelope> fetch(UUID id, String externalId) {
         return sdkCallable(() -> {
             try {
-                return DocuSignEnvelopeMapping.fromProvider(id, externalId, envelopesApi.getEnvelope(properties.getAccountId(), externalId));
+                return DocuSignEnvelopeMapping.fromProvider(id, externalId, envelopesApi.getEnvelope(accountBinding.accountId(), externalId));
             } catch (ApiException error) {
                 if (error.getCode() == 404) return null;
                 throw error;
@@ -148,7 +159,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
     }
 
     private String update(String externalId, Envelope update) throws ApiException {
-        EnvelopeUpdateSummary result = envelopesApi.update(properties.getAccountId(), externalId, update);
+        EnvelopeUpdateSummary result = envelopesApi.update(accountBinding.accountId(), externalId, update);
         if (result == null || result.getErrorDetails() != null
                 || (result.getEnvelopeId() != null && !externalId.equals(result.getEnvelopeId()))
                 || (result.getRecipientUpdateResults() != null && result.getRecipientUpdateResults().stream()
@@ -192,7 +203,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
     @Override public Mono<Boolean> existsEnvelope(UUID id) {
         return reference(id).flatMap(external -> sdkCallable(() -> {
             try {
-                var response = envelopesApi.getEnvelope(properties.getAccountId(), external);
+                var response = envelopesApi.getEnvelope(accountBinding.accountId(), external);
                 if (response == null || !external.equals(response.getEnvelopeId())) throw DocuSignEnvelopeMapping.response();
                 return true;
             } catch (ApiException error) {
@@ -209,7 +220,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
             return sdkCallable(() -> {
                 var options = envelopesApi.new ListStatusChangesOptions(); options.setStatus(providerStatus);
                 options.setFromDate(from.toString()); options.setToDate(to.toString()); options.setCount(limit.toString());
-                EnvelopesInformation info = envelopesApi.listStatusChanges(properties.getAccountId(), options);
+                EnvelopesInformation info = envelopesApi.listStatusChanges(accountBinding.accountId(), options);
                 if (info == null || info.getEnvelopes() == null || info.getEnvelopes().size() > limit) throw DocuSignEnvelopeMapping.response();
                 return info.getEnvelopes().stream().map(envelope -> {
                     String externalId;
@@ -221,9 +232,26 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
         });
     }
 
+    @Override public Mono<SignatureEnvelopeAccountBinding> accountBinding() {
+        return Mono.fromSupplier(() -> {
+            verifyEndpoint();
+            return accountBinding;
+        });
+    }
+
+    private void verifyEndpoint() {
+        if (!accountBinding.endpoint().equals(apiClient.getBasePath()))
+            throw new DocuSignAdapterException(DocuSignAdapterException.Code.CONFIGURATION,
+                    DocuSignAdapterException.Operation.CONFIGURATION);
+    }
+
     private <T> Mono<T> sdkCallable(Callable<T> operation) {
-        if (apiClient instanceof ManagedDocuSignApiClient managed) return managed.execute(operation);
-        return Mono.fromCallable(operation).subscribeOn(Schedulers.boundedElastic())
+        Callable<T> bound = () -> {
+            verifyEndpoint();
+            return operation.call();
+        };
+        if (apiClient instanceof ManagedDocuSignApiClient managed) return managed.execute(bound);
+        return Mono.fromCallable(bound).subscribeOn(Schedulers.boundedElastic())
                 .onErrorMap(error -> DocuSignAdapterException.safe(error, DocuSignAdapterException.Operation.ENVELOPE));
     }
 

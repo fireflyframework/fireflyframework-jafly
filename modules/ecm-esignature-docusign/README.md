@@ -161,3 +161,11 @@ cd fireflyframework-jafly
 `verify` runs the selected projects' tests. `install` makes the current build available in your local Maven repository.
 
 Configuration details and source references: [module guide](../../docs/site/modules/ecm-esignature-docusign.md).
+
+## Immutable account binding
+
+`SignatureEnvelopePort.accountBinding()` lazily returns immutable, nonsecret provider/account/HTTPS endpoint configuration. Reading it does not authenticate, allocate an HTTP client, or contact DocuSign. It is not proof of caller authorization or of permission at the provider; the application Core must apply its signed tenant/actor and policy checks before using persisted references.
+
+The framework-managed authentication client and envelope adapter share the same settings-derived binding object. All envelope reads and writes use that frozen account. Pairing the managed client with properties for another account fails locally. Its REST endpoint cannot be changed after construction. The existing direct adapter constructors snapshot a caller-owned client's account and actual endpoint once; subsequent properties changes do not redirect operations, and observed endpoint drift fails before an SDK call or binding lookup. Callers must not concurrently mutate their custom SDK client's configuration. This contract does not certify arbitrary custom clients or vendor account authorization. Other adapters retain an explicit unsupported default lookup until they implement an equivalent contract.
+
+The binding contains no credentials and introduces no business persistence. The Core signing bridge, immutable dispatched content/version binding, and actual provider acceptance remain separate requirements.
