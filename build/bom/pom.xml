@@ -37,6 +37,7 @@
     <properties>
         <fireflyframework.version>26.10.23</fireflyframework.version>
         <!-- Security patches beyond the selected platform BOMs. -->
+        <opentelemetry.version>1.67.0</opentelemetry.version>
         <jackson2-bom.version>2.22.4</jackson2-bom.version>
         <jackson-bom.version>3.1.7</jackson-bom.version>
         <lz4-java.version>1.11.4</lz4-java.version>
@@ -49,11 +50,30 @@
         <tomcat.version>11.0.25</tomcat.version>
         <freemarker.version>2.3.35</freemarker.version>
         <json.version>20260814</json.version>
+        <guava.version>33.7.2-jre</guava.version>
+        <snappy-java.version>1.1.10.9</snappy-java.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <!-- Security constraints shared by the consumer parent and BOM. -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>${snappy-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.microsoft.kiota</groupId>
                 <artifactId>microsoft-kiota-authentication-azure</artifactId>
