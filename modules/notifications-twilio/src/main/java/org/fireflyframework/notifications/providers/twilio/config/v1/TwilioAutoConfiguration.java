@@ -21,7 +21,9 @@ import org.fireflyframework.notifications.interfaces.providers.sms.v1.SMSProvide
 import org.fireflyframework.notifications.providers.twilio.core.v1.TwilioSMSProvider;
 import org.fireflyframework.notifications.providers.twilio.properties.v1.TwilioProperties;
 import com.twilio.Twilio;
-import lombok.extern.slf4j.Slf4j;
+import com.twilio.http.TwilioRestClient;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.util.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -29,28 +31,39 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-@Slf4j
 @AutoConfiguration
 @ConditionalOnProperty(name = "firefly.notifications.sms.provider", havingValue = "twilio")
 @ConditionalOnClass(com.twilio.Twilio.class)
 @EnableConfigurationProperties(TwilioProperties.class)
 public class TwilioAutoConfiguration {
 
+    /**
+     * @deprecated Configure an instance client instead; this compatibility hook does not change SDK global state.
+     */
+    @Deprecated
     @ConditionalOnMissingBean
     @Bean
     public com.twilio.Twilio twilioInit(TwilioProperties twilioProperties) {
-        log.info("Initializing Twilio SMS provider with account SID: {}",
-                twilioProperties.getAccountSid());
-        Twilio.init(
-                twilioProperties.getAccountSid(),
-                twilioProperties.getAuthToken()
-        );
         return null;
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @Lazy
+    @ConditionalOnMissingBean(TwilioRestClient.class)
+    public TwilioRestClient twilioRestClient(TwilioProperties twilioProperties) {
+        if (!StringUtils.hasText(twilioProperties.getAccountSid()) || !StringUtils.hasText(twilioProperties.getAuthToken())) {
+            throw new IllegalStateException("Twilio SMS credentials not configured");
+        }
+        return new TwilioRestClient.Builder(twilioProperties.getAccountSid(), twilioProperties.getAuthToken()).build();
+    }
+
     public SMSProvider twilioSMSProvider(TwilioProperties twilioProperties) {
         return new TwilioSMSProvider(twilioProperties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SMSProvider.class)
+    public SMSProvider twilioSMSProvider(TwilioProperties twilioProperties, TwilioRestClient client) {
+        return new TwilioSMSProvider(twilioProperties, client);
     }
 }

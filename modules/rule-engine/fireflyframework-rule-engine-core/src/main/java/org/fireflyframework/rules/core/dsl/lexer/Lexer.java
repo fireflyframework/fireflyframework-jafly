@@ -44,7 +44,7 @@ public class Lexer {
      * Tokenize the entire source and return the list of tokens
      */
     public List<Token> tokenize() {
-        log.debug("Starting lexical analysis of source: {}", source);
+        log.debug("Starting lexical analysis: characterCount={}", source.length());
         
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme

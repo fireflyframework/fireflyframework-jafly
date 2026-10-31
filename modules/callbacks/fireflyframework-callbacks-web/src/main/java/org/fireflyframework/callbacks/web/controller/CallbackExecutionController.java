@@ -68,7 +68,7 @@ public class CallbackExecutionController {
     })
     public Mono<ResponseEntity<PaginationResponse<CallbackExecutionDTO>>> filterExecutions(
             @Valid @RequestBody FilterRequest<CallbackExecutionDTO> filterRequest) {
-        log.debug("Filtering callback executions with request: {}", filterRequest);
+        log.debug("Filtering callback executions: page={}, size={}", filterRequest == null ? null : filterRequest.getPage(), filterRequest == null ? null : filterRequest.getSize());
         return FilterUtils
                 .createFilter(CallbackExecution.class, executionMapper::toDto)
                 .withRepository(executionRepository)
@@ -121,7 +121,7 @@ public class CallbackExecutionController {
     public Flux<CallbackExecutionDTO> findRecent(
             @RequestParam UUID configurationId,
             @RequestParam(defaultValue = "PT24H") String duration) {
-        log.debug("Finding recent executions for configuration: {}, duration: {}", configurationId, duration);
+        log.debug("Finding recent executions for configuration: {}", configurationId);
         Instant since = Instant.now().minus(java.time.Duration.parse(duration));
         return executionRepository.findRecentByConfigurationId(configurationId, since)
                 .map(executionMapper::toDto);
