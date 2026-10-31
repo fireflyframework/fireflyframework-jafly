@@ -26,6 +26,9 @@ import java.util.HashMap;
 import org.fireflyframework.eda.consumer.postgres.*;
 import org.fireflyframework.eda.consumer.postgres.impl.PostgresConsumerQueryPool;
 import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepository;
+import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupId;
+import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupTables;
 import org.fireflyframework.eda.listener.EventListenerProcessor;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.serialization.MessageSerializer;
@@ -72,6 +75,9 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
     public PostgresDeliveryRepository fireflyEdaPostgresDeliveryRepository(@Qualifier("fireflyEdaPostgresConsumerQueryConnectionFactory")ConnectionFactory factory,EdaProperties props){
         var config=props.getConsumer().getPostgres().get("default");Duration timeout=config.getQueryTimeout();
         if(timeout==null||timeout.getNano()!=0||timeout.getSeconds()<1||timeout.getSeconds()>60)throw new IllegalArgumentException("PostgreSQL consumer query timeout requires one to sixty whole seconds");
+        if(config.getGroupId()!=null)return new SpringDataPostgresConsumerGroupRepository(factory,
+                new ConsumerGroupTables(config.getSchema(),config.getOutboxTable(),config.getGroupRegistryTable(),config.getGroupDeliveriesTable(),config.getGroupRedrivesTable()),
+                new ConsumerGroupId(config.getGroupId()),timeout);
         return new SpringDataPostgresDeliveryRepository(factory,config.getSchema(),config.getOutboxTable(),timeout);
     }
 
@@ -82,6 +88,11 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
             @Qualifier("fireflyEdaPostgresDeliveryRepository")PostgresDeliveryRepository repository,
             @Qualifier("fireflyEdaPostgresConsumerConnectionFactory")ObjectProvider<ConnectionFactory> listenFactory,
             EventListenerProcessor processor,MessageSerializer serializer,EdaProperties props,ObjectMapper mapper){
+        var config=props.getConsumer().getPostgres().get("default");
+        if(config.getGroupId()!=null){
+            new ConsumerGroupId(config.getGroupId());
+            new ConsumerGroupTables(config.getSchema(),config.getOutboxTable(),config.getGroupRegistryTable(),config.getGroupDeliveriesTable(),config.getGroupRedrivesTable());
+        }
         return new PostgresEventConsumer(listenFactory,processor,serializer,props,mapper,repository,decoder);
     }
 

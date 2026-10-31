@@ -101,7 +101,7 @@ public final class PostgresDeliveryRuntime {
         final IllegalStateException startupStopped=new IllegalStateException("Consumer stopped during startup");
         Run(Settings settings){
             this.settings=settings;scheduler=suppliedScheduler==null?Schedulers.newSingle("firefly-pg-consumer"):suppliedScheduler;ownsScheduler=suppliedScheduler==null;permits=new Semaphore(settings.concurrency);
-            started=Mono.defer(()->{if(stopping)return Mono.error(startupStopped);if(channels().isEmpty())return Mono.error(new IllegalArgumentException("PostgreSQL delivery channels are required"));return repository.verifyProtocol();})
+            started=Mono.defer(()->{if(stopping)return Mono.error(startupStopped);var selected=channels();if(selected.isEmpty())return Mono.error(new IllegalArgumentException("PostgreSQL delivery channels are required"));return repository.verifyProtocol(new ClaimRequest(selected,settings.batch,settings.maxAttempts,settings.lease));})
                     .timeout(settings.query,scheduler).then(Mono.<Void>fromRunnable(this::activate)).doOnError(e->{if(!stopping){if(ownsScheduler)scheduler.dispose();synchronized(PostgresDeliveryRuntime.this){if(current==this)current=null;}}}).cache();
         }
         synchronized void activate(){
@@ -285,6 +285,7 @@ public final class PostgresDeliveryRuntime {
         static Settings from(EdaProperties props){
             if(props==null||!props.isEnabled()||!props.getConsumer().isEnabled())throw new IllegalStateException("PostgreSQL consumer is disabled");
             PostgresConfig c=props.getConsumer().getPostgres().get("default");if(c==null||!c.isEnabled())throw new IllegalStateException("PostgreSQL consumer is disabled");
+            if(c.getGroupId()!=null){new ConsumerGroupId(c.getGroupId());new ConsumerGroupTables(c.getSchema(),c.getOutboxTable(),c.getGroupRegistryTable(),c.getGroupDeliveriesTable(),c.getGroupRedrivesTable());}
             int n=props.getConsumer().getConcurrency();if(n<1||n>100||c.getBatchSize()<1||c.getBatchSize()>1024||c.getMaxAttempts()<1||c.getMaxPoolSize()<1||c.getMaxPoolSize()>100)throw new IllegalArgumentException("Invalid PostgreSQL delivery admission bounds");
             Duration poll=positive(c.getPollingInterval()),lease=positive(c.getLeaseDuration()),handler=positive(c.getHandlerTimeout()),backoff=positive(c.getRecoveryBackoff()),maxBackoff=positive(c.getMaxRecoveryBackoff()),shutdown=positive(c.getShutdownTimeout());
             DeliveryBounds.milliseconds(lease,false);DeliveryBounds.milliseconds(c.getRetryDelay(),true);

@@ -61,6 +61,10 @@ firefly:
           database: firefly
           username: firefly
           password: ${EDA_POSTGRES_PASSWORD}
+          group-id: payments-service  # stable per application; replicas share it
+          group-registry-table: firefly_eda_group_registry
+          group-deliveries-table: firefly_eda_group_deliveries
+          group-redrives-table: firefly_eda_group_redrives
           channels: events            # unioned with registered PostgreSQL listener destinations
           polling-interval: PT30S     # positive polling is mandatory; notifications only wake it
           delivery-mode: ANNOTATED
@@ -146,7 +150,7 @@ Supply the underlying independent factory explicitly. Transaction-aware proxies,
 
 The default `ANNOTATED` mode waits for the strict listener outcome before fenced ACK/retry/dead-letter handling. `consume()` subscribers in this mode are read-only observers; missing observer demand cannot block handlers or ACK rows. `MANUAL` mode permits exactly one processing subscriber, claims only against positive demand, does not invoke annotations, and exposes cold fenced `acknowledge()`/`reject()` callbacks. Cancelling, timing out, or losing a subscriber never substitutes an ACK for missing processing. An already submitted mutation can have an unknown outcome if its result is lost. Stale callbacks fail rather than acknowledging a newer claim. A callback failure can leave the row leased until expiry; the runtime does not infer a successful transition from a lost result.
 
-The independent group repository described below implements the same delivery port and can be supplied explicitly. The default bean still selects the global repository; first-class group selection and deployment cutover remain separate integration work. This block adds no automatic migration or group registration, lease renewal, retention deletion, or production-readiness guarantee.
+The group repository below implements the same delivery port. A configured `firefly.eda.consumer.postgres.default.group-id` selects it on the exact named technical query factory. Omitting that PostgreSQL-specific property retains the legacy global repository; an explicitly blank, malformed or oversized ID refuses configuration rather than falling back. The shared `firefly.eda.consumer.group-id` does not select a PostgreSQL group. This block adds no automatic migration or group registration, lease renewal, retention deletion, or production-readiness guarantee.
 
 Before admitting workers, stop old consumers and review a one-time migration:
 
@@ -164,11 +168,17 @@ Locks precede database clock evaluation. A transaction-local `pg_catalog` search
 
 ## Independent durable consumer groups
 
-The group adapter implements the same `PostgresDeliveryRepository` port with a group identity bound to its constructor. Use the exact dedicated technical query ConnectionFactory. The raw LISTEN connection remains separate; notifications wake workers, while durable rows and repeated polling determine delivery. Runtime/default bean selection is a separate integration gate.
+The group adapter implements the same `PostgresDeliveryRepository` port with a group identity bound to its constructor. The configured bean uses `fireflyEdaPostgresConsumerQueryConnectionFactory`; raw `fireflyEdaPostgresConsumerConnectionFactory` LISTEN connections remain separate. Technical factories keep their existing independent-connection and scoped-proxy refusal contract. No business/default factory is substituted. Notifications wake workers, while durable rows and repeated polling determine delivery.
+
+Use a stable, distinct group ID for each application that must receive the event, and share that ID across replicas of the same application. Never derive it from tenants, handler class names, or a Kafka/global consumer ID. IDs use the existing 255-byte, well-formed UTF-8 bound. The optional `group-registry-table`, `group-deliveries-table` and `group-redrives-table` names default to those in the YAML above; they share the configured schema/outbox and must be bounded, distinct PostgreSQL identifiers.
+
+At `start()`, the consumer passes the actual union of configured and registered listener channels, maximum attempts, batch and lease into request-aware `verifyProtocol(ClaimRequest)`. The group repository checks the catalog and requires an existing registration with exactly that channel set and attempt policy before opening LISTEN or claiming. A missing or incompatible protocol/group/policy fails startup. Existing custom/global adapters retain the no-argument `verifyProtocol()` ABI through an additive default overload. An explicitly supplied named repository remains application-owned; a custom group adapter must implement request-aware policy verification.
 
 Render `PostgresConsumerGroupSchema.installationSql(ConsumerGroupTables)` and apply that one-time migration through the reviewed deployment process after the v1 outbox protocol. It creates a registry, independent delivery state and a redrive journal; it does not alter existing outbox events. Readiness checks catalog shape, identity/foreign keys, defaults, collations, markers, RLS and the fixed journal function/trigger enablement. No migration or group registration runs at startup.
 
 First registration requires `registerGroup(subscription, RetainedReplayPolicy.ALL_RETAINED)`. This explicitly replays **every retained subscribed event**, including globally processed and dead-lettered events, into a new group. Stop or isolate old global workers and purge jobs before cutover, verify retained data and application-owned Core idempotency, and obtain explicit replay consent. Existing global statuses, payloads, counters and terminal results remain unchanged. The group subscription and initial attempt policy are immutable; conflicting configuration refuses. Repeated identical registration preserves state.
+
+Adding a registered listener channel after startup does not expand an immutable group subscription. Subsequent claims fail closed against the original policy. Stop the workers and explicitly register a new group with reviewed `ALL_RETAINED` consent/cutover before changing its subscribed channel set or attempt policy; registration is never inferred from listener discovery.
 
 Each claim materializes a bounded batch of missing `(group,event)` rows through a fresh anti-join. There is no ID/time high-water cursor: a later smaller-ID commit remains discoverable. Same-group workers compete for leases; different groups keep separate status, attempts, retry deadline and dead-letter state. Query transactions commit and release before a handler receives a claim. Row counts and timeouts are bounded; query-plan/large-history progress qualification remains necessary. Delivery is at least once, with no strict global FIFO or exactly-once business-effect promise.
 

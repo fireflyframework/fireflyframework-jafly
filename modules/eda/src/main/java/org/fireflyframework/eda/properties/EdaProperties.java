@@ -444,6 +444,12 @@ public class EdaProperties {
              */
             private String channels = "events";
 
+            /** Null retains the global delivery adapter; a configured group requires prior explicit registration. */
+            private String groupId;
+            private String groupRegistryTable = "firefly_eda_group_registry";
+            private String groupDeliveriesTable = "firefly_eda_group_deliveries";
+            private String groupRedrivesTable = "firefly_eda_group_redrives";
+
             /**
              * Polling interval used as a fallback to LISTEN/NOTIFY in case
              * notifications are missed (server restart, dropped connection,

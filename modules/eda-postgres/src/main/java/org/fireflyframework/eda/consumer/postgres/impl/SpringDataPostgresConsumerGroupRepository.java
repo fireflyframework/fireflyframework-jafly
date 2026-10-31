@@ -125,6 +125,12 @@ public final class SpringDataPostgresConsumerGroupRepository implements Postgres
     public Mono<Void> verifyProtocol(){return owned(()->catalog().then(registration()).then());}
 
     @Override
+    public Mono<Void> verifyProtocol(ClaimRequest request){
+        return Mono.defer(()->request==null?Mono.error(new IllegalArgumentException("Claim request is required"))
+                :owned(()->catalog().then(policy(request))));
+    }
+
+    @Override
     public Mono<TransitionResult> redrive(DeadLetterRedriveCommand command) {
         return Mono.defer(()->{
             if(command==null)return Mono.error(new IllegalArgumentException("Redrive command is required"));

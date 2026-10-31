@@ -15,4 +15,5 @@ public interface PostgresDeliveryRepository {
     Mono<TransitionResult> acknowledge(DeliveryClaim claim);
     Mono<TransitionResult> reject(DeliveryClaim claim, FailureKind kind, Duration retryDelay);
     Mono<Void> verifyProtocol();
+    default Mono<Void> verifyProtocol(ClaimRequest request) { return verifyProtocol(); }
 }
