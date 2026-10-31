@@ -16,7 +16,8 @@
 package org.fireflyframework.ecm.adapter.docusign;
 
 import com.docusign.esign.client.ApiClient;
-import com.docusign.esign.client.auth.OAuth;
+import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -24,8 +25,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-
-import java.util.Arrays;
 
 /**
  * Auto-configuration for the DocuSign ECM adapter.
@@ -37,55 +36,16 @@ import java.util.Arrays;
 @EnableConfigurationProperties(DocuSignAdapterProperties.class)
 public class DocuSignAdapterAutoConfiguration {
 
-    @Bean
+    @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean
     public ApiClient docuSignApiClient(DocuSignAdapterProperties properties) {
-        log.info("Configuring DocuSign API client for account: {}", properties.getAccountId());
-
+        DocuSignClientSettings settings = DocuSignClientSettings.from(properties);
         try {
-            ApiClient apiClient = new ApiClient();
-            String baseUrl = properties.getSandboxMode() ? 
-                    "https://demo.docusign.net/restapi" : properties.getBaseUrl();
-            apiClient.setBasePath(baseUrl);
-            apiClient.setConnectTimeout((int) properties.getConnectionTimeout().toMillis());
-            apiClient.setReadTimeout((int) properties.getReadTimeout().toMillis());
-            apiClient.setUserAgent("Firefly-ECM-Library/1.0.0");
-            configureJwtAuthentication(apiClient, properties);
-            log.info("Successfully configured DocuSign API client");
-            return apiClient;
+            ApiClient client = new ManagedDocuSignApiClient(settings);
+            log.info("Configured DocuSign client; authentication is deferred until an operation");
+            return client;
         } catch (Exception e) {
-            log.error("Failed to configure DocuSign API client", e);
-            throw new RuntimeException("DocuSign API client configuration failed", e);
+            throw DocuSignAdapterException.safe(e, DocuSignAdapterException.Operation.CONFIGURATION);
         }
-    }
-
-    private void configureJwtAuthentication(ApiClient apiClient, DocuSignAdapterProperties properties) 
-            throws Exception {
-        log.info("Configuring JWT authentication for DocuSign");
-        String authServer = properties.getSandboxMode() ? 
-                "https://account-d.docusign.com" : properties.getAuthServer();
-        apiClient.setOAuthBasePath(authServer);
-        String[] scopes = {"signature", "impersonation"};
-        OAuth.OAuthToken oAuthToken = apiClient.requestJWTUserToken(
-                properties.getIntegrationKey(),
-                properties.getUserId(),
-                Arrays.asList(scopes),
-                properties.getPrivateKey().getBytes(),
-                properties.getJwtExpiration()
-        );
-        apiClient.setAccessToken(oAuthToken.getAccessToken(), oAuthToken.getExpiresIn());
-        OAuth.UserInfo userInfo = apiClient.getUserInfo(oAuthToken.getAccessToken());
-        log.info("Successfully authenticated DocuSign user: {}", userInfo.getName());
-        validateAccountAccess(userInfo, properties);
-    }
-
-    private void validateAccountAccess(OAuth.UserInfo userInfo, DocuSignAdapterProperties properties) {
-        boolean accountFound = userInfo.getAccounts().stream()
-                .anyMatch(account -> properties.getAccountId().equals(account.getAccountId()));
-        if (!accountFound) {
-            log.error("User does not have access to account: {}", properties.getAccountId());
-            throw new RuntimeException("Invalid DocuSign account ID or insufficient permissions");
-        }
-        log.info("Successfully validated access to DocuSign account: {}", properties.getAccountId());
     }
 }

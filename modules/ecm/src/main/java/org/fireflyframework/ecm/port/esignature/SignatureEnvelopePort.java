@@ -165,6 +165,13 @@ public interface SignatureEnvelopePort {
      * @return Flux of envelopes with the specified status
      */
     Flux<SignatureEnvelope> getEnvelopesByStatus(EnvelopeStatus status, Integer limit);
+
+    /** Queries provider changes in an explicit provider date window; support is adapter-specific. */
+    default Flux<SignatureEnvelope> getEnvelopesByStatus(EnvelopeStatus status, Instant fromTime,
+                                                       Instant toTime, Integer limit) {
+        return Flux.error(new UnsupportedOperationException("Date-scoped envelope query is not supported"));
+    }
+
     
     /**
      * Get envelopes created by a user.

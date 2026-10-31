@@ -30,9 +30,10 @@ import java.util.UUID;
 
 /**
  * Signature envelope entity representing a collection of documents for signing.
- * Uses Long for envelope ID and Long for user IDs as per updated Firefly standards.
+ * Uses UUID envelope/actor IDs and preserves the legacy numeric sender field.
  */
 @Data
+@lombok.AllArgsConstructor(access = lombok.AccessLevel.PACKAGE)
 @Builder(toBuilder = true)
 @Jacksonized
 public class SignatureEnvelope {
@@ -78,9 +79,12 @@ public class SignatureEnvelope {
     private final Instant createdAt;
 
     /**
-     * User who sent the envelope (UUID)
+     * Legacy numeric sender ID; UUID send operations populate sentByActorId separately.
      */
     private final Long sentBy;
+
+    /** Exact UUID actor supplied to sendEnvelope; legacy numeric sentBy is preserved separately. */
+    private final UUID sentByActorId;
     
     /**
      * Envelope sent timestamp
@@ -156,4 +160,55 @@ public class SignatureEnvelope {
      * Void reason if envelope is voided
      */
     private final String voidReason;
+    /** Retains the original constructor descriptor for existing compiled callers. */
+    SignatureEnvelope(UUID id,
+            String title,
+            String description,
+            EnvelopeStatus status,
+            List<UUID> documentIds,
+            List<SignatureRequest> signatureRequests,
+            UUID createdBy,
+            Instant createdAt,
+            Long sentBy,
+            Instant sentAt,
+            Instant completedAt,
+            Instant expiresAt,
+            Instant modifiedAt,
+            Map<String, Object> metadata,
+            String externalEnvelopeId,
+            SignatureProvider provider,
+            EnvelopePriority priority,
+            Boolean requireAllSigners,
+            SigningOrder signingOrder,
+            ReminderSettings reminderSettings,
+            AuthenticationRequirements authRequirements,
+            String callbackUrl,
+            Boolean voided,
+            String voidReason) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.documentIds = documentIds;
+        this.signatureRequests = signatureRequests;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.sentBy = sentBy;
+        this.sentAt = sentAt;
+        this.completedAt = completedAt;
+        this.expiresAt = expiresAt;
+        this.modifiedAt = modifiedAt;
+        this.metadata = metadata;
+        this.externalEnvelopeId = externalEnvelopeId;
+        this.provider = provider;
+        this.priority = priority;
+        this.requireAllSigners = requireAllSigners;
+        this.signingOrder = signingOrder;
+        this.reminderSettings = reminderSettings;
+        this.authRequirements = authRequirements;
+        this.callbackUrl = callbackUrl;
+        this.voided = voided;
+        this.voidReason = voidReason;
+        this.sentByActorId = null;
+    }
 }

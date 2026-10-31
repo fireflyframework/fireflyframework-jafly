@@ -4,6 +4,7 @@
 package org.fireflyframework.ecm.adapter.docusign;
 
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -26,6 +27,7 @@ public class DocuSignAdapterProperties {
     private String accountId;
 
     @NotBlank
+    @ToString.Exclude
     private String privateKey;
 
     private String baseUrl = "https://na3.docusign.net/restapi";
@@ -34,6 +36,7 @@ public class DocuSignAdapterProperties {
 
     private String webhookUrl;
 
+    @ToString.Exclude
     private String webhookSecret;
 
     private Boolean sandboxMode = false;
@@ -47,6 +50,16 @@ public class DocuSignAdapterProperties {
     private Integer maxRetries = 3;
 
     private Long jwtExpiration = 3600L;
+
+    private Duration authenticationTimeout = Duration.ofSeconds(90);
+
+    private Duration authenticationWaitTimeout = Duration.ofSeconds(30);
+
+    private Duration authenticationRefreshSkew = Duration.ofSeconds(60);
+
+    private Integer maxConcurrentRequests = 4;
+
+    private Integer maxQueuedRequestsPerThread = 16;
 
     private Boolean enablePolling = true;
 
