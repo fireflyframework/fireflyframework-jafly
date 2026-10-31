@@ -473,6 +473,19 @@ public class EdaProperties {
             @Min(value = 1, message = "Max pool size must be at least 1")
             private int maxPoolSize = 5;
 
+            /** Processing ownership for the PostgreSQL transport. */
+            public enum DeliveryMode { ANNOTATED, MANUAL }
+            private DeliveryMode deliveryMode = DeliveryMode.ANNOTATED;
+            private Duration leaseDuration = Duration.ofSeconds(30);
+            private Duration retryDelay = Duration.ofSeconds(1);
+            private Duration handlerTimeout = Duration.ofSeconds(30);
+            private Duration recoveryBackoff = Duration.ofSeconds(1);
+            private Duration maxRecoveryBackoff = Duration.ofSeconds(30);
+            private Duration connectTimeout = Duration.ofSeconds(5);
+            private Duration acquireTimeout = Duration.ofSeconds(5);
+            private Duration queryTimeout = Duration.ofSeconds(5);
+            private Duration shutdownTimeout = Duration.ofSeconds(5);
+
             /**
              * Additional R2DBC connection properties.
              */

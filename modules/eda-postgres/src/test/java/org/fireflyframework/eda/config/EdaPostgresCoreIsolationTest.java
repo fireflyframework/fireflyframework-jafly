@@ -49,6 +49,13 @@ class EdaPostgresCoreIsolationTest {
     static class SerializationBeans {
         @Bean ObjectMapper objectMapper() { return new ObjectMapper(); }
         @Bean MessageSerializer messageSerializer() { return mock(MessageSerializer.class); }
+        @Bean org.fireflyframework.eda.consumer.postgres.PostgresEventDecoder postgresEventDecoder(MessageSerializer serializer) {
+            return new org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder(serializer,java.util.Map.of("java.lang.String",String.class));
+        }
+        @Bean org.fireflyframework.eda.listener.EventListenerProcessor eventListenerProcessor(org.springframework.context.ApplicationContext context,
+                org.springframework.context.ApplicationEventPublisher publisher,org.springframework.core.env.Environment environment) {
+            return new org.fireflyframework.eda.listener.EventListenerProcessor(context,publisher,mock(org.fireflyframework.eda.error.CustomErrorHandlerRegistry.class),environment);
+        }
     }
 
     static class SharedBusinessResource {
@@ -57,6 +64,7 @@ class EdaPostgresCoreIsolationTest {
         ConnectionFactory businessFactory() {
             var factory = mock(ConnectionFactory.class);
             when(factory.getMetadata()).thenReturn(() -> "PostgreSQL");
+            org.mockito.Mockito.doReturn(reactor.core.publisher.Mono.never()).when(factory).create();
             return factory;
         }
     }
@@ -151,5 +159,7 @@ class EdaPostgresCoreIsolationTest {
         var discovered = Arrays.stream(registry.getBeanDefinitionNames())
                 .map(name -> registry.getBeanDefinition(name).getBeanClassName()).toList();
         assertThat(discovered).doesNotContain(SerializationBeans.class.getName(), SharedBusinessResource.class.getName());
+        assertThat(discovered).noneMatch(name -> name != null && (name.contains("PostgresConsumerAutoConfigurationTest$")
+                || name.contains("PostgresConsumerNativeFixture$") || name.contains("PostgresConsumerRuntimeTest$")));
     }
 }
