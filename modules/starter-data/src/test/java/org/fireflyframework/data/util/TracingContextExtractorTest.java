@@ -24,7 +24,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +38,18 @@ class TracingContextExtractorTest {
     private ObservationRegistry observationRegistry;
     private OpenTelemetry openTelemetry;
     private Tracer tracer;
+    private SdkTracerProvider tracerProvider;
+    private InMemorySpanExporter exporter;
 
     @BeforeEach
     void setUp() {
         // Set up OpenTelemetry tracing
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+        exporter = InMemorySpanExporter.create();
+        tracerProvider = SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                .build();
         openTelemetry = OpenTelemetrySdk.builder()
-                .setTracerProvider(sdkTracerProvider)
+                .setTracerProvider(tracerProvider)
                 .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
                 .build();
 
@@ -64,7 +71,30 @@ class TracingContextExtractorTest {
 
     @AfterEach
     void tearDown() {
-        // OpenTelemetry SDK cleanup if needed
+        TracingContextExtractor.setTracer(null);
+        tracerProvider.close();
+    }
+
+    @Test
+    void shouldExportTheExtractedObservationContext() {
+        Observation observation = Observation.start("exported.operation", observationRegistry);
+        String[] context = new String[2];
+        try {
+            observation.scoped(() -> {
+                context[0] = TracingContextExtractor.extractTraceId(observation);
+                context[1] = TracingContextExtractor.extractSpanId(observation);
+            });
+        } finally {
+            observation.stop();
+        }
+
+        assertThat(context[0]).matches("[0-9a-f]{32}").isNotEqualTo("0".repeat(32));
+        assertThat(context[1]).matches("[0-9a-f]{16}").isNotEqualTo("0".repeat(16));
+        assertThat(exporter.getFinishedSpanItems()).singleElement().satisfies(span -> {
+            assertThat(span.getName()).isEqualTo("exported.operation");
+            assertThat(span.getTraceId()).isEqualTo(context[0]);
+            assertThat(span.getSpanId()).isEqualTo(context[1]);
+        });
     }
 
     @Test
