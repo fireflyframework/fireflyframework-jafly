@@ -108,7 +108,7 @@
 
         <!-- SOAP / Web Services -->
         <cxf.version>4.2.4</cxf.version>
-        <jaxws-rt.version>4.0.3</jaxws-rt.version>
+        <jaxws-rt.version>4.0.5</jaxws-rt.version>
         <wss4j.version>4.0.2</wss4j.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <jaxb-xjc.version>4.0.6</jaxb-xjc.version>
