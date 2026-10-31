@@ -16,6 +16,7 @@
 
 package org.fireflyframework.rules.core.dsl.parser;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.rules.core.dsl.action.Action;
 import org.fireflyframework.rules.core.dsl.condition.Condition;
 import org.fireflyframework.rules.core.dsl.expression.Expression;
@@ -39,28 +40,28 @@ public class DSLParser {
      * Parse a condition expression from source text
      */
     public Condition parseCondition(String source) {
-        log.debug("Parsing condition: {}", source);
+        log.debug("Parsing condition: characterCount={}", source == null ? 0 : source.length());
         
         try {
             List<Token> tokens = tokenize(source);
             ConditionParser parser = new ConditionParser(tokens);
             Condition condition = parser.parseCondition();
             
-            log.debug("Successfully parsed condition: {}", condition.toDebugString());
+            log.debug("Successfully parsed condition");
             return condition;
             
         } catch (LexerException e) {
-            log.error("Lexical error while parsing condition: {}", e.getDetailedMessage());
+            log.error("Lexical error while parsing condition: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Lexical error: " + e.getMessage(),
                 e.getLocation(),
                 "PARSE_LEX_001"
             );
         } catch (ParseException e) {
-            log.error("Parse error while parsing condition: {}", e.getDetailedMessage());
+            log.error("Parse error while parsing condition: errorType={}", LogFields.errorType(e));
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error while parsing condition", e);
+            log.error("Unexpected error while parsing condition: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Unexpected parsing error: " + e.getMessage(),
                 null,
@@ -73,28 +74,28 @@ public class DSLParser {
      * Parse an expression from source text
      */
     public Expression parseExpression(String source) {
-        log.debug("Parsing expression: {}", source);
+        log.debug("Parsing expression: characterCount={}", source == null ? 0 : source.length());
         
         try {
             List<Token> tokens = tokenize(source);
             ExpressionParser parser = new ExpressionParser(tokens);
             Expression expression = parser.parseExpression();
             
-            log.debug("Successfully parsed expression: {}", expression.toDebugString());
+            log.debug("Successfully parsed expression");
             return expression;
             
         } catch (LexerException e) {
-            log.error("Lexical error while parsing expression: {}", e.getDetailedMessage());
+            log.error("Lexical error while parsing expression: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Lexical error: " + e.getMessage(),
                 e.getLocation(),
                 "PARSE_LEX_002"
             );
         } catch (ParseException e) {
-            log.error("Parse error while parsing expression: {}", e.getDetailedMessage());
+            log.error("Parse error while parsing expression: errorType={}", LogFields.errorType(e));
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error while parsing expression", e);
+            log.error("Unexpected error while parsing expression: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Unexpected parsing error: " + e.getMessage(),
                 null,
@@ -107,28 +108,28 @@ public class DSLParser {
      * Parse an action from source text
      */
     public Action parseAction(String source) {
-        log.debug("Parsing action: {}", source);
+        log.debug("Parsing action: characterCount={}", source == null ? 0 : source.length());
         
         try {
             List<Token> tokens = tokenize(source);
             ActionParser parser = new ActionParser(tokens);
             Action action = parser.parseAction();
             
-            log.debug("Successfully parsed action: {}", action.toDebugString());
+            log.debug("Successfully parsed action");
             return action;
             
         } catch (LexerException e) {
-            log.error("Lexical error while parsing action: {}", e.getDetailedMessage());
+            log.error("Lexical error while parsing action: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Lexical error: " + e.getMessage(),
                 e.getLocation(),
                 "PARSE_LEX_003"
             );
         } catch (ParseException e) {
-            log.error("Parse error while parsing action: {}", e.getDetailedMessage());
+            log.error("Parse error while parsing action: errorType={}", LogFields.errorType(e));
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error while parsing action", e);
+            log.error("Unexpected error while parsing action: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Unexpected parsing error: " + e.getMessage(),
                 null,
@@ -141,7 +142,7 @@ public class DSLParser {
      * Parse a list of actions from source text
      */
     public List<Action> parseActionList(String source) {
-        log.debug("Parsing action list: {}", source);
+        log.debug("Parsing action list: characterCount={}", source == null ? 0 : source.length());
         
         try {
             List<Token> tokens = tokenize(source);
@@ -152,17 +153,17 @@ public class DSLParser {
             return actions;
             
         } catch (LexerException e) {
-            log.error("Lexical error while parsing action list: {}", e.getDetailedMessage());
+            log.error("Lexical error while parsing action list: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Lexical error: " + e.getMessage(),
                 e.getLocation(),
                 "PARSE_LEX_004"
             );
         } catch (ParseException e) {
-            log.error("Parse error while parsing action list: {}", e.getDetailedMessage());
+            log.error("Parse error while parsing action list: errorType={}", LogFields.errorType(e));
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error while parsing action list", e);
+            log.error("Unexpected error while parsing action list: errorType={}", LogFields.errorType(e));
             throw new ParseException(
                 "Unexpected parsing error: " + e.getMessage(),
                 null,

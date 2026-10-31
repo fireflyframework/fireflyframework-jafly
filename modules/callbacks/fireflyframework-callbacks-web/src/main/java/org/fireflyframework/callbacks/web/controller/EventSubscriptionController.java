@@ -63,7 +63,7 @@ public class EventSubscriptionController {
     })
     public Mono<ResponseEntity<PaginationResponse<EventSubscriptionDTO>>> filterSubscriptions(
             @Valid @RequestBody FilterRequest<EventSubscriptionDTO> filterRequest) {
-        log.debug("Filtering event subscriptions with request: {}", filterRequest);
+        log.debug("Filtering event subscriptions: page={}, size={}", filterRequest == null ? null : filterRequest.getPage(), filterRequest == null ? null : filterRequest.getSize());
         return eventSubscriptionService.filterSubscriptions(filterRequest)
                 .map(ResponseEntity::ok);
     }
@@ -77,7 +77,7 @@ public class EventSubscriptionController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     public Mono<EventSubscriptionDTO> create(@Valid @RequestBody EventSubscriptionDTO dto) {
-        log.info("Creating event subscription: name={}", dto.getName());
+        log.info("Creating event subscription: id={}", dto.getId());
         return eventSubscriptionService.create(dto);
     }
 

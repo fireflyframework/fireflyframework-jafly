@@ -63,7 +63,7 @@ public class AuthorizedDomainController {
     })
     public Mono<ResponseEntity<PaginationResponse<AuthorizedDomainDTO>>> filterDomains(
             @Valid @RequestBody FilterRequest<AuthorizedDomainDTO> filterRequest) {
-        log.debug("Filtering authorized domains with request: {}", filterRequest);
+        log.debug("Filtering authorized domains: page={}, size={}", filterRequest == null ? null : filterRequest.getPage(), filterRequest == null ? null : filterRequest.getSize());
         return domainAuthorizationService.filterDomains(filterRequest)
                 .map(ResponseEntity::ok);
     }
@@ -77,7 +77,7 @@ public class AuthorizedDomainController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     public Mono<AuthorizedDomainDTO> create(@Valid @RequestBody AuthorizedDomainDTO dto) {
-        log.info("Creating authorized domain: domain={}", dto.getDomain());
+        log.info("Creating authorized domain: id={}", dto.getId());
         return domainAuthorizationService.create(dto);
     }
 
@@ -107,7 +107,7 @@ public class AuthorizedDomainController {
     public Mono<Void> verify(
             @PathVariable String domain,
             @RequestParam String verificationMethod) {
-        log.info("Verifying domain: domain={}, method={}", domain, verificationMethod);
+        log.info("Verifying authorized domain: methodPresent={}", verificationMethod != null);
         return domainAuthorizationService.verifyDomain(domain, verificationMethod);
     }
 
@@ -122,7 +122,7 @@ public class AuthorizedDomainController {
     public Mono<Void> delete(
             @PathVariable UUID id,
             @RequestParam String domain) {
-        log.info("Deleting authorized domain: id={}, domain={}", id, domain);
+        log.info("Deleting authorized domain: id={}", id);
         return domainAuthorizationService.delete(id, domain);
     }
 }

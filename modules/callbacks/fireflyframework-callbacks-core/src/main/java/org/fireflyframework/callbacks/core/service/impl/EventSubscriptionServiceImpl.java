@@ -16,6 +16,7 @@
 
 package org.fireflyframework.callbacks.core.service.impl;
 
+import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.callbacks.core.filters.FilterRequest;
 import org.fireflyframework.callbacks.core.filters.FilterUtils;
 import org.fireflyframework.callbacks.core.filters.PaginationResponse;
@@ -83,17 +84,17 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                 .flatMap(subscriptionRepository::save)
                 .map(subscriptionMapper::toDto)
                 .doOnSuccess(created -> {
-                    log.info("Created event subscription: id={}, name={}", created.getId(), created.getName());
+                    log.info("Created event subscription: id={}", created.getId());
                     // Register dynamic listener for this subscription
                     try {
                         log.info("About to register dynamic listener for subscription: {}", created.getId());
                         dynamicListenerFactory.registerSubscription(created);
                         log.info("Finished registering dynamic listener for subscription: {}", created.getId());
                     } catch (Exception e) {
-                        log.error("Failed to register dynamic listener for subscription: {}", created.getId(), e);
+                        log.error("Failed to register dynamic listener for subscription: id={}, errorType={}", created.getId(), LogFields.errorType(e));
                     }
                 })
-                .doOnError(error -> log.error("Error creating subscription: {}", dto.getName(), error));
+                .doOnError(error -> log.error("Error creating subscription: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -118,9 +119,8 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                     return subscriptionRepository.save(updated);
                 })
                 .map(subscriptionMapper::toDto)
-                .doOnSuccess(updated -> log.info("Updated event subscription: id={}, name={}", 
-                        id, updated.getName()))
-                .doOnError(error -> log.error("Error updating subscription: {}", id, error));
+                .doOnSuccess(updated -> log.info("Updated event subscription: id={}", id))
+                .doOnError(error -> log.error("Error updating subscription: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -130,7 +130,7 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
     public Mono<Void> delete(UUID id) {
         return subscriptionRepository.deleteById(id)
                 .doOnSuccess(v -> log.info("Deleted event subscription: id={}", id))
-                .doOnError(error -> log.error("Error deleting subscription: {}", id, error));
+                .doOnError(error -> log.error("Error deleting subscription: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -140,7 +140,7 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
     public Mono<EventSubscriptionDTO> findById(UUID id) {
         return subscriptionRepository.findById(id)
                 .map(subscriptionMapper::toDto)
-                .doOnError(error -> log.error("Error finding subscription: {}", id, error));
+                .doOnError(error -> log.error("Error finding subscription: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -150,7 +150,7 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
     public Flux<EventSubscriptionDTO> findAllActive() {
         return subscriptionRepository.findByActiveTrue()
                 .map(subscriptionMapper::toDto)
-                .doOnError(error -> log.error("Error finding active subscriptions", error));
+                .doOnError(error -> log.error("Error finding active subscriptions: errorType={}", LogFields.errorType(error)));
     }
 
     /**
@@ -171,8 +171,7 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                 .then()
                 .doOnSuccess(v -> log.debug("Incremented message count for subscription: {}, success: {}", 
                         subscriptionId, success))
-                .doOnError(error -> log.error("Error updating stats for subscription: {}", 
-                        subscriptionId, error));
+                .doOnError(error -> log.error("Error updating stats for subscription: id={}, errorType={}", subscriptionId, LogFields.errorType(error)));
     }
 
     /**
@@ -189,7 +188,7 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                 })
                 .map(subscriptionMapper::toDto)
                 .doOnSuccess(activated -> log.info("Activated subscription: id={}", id))
-                .doOnError(error -> log.error("Error activating subscription: {}", id, error));
+                .doOnError(error -> log.error("Error activating subscription: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 
     /**
@@ -206,6 +205,6 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                 })
                 .map(subscriptionMapper::toDto)
                 .doOnSuccess(deactivated -> log.info("Deactivated subscription: id={}", id))
-                .doOnError(error -> log.error("Error deactivating subscription: {}", id, error));
+                .doOnError(error -> log.error("Error deactivating subscription: id={}, errorType={}", id, LogFields.errorType(error)));
     }
 }
