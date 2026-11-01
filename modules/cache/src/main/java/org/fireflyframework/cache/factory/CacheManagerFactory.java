@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.fireflyframework.cache.properties.CacheProperties;
@@ -58,6 +59,7 @@ import java.time.Duration;
 public class CacheManagerFactory {
 
     private java.util.List<org.fireflyframework.cache.spi.CacheProviderFactory> providerFactories;
+    private boolean providerDiscoveryComplete;
 
     private final CacheProperties properties;
     private final ObjectMapper objectMapper;
@@ -274,6 +276,44 @@ public class CacheManagerFactory {
         return new FireflyCacheManager(primaryCache, fallbackCache);
     }
 
+    /** Creates an explicitly selected primary with an immutable operation policy. */
+    public FireflyCacheManager createCacheManager(String cacheName,
+                                                  CacheType cacheType,
+                                                  String keyPrefix,
+                                                  Duration defaultTtl,
+                                                  String description,
+                                                  String requestedBy,
+                                                  CacheOperationPolicy policy) {
+        java.util.Objects.requireNonNull(policy, "Cache operation policy required");
+        if (policy == CacheOperationPolicy.LEGACY) {
+            return createCacheManager(cacheName, cacheType, keyPrefix, defaultTtl, description, requestedBy);
+        }
+        if (cacheType == null || cacheType == CacheType.AUTO || cacheType == CacheType.NOOP) {
+            throw new IllegalArgumentException("An explicit storage backend is required for primary-only operations");
+        }
+        if (!providerDiscoveryComplete) {
+            throw new IllegalStateException("Cache provider discovery did not complete");
+        }
+        var candidates = providerFactories.stream().filter(provider -> provider.getType() == cacheType).toList();
+        if (candidates.size() != 1) {
+            throw new IllegalStateException("Exactly one provider for the selected cache backend is required");
+        }
+        var context = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
+                properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, postgresFactoryFor(cacheType));
+        CacheAdapter primary = candidates.getFirst().create(cacheName, keyPrefix, defaultTtl, context, policy);
+        if (primary == null) throw new IllegalStateException("The selected provider returned no cache adapter");
+        try {
+            if (primary.getCacheType() != cacheType) {
+                throw new IllegalStateException("The selected provider must construct the requested cache backend");
+            }
+            return new FireflyCacheManager(primary, null, policy);
+        } catch (RuntimeException | Error failure) {
+            try { primary.close(); }
+            catch (RuntimeException | Error cleanup) { if (cleanup != failure) failure.addSuppressed(cleanup); }
+            throw failure;
+        }
+    }
+
     /**
      * Detects the caller class from the stack trace.
      */
@@ -329,7 +369,8 @@ public class CacheManagerFactory {
             var loader = java.util.ServiceLoader.load(org.fireflyframework.cache.spi.CacheProviderFactory.class);
             loader.forEach(list::add);
             list.sort(java.util.Comparator.comparingInt(org.fireflyframework.cache.spi.CacheProviderFactory::priority));
-        } catch (Throwable ignored) { }
+            providerDiscoveryComplete = true;
+        } catch (Throwable ignored) { providerDiscoveryComplete = false; }
         return list;
     }
 

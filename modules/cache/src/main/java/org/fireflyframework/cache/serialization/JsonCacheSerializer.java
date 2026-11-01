@@ -16,6 +16,8 @@
 
 package org.fireflyframework.cache.serialization;
 
+import org.fireflyframework.kernel.logging.LogFields;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +57,7 @@ public class JsonCacheSerializer implements CacheSerializer {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
-            log.error("Failed to serialize object of type {} to JSON: {}", 
-                     object.getClass().getName(), e.getMessage(), e);
+            log.error("Cache serialization failed: type={}", LogFields.errorType(e));
             throw new SerializationException("Failed to serialize object to JSON", e);
         }
     }
@@ -78,8 +79,7 @@ public class JsonCacheSerializer implements CacheSerializer {
             try {
                 return objectMapper.readValue(jsonString, type);
             } catch (Exception e) {
-                log.error("Failed to deserialize JSON string to type {}: {}", 
-                         type.getName(), e.getMessage(), e);
+                log.error("Cache deserialization failed: type={}", LogFields.errorType(e));
                 throw new SerializationException("Failed to deserialize JSON to object", e);
             }
         }
@@ -94,8 +94,7 @@ public class JsonCacheSerializer implements CacheSerializer {
             String json = objectMapper.writeValueAsString(data);
             return objectMapper.readValue(json, type);
         } catch (Exception e) {
-            log.error("Failed to convert object of type {} to type {} via JSON: {}", 
-                     data.getClass().getName(), type.getName(), e.getMessage(), e);
+            log.error("Cache conversion failed: type={}", LogFields.errorType(e));
             throw new SerializationException("Failed to convert object via JSON", e);
         }
     }

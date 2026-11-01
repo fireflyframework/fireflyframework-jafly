@@ -17,6 +17,7 @@
 package org.fireflyframework.cache.spi.providers;
 
 import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.PostgresCacheHelper;
 import org.fireflyframework.cache.spi.CacheProviderFactory;
@@ -59,4 +60,14 @@ public class PostgresProvider implements CacheProviderFactory {
                 ctx.properties,
                 ctx.objectMapper);
     }
+    @Override
+    public CacheAdapter create(String cacheName, String keyPrefix, Duration defaultTtl,
+                               ProviderContext ctx, CacheOperationPolicy policy) {
+        java.util.Objects.requireNonNull(policy, "Cache operation policy required");
+        if (policy == CacheOperationPolicy.LEGACY) return create(cacheName, keyPrefix, defaultTtl, ctx);
+        if (!isAvailable(ctx)) throw new IllegalStateException("The selected PostgreSQL cache provider is not configured");
+        return PostgresCacheHelper.createPostgresCacheAdapter(cacheName, keyPrefix, defaultTtl,
+                ctx.r2dbcConnectionFactory, ctx.properties, ctx.objectMapper, policy);
+    }
+
 }

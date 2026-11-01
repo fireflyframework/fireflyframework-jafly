@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.properties.CacheProperties;
 
@@ -49,6 +50,16 @@ public interface CacheProviderFactory {
      * Creates a cache adapter instance.
      */
     CacheAdapter create(String cacheName, String keyPrefix, Duration defaultTtl, ProviderContext ctx);
+
+    /** A provider must explicitly implement non-legacy operation behavior. */
+    default CacheAdapter create(String cacheName, String keyPrefix, Duration defaultTtl,
+                                ProviderContext ctx, CacheOperationPolicy policy) {
+        java.util.Objects.requireNonNull(policy, "Cache operation policy required");
+        if (policy != CacheOperationPolicy.LEGACY) {
+            throw new UnsupportedOperationException("Cache provider does not support the requested operation policy");
+        }
+        return create(cacheName, keyPrefix, defaultTtl, ctx);
+    }
 
     /** Context passed to providers. */
     class ProviderContext {
