@@ -29,13 +29,13 @@ import java.util.Map;
 public final class DeclaredAvroData {
     private DeclaredAvroData() { }
 
-    public static ReflectData reflection(DeclaredAvroTypes types) { return new Reflection(types); }
-    public static SpecificData specific(DeclaredAvroTypes types) { return new Specific(types); }
+    public static ReflectData reflection(DeclaredAvroTypes types) { return new ReflectionImpl(types); }
+    public static SpecificData specific(DeclaredAvroTypes types) { return new SpecificImpl(types); }
 
-    private static final class Reflection extends ReflectData {
+    private static final class ReflectionImpl extends ReflectData {
         private final DeclaredAvroTypes types;
         private final Map<Type, Schema> recursive = new HashMap<>();
-        Reflection(DeclaredAvroTypes types) {
+        ReflectionImpl(DeclaredAvroTypes types) {
             this.types = types;
             addLogicalTypeConversions(this);
             setFastReaderEnabled(false);
@@ -61,9 +61,9 @@ public final class DeclaredAvroData {
         }
     }
 
-    private static final class Specific extends SpecificData {
+    private static final class SpecificImpl extends SpecificData {
         private final DeclaredAvroTypes types;
-        Specific(DeclaredAvroTypes types) {
+        SpecificImpl(DeclaredAvroTypes types) {
             this.types = types;
             addLogicalTypeConversions(this);
             setFastReaderEnabled(false);

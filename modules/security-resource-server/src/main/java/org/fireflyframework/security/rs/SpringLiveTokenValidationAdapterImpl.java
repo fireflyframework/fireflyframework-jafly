@@ -172,11 +172,11 @@ public final class SpringLiveTokenValidationAdapterImpl implements TokenValidati
     }
 
     static JacksonJsonDecoder nativeJsonDecoder() {
-        return new QuietJacksonJsonDecoder();
+        return new QuietJacksonJsonDecoderImpl();
     }
 
     /** The native codec honors this public hint before rendering decoded identity attributes. */
-    private static final class QuietJacksonJsonDecoder extends JacksonJsonDecoder {
+    private static final class QuietJacksonJsonDecoderImpl extends JacksonJsonDecoder {
         @Override
         public Flux<Object> decode(Publisher<DataBuffer> input, ResolvableType type, MimeType mimeType,
                                    Map<String, Object> hints) {

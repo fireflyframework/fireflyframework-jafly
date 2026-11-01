@@ -73,7 +73,7 @@ public final class ManagedDocuSignApiClientImpl extends ApiClient implements Aut
                 settings.maxQueuedRequestsPerThread(), "firefly-docusign", 60, true);
         DocuSignAuthentication authentication = new JwtDocuSignAuthenticationImpl(this, settings,
                 java.util.Objects.requireNonNull(clock), System::nanoTime);
-        addAuthorization("docusignAccessCode", new ManagedOAuth(authentication));
+        addAuthorization("docusignAccessCode", new ManagedOAuthImpl(authentication));
     }
 
     @Override protected Client buildHttpClient(boolean debugging) {
@@ -319,9 +319,9 @@ public final class ManagedDocuSignApiClientImpl extends ApiClient implements Aut
         synchronized void publish(Runnable publication) { check(); publication.run(); }
     }
 
-    private static final class ManagedOAuth extends OAuth {
+    private static final class ManagedOAuthImpl extends OAuth {
         private final DocuSignAuthentication authentication;
-        ManagedOAuth(DocuSignAuthentication authentication) { this.authentication = authentication; }
+        ManagedOAuthImpl(DocuSignAuthentication authentication) { this.authentication = authentication; }
         @Override public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams) {
             // The SDK's default OAuth implementation swallows refresh failures; never delegate to it here.
             headerParams.put("Authorization", "Bearer " + authentication.accessToken());

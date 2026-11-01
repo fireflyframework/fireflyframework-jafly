@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Keeps business persistence out of this stateless application role. */
-public final class StatelessDomainEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
+public final class StatelessDomainEnvironmentPostProcessorImpl implements EnvironmentPostProcessor, Ordered {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         var excludes = new LinkedHashSet<>(Binder.get(environment)

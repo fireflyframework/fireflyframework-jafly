@@ -50,7 +50,7 @@ import java.util.Map;
  *   <li>Exchange and routing key support</li>
  * </ul>
  */
-@Component
+@Component("rabbitMqEventPublisher")
 @ConditionalOnClass({AmqpTemplate.class, ConnectionFactory.class})
 @ConditionalOnBean(name = "fireflyEdaRabbitTemplate")
 @Slf4j

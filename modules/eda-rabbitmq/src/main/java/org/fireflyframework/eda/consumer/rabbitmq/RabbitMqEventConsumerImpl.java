@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *   <li>Proper message acknowledgment</li>
  * </ul>
  */
-@Component
+@Component("rabbitMqEventConsumer")
 @ConditionalOnClass({SimpleMessageListenerContainer.class, ConnectionFactory.class})
 @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(name = "fireflyEdaRabbitConsumerConnectionFactory")
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true")

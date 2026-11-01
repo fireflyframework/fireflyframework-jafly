@@ -223,6 +223,7 @@
     "modules/starter-data/src/main/java/org/fireflyframework/data/quality/rules/RangeRule.java": "modules/starter-data/src/main/java/org/fireflyframework/data/quality/rules/RangeRuleImpl.java",
     "modules/starter-data/src/main/java/org/fireflyframework/data/transform/transformers/ComputedFieldTransformer.java": "modules/starter-data/src/main/java/org/fireflyframework/data/transform/transformers/ComputedFieldTransformerImpl.java",
     "modules/starter-data/src/main/java/org/fireflyframework/data/transform/transformers/FieldMappingTransformer.java": "modules/starter-data/src/main/java/org/fireflyframework/data/transform/transformers/FieldMappingTransformerImpl.java",
+    "modules/starter-domain/src/main/java/org/fireflyframework/domain/config/StatelessDomainEnvironmentPostProcessor.java": "modules/starter-domain/src/main/java/org/fireflyframework/domain/config/StatelessDomainEnvironmentPostProcessorImpl.java",
     "modules/validators/src/main/java/org/fireflyframework/validators/AccountNumberValidator.java": "modules/validators/src/main/java/org/fireflyframework/validators/AccountNumberValidatorImpl.java",
     "modules/validators/src/main/java/org/fireflyframework/validators/AmountValidator.java": "modules/validators/src/main/java/org/fireflyframework/validators/AmountValidatorImpl.java",
     "modules/validators/src/main/java/org/fireflyframework/validators/BicValidator.java": "modules/validators/src/main/java/org/fireflyframework/validators/BicValidatorImpl.java",

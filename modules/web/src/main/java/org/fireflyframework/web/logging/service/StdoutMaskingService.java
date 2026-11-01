@@ -33,7 +33,7 @@ public class StdoutMaskingService {
     private final PiiMaskingService piiMaskingService;
     private final PrintStream originalOut;
     private final AtomicBoolean maskingEnabled = new AtomicBoolean(true);
-    private MaskingPrintStream maskingPrintStream;
+    private MaskingPrintStreamImpl maskingPrintStream;
 
     public StdoutMaskingService(PiiMaskingService piiMaskingService) {
         this.piiMaskingService = piiMaskingService;
@@ -45,7 +45,7 @@ public class StdoutMaskingService {
      */
     public void enableStdoutMasking() {
         if (piiMaskingService != null && piiMaskingService.isReady()) {
-            maskingPrintStream = new MaskingPrintStream(originalOut, piiMaskingService, maskingEnabled);
+            maskingPrintStream = new MaskingPrintStreamImpl(originalOut, piiMaskingService, maskingEnabled);
             System.setOut(maskingPrintStream);
         }
     }
@@ -85,12 +85,12 @@ public class StdoutMaskingService {
     /**
      * A PrintStream wrapper that applies PII masking to output.
      */
-    private static class MaskingPrintStream extends PrintStream {
+    private static class MaskingPrintStreamImpl extends PrintStream {
         private final PrintStream originalStream;
         private final PiiMaskingService piiMaskingService;
         private final AtomicBoolean maskingEnabled;
 
-        public MaskingPrintStream(PrintStream originalStream, PiiMaskingService piiMaskingService, 
+        public MaskingPrintStreamImpl(PrintStream originalStream, PiiMaskingService piiMaskingService,
                                  AtomicBoolean maskingEnabled) {
             super(originalStream, true);
             this.originalStream = originalStream;

@@ -106,7 +106,7 @@ public final class RestrictedHtmlTemplateRenderer {
             Object copied = copy(model, 0, budget);
             if (!(copied instanceof Map<?, ?>)) return failure("UNSUPPORTED_MODEL");
             var template = new Template("restricted-published-template", new StringReader(source), configuration);
-            var writer = new BoundedWriter(limits.outputBytes());
+            var writer = new BoundedWriterImpl(limits.outputBytes());
             Environment environment = template.createProcessingEnvironment(copied, writer);
             environment.setTemplateProcessingTracer(budget);
             environment.process();
@@ -230,12 +230,12 @@ public final class RestrictedHtmlTemplateRenderer {
         public void exitElement(Environment environment, TracedElement element) { depth--; }
     }
 
-    private static final class BoundedWriter extends Writer {
+    private static final class BoundedWriterImpl extends Writer {
         private final int limit;
         private final StringBuilder text = new StringBuilder();
         private int bytes;
         private boolean high;
-        BoundedWriter(int limit) { this.limit = limit; }
+        BoundedWriterImpl(int limit) { this.limit = limit; }
         @Override public void write(char[] value, int offset, int length) {
             for (int i = offset; i < offset + length; i++) {
                 char character = value[i];

@@ -60,7 +60,7 @@ class PostgresCacheArchitectureContextTest {
 
     void statelessRole() {
         context.withInitializer(application -> {
-            String expected = "org.fireflyframework.domain.config.StatelessDomainEnvironmentPostProcessor";
+            String expected = "org.fireflyframework.domain.config.StatelessDomainEnvironmentPostProcessorImpl";
             boolean registered = false;
             try {
                 var resources = getClass().getClassLoader().getResources("META-INF/spring.factories");
@@ -74,7 +74,7 @@ class PostgresCacheArchitectureContextTest {
                 throw new IllegalStateException("Cannot read starter registration", error);
             }
             assertThat(registered).as("actual starter EnvironmentPostProcessor registration").isTrue();
-            new StatelessDomainEnvironmentPostProcessor().postProcessEnvironment(application.getEnvironment(), new SpringApplication());
+            new StatelessDomainEnvironmentPostProcessorImpl().postProcessEnvironment(application.getEnvironment(), new SpringApplication());
         }).withPropertyValues("spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
                 .run(application -> {
                     assertThat(application).hasNotFailed();
