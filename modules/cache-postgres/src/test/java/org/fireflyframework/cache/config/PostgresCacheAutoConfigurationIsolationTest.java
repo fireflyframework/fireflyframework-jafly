@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import io.r2dbc.spi.ConnectionFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -38,7 +38,7 @@ class PostgresCacheAutoConfigurationIsolationTest {
                 .withPropertyValues("firefly.cache.default-cache-type=CAFFEINE")
                 .run(application -> {
                     assertThat(application).hasNotFailed();
-                    assertThat(application).hasSingleBean(FireflyCacheManager.class);
+                    assertThat(application).hasSingleBean(FireflyCacheManagerImpl.class);
                     assertThat(application.getBean(AtomicInteger.class).get()).isZero();
                 });
     }
@@ -73,7 +73,7 @@ class PostgresCacheAutoConfigurationIsolationTest {
         context.withPropertyValues("firefly.cache.default-cache-type=AUTO")
                 .run(application -> {
                     assertThat(application).hasNotFailed();
-                    assertThat(application.getBean(FireflyCacheManager.class).getCacheType())
+                    assertThat(application.getBean(FireflyCacheManagerImpl.class).getCacheType())
                             .isEqualTo(org.fireflyframework.cache.core.CacheType.CAFFEINE);
                     assertThat(application).doesNotHaveBean("fireflyCachePostgresConnectionFactory");
                 });

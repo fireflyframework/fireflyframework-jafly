@@ -53,7 +53,7 @@ public interface LoadBalancerStrategy {
     /**
      * Round Robin load balancer.
      */
-    class RoundRobin implements LoadBalancerStrategy {
+    class RoundRobinImpl implements LoadBalancerStrategy {
         private final AtomicInteger counter = new AtomicInteger(0);
 
         @Override
@@ -70,11 +70,11 @@ public interface LoadBalancerStrategy {
     /**
      * Weighted Round Robin load balancer.
      */
-    class WeightedRoundRobin implements LoadBalancerStrategy {
+    class WeightedRoundRobinImpl implements LoadBalancerStrategy {
         private final AtomicInteger counter = new AtomicInteger(0);
         private final Map<String, Integer> weights;
 
-        public WeightedRoundRobin(Map<String, Integer> weights) {
+        public WeightedRoundRobinImpl(Map<String, Integer> weights) {
             this.weights = weights;
         }
 
@@ -100,7 +100,7 @@ public interface LoadBalancerStrategy {
     /**
      * Random load balancer.
      */
-    class Random implements LoadBalancerStrategy {
+    class RandomImpl implements LoadBalancerStrategy {
         @Override
         public Optional<ServiceInstance> selectInstance(List<ServiceInstance> instances) {
             if (instances == null || instances.isEmpty()) {
@@ -115,7 +115,7 @@ public interface LoadBalancerStrategy {
     /**
      * Least Connections load balancer.
      */
-    class LeastConnections implements LoadBalancerStrategy {
+    class LeastConnectionsImpl implements LoadBalancerStrategy {
         private final Map<String, AtomicInteger> connections = new ConcurrentHashMap<>();
 
         @Override
@@ -144,11 +144,11 @@ public interface LoadBalancerStrategy {
     /**
      * Sticky Session load balancer.
      */
-    class StickySession implements LoadBalancerStrategy {
+    class StickySessionImpl implements LoadBalancerStrategy {
         private final Map<String, ServiceInstance> sessionMap = new ConcurrentHashMap<>();
         private final LoadBalancerStrategy fallbackStrategy;
 
-        public StickySession(LoadBalancerStrategy fallbackStrategy) {
+        public StickySessionImpl(LoadBalancerStrategy fallbackStrategy) {
             this.fallbackStrategy = fallbackStrategy;
         }
 
@@ -184,11 +184,11 @@ public interface LoadBalancerStrategy {
     /**
      * Zone-aware load balancer (prefers instances in same zone).
      */
-    class ZoneAware implements LoadBalancerStrategy {
+    class ZoneAwareImpl implements LoadBalancerStrategy {
         private final String preferredZone;
         private final LoadBalancerStrategy fallbackStrategy;
 
-        public ZoneAware(String preferredZone, LoadBalancerStrategy fallbackStrategy) {
+        public ZoneAwareImpl(String preferredZone, LoadBalancerStrategy fallbackStrategy) {
             this.preferredZone = preferredZone;
             this.fallbackStrategy = fallbackStrategy;
         }

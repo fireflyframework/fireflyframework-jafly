@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessor;
+import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessorImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -52,7 +52,7 @@ class ObservabilityExporterDefaultsTest {
                 .withPropertyValues("spring.autoconfigure.exclude=" + String.join(",", excluded),
                         "firefly.observability.tracing.bridge=" + bridge)
                 .withPropertyValues(properties)
-                .withInitializer(context -> new FireflyObservabilityEnvironmentPostProcessor()
+                .withInitializer(context -> new FireflyObservabilityEnvironmentPostProcessorImpl()
                         .postProcessEnvironment(context.getEnvironment(), new SpringApplication()));
     }
 
@@ -172,7 +172,7 @@ class ObservabilityExporterDefaultsTest {
         environment.setActiveProfiles(profile);
         environment.setProperty("spring.config.location", "classpath:exporter-defaults-profiles.yml");
         ConfigDataEnvironmentPostProcessor.applyTo(environment);
-        new FireflyObservabilityEnvironmentPostProcessor().postProcessEnvironment(environment, new SpringApplication());
+        new FireflyObservabilityEnvironmentPostProcessorImpl().postProcessEnvironment(environment, new SpringApplication());
         assertThat(environment.getProperty("management.tracing.export.otlp.enabled")).isEqualTo(profile.equals("export-opt-in") ? "true" : "false");
         assertThat(environment.getProperty("management.logging.export.otlp.enabled")).isEqualTo(profile.equals("export-opt-in") ? "true" : "false");
     }

@@ -328,7 +328,7 @@ Implement proper monitoring for IDP operations:
 
 ```java
 @Component
-public class IdpMetrics {
+public class IdpMetricsImpl {
     
     private final MeterRegistry meterRegistry;
     

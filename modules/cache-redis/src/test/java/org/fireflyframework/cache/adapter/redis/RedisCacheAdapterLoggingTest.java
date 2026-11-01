@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 class RedisCacheAdapterLoggingTest {
     private static final String NAME = "cache\r\nregion\u000bvertical\fform\u0085next\u2028line\u2029paragraph";
-    private final Logger logger = (Logger) LoggerFactory.getLogger(RedisCacheAdapter.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(RedisCacheAdapterImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level previousLevel;
     private boolean previousAdditive;
@@ -56,13 +56,13 @@ class RedisCacheAdapterLoggingTest {
         @Override public String toString() { renders++; return "PRIVATE_KEY\r\nforged\u2028entry"; }
     }
 
-    private record Fixture(RedisCacheAdapter adapter, org.springframework.data.redis.core.ReactiveValueOperations<String,Object> values, org.fireflyframework.cache.serialization.CacheSerializer serializer) { }
+    private record Fixture(RedisCacheAdapterImpl adapter, org.springframework.data.redis.core.ReactiveValueOperations<String,Object> values, org.fireflyframework.cache.serialization.CacheSerializer serializer) { }
     @SuppressWarnings("unchecked") private Fixture fixture() {
         var template = mock(org.springframework.data.redis.core.ReactiveRedisTemplate.class);
         var values = mock(org.springframework.data.redis.core.ReactiveValueOperations.class);
         var serializer = mock(org.fireflyframework.cache.serialization.CacheSerializer.class);
         when(template.opsForValue()).thenReturn(values);
-        return new Fixture(new RedisCacheAdapter(NAME, template, mock(org.springframework.data.redis.connection.ReactiveRedisConnectionFactory.class), RedisCacheConfig.builder().build(), serializer), values, serializer);
+        return new Fixture(new RedisCacheAdapterImpl(NAME, template, mock(org.springframework.data.redis.connection.ReactiveRedisConnectionFactory.class), RedisCacheConfig.builder().build(), serializer), values, serializer);
     }
     @Test void bothReadOverloadsKeepHitsWithoutExtraKeyRendering() {
         for (boolean typed : new boolean[]{false,true}) {

@@ -117,7 +117,7 @@ public interface EventFilter {
      * @return a new composite filter
      */
     static EventFilter and(EventFilter... filters) {
-        return new CompositeEventFilter(CompositeEventFilter.LogicType.AND, filters);
+        return new CompositeEventFilterImpl(CompositeEventFilterImpl.LogicType.AND, filters);
     }
 
     /**
@@ -127,7 +127,7 @@ public interface EventFilter {
      * @return a new composite filter
      */
     static EventFilter or(EventFilter... filters) {
-        return new CompositeEventFilter(CompositeEventFilter.LogicType.OR, filters);
+        return new CompositeEventFilterImpl(CompositeEventFilterImpl.LogicType.OR, filters);
     }
 
     /**

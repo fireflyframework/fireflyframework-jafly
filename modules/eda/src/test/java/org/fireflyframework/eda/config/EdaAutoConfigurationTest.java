@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
-import org.fireflyframework.eda.publisher.SpringApplicationEventPublisher;
-import org.fireflyframework.eda.serialization.JsonMessageSerializer;
+import org.fireflyframework.eda.publisher.SpringApplicationEventPublisherImpl;
+import org.fireflyframework.eda.serialization.JsonMessageSerializerImpl;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,14 +85,14 @@ class EdaAutoConfigurationTest {
         // Assert
         MessageSerializer serializer = applicationContext.getBean(MessageSerializer.class);
         assertThat(serializer).isNotNull();
-        assertThat(serializer).isInstanceOf(JsonMessageSerializer.class);
+        assertThat(serializer).isInstanceOf(JsonMessageSerializerImpl.class);
     }
 
     @Test
     @DisplayName("Should create SpringApplicationEventPublisher bean")
     void shouldCreateSpringApplicationEventPublisherBean() {
         // Assert
-        SpringApplicationEventPublisher publisher = applicationContext.getBean(SpringApplicationEventPublisher.class);
+        SpringApplicationEventPublisherImpl publisher = applicationContext.getBean(SpringApplicationEventPublisherImpl.class);
         assertThat(publisher).isNotNull();
         assertThat(publisher.isAvailable()).isTrue();
     }
@@ -114,7 +114,7 @@ class EdaAutoConfigurationTest {
         // Assert - At minimum, SpringApplicationEventPublisher should be present
         assertThat(publishers).isNotEmpty();
         assertThat(publishers.values())
-                .anyMatch(p -> p instanceof SpringApplicationEventPublisher);
+                .anyMatch(p -> p instanceof SpringApplicationEventPublisherImpl);
     }
 
     /**
@@ -155,7 +155,7 @@ class EdaAutoConfigurationTest {
         @DisplayName("Should not create SpringApplicationEventPublisher when disabled")
         void shouldNotCreateSpringApplicationEventPublisherWhenDisabled() {
             // Assert - SpringApplicationEventPublisher should not be created
-            boolean hasPublisher = applicationContext.getBeansOfType(SpringApplicationEventPublisher.class)
+            boolean hasPublisher = applicationContext.getBeansOfType(SpringApplicationEventPublisherImpl.class)
                     .values().stream()
                     .anyMatch(p -> p.isAvailable());
             

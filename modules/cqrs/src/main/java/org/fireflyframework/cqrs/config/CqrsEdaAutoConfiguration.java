@@ -19,7 +19,7 @@ package org.fireflyframework.cqrs.config;
 import org.fireflyframework.cqrs.cache.EventDrivenCacheInvalidator;
 import org.fireflyframework.cqrs.cache.QueryCacheAdapter;
 import org.fireflyframework.cqrs.event.CommandEventPublisher;
-import org.fireflyframework.cqrs.event.EdaCommandEventPublisher;
+import org.fireflyframework.cqrs.event.EdaCommandEventPublisherImpl;
 import org.fireflyframework.eda.event.EventEnvelope;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
@@ -60,7 +60,7 @@ public class CqrsEdaAutoConfiguration {
     @ConditionalOnBean(EventPublisherFactory.class)
     public CommandEventPublisher commandEventPublisher(EventPublisherFactory publisherFactory) {
         log.info("Configuring CQRS-EDA bridge: CommandEventPublisher enabled - @PublishDomainEvent annotations will auto-publish events");
-        return new EdaCommandEventPublisher(publisherFactory);
+        return new EdaCommandEventPublisherImpl(publisherFactory);
     }
 
     @Bean

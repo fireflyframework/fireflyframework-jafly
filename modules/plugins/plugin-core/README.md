@@ -4,7 +4,7 @@
 
 Load plugins, resolve dependencies, and manage extension registration in a host process.
 
-Create DefaultPluginManager for the host and use the plugin-api contracts for lifecycle operations. Inspect dependency-resolution and lifecycle tests before changing load/start order or unloading extensions still used by the host.
+Create DefaultPluginManagerImpl for the host and use the plugin-api contracts for lifecycle operations. Inspect dependency-resolution and lifecycle tests before changing load/start order or unloading extensions still used by the host.
 
 [Module guide](../../../docs/site/modules/plugin-core.md) · [Jafly README](../../../README.md) · [Module catalog](../../../docs/site/modules/index.md)
 
@@ -31,7 +31,7 @@ The Java examples in this section are API fragments for application code. Use th
 The host can use the concrete implementation with the API lifecycle operations:
 
 ```java
-PluginManager manager = new DefaultPluginManager();
+PluginManager manager = new DefaultPluginManagerImpl();
 manager.initialize();
 PluginDescriptor descriptor = manager.loadPlugin(MyPlugin.class);
 manager.startPlugin(descriptor.getId());
@@ -39,7 +39,7 @@ manager.startPlugin(descriptor.getId());
 manager.shutdown();
 ```
 
-Import `DefaultPluginManager` from `org.fireflyframework.plugin.core` and the API/model types from `plugin-api`. `MyPlugin` is an application implementation with a no-argument constructor, as required by the loader. The default manager owns an extension registry and dependency resolver; an alternate `ExtensionRegistry` can be supplied through its constructor.
+Import `DefaultPluginManagerImpl` from `org.fireflyframework.plugin.core` and the API/model types from `plugin-api`. `MyPlugin` is an application implementation with a no-argument constructor, as required by the loader. The default manager owns an extension registry and dependency resolver; an alternate `ExtensionRegistry` can be supplied through its constructor.
 
 ## Configuration
 
@@ -49,8 +49,8 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`DefaultPluginManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/plugins/plugin-core/src/main/java/org/fireflyframework/plugin/core/DefaultPluginManager.java) | Default implementation of PluginManager. |
-| [`DefaultExtensionRegistry`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/plugins/plugin-core/src/main/java/org/fireflyframework/plugin/core/DefaultExtensionRegistry.java) | Thread-safe implementation of ExtensionRegistry. |
+| [`DefaultPluginManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/plugins/plugin-core/src/main/java/org/fireflyframework/plugin/core/DefaultPluginManagerImpl.java) | Default implementation of PluginManager. |
+| [`DefaultExtensionRegistryImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/plugins/plugin-core/src/main/java/org/fireflyframework/plugin/core/DefaultExtensionRegistryImpl.java) | Thread-safe implementation of ExtensionRegistry. |
 | [`PluginDependencyResolver`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/plugins/plugin-core/src/main/java/org/fireflyframework/plugin/core/PluginDependencyResolver.java) | Resolves plugin dependencies and determines the correct loading order. |
 
 ## Continue the application

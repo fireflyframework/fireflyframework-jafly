@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JobMetricsServiceTest {
 
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
     private MeterRegistry meterRegistry;
     private JobOrchestrationProperties properties;
 
@@ -42,7 +42,7 @@ class JobMetricsServiceTest {
         properties.getObservability().setMetricPrefix("firefly.data");
         properties.setOrchestratorType("AWS_STEP_FUNCTIONS");
         
-        metricsService = new JobMetricsService(meterRegistry, properties);
+        metricsService = new JobMetricsServiceImpl(meterRegistry, properties);
     }
 
     @Test

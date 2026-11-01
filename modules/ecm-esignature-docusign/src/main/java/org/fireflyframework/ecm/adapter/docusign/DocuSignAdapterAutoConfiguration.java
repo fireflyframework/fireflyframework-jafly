@@ -17,7 +17,7 @@ package org.fireflyframework.ecm.adapter.docusign;
 
 import com.docusign.esign.client.ApiClient;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -41,7 +41,7 @@ public class DocuSignAdapterAutoConfiguration {
     public ApiClient docuSignApiClient(DocuSignAdapterProperties properties) {
         DocuSignClientSettings settings = DocuSignClientSettings.from(properties);
         try {
-            ApiClient client = new ManagedDocuSignApiClient(settings);
+            ApiClient client = new ManagedDocuSignApiClientImpl(settings);
             log.info("Configured DocuSign client; authentication is deferred until an operation");
             return client;
         } catch (Exception e) {

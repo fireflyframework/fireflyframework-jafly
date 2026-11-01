@@ -16,9 +16,9 @@
 
 package org.fireflyframework.rules.core.cache;
 
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 class CacheIntegrationTest {
 
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     private static final String RULE_ENGINE_PREFIX = ":rule-engine:";
     private static final String AST_PREFIX = RULE_ENGINE_PREFIX + "ast:";
 
@@ -52,8 +52,8 @@ class CacheIntegrationTest {
                 .recordStats(true)
                 .build();
 
-        CaffeineCacheAdapter cacheAdapter = new CaffeineCacheAdapter("default", config);
-        cacheManager = new FireflyCacheManager(cacheAdapter, null);
+        CaffeineCacheAdapterImpl cacheAdapter = new CaffeineCacheAdapterImpl("default", config);
+        cacheManager = new FireflyCacheManagerImpl(cacheAdapter, null);
 
         // Clear cache before each test
         cacheManager.clear().block();

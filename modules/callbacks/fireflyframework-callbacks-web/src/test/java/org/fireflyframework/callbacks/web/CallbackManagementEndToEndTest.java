@@ -24,7 +24,7 @@ import org.fireflyframework.callbacks.interfaces.dto.EventSubscriptionDTO;
 import org.fireflyframework.callbacks.interfaces.enums.HttpMethod;
 import org.fireflyframework.callbacks.web.config.TestKafkaListenerConfig;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -100,7 +100,7 @@ class CallbackManagementEndToEndTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     @Autowired
     private TestKafkaListenerConfig.TestDynamicEventListenerRegistry testRegistry;

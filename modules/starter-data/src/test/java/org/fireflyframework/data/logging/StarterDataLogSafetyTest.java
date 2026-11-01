@@ -25,7 +25,7 @@ import io.micrometer.observation.ObservationRegistry;
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.controller.AbstractDataJobController;
 import org.fireflyframework.data.model.*;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import org.fireflyframework.data.service.AbstractResilientDataJobService;
@@ -275,7 +275,7 @@ class StarterDataLogSafetyTest {
     private static class ResilientJob extends AbstractResilientDataJobService {
         private final Mono<JobStageResponse> outcome; JobStageRequest seen;
         ResilientJob(Mono<JobStageResponse> outcome) {
-            super(tracing(), new JobMetricsService(new SimpleMeterRegistry(), new JobOrchestrationProperties()),
+            super(tracing(), new JobMetricsServiceImpl(new SimpleMeterRegistry(), new JobOrchestrationProperties()),
                     new ResiliencyDecoratorService(new JobOrchestrationProperties()));
             this.outcome = outcome;
         }

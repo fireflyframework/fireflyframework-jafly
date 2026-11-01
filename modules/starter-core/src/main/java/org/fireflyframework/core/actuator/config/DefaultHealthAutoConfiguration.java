@@ -17,7 +17,7 @@
 
 package org.fireflyframework.core.actuator.config;
 
-import org.fireflyframework.core.actuator.health.LoggingHealthIndicator;
+import org.fireflyframework.core.actuator.health.LoggingHealthIndicatorImpl;
 import org.fireflyframework.core.logging.config.LoggingProperties;
 import org.springframework.boot.health.autoconfigure.contributor.HealthContributorAutoConfiguration;
 import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
@@ -76,7 +76,7 @@ public class DefaultHealthAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(LoggingProperties.class)
-    public LoggingHealthIndicator loggingHealthIndicator(LoggingProperties loggingProperties) {
-        return new LoggingHealthIndicator(loggingProperties);
+    public LoggingHealthIndicatorImpl loggingHealthIndicator(LoggingProperties loggingProperties) {
+        return new LoggingHealthIndicatorImpl(loggingProperties);
     }
 }

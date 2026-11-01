@@ -31,7 +31,7 @@ public class AgenticBridgeHealthAutoConfiguration {
     @ConditionalOnBean(AgenticBridge.class)
     @ConditionalOnMissingBean(name = "fireflyAgenticBridgeHealthIndicator")
     @ConditionalOnEnabledHealthIndicator("firefly-agentic-bridge")
-    public AgenticBridgeHealthIndicator fireflyAgenticBridgeHealthIndicator(AgenticBridge bridge) {
-        return new AgenticBridgeHealthIndicator(bridge);
+    public AgenticBridgeHealthIndicatorImpl fireflyAgenticBridgeHealthIndicator(AgenticBridge bridge) {
+        return new AgenticBridgeHealthIndicatorImpl(bridge);
     }
 }

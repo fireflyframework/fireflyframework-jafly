@@ -127,7 +127,7 @@ Templated email. Provide a `NotificationTemplateEngine` bean (the FreeMarker eng
 ```java
 @Bean
 NotificationTemplateEngine notificationTemplateEngine() {
-    return new FreemarkerNotificationTemplateEngine(); // classpath:/notification-templates
+    return new FreemarkerNotificationTemplateEngineImpl(); // classpath:/notification-templates
 }
 
 // ...
@@ -188,7 +188,7 @@ firefly:
       provider: firebase
   observability:
     metrics:
-      enabled: true             # default; set false to skip NotificationMetrics registration
+      enabled: true             # default; set false to skip NotificationMetricsImpl registration
 ```
 
 | Property | Default | Description |
@@ -196,13 +196,13 @@ firefly:
 | `firefly.notifications.email.provider` | _(none)_ | Selects the email `EmailProvider` adapter. `sendgrid` or `resend`. Defined by the adapter module. |
 | `firefly.notifications.sms.provider` | _(none)_ | Selects the SMS `SMSProvider` adapter. `twilio`. Defined by the adapter module. |
 | `firefly.notifications.push.provider` | _(none)_ | Selects the push `PushProvider` adapter. `firebase`. Defined by the adapter module. |
-| `firefly.observability.metrics.enabled` | `true` | When `true` (and a `MeterRegistry` is present), registers the shared `NotificationMetrics` bean used by all adapters. |
+| `firefly.observability.metrics.enabled` | `true` | When `true` (and a `MeterRegistry` is present), registers the shared `NotificationMetricsImpl` bean used by all adapters. |
 
 Provider-specific keys (for example `firefly.notifications.sendgrid.*`, `firefly.notifications.twilio.*`, `firefly.notifications.firebase.*`) are documented in each adapter's README.
 
-Template engine. `FreemarkerNotificationTemplateEngine` is not auto-registered; declare it as a bean. Its constructor accepts a classpath prefix (default `/notification-templates`) and an optional filesystem directory for template overrides. Without a `NotificationTemplateEngine` bean, `sendTemplateEmail` fails fast with an `UnsupportedOperationException`.
+Template engine. `FreemarkerNotificationTemplateEngineImpl` is not auto-registered; declare it as a bean. Its constructor accepts a classpath prefix (default `/notification-templates`) and an optional filesystem directory for template overrides. Without a `NotificationTemplateEngine` bean, `sendTemplateEmail` fails fast with an `UnsupportedOperationException`.
 
-Notification preferences. `InMemoryNotificationPreferenceService` is suitable for development and single-instance deployments. For multi-instance/production usage, provide your own `NotificationPreferenceService` backed by R2DBC or a cache.
+Notification preferences. `InMemoryNotificationPreferenceServiceImpl` is suitable for development and single-instance deployments. For multi-instance/production usage, provide your own `NotificationPreferenceService` backed by R2DBC or a cache.
 
 ## Continue the application
 

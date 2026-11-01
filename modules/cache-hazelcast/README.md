@@ -56,7 +56,7 @@ The Java examples in this section are API fragments for application code. Use th
    ```
 
 With both the `HazelcastInstance` bean on the context and the property set, the core
-`CacheManagerFactory` discovers `HazelcastProvider` through the SPI and routes all cache operations to
+`CacheManagerFactory` discovers `HazelcastProviderImpl` through the SPI and routes all cache operations to
 Hazelcast. Your application code keeps using the standard Firefly cache API. Nothing else changes.
 
 ## Configuration
@@ -67,7 +67,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`HazelcastProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-hazelcast/src/main/java/org/fireflyframework/cache/spi/providers/HazelcastProvider.java) | Defines `create` operations. |
+| [`HazelcastProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-hazelcast/src/main/java/org/fireflyframework/cache/spi/providers/HazelcastProviderImpl.java) | Defines `create` operations. |
 | [`HazelcastCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-hazelcast/src/main/java/org/fireflyframework/cache/factory/HazelcastCacheHelper.java) | Reflection-based helper to create a Hazelcast-backed CacheAdapter without a compile-time dependency. |
 
 ## Continue the application

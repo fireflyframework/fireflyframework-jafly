@@ -38,7 +38,7 @@ Add the module as a `test`-scoped dependency, then build identities and inject p
 ```java
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.test.FakePolicyDecisionPort;
+import org.fireflyframework.security.test.FakePolicyDecisionPortImpl;
 import org.fireflyframework.security.test.TestPrincipals;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import reactor.core.publisher.Mono;
@@ -55,7 +55,7 @@ Mono<String> underTest = handler.handle(request)
         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
 
 // Drive a PEP with a configurable PDP and assert what it asked
-FakePolicyDecisionPort pdp = FakePolicyDecisionPort.denyAll("reports.read scope required");
+FakePolicyDecisionPortImpl pdp = FakePolicyDecisionPortImpl.denyAll("reports.read scope required");
 StepVerifier.create(pep.check(alice, "read", "/api/reports", Map.of()))
         .expectNextMatches(Decision::granted)   // ... or assert the deny path
         .verifyComplete();
@@ -64,7 +64,7 @@ assertThat(pdp.lastAction()).isEqualTo("read");
 assertThat(pdp.lastResource()).isEqualTo("/api/reports");
 ```
 
-`FakePolicyDecisionPort` is mutable and `volatile`-backed, so the same instance can be reconfigured between assertions with `returning(...)`.
+`FakePolicyDecisionPortImpl` is mutable and `volatile`-backed, so the same instance can be reconfigured between assertions with `returning(...)`.
 
 ## Configuration and wiring
 
@@ -74,7 +74,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`FakePolicyDecisionPort`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/FakePolicyDecisionPort.java) | A configurable `PolicyDecisionPort` test double that returns a predetermined decision and records the last request it received, so tests can assert PEP wiring without a real policy engine. |
+| [`FakePolicyDecisionPortImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/FakePolicyDecisionPortImpl.java) | A configurable `PolicyDecisionPort` test double that returns a predetermined decision and records the last request it received, so tests can assert PEP wiring without a real policy engine. |
 | [`TestPrincipals`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/TestPrincipals.java) | Factory helpers for building `SecurityPrincipal`s and `FireflyAuthenticationToken`s in tests, so application test code does not hand-roll principals or wrestle with the security context. |
 
 ## Related components
@@ -109,14 +109,14 @@ The `fakePolicyDecisionPortReturnsConfiguredDecisionAndRecordsRequest` test demo
 ```java
 @Test
 void fakePolicyDecisionPortReturnsConfiguredDecisionAndRecordsRequest() {
-    FakePolicyDecisionPort permit = FakePolicyDecisionPort.permitAll();
+    FakePolicyDecisionPortImpl permit = FakePolicyDecisionPortImpl.permitAll();
     StepVerifier.create(permit.authorize(TestPrincipals.user("u1"), "read", "doc:1", Map.of()))
             .expectNextMatches(d -> d.granted())
             .verifyComplete();
     assertThat(permit.lastAction()).isEqualTo("read");
     assertThat(permit.lastResource()).isEqualTo("doc:1");
 
-    FakePolicyDecisionPort deny = FakePolicyDecisionPort.denyAll("nope");
+    FakePolicyDecisionPortImpl deny = FakePolicyDecisionPortImpl.denyAll("nope");
     StepVerifier.create(deny.authorize(TestPrincipals.user("u1"), "write", "doc:1", Map.of()))
             .expectNextMatches(d -> !d.granted())
             .verifyComplete();
@@ -148,7 +148,7 @@ It imports no vendor SDK and starts no Spring context.
 | Type | Role |
 | --- | --- |
 | `TestPrincipals` | Final factory of static helpers building `SecurityPrincipal`s and authenticated `FireflyAuthenticationToken`s for tests. |
-| `FakePolicyDecisionPort` | Configurable `PolicyDecisionPort` test double: returns a predetermined `Decision` and records the last `action`/`resource` it was asked to authorize. |
+| `FakePolicyDecisionPortImpl` | Configurable `PolicyDecisionPort` test double: returns a predetermined `Decision` and records the last `action`/`resource` it was asked to authorize. |
 
 `TestPrincipals` (all static, the class is non-instantiable):
 
@@ -156,10 +156,10 @@ It imports no vendor SDK and starts no Spring context.
 - `user(String subject, Set<String> authorities, Set<String> scopes)`. a principal carrying both authorities and OAuth2 scopes.
 - `authentication(String subject, String... authorities)`. an authenticated `FireflyAuthenticationToken` ready for `ReactiveSecurityContextHolder`.
 
-`FakePolicyDecisionPort`:
+`FakePolicyDecisionPortImpl`:
 
 - `permitAll()` / `denyAll(String reason)`. factory shortcuts wrapping `Decision.permit()` / `Decision.deny(reason)`.
-- `new FakePolicyDecisionPort(Decision next)`. start from an explicit decision.
+- `new FakePolicyDecisionPortImpl(Decision next)`. start from an explicit decision.
 - `returning(Decision decision)`. fluently swap the decision the double will replay next.
 - `lastAction()` / `lastResource()`. read back what the last `authorize(...)` call was asked about.
 - `authorize(SecurityPrincipal, String action, String resource, Map<String,Object> context)`. the `PolicyDecisionPort` contract; records `action`/`resource` and returns `Mono.just(next)`.
@@ -202,7 +202,7 @@ If you are not inheriting the Firefly parent, pin the version explicitly:
 The module ships its own unit test, `SecurityTestFixturesTest`, which exercises both fixtures as plain JUnit 5 tests (no Spring context, `StepVerifier` for the reactive call):
 
 - `TestPrincipals`. `user("u1", "admin").hasAuthority("admin")` is true; `authentication("u1", "admin").securityPrincipal().subject()` equals `"u1"` and the token reports `isAuthenticated()`.
-- `FakePolicyDecisionPort`. `permitAll().authorize(...)` emits a `granted()` `Decision` and records `lastAction()` / `lastResource()` (`read` / `doc:1`); `denyAll("nope").authorize(...)` emits a non-granted `Decision`.
+- `FakePolicyDecisionPortImpl`. `permitAll().authorize(...)` emits a `granted()` `Decision` and records `lastAction()` / `lastResource()` (`read` / `doc:1`); `denyAll("nope").authorize(...)` emits a non-granted `Decision`.
 
 These fixtures themselves back the negative-path integration tests elsewhere in the platform. For example `ResourceServerIntegrationTest` in `fireflyframework-security-resource-server`, whose contributed deny rules prove the default-deny / policy-enforcement path independently of authentication.
 

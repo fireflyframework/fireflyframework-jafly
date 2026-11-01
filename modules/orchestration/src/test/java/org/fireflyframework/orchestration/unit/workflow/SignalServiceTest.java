@@ -20,7 +20,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.signal.SignalService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +34,11 @@ import static org.assertj.core.api.Assertions.*;
 class SignalServiceTest {
 
     private SignalService signalService;
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
 
     @BeforeEach
     void setUp() {
-        persistence = new InMemoryPersistenceProvider();
+        persistence = new InMemoryPersistenceProviderImpl();
         signalService = new SignalService(persistence, new OrchestrationEvents() {});
     }
 

@@ -25,8 +25,8 @@ class OpaPolicyDecisionAdapterProtocolTest {
     private static final Duration WAIT = Duration.ofSeconds(3);
     private final SecurityPrincipal principal = SecurityPrincipal.builder().subject("protocol-subject").build();
 
-    private OpaPolicyDecisionAdapter adapter(String body) {
-        return new OpaPolicyDecisionAdapter(WebClient.builder().baseUrl("https://policy.example.test")
+    private OpaPolicyDecisionAdapterImpl adapter(String body) {
+        return new OpaPolicyDecisionAdapterImpl(WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.OK)
                         .header("Content-Type", "application/json").body(body).build())).build(), "firefly/allow");
     }
@@ -51,7 +51,7 @@ class OpaPolicyDecisionAdapterProtocolTest {
     void unavailableTransportDenies() {
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.error(new IOException("Owned protocol transport unavailable"))).build();
-        var decision = new OpaPolicyDecisionAdapter(client, "firefly/allow")
+        var decision = new OpaPolicyDecisionAdapterImpl(client, "firefly/allow")
                 .authorize(principal, "read", "resource", Map.of()).block(WAIT);
         assertNotNull(decision);
         assertFalse(decision.granted());

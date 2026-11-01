@@ -239,9 +239,9 @@ The test suite validates the hexagonal architecture principles:
 - `MessageSerializer` interface contract
 
 ### 2. Adapter Testing (Implementations)
-- Kafka adapter (KafkaEventPublisher)
-- RabbitMQ adapter (RabbitMqEventPublisher)
-- Application Event adapter (SpringApplicationEventPublisher)
+- Kafka adapter (KafkaEventPublisherImpl)
+- RabbitMQ adapter (RabbitMqEventPublisherImpl)
+- Application Event adapter (SpringApplicationEventPublisherImpl)
 
 ### 3. Business Behavior Preservation
 

@@ -49,13 +49,13 @@ class HttpRequestLoggingWebFilterTest {
     private WebFilterChain filterChain;
 
     private HttpRequestLoggingProperties properties;
-    private HttpRequestLoggingWebFilter filter;
+    private HttpRequestLoggingWebFilterImpl filter;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         properties = new HttpRequestLoggingProperties();
-        filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
     }
 
     @Test

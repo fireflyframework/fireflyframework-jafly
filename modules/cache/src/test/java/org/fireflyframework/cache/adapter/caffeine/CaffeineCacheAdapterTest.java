@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CaffeineCacheAdapterTest {
 
-    private CaffeineCacheAdapter cacheAdapter;
+    private CaffeineCacheAdapterImpl cacheAdapter;
     private CaffeineCacheConfig config;
 
     @BeforeEach
@@ -44,7 +44,7 @@ class CaffeineCacheAdapterTest {
                 .recordStats(true)
                 .build();
         
-        cacheAdapter = new CaffeineCacheAdapter("test-cache", config);
+        cacheAdapter = new CaffeineCacheAdapterImpl("test-cache", config);
     }
 
     @Test

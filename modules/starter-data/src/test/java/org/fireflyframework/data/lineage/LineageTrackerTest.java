@@ -31,11 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class LineageTrackerTest {
 
-    private InMemoryLineageTracker tracker;
+    private InMemoryLineageTrackerImpl tracker;
 
     @BeforeEach
     void setUp() {
-        tracker = new InMemoryLineageTracker();
+        tracker = new InMemoryLineageTrackerImpl();
     }
 
     @Test

@@ -18,16 +18,16 @@ package org.fireflyframework.cqrs.config;
 
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cqrs.cache.QueryCacheAdapter;
 
 import java.time.Duration;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.command.CommandHandlerRegistry;
-import org.fireflyframework.cqrs.command.CommandMetricsService;
+import org.fireflyframework.cqrs.command.CommandMetricsServiceImpl;
 import org.fireflyframework.cqrs.command.CommandValidationService;
-import org.fireflyframework.cqrs.command.DefaultCommandBus;
-import org.fireflyframework.cqrs.query.DefaultQueryBus;
+import org.fireflyframework.cqrs.command.DefaultCommandBusImpl;
+import org.fireflyframework.cqrs.query.DefaultQueryBusImpl;
 import org.fireflyframework.cqrs.query.QueryBus;
 import org.fireflyframework.cqrs.tracing.CorrelationContext;
 import org.fireflyframework.cqrs.validation.AutoValidationProcessor;
@@ -111,7 +111,7 @@ public class CqrsAutoConfiguration {
     )
     public org.fireflyframework.cqrs.authorization.AuthorizationService authorizationService(
             AuthorizationProperties authorizationProperties,
-            @Autowired(required = false) org.fireflyframework.cqrs.authorization.AuthorizationMetrics authorizationMetrics) {
+            @Autowired(required = false) org.fireflyframework.cqrs.authorization.AuthorizationMetricsImpl authorizationMetrics) {
         log.info("Configuring CQRS Authorization Service (auto-configured)");
         return new org.fireflyframework.cqrs.authorization.AuthorizationService(
             authorizationProperties,
@@ -121,9 +121,9 @@ public class CqrsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CommandMetricsService commandMetricsService(@Autowired(required = false) io.micrometer.core.instrument.MeterRegistry meterRegistry) {
+    public CommandMetricsServiceImpl commandMetricsService(@Autowired(required = false) io.micrometer.core.instrument.MeterRegistry meterRegistry) {
         log.info("Configuring CQRS Command Metrics Service (auto-configured)");
-        return new CommandMetricsService(meterRegistry);
+        return new CommandMetricsServiceImpl(meterRegistry);
     }
 
     @Bean
@@ -131,14 +131,14 @@ public class CqrsAutoConfiguration {
     public CommandBus commandBus(CommandHandlerRegistry handlerRegistry,
                                CommandValidationService validationService,
                                @Autowired(required = false) org.fireflyframework.cqrs.authorization.AuthorizationService authorizationService,
-                               CommandMetricsService metricsService,
+                               CommandMetricsServiceImpl metricsService,
                                CorrelationContext correlationContext) {
         if (authorizationService != null) {
             log.info("Configuring CQRS Command Bus with authorization enabled (auto-configured)");
         } else {
             log.info("Configuring CQRS Command Bus with authorization disabled (auto-configured)");
         }
-        return new DefaultCommandBus(handlerRegistry, validationService, authorizationService, metricsService, correlationContext);
+        return new DefaultCommandBusImpl(handlerRegistry, validationService, authorizationService, metricsService, correlationContext);
     }
 
     /**
@@ -150,7 +150,7 @@ public class CqrsAutoConfiguration {
     @Bean("cqrsQueryCacheManager")
     @ConditionalOnBean(CacheManagerFactory.class)
     @ConditionalOnMissingBean(name = "cqrsQueryCacheManager")
-    public FireflyCacheManager cqrsQueryCacheManager(CacheManagerFactory factory, CqrsProperties properties) {
+    public FireflyCacheManagerImpl cqrsQueryCacheManager(CacheManagerFactory factory, CqrsProperties properties) {
         log.info("Creating dedicated CQRS query cache manager");
         
         String description = "CQRS Query Results Cache - Caches query handler results for improved performance";
@@ -175,7 +175,7 @@ public class CqrsAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnBean(name = "cqrsQueryCacheManager")
     public QueryCacheAdapter queryCacheAdapter(
-            @Qualifier("cqrsQueryCacheManager") FireflyCacheManager cacheManager) {
+            @Qualifier("cqrsQueryCacheManager") FireflyCacheManagerImpl cacheManager) {
         log.info("Configuring CQRS Query Cache Adapter with dedicated cache manager");
         return new QueryCacheAdapter(cacheManager);
     }
@@ -200,7 +200,7 @@ public class CqrsAutoConfiguration {
             log.info("CQRS Query Bus configured without cache support (fireflyframework-cache not available)");
         }
 
-        return new DefaultQueryBus(applicationContext, correlationContext, autoValidationProcessor,
+        return new DefaultQueryBusImpl(applicationContext, correlationContext, autoValidationProcessor,
                 authorizationService, cacheAdapter, meterRegistry);
     }
 }

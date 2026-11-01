@@ -44,11 +44,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("AvroMessageSerializer Tests")
 class AvroMessageSerializerTest {
 
-    private AvroMessageSerializer serializer;
+    private AvroMessageSerializerImpl serializer;
 
     @BeforeEach
     void setUp() {
-        serializer = new AvroMessageSerializer();
+        serializer = new AvroMessageSerializerImpl();
     }
 
     @Test
@@ -232,7 +232,7 @@ class AvroMessageSerializerTest {
         // Configure ObjectMapper with JavaTimeModule for proper JSON serialization
         com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-        JsonMessageSerializer jsonSerializer = new JsonMessageSerializer(objectMapper);
+        JsonMessageSerializerImpl jsonSerializer = new JsonMessageSerializerImpl(objectMapper);
 
         // Act
         byte[] avroSerialized = serializer.serialize(testObject);

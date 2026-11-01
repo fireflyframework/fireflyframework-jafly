@@ -20,7 +20,7 @@ package org.fireflyframework.notifications.providers.resend.config.v1;
 import org.fireflyframework.client.RestClient;
 import org.fireflyframework.client.ServiceClient;
 import org.fireflyframework.notifications.interfaces.providers.email.v1.EmailProvider;
-import org.fireflyframework.notifications.providers.resend.core.v1.ResendEmailProvider;
+import org.fireflyframework.notifications.providers.resend.core.v1.ResendEmailProviderImpl;
 import org.fireflyframework.notifications.providers.resend.properties.v1.ResendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -52,6 +52,6 @@ public class ResendAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(EmailProvider.class)
     public EmailProvider resendEmailProvider(ResendProperties properties, RestClient resendRestClient) {
-        return new ResendEmailProvider(properties, resendRestClient);
+        return new ResendEmailProviderImpl(properties, resendRestClient);
     }
 }

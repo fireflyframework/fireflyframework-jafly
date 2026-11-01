@@ -54,19 +54,19 @@ class CqrsFrameworkIntegrationTest {
         // Create the new separated services
         CommandHandlerRegistry handlerRegistry = new CommandHandlerRegistry(applicationContext);
         CommandValidationService validationService = new CommandValidationService(validationProcessor);
-        CommandMetricsService metricsService = new CommandMetricsService(meterRegistry);
+        CommandMetricsServiceImpl metricsService = new CommandMetricsServiceImpl(meterRegistry);
 
-        commandBus = new DefaultCommandBus(handlerRegistry, validationService,
+        commandBus = new DefaultCommandBusImpl(handlerRegistry, validationService,
                                            new org.fireflyframework.cqrs.authorization.AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty()),
                                            metricsService, correlationContext);
         // Note: QueryBus is created without cache adapter for this test (cache adapter is optional)
-        queryBus = new DefaultQueryBus(applicationContext, correlationContext, validationProcessor,
+        queryBus = new DefaultQueryBusImpl(applicationContext, correlationContext, validationProcessor,
                                       new org.fireflyframework.cqrs.authorization.AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty()),
                                       null, meterRegistry);
 
         // Register handlers manually with explicit type specification
-        ((DefaultCommandBus) commandBus).registerHandler(new TestCreateAccountHandler());
-        ((DefaultQueryBus) queryBus).registerHandler(new TestGetBalanceHandler());
+        ((DefaultCommandBusImpl) commandBus).registerHandler(new TestCreateAccountHandler());
+        ((DefaultQueryBusImpl) queryBus).registerHandler(new TestGetBalanceHandler());
     }
 
     @Test

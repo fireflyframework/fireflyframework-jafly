@@ -98,9 +98,9 @@ public class DocumentService {
 firefly:
   ecm:
     search:
-      enabled: true       # registers LocalDocumentSearchAdapter
+      enabled: true       # registers LocalDocumentSearchAdapterImpl
     permissions:
-      enabled: true       # registers LocalPermissionAdapter
+      enabled: true       # registers LocalPermissionAdapterImpl
 ```
 
 To write your own adapter, annotate a port implementation with `@EcmAdapter` and the registry will discover it:
@@ -115,7 +115,7 @@ import org.fireflyframework.ecm.port.document.DocumentContentPort;
     description = "AWS S3 content storage adapter",
     supportedFeatures = { AdapterFeature.CONTENT_STORAGE, AdapterFeature.STREAMING, AdapterFeature.CLOUD_STORAGE }
 )
-public class S3DocumentContentAdapter implements DocumentContentPort {
+public class S3DocumentContentAdapterImpl implements DocumentContentPort {
     // ... reactive implementation ...
 }
 ```
@@ -263,9 +263,9 @@ firefly:
 
     # The two built-in local adapters are opt-in and live outside the blocks above:
     search:
-      enabled: false              # registers LocalDocumentSearchAdapter when true
+      enabled: false              # registers LocalDocumentSearchAdapterImpl when true
     permissions:
-      enabled: false              # registers LocalPermissionAdapter when true
+      enabled: false              # registers LocalPermissionAdapterImpl when true
 ```
 
 Key properties:
@@ -280,8 +280,8 @@ Key properties:
 | `firefly.ecm.defaults.*` | see above | Upload validation: size limit, allowed/blocked extensions, checksum algorithm, default folder. |
 | `firefly.ecm.connection.*` | see above | Timeouts, pool size and retry attempts for adapter connections. |
 | `firefly.ecm.performance.*` | see above | Batch size, caching and compression toggles. |
-| `firefly.ecm.search.enabled` | `false` | Registers the in-memory `LocalDocumentSearchAdapter`. |
-| `firefly.ecm.permissions.enabled` | `false` | Registers the in-memory `LocalPermissionAdapter`. |
+| `firefly.ecm.search.enabled` | `false` | Registers the in-memory `LocalDocumentSearchAdapterImpl`. |
+| `firefly.ecm.permissions.enabled` | `false` | Registers the in-memory `LocalPermissionAdapterImpl`. |
 
 > Security note: if `permissions` or `security` is enabled but no real adapter is found, the no-op fallback denies by default and logs a warning. Always configure a real adapter for production.
 
@@ -301,7 +301,7 @@ your application
 │            (by adapter-type / esignature.provider)           │
 │                                                              │
 │  Fallback: NoOpAdapterFactory (deny-by-default for security) │
-│  Built-in: LocalDocumentSearchAdapter, LocalPermissionAdapter│
+│  Built-in: LocalDocumentSearchAdapterImpl, LocalPermissionAdapterImpl│
 └─────────────────────────────────────────────────────────────┘
         ▲                         ▲
         │ classpath adapters      │
@@ -313,7 +313,7 @@ your application
 
 ### Observability
 
-`EcmMetrics` (auto-configured via `EcmObservabilityAutoConfiguration`, built on `fireflyframework-observability`) publishes Micrometer meters:
+`EcmMetricsImpl` (auto-configured via `EcmObservabilityAutoConfiguration`, built on `fireflyframework-observability`) publishes Micrometer meters:
 
 - `firefly.ecm.documents.operations`. counter, tagged by `operation`
 - `firefly.ecm.operation.duration`. timer, tagged by `operation`, `provider`

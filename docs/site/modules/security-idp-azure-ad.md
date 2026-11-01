@@ -112,7 +112,7 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AzureAdIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/adapter/AzureAdIdpAdapter.java) | Azure AD implementation of the Firefly IDP Adapter. |
+| [`AzureAdIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/adapter/AzureAdIdpAdapterImpl.java) | Azure AD implementation of the Firefly IDP Adapter. |
 | [`AzureAdProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/config/AzureAdProperties.java) | Carries `mode`, `tenantId`, `clientId`, `clientSecret`, `b2c` data; field constraints and defaults are declared in the linked source. |
 | [`AzureAdAdminService`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/service/AzureAdAdminService.java) | Admin service interface for Azure AD user management operations. |
 | [`GraphClientFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/client/GraphClientFactory.java) | Defines `createClient`, `destroy` operations. |
@@ -228,12 +228,12 @@ at startup if any is missing. The effective MSAL authority is derived automatica
 - `AzureAdAutoConfiguration`. `@ConditionalOnProperty(firefly.security.idp.provider=azure-ad)` and
   `@ConditionalOnClass(ConfidentialClientApplication.class)`; registers the client factories, services, and
   the `IdpAdapter` bean. The admin-service bean is chosen by `firefly.security.idp.azure-ad.mode`.
-- `AzureAdIdpAdapter`. implements `IdpAdapter`; delegates auth/token calls to `AzureAdAuthService` and
+- `AzureAdIdpAdapterImpl`. implements `IdpAdapter`; delegates auth/token calls to `AzureAdAuthService` and
   admin calls to the selected `AzureAdAdminService`.
 - `AzureAdAuthService`. login (ROPC), refresh, logout, introspect, user info, and token revocation via
   MSAL4J + Graph.
-- `EntraIdAdminService` / `B2CAdminService`. user, role, session, and password operations via the
-  Microsoft Graph SDK; `B2CAdminService extends EntraIdAdminService` with B2C local-account overrides.
+- `EntraIdAdminServiceImpl` / `B2CAdminServiceImpl`. user, role, session, and password operations via the
+  Microsoft Graph SDK; `B2CAdminServiceImpl extends EntraIdAdminServiceImpl` with B2C local-account overrides.
 - `MsalClientFactory` / `GraphClientFactory`. lazily build and cache the confidential-client and Graph
   clients, released on shutdown.
 - `AzureAdTokenParser`. local, dependency-free JWT decoding for introspection and user-ID extraction.

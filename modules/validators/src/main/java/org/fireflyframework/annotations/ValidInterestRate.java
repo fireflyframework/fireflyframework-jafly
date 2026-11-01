@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.InterestRateValidator;
+import org.fireflyframework.validators.InterestRateValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * By default, validates that the interest rate is a percentage between 0 and 100.
  */
 @Documented
-@Constraint(validatedBy = InterestRateValidator.class)
+@Constraint(validatedBy = InterestRateValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidInterestRate {

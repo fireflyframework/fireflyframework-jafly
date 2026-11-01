@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CVVValidatorTest {
 
-    private CVVValidator validator;
+    private CVVValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new CVVValidator();
+        validator = new CVVValidatorImpl();
         // Initialize with default values (cardType=ANY)
         validator.initialize(new org.fireflyframework.annotations.ValidCVV() {
             @Override
@@ -89,7 +89,7 @@ class CVVValidatorTest {
     @Test
     void shouldValidateStandardCardCVV() {
         // Create validator for standard cards (Visa, MasterCard, Discover)
-        CVVValidator standardValidator = new CVVValidator();
+        CVVValidatorImpl standardValidator = new CVVValidatorImpl();
         standardValidator.initialize(new org.fireflyframework.annotations.ValidCVV() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -116,7 +116,7 @@ class CVVValidatorTest {
     @Test
     void shouldValidateAmexCardCVV() {
         // Create validator for American Express cards
-        CVVValidator amexValidator = new CVVValidator();
+        CVVValidatorImpl amexValidator = new CVVValidatorImpl();
         amexValidator.initialize(new org.fireflyframework.annotations.ValidCVV() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }

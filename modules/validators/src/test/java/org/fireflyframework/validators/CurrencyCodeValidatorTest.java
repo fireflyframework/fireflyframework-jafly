@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CurrencyCodeValidatorTest {
 
-    private CurrencyCodeValidator validator;
+    private CurrencyCodeValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new CurrencyCodeValidator();
+        validator = new CurrencyCodeValidatorImpl();
     }
 
     @Test

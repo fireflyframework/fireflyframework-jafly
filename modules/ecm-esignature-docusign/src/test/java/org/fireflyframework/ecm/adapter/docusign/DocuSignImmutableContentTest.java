@@ -36,14 +36,14 @@ class DocuSignImmutableContentTest {
         final ScopedSdkConnector.Scope transport;
         final DocumentPort documents = mock(DocumentPort.class);
         final DocumentContentPort content = mock(DocumentContentPort.class);
-        final DocuSignSignatureEnvelopeAdapter port;
+        final DocuSignSignatureEnvelopeAdapterImpl port;
         final DocuSignAdapterProperties properties = new DocuSignAdapterProperties();
         Fixture(Path directory) throws Exception {
             var service = directory.resolve("builder.service"); Files.writeString(service, ScopedSdkConnector.Builder.class.getName() + "\n");
             transport = new ScopedSdkConnector.Scope(service);
             var client = new ApiClient(); client.setBasePath("https://owned.invalid/restapi");
             properties.setAccountId("owned-account");
-            port = new DocuSignSignatureEnvelopeAdapter(client, properties, content, documents);
+            port = new DocuSignSignatureEnvelopeAdapterImpl(client, properties, content, documents);
             transport.responder = wire -> new ScopedSdkConnector.Reply(201,"{\"envelopeId\":\"external-envelope\",\"status\":\"created\"}");
         }
         EnvelopeDefinition sent() throws Exception {
@@ -171,9 +171,9 @@ class DocuSignImmutableContentTest {
             p.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" + Base64.getMimeEncoder(64, new byte[]{10})
                     .encodeToString(generator.generateKeyPair().getPrivate().getEncoded()) + "\n-----END PRIVATE KEY-----\n");
             var docs = mock(DocumentPort.class); var content = mock(DocumentContentPort.class);
-            try (var client = new org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient(
+            try (var client = new org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl(
                     org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings.from(p))) {
-                var port = new DocuSignSignatureEnvelopeAdapter(client,p,content,docs);
+                var port = new DocuSignSignatureEnvelopeAdapterImpl(client,p,content,docs);
                 assertThrows(DocuSignAdapterException.class, () -> await(port.createEnvelope(DocuSignEnvelopeMappingTest.envelope(),
                         List.of(snapshot(SECOND,new byte[]{1})))));
                 assertTrue(transport.exchanges.isEmpty()); verifyNoInteractions(docs,content);

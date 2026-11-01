@@ -9,7 +9,7 @@ The core starter configures shared HTTP-client infrastructure. In the onboarding
 | [WebClientTemplate](../src/main/java/org/fireflyframework/core/web/client/WebClientTemplate.java) | Reactive GET, GET stream, POST, PUT, and DELETE helpers with request exchange context. |
 | [WebClientProperties](../src/main/java/org/fireflyframework/core/config/WebClientProperties.java) | Bind firefly.webclient connection, TLS, proxy, pool, and codec settings. |
 | [HeaderPropagationProperties](../src/main/java/org/fireflyframework/core/config/HeaderPropagationProperties.java) | Bind the enabled flag and allowed headers under firefly.webclient.propagation. |
-| [TransactionFilter](../src/main/java/org/fireflyframework/core/config/TransactionFilter.java) | Carry the X-Transaction-Id request correlation value. |
+| [TransactionFilterImpl](../src/main/java/org/fireflyframework/core/config/TransactionFilterImpl.java) | Carry the X-Transaction-Id request correlation value. |
 | [WebClientAutoConfiguration](../src/main/java/org/fireflyframework/core/config/WebClientAutoConfiguration.java) | Create the configured WebClient infrastructure when its conditions match. |
 
 `WebClientTemplate.get(baseUrl, path, responseType, exchange)` returns a `Mono<T>`; the overload accepting `ParameterizedTypeReference<T>` handles generic response types. `getFlux` returns a `Flux<T>`. Compose those publishers in the service operation rather than blocking a WebFlux request thread.

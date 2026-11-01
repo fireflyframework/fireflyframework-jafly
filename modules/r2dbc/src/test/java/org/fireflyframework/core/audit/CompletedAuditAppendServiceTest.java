@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.*;
-import org.fireflyframework.core.audit.impl.SpringDataLocalAuditRepository;
+import org.fireflyframework.core.audit.impl.SpringDataLocalAuditRepositoryImpl;
 import org.fireflyframework.core.transaction.*;
 import org.fireflyframework.kernel.audit.*;
 import org.junit.jupiter.api.Test;
@@ -34,13 +34,13 @@ public class CompletedAuditAppendServiceTest {
                 if(!row.containsKey("until_millis"))row.put("until_millis",f.clock.instant().plusSeconds(5).toEpochMilli());
                 if(!row.containsKey("replay"))row.put("replay",expected.replay());
             }
-            var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendService");
+            var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendServiceImpl");
             var service=type.getConstructor(BoundedR2dbcResources.class,org.springframework.r2dbc.core.DatabaseClient.class,
                     org.springframework.data.r2dbc.core.R2dbcEntityTemplate.class,org.springframework.r2dbc.connection.R2dbcTransactionManager.class,java.time.Clock.class,java.util.function.LongSupplier.class)
                     .newInstance(f.resources,f.client,f.template,f.manager,f.clock,f.nanos);
             return (Mono<AuditRecord>)type.getMethod("requireCompleted",RootTransactionScope.class,UUID.class,TransactionalAuditAppender.ProvisionalAppend.class).invoke(service,scope,nonce,expected);
         }catch(ClassNotFoundException predecessor){
-            return new SpringDataLocalAuditRepository(f.resources,f.client,f.template,f.manager).find(scope,expected.record().event().stream().resourceTenantId(),expected.record().event().eventId());
+            return new SpringDataLocalAuditRepositoryImpl(f.resources,f.client,f.template,f.manager).find(scope,expected.record().event().stream().resourceTenantId(),expected.record().event().eventId());
         }catch(InvocationTargetException error){return Mono.error(error.getCause());}
         catch(Exception error){return Mono.error(error);}
     }
@@ -118,7 +118,7 @@ public class CompletedAuditAppendServiceTest {
     }
     @Test void aDifferentTimeSupplierCannotSubstituteForTheOriginalBudget()throws Exception {
         var f=fixture();f.driver.tables.put(FUNCTION,new ArrayList<>(List.of(row(AuditRows.Event.from(LocalAuditRepositoryTest.record())))));
-        var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendService");
+        var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendServiceImpl");
         var service=type.getConstructor(BoundedR2dbcResources.class,org.springframework.r2dbc.core.DatabaseClient.class,org.springframework.data.r2dbc.core.R2dbcEntityTemplate.class,org.springframework.r2dbc.connection.R2dbcTransactionManager.class,java.time.Clock.class,java.util.function.LongSupplier.class)
             .newInstance(f.resources,f.client,f.template,f.manager,f.clock,(java.util.function.LongSupplier)()->f.nanos.getAsLong());
         var done=f.execute(scope->{var row=f.driver.tables.get(FUNCTION).getFirst();row.put("context_nonce",NONCE);row.put("replay",false);row.put("db_now_millis",f.clock.instant().toEpochMilli());row.put("until_millis",f.clock.instant().plusSeconds(5).toEpochMilli());
@@ -127,7 +127,7 @@ public class CompletedAuditAppendServiceTest {
     }
     @Test void anotherTemplateOnTheSameFactoryCannotReplaceTheRetainedRootGraph()throws Exception {
         var f=fixture();var client=org.springframework.r2dbc.core.DatabaseClient.create(f.factory);var template=new org.springframework.data.r2dbc.core.R2dbcEntityTemplate(client,org.springframework.data.r2dbc.dialect.PostgresDialect.INSTANCE);
-        var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendService");var service=type.getConstructor(BoundedR2dbcResources.class,org.springframework.r2dbc.core.DatabaseClient.class,org.springframework.data.r2dbc.core.R2dbcEntityTemplate.class,org.springframework.r2dbc.connection.R2dbcTransactionManager.class,java.time.Clock.class,java.util.function.LongSupplier.class).newInstance(f.resources,client,template,f.manager,f.clock,f.nanos);
+        var type=Class.forName("org.fireflyframework.core.audit.impl.SpringDataCompletedAuditAppendServiceImpl");var service=type.getConstructor(BoundedR2dbcResources.class,org.springframework.r2dbc.core.DatabaseClient.class,org.springframework.data.r2dbc.core.R2dbcEntityTemplate.class,org.springframework.r2dbc.connection.R2dbcTransactionManager.class,java.time.Clock.class,java.util.function.LongSupplier.class).newInstance(f.resources,client,template,f.manager,f.clock,f.nanos);
         assertThrows(RuntimeException.class,()->f.execute(scope->{try{@SuppressWarnings("unchecked")var result=(Mono<AuditRecord>)type.getMethod("requireCompleted",RootTransactionScope.class,UUID.class,TransactionalAuditAppender.ProvisionalAppend.class).invoke(service,scope,NONCE,expected());return result;}catch(Exception error){return Mono.error(error);}}).block());assertTrue(f.driver.sql.isEmpty());
     }
     public static final class HashingDelay extends java.security.MessageDigestSpi {

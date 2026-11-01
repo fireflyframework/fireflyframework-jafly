@@ -26,7 +26,7 @@ import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.builder.SagaBuilder;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler.CompensationErrorResult;
-import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandler;
+import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandlerImpl;
 import org.fireflyframework.orchestration.saga.compensation.SagaCompensator;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
 import org.fireflyframework.orchestration.saga.engine.SagaExecutionOrchestrator;
@@ -52,7 +52,7 @@ class CompensationErrorHandlerWiringTest {
     private SagaEngine createEngine(CompensationPolicy policy, CompensationErrorHandler handler) {
         var events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         var compensator = new SagaCompensator(events, policy, stepInvoker, handler);
         return new SagaEngine(null, events, orchestrator, null, null, compensator, noOpPublisher);
@@ -337,7 +337,7 @@ class CompensationErrorHandlerWiringTest {
     @Test
     void compensator_defaultHandler_returnsContinue() {
         // Verify the default handler returns CONTINUE
-        DefaultCompensationErrorHandler defaultHandler = new DefaultCompensationErrorHandler();
+        DefaultCompensationErrorHandlerImpl defaultHandler = new DefaultCompensationErrorHandlerImpl();
         assertThat(defaultHandler.handle("test", "step1", new RuntimeException("err"), 0))
                 .isEqualTo(CompensationErrorResult.CONTINUE);
 

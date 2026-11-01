@@ -98,16 +98,16 @@ Property-based wiring conditions found in this module:
 
 - `prefix = "firefly.eda", name = "enabled", havingValue = "true", matchIfMissing = true`. [FireflyEdaKafkaConsumerAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaConsumerAutoConfiguration.java).
 - `prefix = "firefly.eda", name = "enabled", havingValue = "true", matchIfMissing = true`. [FireflyEdaKafkaPublisherAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaPublisherAutoConfiguration.java).
-- `prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true"`. [KafkaEventConsumer.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumer.java).
+- `prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true"`. [KafkaEventConsumerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumerImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`KafkaEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/publisher/kafka/KafkaEventPublisher.java) | Kafka event publisher implementation using Spring Kafka. |
-| [`KafkaEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumer.java) | Kafka event consumer implementation with dynamic topic subscription. |
+| [`KafkaEventPublisherImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/publisher/kafka/KafkaEventPublisherImpl.java) | Kafka event publisher implementation using Spring Kafka. |
+| [`KafkaEventConsumerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumerImpl.java) | Kafka event consumer implementation with dynamic topic subscription. |
 | [`FireflyEdaKafkaConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaConsumerAutoConfiguration.java) | Auto-configuration for Kafka Consumer infrastructure. |
-| [`FireflyEdaKafkaEnvironmentPostProcessor`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaEnvironmentPostProcessor.java) | Environment post-processor that conditionally excludes Spring Boot's Kafka auto-configuration when the Firefly EDA Kafka transport is not enabled. |
+| [`FireflyEdaKafkaEnvironmentPostProcessorImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaEnvironmentPostProcessorImpl.java) | Environment post-processor that conditionally excludes Spring Boot's Kafka auto-configuration when the Firefly EDA Kafka transport is not enabled. |
 | [`FireflyEdaKafkaPublisherAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaPublisherAutoConfiguration.java) | Auto-configuration for Kafka Publisher infrastructure. |
 
 ## Related components
@@ -157,7 +157,7 @@ void shouldGetKafkaPublisherFromFactory() {
     EventPublisher publisher = publisherFactory.getPublisher(PublisherType.KAFKA, "default");
 
     // Assert - May be null if Kafka is not configured
-    // Publisher may be wrapped in ResilientEventPublisher, so check publisher type instead of class
+    // Publisher may be wrapped in ResilientEventPublisherImpl, so check publisher type instead of class
     if (publisher != null) {
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.KAFKA);
         assertThat(publisher.isAvailable()).isTrue();
@@ -209,7 +209,7 @@ Key properties:
 | `firefly.eda.publishers.kafka.default.default-topic` | `events` | Destination used when a publish call supplies no topic. |
 | `firefly.eda.publishers.kafka.default.key-serializer` / `value-serializer` | `StringSerializer` | Producer serializers. |
 | `firefly.eda.publishers.kafka.default.properties` | `{}` | Pass-through map of raw Kafka producer config. |
-| `firefly.eda.consumer.enabled` | `false` | Global consumer switch; required for the consumer beans and `KafkaEventConsumer`. |
+| `firefly.eda.consumer.enabled` | `false` | Global consumer switch; required for the consumer beans and `KafkaEventConsumerImpl`. |
 | `firefly.eda.consumer.group-id` | `firefly-eda` | Consumer group id applied to the listener. |
 | `firefly.eda.consumer.kafka.default.enabled` | `false` | Enables the Kafka consumer for the `default` connection. |
 | `firefly.eda.consumer.kafka.default.bootstrap-servers` | _(none)_ | Broker list; beans are only created when this is non-empty. |
@@ -222,11 +222,11 @@ Key properties:
 
 ### How It Works
 
-1. Startup gating. `FireflyEdaKafkaEnvironmentPostProcessor` runs first and excludes Spring Boot's `KafkaAutoConfiguration` unless the Kafka publisher or consumer is enabled (or `spring.kafka.bootstrap-servers` is explicitly set).
-2. Publisher wiring. `FireflyEdaKafkaPublisherAutoConfiguration` creates `fireflyEdaKafkaProducerFactory` and `fireflyEdaKafkaTemplate` only when publishers are enabled, the Kafka publisher is enabled, and `bootstrap-servers` is non-empty. `KafkaEventPublisher` consumes the template via an `ObjectProvider`.
-3. Consumer wiring. `FireflyEdaKafkaConsumerAutoConfiguration` creates `fireflyEdaKafkaConsumerFactory` and the `@Primary` `fireflyEdaKafkaListenerContainerFactory` under the equivalent conditions. `KafkaEventConsumer` registers a single `@KafkaListener` whose `topicPattern` is computed from discovered `@EventListener` annotations.
-4. Dynamic topics. When listeners are added at runtime, `EventListenerProcessor` notifies the consumer, which restarts its listener containers to pick up the new topic pattern (a brief consumption pause). If no annotations are found, it falls back to `firefly.eda.consumer.kafka.default.topics`.
-5. Envelope flow. Inbound records are wrapped in the unified `EventEnvelope`, emitted to a reactive `Sinks.Many` stream, and dispatched through `EventListenerProcessor` to your handlers.
+1. Startup gating. `FireflyEdaKafkaEnvironmentPostProcessorImpl` runs first and excludes Spring Boot's `KafkaAutoConfiguration` unless the Kafka publisher or consumer is enabled (or `spring.kafka.bootstrap-servers` is explicitly set).
+2. Publisher wiring. `FireflyEdaKafkaPublisherAutoConfiguration` creates `fireflyEdaKafkaProducerFactory` and `fireflyEdaKafkaTemplate` only when publishers are enabled, the Kafka publisher is enabled, and `bootstrap-servers` is non-empty. `KafkaEventPublisherImpl` consumes the template via an `ObjectProvider`.
+3. Consumer wiring. `FireflyEdaKafkaConsumerAutoConfiguration` creates `fireflyEdaKafkaConsumerFactory` and the `@Primary` `fireflyEdaKafkaListenerContainerFactory` under the equivalent conditions. `KafkaEventConsumerImpl` registers a single `@KafkaListener` whose `topicPattern` is computed from discovered `@EventListener` annotations.
+4. Dynamic topics. When listeners are added at runtime, `EventListenerProcessorImpl` notifies the consumer, which restarts its listener containers to pick up the new topic pattern (a brief consumption pause). If no annotations are found, it falls back to `firefly.eda.consumer.kafka.default.topics`.
+5. Envelope flow. Inbound records are wrapped in the unified `EventEnvelope`, emitted to a reactive `Sinks.Many` stream, and dispatched through `EventListenerProcessorImpl` to your handlers.
 
 ## Continue the application
 

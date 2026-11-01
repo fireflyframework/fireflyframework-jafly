@@ -19,9 +19,9 @@ package org.fireflyframework.orchestration.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
-import org.fireflyframework.orchestration.persistence.cache.CachePersistenceProvider;
-import org.fireflyframework.orchestration.persistence.eventsourced.EventSourcedPersistenceProvider;
-import org.fireflyframework.orchestration.persistence.redis.RedisPersistenceProvider;
+import org.fireflyframework.orchestration.persistence.cache.CachePersistenceProviderImpl;
+import org.fireflyframework.orchestration.persistence.eventsourced.EventSourcedPersistenceProviderImpl;
+import org.fireflyframework.orchestration.persistence.redis.RedisPersistenceProviderImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -97,7 +97,7 @@ public class OrchestrationPersistenceAutoConfiguration {
                 org.fireflyframework.cache.core.CacheAdapter cacheAdapter,
                 OrchestrationProperties properties) {
             log.info("[orchestration] Using cache-based persistence provider");
-            return new CachePersistenceProvider(cacheAdapter, properties.getPersistence().getKeyTtl());
+            return new CachePersistenceProviderImpl(cacheAdapter, properties.getPersistence().getKeyTtl());
         }
     }
 
@@ -115,7 +115,7 @@ public class OrchestrationPersistenceAutoConfiguration {
                 @Qualifier("orchestrationPersistenceObjectMapper") ObjectMapper objectMapper,
                 OrchestrationProperties properties) {
             log.info("[orchestration] Using Redis-based persistence provider");
-            return new RedisPersistenceProvider(redisTemplate, objectMapper,
+            return new RedisPersistenceProviderImpl(redisTemplate, objectMapper,
                     properties.getPersistence().getKeyPrefix(),
                     properties.getPersistence().getKeyTtl());
         }
@@ -133,7 +133,7 @@ public class OrchestrationPersistenceAutoConfiguration {
                 org.fireflyframework.eventsourcing.store.EventStore eventStore,
                 @Qualifier("orchestrationPersistenceObjectMapper") ObjectMapper objectMapper) {
             log.info("[orchestration] Using event-sourced persistence provider");
-            return new EventSourcedPersistenceProvider(eventStore, objectMapper);
+            return new EventSourcedPersistenceProviderImpl(eventStore, objectMapper);
         }
     }
 }

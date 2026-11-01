@@ -128,7 +128,7 @@ Composable, reactive transformation chains for post-enrichment data processing.
 
 Key features:
 - Reactive `DataTransformer` interface with `TransformationChain` composition
-- Built-in transformers: `FieldMappingTransformer`, `ComputedFieldTransformer`
+- Built-in transformers: `FieldMappingTransformerImpl`, `ComputedFieldTransformerImpl`
 - Custom transformer support via functional interface
 
 ---

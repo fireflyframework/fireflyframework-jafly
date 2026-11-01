@@ -32,7 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
-import static org.fireflyframework.core.config.TransactionFilter.TRANSACTION_ID_HEADER;
+import static org.fireflyframework.core.config.TransactionFilterImpl.TRANSACTION_ID_HEADER;
 
 /**
  * Configuration class for distributed tracing.

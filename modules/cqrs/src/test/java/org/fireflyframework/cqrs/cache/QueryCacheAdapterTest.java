@@ -17,7 +17,7 @@
 package org.fireflyframework.cqrs.cache;
 
 import org.fireflyframework.cache.core.CacheAdapter;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 class QueryCacheAdapterTest {
 
     @Mock
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     private QueryCacheAdapter queryCacheAdapter;
 

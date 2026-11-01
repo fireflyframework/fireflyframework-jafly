@@ -17,14 +17,14 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.SortCodeValidator;
+import org.fireflyframework.validators.SortCodeValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = SortCodeValidator.class)
+@Constraint(validatedBy = SortCodeValidatorImpl.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidSortCode {

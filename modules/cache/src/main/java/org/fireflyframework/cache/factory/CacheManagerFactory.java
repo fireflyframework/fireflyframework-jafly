@@ -17,12 +17,12 @@
 package org.fireflyframework.cache.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import lombok.extern.slf4j.Slf4j;
 
@@ -171,7 +171,7 @@ public class CacheManagerFactory {
     /**
      * Creates a new cache manager with custom configuration.
      */
-    public FireflyCacheManager createCacheManager(String cacheName,
+    public FireflyCacheManagerImpl createCacheManager(String cacheName,
                                                    CacheType cacheType,
                                                    String keyPrefix,
                                                    Duration defaultTtl) {
@@ -189,7 +189,7 @@ public class CacheManagerFactory {
      * @param requestedBy the component/module requesting this cache (optional, will be auto-detected)
      * @return a configured FireflyCacheManager
      */
-    public FireflyCacheManager createCacheManager(String cacheName,
+    public FireflyCacheManagerImpl createCacheManager(String cacheName,
                                                    CacheType cacheType,
                                                    String keyPrefix,
                                                    Duration defaultTtl,
@@ -261,7 +261,7 @@ public class CacheManagerFactory {
         // If smart composite is enabled and we have L2 + L1, wrap as Smart
         if (resolvedType != CacheType.CAFFEINE && properties.getSmart().isEnabled() && properties.getCaffeine().isEnabled()) {
             CacheAdapter l1 = createCaffeineCacheAdapter(cacheName, keyPrefix, defaultTtl);
-            primaryCache = new org.fireflyframework.cache.adapter.smart.SmartCacheAdapter(
+            primaryCache = new org.fireflyframework.cache.adapter.smart.SmartCacheAdapterImpl(
                     cacheName, l1, primaryCache, defaultTtl, properties.getSmart().isBackfillL1OnRead());
             fallbackCache = null; // Smart includes both
             log.info("Cache '{}' created: SMART(L1+L2) over {} (TTL: {})", cacheName, resolvedType, defaultTtl);
@@ -273,11 +273,11 @@ public class CacheManagerFactory {
             log.info("Cache '{}' created: {} (TTL: {})", cacheName, resolvedType, defaultTtl);
         }
 
-        return new FireflyCacheManager(primaryCache, fallbackCache);
+        return new FireflyCacheManagerImpl(primaryCache, fallbackCache);
     }
 
     /** Creates an explicitly selected primary with an immutable operation policy. */
-    public FireflyCacheManager createCacheManager(String cacheName,
+    public FireflyCacheManagerImpl createCacheManager(String cacheName,
                                                   CacheType cacheType,
                                                   String keyPrefix,
                                                   Duration defaultTtl,
@@ -306,7 +306,7 @@ public class CacheManagerFactory {
             if (primary.getCacheType() != cacheType) {
                 throw new IllegalStateException("The selected provider must construct the requested cache backend");
             }
-            return new FireflyCacheManager(primary, null, policy);
+            return new FireflyCacheManagerImpl(primary, null, policy);
         } catch (RuntimeException | Error failure) {
             try { primary.close(); }
             catch (RuntimeException | Error cleanup) { if (cleanup != failure) failure.addSuppressed(cleanup); }
@@ -353,7 +353,7 @@ public class CacheManagerFactory {
                 .softValues(caffeineProps.isSoftValues())
                 .build();
 
-        return new CaffeineCacheAdapter(cacheName, config);
+        return new CaffeineCacheAdapterImpl(cacheName, config);
     }
 
     /**
@@ -491,7 +491,7 @@ public class CacheManagerFactory {
     }
 
     /** Creates a feature cache with global provider selection and caller-supplied identity and TTL. */
-    public FireflyCacheManager createDefaultCacheManager(String cacheName, String keyPrefix, Duration defaultTtl,
+    public FireflyCacheManagerImpl createDefaultCacheManager(String cacheName, String keyPrefix, Duration defaultTtl,
                                                         String description, String requestedBy) {
         return createCacheManager(cacheName, properties.getDefaultCacheType(), keyPrefix, defaultTtl, description, requestedBy);
     }
@@ -502,7 +502,7 @@ public class CacheManagerFactory {
      * @param cacheName the name of the cache
      * @return a configured FireflyCacheManager
      */
-    public FireflyCacheManager createDefaultCacheManager(String cacheName) {
+    public FireflyCacheManagerImpl createDefaultCacheManager(String cacheName) {
         CacheType cacheType = properties.getDefaultCacheType();
         if (cacheType == CacheType.AUTO) {
             cacheType = selectBestProviderType();

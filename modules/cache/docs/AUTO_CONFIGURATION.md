@@ -43,7 +43,7 @@ When you add the library as a dependency, Spring Boot automatically configures:
 2. ObjectMapper - JSON serialization (if not already present)
 3. CacheSerializer - Cache value serialization
 4. CacheManagerFactory - Factory to create multiple independent caches
-5. FireflyCacheManager (default) - Primary default cache instance
+5. FireflyCacheManagerImpl (default) - Primary default cache instance
 6. Redis infrastructure - Connection factory and template (if Redis is configured)
 
 ### Activation Conditions
@@ -212,7 +212,7 @@ Register additional caches programmatically:
 public class AdditionalCachesConfig {
     
     @Bean
-    public ApplicationRunner registerAdditionalCaches(FireflyCacheManager cacheManager) {
+    public ApplicationRunner registerAdditionalCaches(FireflyCacheManagerImpl cacheManager) {
         return args -> {
             // Create and register a custom cache
             CaffeineCacheConfig config = CaffeineCacheConfig.builder()
@@ -220,7 +220,7 @@ public class AdditionalCachesConfig {
                 .expireAfterWrite(Duration.ofMinutes(30))
                 .build();
             
-            CaffeineCacheAdapter adapter = new CaffeineCacheAdapter("custom-cache", config);
+            CaffeineCacheAdapterImpl adapter = new CaffeineCacheAdapterImpl("custom-cache", config);
             cacheManager.registerCache("custom-cache", adapter);
         };
     }
@@ -237,7 +237,7 @@ void shouldAutoConfigureWithDefaults() {
     new ApplicationContextRunner()
         .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class))
         .run(context -> {
-            assertThat(context).hasSingleBean(FireflyCacheManager.class);
+            assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
             assertThat(context).hasSingleBean(CacheProperties.class);
         });
 }
@@ -254,7 +254,7 @@ void shouldAutoConfigureWithDefaults() {
 class CacheIntegrationTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldAutoWireCacheManager() {
@@ -271,7 +271,7 @@ class CacheIntegrationTest {
 class DisabledCacheTest {
     
     @Autowired(required = false)
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldNotAutoConfigureWhenDisabled() {
@@ -351,7 +351,7 @@ firefly:
 
 ### Cache Not Auto-Configuring
 
-Problem: FireflyCacheManager bean not found
+Problem: FireflyCacheManagerImpl bean not found
 
 Solutions:
 1. Check that `firefly.cache.enabled` is not set to `false`

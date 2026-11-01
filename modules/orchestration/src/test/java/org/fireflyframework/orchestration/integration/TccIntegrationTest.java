@@ -19,9 +19,9 @@ package org.fireflyframework.orchestration.integration;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.builder.OrchestrationBuilder;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStoreImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
 import org.fireflyframework.orchestration.tcc.engine.TccExecutionOrchestrator;
@@ -47,10 +47,10 @@ class TccIntegrationTest {
     void setUp() {
         var events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher);
-        var persistence = new InMemoryPersistenceProvider();
-        var dlqStore = new InMemoryDeadLetterStore();
+        var persistence = new InMemoryPersistenceProviderImpl();
+        var dlqStore = new InMemoryDeadLetterStoreImpl();
         dlqService = new DeadLetterService(dlqStore, events);
         engine = new TccEngine(null, events, orchestrator, persistence, dlqService, noOpPublisher);
     }

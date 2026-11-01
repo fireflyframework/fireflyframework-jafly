@@ -97,7 +97,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | [`ValidIban`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidIban.java) | Defines `message`, `groups`, `payload` operations. |
 | [`ValidAmount`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidAmount.java) | Defines `message`, `groups`, `payload`, `currency` operations. |
 | [`ValidPasswordStrength`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidPasswordStrength.java) | Defines `message`, `groups`, `payload`, `minLength` operations. |
-| [`IbanValidator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/validators/IbanValidator.java) | Validator for International Bank Account Numbers (IBAN). |
+| [`IbanValidatorImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/validators/IbanValidatorImpl.java) | Validator for International Bank Account Numbers (IBAN). |
 | [`ValidAccountNumber`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidAccountNumber.java) | Defines `message`, `groups`, `payload`, `countryCode` operations. |
 
 ## Continue the application

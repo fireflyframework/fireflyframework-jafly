@@ -41,8 +41,8 @@ public class R2dbcObservabilityAutoConfiguration {
     @ConditionalOnBean(MeterRegistry.class)
     @ConditionalOnProperty(prefix = "firefly.observability.metrics", name = "enabled",
             havingValue = "true", matchIfMissing = true)
-    R2dbcMetrics r2dbcMetrics(MeterRegistry meterRegistry) {
-        return new R2dbcMetrics(meterRegistry);
+    R2dbcMetricsImpl r2dbcMetrics(MeterRegistry meterRegistry) {
+        return new R2dbcMetricsImpl(meterRegistry);
     }
 
     @Bean
@@ -51,6 +51,6 @@ public class R2dbcObservabilityAutoConfiguration {
     @ConditionalOnProperty(prefix = "firefly.observability.health", name = "enabled",
             havingValue = "true", matchIfMissing = true)
     HealthIndicator fireflyR2dbcHealthIndicator(ConnectionFactory connectionFactory) {
-        return new R2dbcHealthIndicator(connectionFactory);
+        return new R2dbcHealthIndicatorImpl(connectionFactory);
     }
 }

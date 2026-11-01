@@ -18,13 +18,13 @@ package org.fireflyframework.cache.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.spi.ConnectionFactory;
-import org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapter;
+import org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.postgres.PostgresCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.serialization.CacheSerializer;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 
 import java.time.Duration;
 
@@ -72,7 +72,7 @@ public final class PostgresCacheHelper {
                                                           ObjectMapper objectMapper,
                                                           CacheOperationPolicy policy) {
         java.util.Objects.requireNonNull(policy, "Cache operation policy required");
-        CacheSerializer serializer = new JsonCacheSerializer(objectMapper);
+        CacheSerializer serializer = new JsonCacheSerializerImpl(objectMapper);
         CacheProperties.PostgresConfig postgres = properties.getPostgres();
 
         Duration ttl = defaultTtl != null
@@ -92,6 +92,6 @@ public final class PostgresCacheHelper {
         config.validate(cacheName, serviceNamespace);
         ConnectionFactory connectionFactory = (ConnectionFactory) r2dbcConnectionFactory;
         PostgresCacheInitializer.initialize(connectionFactory, postgres, config);
-        return new PostgresCacheAdapter(cacheName, connectionFactory, config, serializer, serviceNamespace, policy);
+        return new PostgresCacheAdapterImpl(cacheName, connectionFactory, config, serializer, serviceNamespace, policy);
     }
 }

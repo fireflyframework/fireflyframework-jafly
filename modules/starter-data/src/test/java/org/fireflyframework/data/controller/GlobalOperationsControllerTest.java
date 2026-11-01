@@ -20,7 +20,7 @@ import org.fireflyframework.data.controller.dto.OperationCatalogResponse;
 import org.fireflyframework.data.enrichment.EnricherMetadata;
 import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.model.EnrichmentRequest;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.operation.AbstractEnricherOperation;
 import org.fireflyframework.data.operation.EnricherOperation;
@@ -55,7 +55,7 @@ class GlobalOperationsControllerTest {
     private JobTracingService tracingService;
 
     @Mock
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
 
     @Mock
     private ResiliencyDecoratorService resiliencyService;
@@ -306,7 +306,7 @@ class GlobalOperationsControllerTest {
         private final TestValidateOperation validateOperation;
 
         public TestEnricherWithOperations(JobTracingService tracingService,
-                                         JobMetricsService metricsService,
+                                         JobMetricsServiceImpl metricsService,
                                          ResiliencyDecoratorService resiliencyService,
                                          EnrichmentEventPublisher eventPublisher) {
             super(tracingService, metricsService, resiliencyService, eventPublisher, Object.class);
@@ -343,7 +343,7 @@ class GlobalOperationsControllerTest {
     )
     static class TestEnricherWithoutOperations extends DataEnricher<Object, Object, Object> {
         public TestEnricherWithoutOperations(JobTracingService tracingService,
-                                            JobMetricsService metricsService,
+                                            JobMetricsServiceImpl metricsService,
                                             ResiliencyDecoratorService resiliencyService,
                                             EnrichmentEventPublisher eventPublisher) {
             super(tracingService, metricsService, resiliencyService, eventPublisher, Object.class);

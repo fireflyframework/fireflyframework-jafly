@@ -22,9 +22,9 @@ import org.fireflyframework.ecm.domain.model.esignature.SignatureEnvelope;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.port.document.DocumentContentPort;
 import org.fireflyframework.ecm.port.document.DocumentPort;
-import org.fireflyframework.ecm.adapter.docusign.authentication.impl.JwtDocuSignAuthentication;
+import org.fireflyframework.ecm.adapter.docusign.authentication.impl.JwtDocuSignAuthenticationImpl;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -73,7 +73,7 @@ class DocuSignAuthenticationLifecycleTest {
     }
 
     @Test void successfulAuthenticationClosesItsTwoClientsAndCachesOnlyTheValidatedToken() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
             assertEquals(1, transport.clients.size()); assertNull(client.getAccessToken());
             get(client);
             assertEquals(3, transport.clients.size());
@@ -88,7 +88,7 @@ class DocuSignAuthenticationLifecycleTest {
         try (var transport = scope()) {
             var value = properties(); value.setConnectionTimeout(Duration.ofMillis(150)); value.setReadTimeout(Duration.ofMillis(250));
             value.setAuthenticationTimeout(Duration.ofSeconds(1)); value.setAuthenticationWaitTimeout(Duration.ofMillis(100));
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 get(client);
                 for (var wire : transport.exchanges) {
                     assertTrue(wire.connectTimeout() instanceof Integer && (Integer) wire.connectTimeout() > 0 && (Integer) wire.connectTimeout() <= 150);
@@ -109,7 +109,7 @@ class DocuSignAuthenticationLifecycleTest {
                 }
                 return transport.defaultReply(wire);
             };
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 assertThrows(DocuSignAdapterException.class, () -> get(client));
                 assertEquals(1, transport.exchanges.size()); assertNull(client.getAccessToken());
                 assertEquals(1, transport.clients.stream().filter(org.glassfish.jersey.client.JerseyClient::isClosed).count());
@@ -122,7 +122,7 @@ class DocuSignAuthenticationLifecycleTest {
             var count = new AtomicInteger();
             transport.responder = wire -> wire.uri().getPath().endsWith("/oauth/token") ? token(count.incrementAndGet()) : transport.defaultReply(wire);
             var clock = new MutableClock();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()), clock)) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()), clock)) {
                 get(client); get(client); assertEquals(1, count.get());
                 clock.advance(4000); get(client); assertEquals(2, count.get());
                 assertEquals("Bearer owned-token-2", transport.exchanges.getLast().authorization());
@@ -135,8 +135,8 @@ class DocuSignAuthenticationLifecycleTest {
             var count = new AtomicInteger();
             transport.responder = wire -> wire.uri().getPath().endsWith("/oauth/token") ? token(count.incrementAndGet()) : transport.defaultReply(wire);
             var settings = DocuSignClientSettings.from(properties()); var clock = new MutableClock(); var ticker = new AtomicLong();
-            try (var client = new ManagedDocuSignApiClient(settings)) {
-                var authentication = new JwtDocuSignAuthentication(client, settings, clock, ticker::get);
+            try (var client = new ManagedDocuSignApiClientImpl(settings)) {
+                var authentication = new JwtDocuSignAuthenticationImpl(client, settings, clock, ticker::get);
                 assertEquals("owned-token-1", authentication.accessToken());
                 clock.advance(-1000); ticker.set(TimeUnit.SECONDS.toNanos(4000));
                 assertEquals("owned-token-2", authentication.accessToken()); assertEquals(2, count.get());
@@ -148,8 +148,8 @@ class DocuSignAuthenticationLifecycleTest {
         try (var transport = scope()) {
             var count = new AtomicInteger();
             transport.responder = wire -> wire.uri().getPath().endsWith("/oauth/token") ? token(count.incrementAndGet()) : transport.defaultReply(wire);
-            try (var first = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
-                 var second = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+            try (var first = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
+                 var second = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
                 get(first); assertEquals("owned-token-1", first.getAccessToken());
                 get(second); assertEquals("owned-token-2", second.getAccessToken()); assertEquals(2, count.get());
             }
@@ -157,7 +157,7 @@ class DocuSignAuthenticationLifecycleTest {
     }
 
     @Test void concurrentRequestsHaveExactlyOneRefreshOwner() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
             var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
             transport.responder = wire -> {
                 if (wire.uri().getPath().endsWith("/oauth/token")) {
@@ -181,7 +181,7 @@ class DocuSignAuthenticationLifecycleTest {
     @Test void waitingRefreshIsBoundedAndDoesNotStartASecondAuthentication() throws Exception {
         try (var transport = scope()) {
             var value = properties(); value.setAuthenticationWaitTimeout(Duration.ofMillis(20));
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
                 transport.responder = wire -> {
                     if (wire.uri().getPath().endsWith("/oauth/token")) {
@@ -205,7 +205,7 @@ class DocuSignAuthenticationLifecycleTest {
     }
 
     @Test void accountMismatchNeverPublishesOrUsesAToken() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
             transport.responder = wire -> wire.uri().getPath().endsWith("/oauth/userinfo")
                     ? new ScopedSdkConnector.Reply(200, "{\"sub\":\"00000000-0000-4000-8000-000000000002\",\"accounts\":[{\"account_id\":\"other-owned-account\"}]}") : transport.defaultReply(wire);
             var failure = assertThrows(DocuSignAdapterException.class, () -> get(client));
@@ -215,7 +215,7 @@ class DocuSignAuthenticationLifecycleTest {
     }
 
     @Test void actualSdkAuthenticationErrorIsSafeAndIsNotCachedOrAutomaticallyRetried() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
             transport.responder = wire -> new ScopedSdkConnector.Reply(401, "{\"error\":\"private-provider-body\"}");
             var failure = assertThrows(DocuSignAdapterException.class, () -> get(client));
             assertEquals(DocuSignAdapterException.Code.AUTHENTICATION, failure.getCode()); assertEquals(401, failure.getHttpStatus());
@@ -227,7 +227,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void wrongOrMissingUserInfoSubjectCannotPublishACredentialForTheConfiguredAccount() throws Exception {
         for (String subject : new String[]{"\"sub\":\"other-owned-user\",", ""}) {
-            try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+            try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
                 transport.responder = wire -> wire.uri().getPath().endsWith("/oauth/userinfo")
                         ? new ScopedSdkConnector.Reply(200, "{" + subject + "\"accounts\":[{\"account_id\":\"00000000-0000-4000-8000-000000000003\"}]}") : transport.defaultReply(wire);
                 var failure = assertThrows(DocuSignAdapterException.class, () -> get(client));
@@ -238,7 +238,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void clientClosureImmediatelyBeforeTokenPublicationCannotReturnACredential() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
             try {
                 var reads = new AtomicInteger();
                 Clock closingClock = new Clock() {
@@ -249,7 +249,7 @@ class DocuSignAuthenticationLifecycleTest {
                         return Instant.now();
                     }
                 };
-                var authentication = new JwtDocuSignAuthentication(client, DocuSignClientSettings.from(properties()),
+                var authentication = new JwtDocuSignAuthenticationImpl(client, DocuSignClientSettings.from(properties()),
                         closingClock, System::nanoTime);
                 assertThrows(DocuSignAdapterException.class, authentication::accessToken);
                 assertNull(client.getAccessToken()); assertEquals(2, transport.exchanges.size());
@@ -264,7 +264,7 @@ class DocuSignAuthenticationLifecycleTest {
                 "{\"access_token\":\"owned\",\"expires_in\":3600,\"token_type\":\"Basic\"}", "{broken",
                 "{\"access_token\":\"owned\\r\\ninjected\",\"expires_in\":3600,\"token_type\":\"Bearer\"}",
                 "{\"access_token\":\"" + "x".repeat(16385) + "\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"}) {
-            try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+            try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
                 transport.responder = wire -> new ScopedSdkConnector.Reply(200, reply);
                 var failure = assertThrows(DocuSignAdapterException.class, () -> get(client));
                 assertNull(failure.getCause()); assertNull(client.getAccessToken()); assertEquals(1, transport.exchanges.size());
@@ -274,7 +274,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void closingTheManagedClientDoesNotDisposeACallerReplacementClient() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
             var original = (org.glassfish.jersey.client.JerseyClient) client.getHttpClient();
             ApiClient borrowed = new ApiClient(); client.setHttpClient(borrowed.getHttpClient()); client.close();
             assertTrue(original.isClosed());
@@ -287,7 +287,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void closedClientRefusesDirectSdkAuthenticationBeforeCreatingAnotherHttpClient() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties())); client.close();
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties())); client.close();
             assertThrows(DocuSignAdapterException.class, () -> client.getUserInfo("owned-test-token"));
             assertEquals(1, transport.clients.size()); assertTrue(transport.exchanges.isEmpty());
         }
@@ -295,17 +295,17 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void invalidConstructorDependenciesDoNotAllocateAnSdkClient() throws Exception {
         try (var transport = scope()) {
-            assertThrows(RuntimeException.class, () -> new ManagedDocuSignApiClient(null));
+            assertThrows(RuntimeException.class, () -> new ManagedDocuSignApiClientImpl(null));
             assertTrue(transport.clients.isEmpty(), "Invalid settings must fail before SDK construction");
             var settings = DocuSignClientSettings.from(properties());
-            assertThrows(RuntimeException.class, () -> new ManagedDocuSignApiClient(settings, null));
+            assertThrows(RuntimeException.class, () -> new ManagedDocuSignApiClientImpl(settings, null));
             assertTrue(transport.clients.isEmpty(), "Invalid clock must fail before SDK construction");
         }
     }
 
     @Test void concurrentClientClosureCannotPublishCredentialsOrBuildAnotherAuthenticationClient() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
             var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
             transport.responder = wire -> {
                 if (wire.uri().getPath().endsWith("/oauth/token")) {
@@ -328,7 +328,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void failedAuthenticationCleanupPreventsPublicationAndRemainsAReportedFailure() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
             transport.failConnectorClose = true;
             try {
                 var failure = assertThrows(DocuSignAdapterException.class, () -> get(client));
@@ -340,7 +340,7 @@ class DocuSignAuthenticationLifecycleTest {
 
     @Test void reportedCleanupFailureKeepsTheClientClosedToFurtherAuthentication() throws Exception {
         try (var transport = scope()) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()));
             transport.failConnectorClose = true;
             assertThrows(DocuSignAdapterException.class, () -> get(client));
             transport.failConnectorClose = false;
@@ -352,21 +352,21 @@ class DocuSignAuthenticationLifecycleTest {
         }
     }
 
-    private static DocuSignSignatureEnvelopeAdapter adapter(ApiClient client, DocuSignAdapterProperties properties) {
+    private static DocuSignSignatureEnvelopeAdapterImpl adapter(ApiClient client, DocuSignAdapterProperties properties) {
         var content = org.mockito.Mockito.mock(DocumentContentPort.class);
         var documents = org.mockito.Mockito.mock(DocumentPort.class);
         org.mockito.Mockito.when(content.getContent(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(reactor.core.publisher.Mono.just(DocuSignEnvelopeMappingTest.PDF.clone()));
         org.mockito.Mockito.when(documents.getDocument(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(reactor.core.publisher.Mono.just(
                 org.fireflyframework.ecm.domain.model.document.Document.builder().id(DocuSignEnvelopeMappingTest.DOCUMENT)
                         .name("agreement.pdf").mimeType("application/pdf").build()));
-        return new DocuSignSignatureEnvelopeAdapter(client, properties, content, documents,
+        return new DocuSignSignatureEnvelopeAdapterImpl(client, properties, content, documents,
                 (id, provider) -> reactor.core.publisher.Mono.just("controlled-envelope"));
     }
 
     @Test void actualAdapterUsesTheOwnedLaneAndExportsOnlySafeSdkFailures() throws Exception {
         try (var transport = scope()) {
             var value = properties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 var thread = new AtomicReference<Thread>(); var caller = Thread.currentThread();
                 transport.responder = wire -> {
                     if (wire.method().equals("POST") && wire.uri().getPath().endsWith("/envelopes")) {
@@ -387,7 +387,7 @@ class DocuSignAuthenticationLifecycleTest {
     @Test void actualExistsDoesNotTurnProviderAuthorizationFailureIntoFalse() throws Exception {
         try (var transport = scope()) {
             var value = properties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 transport.responder = wire -> {
                     if (wire.method().equals("POST") && wire.uri().getPath().endsWith("/envelopes"))
                         return new ScopedSdkConnector.Reply(201, "{\"envelopeId\":\"controlled-envelope\",\"status\":\"created\"}");
@@ -407,7 +407,7 @@ class DocuSignAuthenticationLifecycleTest {
     @Test void actualListDoesNotTurnProviderFailureIntoAnEmptySuccessfulFlux() throws Exception {
         try (var transport = scope()) {
             var value = properties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 transport.responder = wire -> wire.method().equals("GET") && wire.uri().getPath().endsWith("/envelopes")
                         ? new ScopedSdkConnector.Reply(503, "{\"message\":\"private-provider-body\"}") : transport.defaultReply(wire);
                 var failure = assertThrows(DocuSignAdapterException.class,
@@ -418,7 +418,7 @@ class DocuSignAuthenticationLifecycleTest {
     }
 
     @Test void ownedExecutionLaneReportsActualSdkErrorsWithoutExportingProviderBodies() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties()))) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties()))) {
             transport.responder = wire -> wire.uri().getPath().endsWith("/envelopes/controlled-envelope")
                     ? new ScopedSdkConnector.Reply(429, "{\"errorCode\":\"CONTROLLED_LIMIT\",\"message\":\"private-provider-body\"}") : transport.defaultReply(wire);
             var failure = assertThrows(DocuSignAdapterException.class,
@@ -431,7 +431,7 @@ class DocuSignAuthenticationLifecycleTest {
     @Test void finiteExecutionQueueRejectsOverflowWithoutRunningAnotherTask() throws Exception {
         try (var transport = scope()) {
             var value = properties(); value.setMaxConcurrentRequests(1); value.setMaxQueuedRequestsPerThread(1);
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
                 var entered = new CountDownLatch(1); var release = new CountDownLatch(1); var calls = new AtomicInteger();
                 var first = client.execute(() -> { entered.countDown(); if (!release.await(2, TimeUnit.SECONDS)) throw new AssertionError("Owned task not released"); return true; }).toFuture();
                 try {

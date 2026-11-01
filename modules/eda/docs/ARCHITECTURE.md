@@ -153,9 +153,9 @@ sequenceDiagram
     participant App as Application
     participant Aspect as @PublishResult Aspect
     participant Factory as EventPublisherFactory
-    participant Resilient as ResilientEventPublisher
+    participant Resilient as ResilientEventPublisherImpl
     participant Platform as PlatformPublisher
-    participant Metrics as EdaMetrics
+    participant Metrics as EdaMetricsImpl
 
     App->>Aspect: Method execution
     Aspect->>Factory: getPublisher(type, connection)
@@ -173,7 +173,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Platform as PlatformConsumer
-    participant Processor as EventListenerProcessor
+    participant Processor as EventListenerProcessorImpl
     participant Filter as EventFilter
     participant Handler as @EventListener Method
     participant Envelope as EventEnvelope
@@ -275,10 +275,10 @@ EventFilter complexFilter = EventFilter.and(
 ```
 
 Filter Types:
-- DestinationEventFilter: Topic/queue matching
-- EventTypeFilter: Type pattern matching (with globs)
-- HeaderEventFilter: Header-based filtering
-- CompositeEventFilter: Logical combinations (AND/OR/NOT)
+- DestinationEventFilterImpl: Topic/queue matching
+- EventTypeFilterImpl: Type pattern matching (with globs)
+- HeaderEventFilterImpl: Header-based filtering
+- CompositeEventFilterImpl: Logical combinations (AND/OR/NOT)
 
 ## Serialization Layer
 
@@ -297,9 +297,9 @@ public interface MessageSerializer {
 ```
 
 Available Implementations:
-- JsonMessageSerializer: Jackson-based JSON serialization
-- AvroMessageSerializer: Schema-based binary serialization (planned)
-- ProtobufMessageSerializer: Protocol Buffers support (planned)
+- JsonMessageSerializerImpl: Jackson-based JSON serialization
+- AvroMessageSerializerImpl: Schema-based binary serialization (planned)
+- ProtobufMessageSerializerImpl: Protocol Buffers support (planned)
 
 ### Serialization Strategy
 
@@ -439,7 +439,7 @@ Spring Boot Actuator integration:
 
 ```java
 @Component
-public class EdaHealthIndicator implements HealthIndicator {
+public class EdaHealthIndicatorImpl implements HealthIndicator {
     @Override
     public Health health() {
         Health.Builder builder = new Health.Builder();
@@ -521,7 +521,7 @@ public class CustomMessageSerializer implements MessageSerializer {
 
 ### Structural Patterns
 - Adapter Pattern: Platform-specific publisher/consumer adapters
-- Decorator Pattern: ResilientEventPublisher wrapping
+- Decorator Pattern: ResilientEventPublisherImpl wrapping
 - Facade Pattern: EventPublisherFactory simplifying access
 - Composite Pattern: EventFilter combinations
 

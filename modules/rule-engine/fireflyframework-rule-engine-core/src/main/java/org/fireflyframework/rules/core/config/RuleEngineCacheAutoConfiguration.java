@@ -19,7 +19,7 @@ package org.fireflyframework.rules.core.config;
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -45,7 +45,7 @@ import java.time.Duration;
  */
 @AutoConfiguration
 @AutoConfigureAfter(CacheAutoConfiguration.class)
-@ConditionalOnClass({FireflyCacheManager.class, CacheManagerFactory.class})
+@ConditionalOnClass({FireflyCacheManagerImpl.class, CacheManagerFactory.class})
 @Slf4j
 public class RuleEngineCacheAutoConfiguration {
 
@@ -68,7 +68,7 @@ public class RuleEngineCacheAutoConfiguration {
     @Bean("ruleEngineCacheManager")
     @ConditionalOnBean(CacheManagerFactory.class)
     @ConditionalOnMissingBean(name = "ruleEngineCacheManager")
-    public FireflyCacheManager ruleEngineCacheManager(CacheManagerFactory factory) {
+    public FireflyCacheManagerImpl ruleEngineCacheManager(CacheManagerFactory factory) {
         String description = String.format(
                 "Rule Engine Cache - Stores rule definitions, AST models, constants, and validation results (TTL: %d hours)",
                 RULE_CACHE_TTL.toHours()

@@ -1278,7 +1278,7 @@ conditions:
 
 ## Built-in Functions
 
-*All functions listed below are actually implemented in the codebase and verified against ExpressionEvaluator.java*
+*All functions listed below are actually implemented in the codebase and verified against ExpressionEvaluatorImpl.java*
 
 ### Mathematical Functions
 
@@ -2071,8 +2071,8 @@ output:
 ### Recent Parser Enhancements (v2.1.0+)
 - Validation Operators in Expressions: Validation operators like `is_positive`, `is_email`, `is_phone`, etc. can now be used in complex expressions, not just simple conditions
 - Complex Boolean Expressions: Multi-line boolean expressions with AND/OR operators and parentheses are fully supported in both conditions and expressions
-- Enhanced ExpressionParser: The ExpressionParser now supports validation operators as unary operations, enabling natural syntax like `(email is_email AND phone is_phone)`
-- Unified Operator Support: Both ConditionParser and ExpressionParser now support the same set of validation operators for consistent syntax across the DSL
+- Enhanced ExpressionParserImpl: The ExpressionParserImpl now supports validation operators as unary operations, enabling natural syntax like `(email is_email AND phone is_phone)`
+- Unified Operator Support: Both ConditionParserImpl and ExpressionParserImpl now support the same set of validation operators for consistent syntax across the DSL
 - BETWEEN Operator Improvements: Fixed parsing issues with `BETWEEN` operator to properly handle `value between min and max` syntax
 - Age Operators in Expressions: `age_at_least` and `age_less_than` operators now work correctly in both conditions and expressions
 
@@ -2095,8 +2095,8 @@ output:
 ### Version 2.1.0 - Enhanced Expression Support
 - Validation Operators in Expressions: All validation operators (`is_positive`, `is_email`, `is_phone`, `is_credit_score`, etc.) can now be used in complex expressions
 - Multi-line Boolean Expressions: Support for complex boolean expressions with AND/OR operators and parentheses in both conditions and expressions
-- Enhanced Parser Architecture: ExpressionParser now supports validation operators as unary operations for consistent syntax
-- BETWEEN Operator Fixes: Resolved parsing conflicts where ExpressionParser was consuming AND tokens needed by BETWEEN operator
+- Enhanced Parser Architecture: ExpressionParserImpl now supports validation operators as unary operations for consistent syntax
+- BETWEEN Operator Fixes: Resolved parsing conflicts where ExpressionParserImpl was consuming AND tokens needed by BETWEEN operator
 - Age Operator Support: Added proper support for `age_at_least` and `age_less_than` operators in both expression and condition contexts
 - Real-world Testing: Validated with comprehensive B2B credit scoring scenarios including multi-stage evaluation workflows
 

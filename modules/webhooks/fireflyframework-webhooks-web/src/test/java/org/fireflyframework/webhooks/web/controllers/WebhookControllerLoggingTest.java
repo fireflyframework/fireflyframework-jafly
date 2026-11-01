@@ -11,7 +11,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import org.fireflyframework.webhooks.core.metrics.WebhookMetricsService;
+import org.fireflyframework.webhooks.core.metrics.WebhookMetricsServiceImpl;
 import org.fireflyframework.webhooks.core.ratelimit.WebhookRateLimitService;
 import org.fireflyframework.webhooks.core.services.WebhookMetadataEnrichmentService;
 import org.fireflyframework.webhooks.core.services.WebhookProcessingService;
@@ -99,7 +99,7 @@ class WebhookControllerLoggingTest {
     private static final class Fixture {
         final WebhookProcessingService processing=mock(WebhookProcessingService.class);
         final WebhookValidator validator=mock(WebhookValidator.class);
-        final WebhookMetricsService metrics=mock(WebhookMetricsService.class);
+        final WebhookMetricsServiceImpl metrics=mock(WebhookMetricsServiceImpl.class);
         final WebhookRateLimitService limits=mock(WebhookRateLimitService.class);
         final WebhookMetadataEnrichmentService enrichment=mock(WebhookMetadataEnrichmentService.class);
         final WebhookController controller=new WebhookController(processing,validator,metrics,limits,enrichment);

@@ -30,14 +30,14 @@ class DocuSignEnvelopeOperationsTest {
         Files.writeString(service, ScopedSdkConnector.Builder.class.getName() + "\n");
         return new ScopedSdkConnector.Scope(service);
     }
-    private DocuSignSignatureEnvelopeAdapter adapter(ApiClient client, SignatureEnvelopeReferenceResolver resolver) {
+    private DocuSignSignatureEnvelopeAdapterImpl adapter(ApiClient client, SignatureEnvelopeReferenceResolver resolver) {
         client.setBasePath("https://owned.invalid/restapi");
         var properties = new DocuSignAdapterProperties(); properties.setAccountId("owned-account");
         var documents = mock(DocumentPort.class); var content = mock(DocumentContentPort.class);
         when(documents.getDocument(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(Mono.just(Document.builder()
                 .id(DocuSignEnvelopeMappingTest.DOCUMENT).name("agreement.pdf").mimeType("application/pdf").build()));
         when(content.getContent(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(Mono.just(DocuSignEnvelopeMappingTest.PDF.clone()));
-        return new DocuSignSignatureEnvelopeAdapter(client, properties, content, documents, resolver);
+        return new DocuSignSignatureEnvelopeAdapterImpl(client, properties, content, documents, resolver);
     }
     private static ScopedSdkConnector.Reply envelope(String status) {
         return new ScopedSdkConnector.Reply(200, "{\"envelopeId\":\"external-envelope\",\"status\":\"" + status + "\"}");
@@ -305,7 +305,7 @@ class DocuSignEnvelopeOperationsTest {
                 when(content.getContent(id)).thenReturn(Mono.just(id.toString().getBytes(StandardCharsets.UTF_8)));
             }
             transport.responder = wire -> new ScopedSdkConnector.Reply(201, "{\"envelopeId\":\"external-envelope\",\"status\":\"created\"}");
-            var port = new DocuSignSignatureEnvelopeAdapter(client, properties, content, documents);
+            var port = new DocuSignSignatureEnvelopeAdapterImpl(client, properties, content, documents);
             assertNotNull(await(port.createEnvelope(DocuSignEnvelopeMappingTest.envelope().toBuilder().documentIds(ids).build())));
             var json = new JSON().getObjectMapper().readTree(transport.exchanges.getFirst().bytes());
             assertEquals("1", json.get("documents").get(0).get("documentId").asText());

@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.unit.core;
 
 import org.fireflyframework.orchestration.core.scheduling.OrchestrationScheduler;
-import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessor;
+import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessorImpl;
 import org.fireflyframework.orchestration.saga.annotation.Saga;
 import org.fireflyframework.orchestration.saga.annotation.ScheduledSaga;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
@@ -142,7 +142,7 @@ class SchedulingTest {
         lenient().when(sagaEngine.execute(eq("scheduled-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -159,7 +159,7 @@ class SchedulingTest {
         lenient().when(sagaEngine.execute(eq("cron-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithCron(
@@ -176,7 +176,7 @@ class SchedulingTest {
         lenient().when(sagaEngine.execute(eq("multi-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -193,7 +193,7 @@ class SchedulingTest {
         when(applicationContext.getBeansWithAnnotation(Saga.class))
                 .thenReturn(Map.of("plainSaga", bean));
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler, never()).scheduleAtFixedRate(any(), any(), anyLong(), anyLong());
@@ -210,7 +210,7 @@ class SchedulingTest {
         lenient().when(tccEngine.execute(eq("scheduled-tcc"), any(TccInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, tccEngine, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, tccEngine, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -227,7 +227,7 @@ class SchedulingTest {
         lenient().when(tccEngine.execute(eq("cron-tcc"), any(TccInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, tccEngine, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, tccEngine, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithCron(
@@ -244,7 +244,7 @@ class SchedulingTest {
         lenient().when(workflowEngine.startWorkflow(eq("scheduled-wf"), any(Map.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -261,7 +261,7 @@ class SchedulingTest {
         lenient().when(workflowEngine.startWorkflow(eq("cron-wf"), any(Map.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithCron(
@@ -278,7 +278,7 @@ class SchedulingTest {
         lenient().when(workflowEngine.startWorkflow(eq("delay-wf"), any(Map.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithFixedDelay(
@@ -289,7 +289,7 @@ class SchedulingTest {
     void nullEngines_handledGracefully() {
         var spyScheduler = spy(scheduler);
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler, never()).scheduleAtFixedRate(any(), any(), anyLong(), anyLong());
@@ -388,7 +388,7 @@ class SchedulingTest {
         when(applicationContext.getBeansWithAnnotation(Workflow.class))
                 .thenReturn(Map.of("disabledWf", bean));
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler, never()).scheduleAtFixedRate(any(), any(), anyLong(), anyLong());
@@ -406,7 +406,7 @@ class SchedulingTest {
         lenient().when(workflowEngine.startWorkflow(eq("zone-wf"), any(Map.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithCron(
@@ -423,7 +423,7 @@ class SchedulingTest {
         lenient().when(workflowEngine.startWorkflow(eq("initial-delay-wf"), any(Map.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, null, workflowEngine);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, null, workflowEngine);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(

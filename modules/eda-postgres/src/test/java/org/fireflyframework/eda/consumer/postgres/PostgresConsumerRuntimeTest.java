@@ -21,7 +21,7 @@ import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.consumer.postgres.model.*;
 import org.fireflyframework.eda.error.CustomErrorHandlerRegistry;
 import org.fireflyframework.eda.event.EventEnvelope;
-import org.fireflyframework.eda.listener.EventListenerProcessor;
+import org.fireflyframework.eda.listener.EventListenerProcessorImpl;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.publisher.postgres.PostgresChannelMapper;
 import org.fireflyframework.eda.serialization.MessageSerializer;
@@ -122,12 +122,12 @@ class PostgresConsumerRuntimeTest {
                         "firefly.eda.publishers.postgres.default.database=source_fixture","firefly.eda.publishers.postgres.default.username=source_fixture",
                         "firefly.eda.publishers.postgres.default.auto-create-schema=false")
                 .run(context->{
-                    assertThat(context).hasNotFailed().hasSingleBean(PostgresEventConsumer.class);
-                    assertThat(context.getBean(org.fireflyframework.eda.serialization.MessageSerializer.class)).isInstanceOf(org.fireflyframework.eda.serialization.JsonMessageSerializer.class);
-                    assertThat(context.getBean(EventListenerProcessor.class).getTopicsForConsumerType("POSTGRES")).containsExactly("native-source-events");
+                    assertThat(context).hasNotFailed().hasSingleBean(PostgresEventConsumerImpl.class);
+                    assertThat(context.getBean(org.fireflyframework.eda.serialization.MessageSerializer.class)).isInstanceOf(org.fireflyframework.eda.serialization.JsonMessageSerializerImpl.class);
+                    assertThat(context.getBean(EventListenerProcessorImpl.class).getTopicsForConsumerType("POSTGRES")).containsExactly("native-source-events");
                     assertThat(context.getBean(PostgresConsumerNativeFixture.Handler.class).calls).hasValue(0);
                     assertThat(context.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory",io.r2dbc.pool.ConnectionPool.class).getMetrics().orElseThrow().allocatedSize()).isZero();
-                    assertThat(context.getBean(PostgresEventConsumer.class).isRunning()).isFalse();
+                    assertThat(context.getBean(PostgresEventConsumerImpl.class).isRunning()).isFalse();
                 });
     }
     static DeliveryClaim claim(long id) {
@@ -147,8 +147,8 @@ class PostgresConsumerRuntimeTest {
     static final class Fixture implements AutoCloseable {
         final EdaProperties properties=new EdaProperties();final RecordingRepository repo=new RecordingRepository();final VirtualTimeScheduler scheduler=VirtualTimeScheduler.create();
         final ConnectionFactory factory=mock(ConnectionFactory.class);final PostgresqlConnection connection=mock(PostgresqlConnection.class);final Sinks.Many<Notification> notifications=Sinks.many().multicast().directBestEffort();
-        final EventListenerProcessor processor=new EventListenerProcessor(mock(ApplicationContext.class),mock(ApplicationEventPublisher.class),mock(CustomErrorHandlerRegistry.class),new MockEnvironment());
-        final ObjectProvider<ConnectionFactory> provider;PostgresEventConsumer current;
+        final EventListenerProcessorImpl processor=new EventListenerProcessorImpl(mock(ApplicationContext.class),mock(ApplicationEventPublisher.class),mock(CustomErrorHandlerRegistry.class),new MockEnvironment());
+        final ObjectProvider<ConnectionFactory> provider;PostgresEventConsumerImpl current;
         @SuppressWarnings("unchecked") Fixture(){
             provider=mock(ObjectProvider.class);when(provider.getIfAvailable()).thenReturn(factory);properties.getConsumer().setEnabled(true);properties.getConsumer().getPostgres().get("default").setEnabled(true);
             var statement=mock(io.r2dbc.postgresql.api.PostgresqlStatement.class);var result=mock(io.r2dbc.postgresql.api.PostgresqlResult.class);
@@ -156,7 +156,7 @@ class PostgresConsumerRuntimeTest {
             doReturn(Flux.just(result)).when(statement).execute();doReturn(Mono.just(0L)).when(result).getRowsUpdated();when(connection.close()).thenReturn(Mono.empty());
         }
         void mode(EdaProperties.Consumer.PostgresConfig.DeliveryMode m){properties.getConsumer().getPostgres().get("default").setDeliveryMode(m);}
-        PostgresEventConsumer consumer(){if(current==null)current=new PostgresEventConsumer(provider,processor,mock(MessageSerializer.class),properties,new ObjectMapper(),repo,(bytes,type,event)->"payload",scheduler);return current;}
+        PostgresEventConsumerImpl consumer(){if(current==null)current=new PostgresEventConsumerImpl(provider,processor,mock(MessageSerializer.class),properties,new ObjectMapper(),repo,(bytes,type,event)->"payload",scheduler);return current;}
         void start(){StepVerifier.create(consumer().start()).verifyComplete();}
         void tick(){scheduler.advanceTimeBy(Duration.ZERO);}
         void awaitProcessed(int n){try{org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(2)).until(()->repo.acknowledged==n);}catch(org.awaitility.core.ConditionTimeoutException e){throw new AssertionError("ACK="+repo.acknowledged+", claimed="+repo.claimed+", limits="+repo.limits+", rejected="+repo.rejected+", notificationSubscribers="+notifications.currentSubscriberCount()+", running="+consumer().isRunning());}}

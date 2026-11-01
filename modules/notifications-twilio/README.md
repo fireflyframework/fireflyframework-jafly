@@ -60,7 +60,7 @@ public class OtpService {
     private final SMSProvider smsProvider;
 
     public OtpService(SMSProvider smsProvider) {
-        this.smsProvider = smsProvider; // TwilioSMSProvider injected by auto-config
+        this.smsProvider = smsProvider; // TwilioSMSProviderImpl injected by auto-config
     }
 
     public Mono<SMSResponseDTO> sendOtp(String phoneNumber, String code) {
@@ -108,7 +108,7 @@ The `firefly.notifications.twilio` namespace is bound by [TwilioProperties.java]
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`TwilioSMSProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProvider.java) | Defines `TwilioSMSProvider`, `sendSMS`, `PhoneNumber` operations. |
+| [`TwilioSMSProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProviderImpl.java) | Defines `TwilioSMSProviderImpl`, `sendSMS`, `PhoneNumber` operations. |
 | [`TwilioProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/properties/v1/TwilioProperties.java) | Carries `accountSid`, `authToken`, `phoneNumber` data; field constraints and defaults are declared in the linked source. |
 | [`TwilioAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/config/v1/TwilioAutoConfiguration.java) | Defines `twilioInit`, `twilioSMSProvider` operations. |
 

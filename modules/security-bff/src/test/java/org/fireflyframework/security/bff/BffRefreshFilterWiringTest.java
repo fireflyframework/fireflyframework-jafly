@@ -36,11 +36,11 @@ class BffRefreshFilterWiringTest {
     @TestPropertySource(properties = "firefly.security.bff.refresh-failure-401=true")
     class Enabled {
         @Autowired
-        ObjectProvider<BffRefreshTokenFailureWebFilter> filter;
+        ObjectProvider<BffRefreshTokenFailureWebFilterImpl> filter;
 
         @Test
         void beanIsRegisteredAndOrderedOutsideSecurityChain() {
-            BffRefreshTokenFailureWebFilter bean = filter.getIfAvailable();
+            BffRefreshTokenFailureWebFilterImpl bean = filter.getIfAvailable();
             assertThat(bean).isNotNull();
             assertThat(bean.getOrder()).isEqualTo(-101);
         }
@@ -50,7 +50,7 @@ class BffRefreshFilterWiringTest {
     @SpringBootTest(classes = TestApp.class)
     class DisabledByDefault {
         @Autowired
-        ObjectProvider<BffRefreshTokenFailureWebFilter> filter;
+        ObjectProvider<BffRefreshTokenFailureWebFilterImpl> filter;
 
         @Test
         void beanIsAbsentWhenPropertyNotSet() {

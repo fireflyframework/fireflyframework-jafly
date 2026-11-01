@@ -18,7 +18,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.fireflyframework.agentic.bridge.auth.AuthStrategy;
-import org.fireflyframework.agentic.bridge.internal.DefaultAgenticClient;
+import org.fireflyframework.agentic.bridge.internal.DefaultAgenticClientImpl;
 import org.fireflyframework.agentic.bridge.observability.AgenticMetrics;
 import org.fireflyframework.agentic.bridge.resilience.CircuitBreakerSettings;
 import org.fireflyframework.agentic.bridge.resilience.RetryPolicy;
@@ -194,7 +194,7 @@ public final class AgenticClientBuilder {
         WebSocketClient effectiveWsClient = webSocketClient != null ? webSocketClient : buildWebSocketClient();
         AgenticMetrics metrics = new AgenticMetrics(meterRegistry, clientName);
 
-        return new DefaultAgenticClient(
+        return new DefaultAgenticClientImpl(
                 clientName,
                 baseUrl,
                 effectiveWebClient,

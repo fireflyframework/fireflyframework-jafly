@@ -62,12 +62,12 @@ firefly:
       password: secret
 ```
 
-3. Use the unified cache API. Obtain a `CacheAdapter` from the core `FireflyCacheManager`; it is
+3. Use the unified cache API. Obtain a `CacheAdapter` from the core `FireflyCacheManagerImpl`; it is
    now backed by PostgreSQL with no other code changes:
 
 ```java
 import org.fireflyframework.cache.core.CacheAdapter;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -76,7 +76,7 @@ public class ProductService {
 
     private final CacheAdapter cache;
 
-    public ProductService(FireflyCacheManager cacheManager) {
+    public ProductService(FireflyCacheManagerImpl cacheManager) {
         this.cache = cacheManager.getCache("products"); // CacheType.POSTGRES when selected
     }
 
@@ -104,11 +104,11 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`PostgresCacheAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/adapter/postgres/PostgresCacheAdapter.java) | PostgreSQL-backed reactive cache adapter implemented over R2DBC. |
-| [`PostgresProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/spi/providers/PostgresProvider.java) | `CacheProviderFactory` implementation that contributes the PostgreSQL R2DBC cache provider. |
+| [`PostgresCacheAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/adapter/postgres/PostgresCacheAdapterImpl.java) | PostgreSQL-backed reactive cache adapter implemented over R2DBC. |
+| [`PostgresProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/spi/providers/PostgresProviderImpl.java) | `CacheProviderFactory` implementation that contributes the PostgreSQL R2DBC cache provider. |
 | [`PostgresCacheConfig`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/adapter/postgres/PostgresCacheConfig.java) | Configuration for the PostgreSQL R2DBC cache adapter. |
 | [`PostgresCacheAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/config/PostgresCacheAutoConfiguration.java) | Auto-configuration for the PostgreSQL R2DBC cache provider. |
-| [`PostgresCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/factory/PostgresCacheHelper.java) | Self-contained factory helper that builds a `PostgresCacheAdapter`. |
+| [`PostgresCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-postgres/src/main/java/org/fireflyframework/cache/factory/PostgresCacheHelper.java) | Self-contained factory helper that builds a `PostgresCacheAdapterImpl`. |
 
 ## Related components
 
@@ -240,16 +240,16 @@ If you disable `auto-create-schema`, create this table and index manually before
   `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`. Activates when
   the R2DBC SPI is on the classpath and `firefly.cache.postgres.enabled=true`. Builds the pooled
   `fireflyCachePostgresConnectionFactory` bean and, when enabled, provisions the schema.
-- `PostgresProvider` (`org.fireflyframework.cache.spi.providers`). the `CacheProviderFactory` SPI
+- `PostgresProviderImpl` (`org.fireflyframework.cache.spi.providers`). the `CacheProviderFactory` SPI
   implementation, registered for `ServiceLoader` in
   `META-INF/services/org.fireflyframework.cache.spi.CacheProviderFactory`. Reports `CacheType.POSTGRES`
   with priority 15 and is available when the connection factory is present and the provider is enabled.
 - `PostgresCacheHelper` (`org.fireflyframework.cache.factory`). the factory helper the cache core
   references reflectively to build adapters; its fully-qualified name is load-bearing and must not be
   renamed or moved.
-- `PostgresCacheAdapter` (`org.fireflyframework.cache.adapter.postgres`). the `CacheAdapter`
+- `PostgresCacheAdapterImpl` (`org.fireflyframework.cache.adapter.postgres`). the `CacheAdapter`
   implementation. Stores entries in the relational table via the R2DBC `ConnectionFactory`, serializes
-  values with `JsonCacheSerializer`, namespaces keys per cache, enforces TTL, and reports
+  values with `JsonCacheSerializerImpl`, namespaces keys per cache, enforces TTL, and reports
   `CacheStats`/`CacheHealth`.
 - `PostgresCacheConfig` (`org.fireflyframework.cache.adapter.postgres`). immutable per-adapter
   config (cache name, key prefix, default TTL, schema, table).

@@ -37,7 +37,7 @@ public class NotificationObservabilityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(MeterRegistry.class)
-    NotificationMetrics notificationMetrics(MeterRegistry meterRegistry) {
-        return new NotificationMetrics(meterRegistry);
+    NotificationMetricsImpl notificationMetrics(MeterRegistry meterRegistry) {
+        return new NotificationMetricsImpl(meterRegistry);
     }
 }

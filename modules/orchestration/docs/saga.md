@@ -388,12 +388,12 @@ public interface CompensationErrorHandler {
 }
 ```
 
-#### DefaultCompensationErrorHandler
+#### DefaultCompensationErrorHandlerImpl
 
 Always returns `CONTINUE`. This matches the legacy behavior where compensation errors are silently swallowed and subsequent compensation steps proceed regardless.
 
 ```java
-public class DefaultCompensationErrorHandler implements CompensationErrorHandler {
+public class DefaultCompensationErrorHandlerImpl implements CompensationErrorHandler {
     @Override
     public CompensationErrorResult handle(String sagaName, String stepId, Throwable error, int attempt) {
         return CompensationErrorResult.CONTINUE;
@@ -401,15 +401,15 @@ public class DefaultCompensationErrorHandler implements CompensationErrorHandler
 }
 ```
 
-#### RetryWithBackoffErrorHandler
+#### RetryWithBackoffErrorHandlerImpl
 
 Retries compensation up to `maxRetries` times. Optionally filters which exception types are retryable via the `retryableTypes` set. Returns `RETRY` if under the limit and the error is retryable, `FAIL_SAGA` otherwise.
 
 ```java
-public class RetryWithBackoffErrorHandler implements CompensationErrorHandler {
+public class RetryWithBackoffErrorHandlerImpl implements CompensationErrorHandler {
 
-    public RetryWithBackoffErrorHandler(int maxRetries) { ... }
-    public RetryWithBackoffErrorHandler(int maxRetries, Set<Class<? extends Throwable>> retryableTypes) { ... }
+    public RetryWithBackoffErrorHandlerImpl(int maxRetries) { ... }
+    public RetryWithBackoffErrorHandlerImpl(int maxRetries, Set<Class<? extends Throwable>> retryableTypes) { ... }
 
     @Override
     public CompensationErrorResult handle(String sagaName, String stepId, Throwable error, int attempt) {
@@ -420,12 +420,12 @@ public class RetryWithBackoffErrorHandler implements CompensationErrorHandler {
 }
 ```
 
-#### FailFastErrorHandler
+#### FailFastErrorHandlerImpl
 
 Always returns `FAIL_SAGA` and logs the error at `ERROR` level. Use this when any compensation failure should immediately abort remaining compensations.
 
 ```java
-public class FailFastErrorHandler implements CompensationErrorHandler {
+public class FailFastErrorHandlerImpl implements CompensationErrorHandler {
     @Override
     public CompensationErrorResult handle(String sagaName, String stepId, Throwable error, int attempt) {
         log.error("Failing saga '{}' due to compensation error on step '{}': {}",
@@ -435,12 +435,12 @@ public class FailFastErrorHandler implements CompensationErrorHandler {
 }
 ```
 
-#### LogAndContinueErrorHandler
+#### LogAndContinueErrorHandlerImpl
 
 Always returns `CONTINUE` and logs the error at `WARN` level. Use this when compensation errors should be recorded but not block subsequent compensations.
 
 ```java
-public class LogAndContinueErrorHandler implements CompensationErrorHandler {
+public class LogAndContinueErrorHandlerImpl implements CompensationErrorHandler {
     @Override
     public CompensationErrorResult handle(String sagaName, String stepId, Throwable error, int attempt) {
         log.warn("Compensation error on step '{}' in saga '{}' (attempt {}), continuing: {}",
@@ -450,14 +450,14 @@ public class LogAndContinueErrorHandler implements CompensationErrorHandler {
 }
 ```
 
-#### CompositeCompensationErrorHandler
+#### CompositeCompensationErrorHandlerImpl
 
 Chains multiple handlers in order. Iterates through the list and returns the first non-`CONTINUE` result. If all handlers return `CONTINUE`, the composite returns `CONTINUE`.
 
 ```java
-public class CompositeCompensationErrorHandler implements CompensationErrorHandler {
+public class CompositeCompensationErrorHandlerImpl implements CompensationErrorHandler {
 
-    public CompositeCompensationErrorHandler(List<CompensationErrorHandler> handlers) { ... }
+    public CompositeCompensationErrorHandlerImpl(List<CompensationErrorHandler> handlers) { ... }
 
     @Override
     public CompensationErrorResult handle(String sagaName, String stepId, Throwable error, int attempt) {
@@ -488,10 +488,10 @@ Pre-registered handler names:
 
 | Name | Handler | Description |
 |------|---------|-------------|
-| `"default"` | `DefaultCompensationErrorHandler` | Always `CONTINUE` (legacy swallow behavior) |
-| `"fail-fast"` | `FailFastErrorHandler` | Always `FAIL_SAGA`, logs at ERROR |
-| `"log-and-continue"` | `LogAndContinueErrorHandler` | Always `CONTINUE`, logs at WARN |
-| `"retry"` | `RetryWithBackoffErrorHandler(3)` | Retry up to 3 times, then `FAIL_SAGA` |
+| `"default"` | `DefaultCompensationErrorHandlerImpl` | Always `CONTINUE` (legacy swallow behavior) |
+| `"fail-fast"` | `FailFastErrorHandlerImpl` | Always `FAIL_SAGA`, logs at ERROR |
+| `"log-and-continue"` | `LogAndContinueErrorHandlerImpl` | Always `CONTINUE`, logs at WARN |
+| `"retry"` | `RetryWithBackoffErrorHandlerImpl(3)` | Retry up to 3 times, then `FAIL_SAGA` |
 | `"robust"` | Composite: retry(3) + log-and-continue | Retries first, then logs and continues on exhaustion |
 
 Configuration:
@@ -507,16 +507,16 @@ firefly:
 
 ```java
 CompensationErrorHandler handler = CompensationErrorHandlerFactory.getHandler("robust")
-    .orElseGet(DefaultCompensationErrorHandler::new);
+    .orElseGet(DefaultCompensationErrorHandlerImpl::new);
 
 // Or register a custom handler
 CompensationErrorHandlerFactory.registerHandler("custom",
-    () -> new RetryWithBackoffErrorHandler(5, Set.of(TimeoutException.class)));
+    () -> new RetryWithBackoffErrorHandlerImpl(5, Set.of(TimeoutException.class)));
 
 // Or build a composite inline
 CompensationErrorHandler composite = CompensationErrorHandlerFactory.composite(
-    new RetryWithBackoffErrorHandler(3),
-    new LogAndContinueErrorHandler()
+    new RetryWithBackoffErrorHandlerImpl(3),
+    new LogAndContinueErrorHandlerImpl()
 );
 ```
 

@@ -19,7 +19,7 @@ class InstantScalarOpenApiCustomizerTest {
     OpenApiCustomizer customizer() {
         try {
             return (OpenApiCustomizer)
-                    Class.forName("org.fireflyframework.web.openapi.InstantScalarOpenApiCustomizer")
+                    Class.forName("org.fireflyframework.web.openapi.InstantScalarOpenApiCustomizerImpl")
                             .getConstructor()
                             .newInstance();
         } catch (ReflectiveOperationException error) {

@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,19 +47,19 @@ class PostgresConsumerGroupRepositoryIntegrationTest {
     }
     String relation(String table){return PostgresDeliverySchema.qualified(tables.schema(),table);}
     void install(String sql){Mono.usingWhen(Mono.from(pool.create()),c->Flux.from(c.createStatement(sql).execute()).concatMap(r->Mono.from(r.getRowsUpdated())).then(),Connection::close,(c,e)->Mono.from(c.rollbackTransaction()).then(Mono.from(c.close())),c->Mono.from(c.rollbackTransaction()).then(Mono.from(c.close()))).block(WAIT);}
-    SpringDataPostgresConsumerGroupRepository repository(String group){return repository(pool,group);}
-    SpringDataPostgresConsumerGroupRepository repository(ConnectionFactory cf,String group){return new SpringDataPostgresConsumerGroupRepository(cf,tables,new ConsumerGroupId(group),Duration.ofSeconds(10));}
-    SpringDataPostgresConsumerGroupRepository ready(String group,int attempts){var r=repository(group);r.registerGroup(new GroupSubscription(Set.of("events"),attempts),RetainedReplayPolicy.ALL_RETAINED).block(WAIT);r.verifyProtocol().block(WAIT);return r;}
+    SpringDataPostgresConsumerGroupRepositoryImpl repository(String group){return repository(pool,group);}
+    SpringDataPostgresConsumerGroupRepositoryImpl repository(ConnectionFactory cf,String group){return new SpringDataPostgresConsumerGroupRepositoryImpl(cf,tables,new ConsumerGroupId(group),Duration.ofSeconds(10));}
+    SpringDataPostgresConsumerGroupRepositoryImpl ready(String group,int attempts){var r=repository(group);r.registerGroup(new GroupSubscription(Set.of("events"),attempts),RetainedReplayPolicy.ALL_RETAINED).block(WAIT);r.verifyProtocol().block(WAIT);return r;}
     ClaimRequest request(){return request(8,3,Duration.ofSeconds(5));}
     ClaimRequest request(int limit,int attempts,Duration lease){return new ClaimRequest(Set.of("events"),limit,attempts,lease);}
     long append(){return database.sql("INSERT INTO "+relation(tables.outbox())+" (destination,channel,payload,headers,event_class) VALUES ('orders.created','events',decode('0001ff','hex'),'{\"decimal\":12.3400}'::pg_catalog.jsonb,'untrusted.MustNotInitialize') RETURNING id").map((row,m)->row.get("id",Long.class)).one().block(WAIT);}
-    DeliveryClaim one(SpringDataPostgresConsumerGroupRepository r,ClaimRequest request){var batch=r.claim(request).block(WAIT);assertThat(batch.claims()).hasSize(1);return batch.claims().getFirst();}
+    DeliveryClaim one(SpringDataPostgresConsumerGroupRepositoryImpl r,ClaimRequest request){var batch=r.claim(request).block(WAIT);assertThat(batch.claims()).hasSize(1);return batch.claims().getFirst();}
     String snapshot(String table,String where){return database.sql("SELECT pg_catalog.to_jsonb(value)::pg_catalog.text AS snapshot FROM "+relation(table)+" value WHERE "+where).map((row,m)->row.get("snapshot",String.class)).one().block(WAIT);}
     long count(String table){return database.sql("SELECT pg_catalog.count(*) AS count FROM "+relation(table)).map((row,m)->row.get("count",Long.class)).one().block(WAIT);}
     Map<String,Object> state(String group,long event){return database.sql("SELECT * FROM "+relation(tables.deliveries())+" WHERE group_id=:group AND event_id=:id").bind("group",group).bind("id",event).fetch().one().block(WAIT);}
     OffsetDateTime clock(){return database.sql("SELECT pg_catalog.clock_timestamp() AS now").map((row,m)->row.get("now",OffsetDateTime.class)).one().block(WAIT);}
     DeadLetterRedriveCommand command(DeliveryClaim c){return new DeadLetterRedriveCommand(UUID.randomUUID(),c.row().id(),c.row().leaseToken(),c.row().leaseGeneration(),3,"operator-supplied","reviewed technical request");}
-    DeliveryClaim deadLetter(SpringDataPostgresConsumerGroupRepository r){append();var c=one(r,request());assertThat(r.reject(c,FailureKind.EXPLICIT_DEAD_LETTER,Duration.ZERO).block(WAIT)).isEqualTo(TransitionResult.APPLIED);return c;}
+    DeliveryClaim deadLetter(SpringDataPostgresConsumerGroupRepositoryImpl r){append();var c=one(r,request());assertThat(r.reject(c,FailureKind.EXPLICIT_DEAD_LETTER,Duration.ZERO).block(WAIT)).isEqualTo(TransitionResult.APPLIED);return c;}
     Connection blocker(String sql){var c=Mono.from(pool.create()).block(WAIT);try{Mono.from(c.beginTransaction()).block(WAIT);Flux.from(c.createStatement(sql).execute()).concatMap(r->Flux.from(r.getRowsUpdated())).then().block(WAIT);return c;}catch(RuntimeException e){Mono.from(c.rollbackTransaction()).then(Mono.from(c.close())).block(WAIT);throw e;}}
     void rollbackClose(Connection c,boolean committed){try{if(!committed)Mono.from(c.rollbackTransaction()).block(WAIT);}finally{Mono.from(c.close()).block(WAIT);}}
     final class ObservedFactory implements ConnectionFactory {

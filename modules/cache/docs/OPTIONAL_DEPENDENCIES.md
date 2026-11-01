@@ -186,7 +186,7 @@ void shouldStartWithoutRedis() {
     
     contextRunner.run(context -> {
         assertThat(context).hasNotFailed();
-        assertThat(context).hasSingleBean(FireflyCacheManager.class);
+        assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
         assertThat(context).hasSingleBean(CacheAdapter.class);
     });
 }

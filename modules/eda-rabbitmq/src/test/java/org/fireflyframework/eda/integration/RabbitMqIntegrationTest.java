@@ -19,7 +19,7 @@ package org.fireflyframework.eda.integration;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
-import org.fireflyframework.eda.publisher.rabbitmq.RabbitMqEventPublisher;
+import org.fireflyframework.eda.publisher.rabbitmq.RabbitMqEventPublisherImpl;
 import org.fireflyframework.eda.testconfig.BaseIntegrationTest;
 import org.fireflyframework.eda.testconfig.TestEventModels;
 import com.rabbitmq.client.Channel;
@@ -73,7 +73,7 @@ class RabbitMqIntegrationTest extends BaseIntegrationTest {
     );
 
     @Autowired(required = false)
-    private RabbitMqEventPublisher rabbitMqPublisher;
+    private RabbitMqEventPublisherImpl rabbitMqPublisher;
 
     @Autowired(required = false)
     private EventPublisherFactory publisherFactory;

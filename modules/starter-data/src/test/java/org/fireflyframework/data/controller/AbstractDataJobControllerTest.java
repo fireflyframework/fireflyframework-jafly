@@ -21,7 +21,7 @@ import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
 import org.fireflyframework.data.model.JobStartRequest;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -224,7 +224,7 @@ class AbstractDataJobControllerTest {
     static class TestResilientDataJobService extends AbstractResilientDataJobService {
 
         public TestResilientDataJobService(JobTracingService tracingService,
-                                          JobMetricsService metricsService,
+                                          JobMetricsServiceImpl metricsService,
                                           ResiliencyDecoratorService resiliencyService,
                                           JobEventPublisher eventPublisher,
                                           JobAuditService auditService,

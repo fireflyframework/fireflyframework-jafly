@@ -1,6 +1,6 @@
 package org.fireflyframework.observability.autoconfigure;
 
-import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessor;
+import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessorImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.SpringApplication;
@@ -52,7 +52,7 @@ class IndexedAutoConfigurationExclusionsTest {
     void yamlIndexedExclusionsSurviveTracingBridgeConfiguration() {
         var environment = indexedEnvironment(false);
         assertThat(bound(environment)).containsExactlyElementsOf(DATABASE);
-        new FireflyObservabilityEnvironmentPostProcessor()
+        new FireflyObservabilityEnvironmentPostProcessorImpl()
                 .postProcessEnvironment(environment, new SpringApplication());
         assertThat(bound(environment)).containsAll(DATABASE).contains(BRAVE);
     }
@@ -61,7 +61,7 @@ class IndexedAutoConfigurationExclusionsTest {
     void higherPriorityIndexedListWinsOverLowerScalarDefault() {
         var environment = indexedEnvironment(true);
         assertThat(bound(environment)).containsExactlyElementsOf(DATABASE);
-        new FireflyObservabilityEnvironmentPostProcessor()
+        new FireflyObservabilityEnvironmentPostProcessorImpl()
                 .postProcessEnvironment(environment, new SpringApplication());
         assertThat(bound(environment)).containsAll(DATABASE).contains(BRAVE)
                 .doesNotContain("org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration");
@@ -70,7 +70,7 @@ class IndexedAutoConfigurationExclusionsTest {
     @Test
     void existingCommaSeparatedExclusionsRemainInOrder() {
         var environment = new MockEnvironment().withProperty(KEY, String.join(",", DATABASE));
-        new FireflyObservabilityEnvironmentPostProcessor()
+        new FireflyObservabilityEnvironmentPostProcessorImpl()
                 .postProcessEnvironment(environment, new SpringApplication());
         assertThat(bound(environment)).containsExactly(DATABASE.get(0), DATABASE.get(1),
                 DATABASE.get(2), DATABASE.get(3), BRAVE);
@@ -80,7 +80,7 @@ class IndexedAutoConfigurationExclusionsTest {
     void disabledTracingDoesNotRewriteTheIndexedList() {
         var environment = indexedEnvironment(true)
                 .withProperty("firefly.observability.tracing.enabled", "false");
-        new FireflyObservabilityEnvironmentPostProcessor()
+        new FireflyObservabilityEnvironmentPostProcessorImpl()
                 .postProcessEnvironment(environment, new SpringApplication());
         assertThat(bound(environment)).containsExactlyElementsOf(DATABASE);
     }

@@ -85,7 +85,7 @@ class R2dbcRevocationAdapterIntegrationTest {
     static class TestApp {
         @Bean
         RevocationPort revocationPort(DatabaseClient databaseClient) {
-            return new R2dbcRevocationAdapter(databaseClient);
+            return new R2dbcRevocationAdapterImpl(databaseClient);
         }
     }
 }

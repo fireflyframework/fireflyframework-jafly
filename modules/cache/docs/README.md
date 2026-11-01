@@ -37,7 +37,7 @@ Welcome to the Firefly Common Cache Library documentation! This directory contai
   - Best practices
 
 - [API Reference](API_REFERENCE.md) - Detailed API documentation
-  - FireflyCacheManager API
+  - FireflyCacheManagerImpl API
   - CacheAdapter interface
   - Annotations (@Cacheable, @CacheEvict, @CachePut)
   - Configuration classes

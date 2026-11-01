@@ -48,7 +48,7 @@ class SagaCompensationPolicyTest {
     private SagaEngine createEngine(CompensationPolicy policy) {
         var events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         var compensator = new SagaCompensator(events, policy, stepInvoker);
         return new SagaEngine(null, events, orchestrator, null, null, compensator, noOpPublisher);

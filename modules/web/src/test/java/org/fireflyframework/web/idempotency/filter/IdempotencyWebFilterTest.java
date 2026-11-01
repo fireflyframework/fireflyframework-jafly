@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
  */
 class IdempotencyWebFilterTest {
 
-    private IdempotencyWebFilter idempotencyWebFilter;
+    private IdempotencyWebFilterImpl idempotencyWebFilter;
     private IdempotencyProperties properties;
     private TestIdempotencyCache idempotencyCache;
 
@@ -67,7 +67,7 @@ class IdempotencyWebFilterTest {
         properties.setNamespace("unit-test");
 
         // Create the filter
-        idempotencyWebFilter = new IdempotencyWebFilter(properties, idempotencyCache);
+        idempotencyWebFilter = new IdempotencyWebFilterImpl(properties, idempotencyCache);
     }
 
     @Test

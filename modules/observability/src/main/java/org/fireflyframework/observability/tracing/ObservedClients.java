@@ -41,7 +41,7 @@ public final class ObservedClients {
             builder.observationRegistry(registry);
         } else {
             // Built before tracing started. The filter reads the registry on each call.
-            builder.filter(ClientTracingExchangeFilter.INSTANCE);
+            builder.filter(ClientTracingExchangeFilterImpl.INSTANCE);
         }
         return builder;
     }

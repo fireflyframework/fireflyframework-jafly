@@ -63,7 +63,7 @@ class PostgreSqlEventStoreIntegrationTest {
             .withPassword("test_password")
             .withReuse(false);
 
-    private R2dbcEventStore eventStore;
+    private R2dbcEventStoreImpl eventStore;
     private DatabaseClient databaseClient;
     private R2dbcEntityTemplate entityTemplate;
     private ConnectionFactory connectionFactory;
@@ -92,7 +92,7 @@ class PostgreSqlEventStoreIntegrationTest {
         objectMapper.registerModule(new JavaTimeModule());
         
         EventSourcingProperties properties = new EventSourcingProperties();
-        eventStore = new R2dbcEventStore(
+        eventStore = new R2dbcEventStoreImpl(
             databaseClient, 
             entityTemplate, 
             objectMapper, 

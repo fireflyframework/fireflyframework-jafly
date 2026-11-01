@@ -48,7 +48,7 @@ firefly:
         # credentials omitted -> uses the AWS default credentials provider chain (IAM role, etc.)
 ```
 
-That is all that is required. `S3AdapterAutoConfiguration` builds the `S3Client`, `S3Presigner` and credentials provider, and registers `S3DocumentContentAdapter` as the active `DocumentContentPort`.
+That is all that is required. `S3AdapterAutoConfiguration` builds the `S3Client`, `S3Presigner` and credentials provider, and registers `S3DocumentContentAdapterImpl` as the active `DocumentContentPort`.
 
 2. Inject and use the port from your services (program against the SPI, not the S3 type):
 
@@ -86,7 +86,7 @@ public class DocumentService {
 3. (Optional) generate a pre-signed upload URL for direct browser-to-S3 uploads by injecting the concrete adapter:
 
 ```java
-import org.fireflyframework.ecm.adapter.s3.S3DocumentContentAdapter;
+import org.fireflyframework.ecm.adapter.s3.S3DocumentContentAdapterImpl;
 
 // 15-minute pre-signed PUT URL
 Mono<String> url = s3Adapter.generateUploadUrl(documentId, 15);
@@ -117,13 +117,13 @@ Property-based wiring conditions found in this module:
 
 - `name = "firefly.ecm.adapter-type", havingValue = "s3"`. [S3AdapterAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3AdapterAutoConfiguration.java).
 - `name = "firefly.ecm.adapter-type", havingValue = "s3"`. [S3Beans.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3Beans.java).
-- `name = "firefly.ecm.adapter-type", havingValue = "s3"`. [S3DocumentContentAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapter.java).
+- `name = "firefly.ecm.adapter-type", havingValue = "s3"`. [S3DocumentContentAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapterImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`S3DocumentContentAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapter.java) | Defines `S3DocumentContentAdapter`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
+| [`S3DocumentContentAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapterImpl.java) | Defines `S3DocumentContentAdapterImpl`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
 | [`S3AdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3AdapterProperties.java) | Configuration properties for the Amazon S3 ECM adapter. |
 | [`S3AdapterAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-aws/src/main/java/org/fireflyframework/ecm/adapter/s3/S3AdapterAutoConfiguration.java) | Defines `awsCredentialsProvider`, `s3Client` operations. |
 
@@ -169,7 +169,7 @@ ResponseInputStream<GetObjectResponse> ris = new ResponseInputStream<>(
         );
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(ris);
 
-        byte[] result = ((S3DocumentContentAdapter) contentPort).getContentRange(documentId, 1L, 3L).block();
+        byte[] result = ((S3DocumentContentAdapterImpl) contentPort).getContentRange(documentId, 1L, 3L).block();
         assertThat(new String(result)).isEqualTo("bcd");
 
         ArgumentCaptor<GetObjectRequest> captor = ArgumentCaptor.forClass(GetObjectRequest.class);

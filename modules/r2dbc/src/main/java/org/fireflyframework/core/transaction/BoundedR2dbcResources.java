@@ -10,12 +10,12 @@ import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 import org.springframework.r2dbc.core.DatabaseClient;
 /** Verifies caller-built resources without cloning or changing the caller's client or template. */
 public final class BoundedR2dbcResources {
-    private final OwnedLeaseConnectionFactory factory;
+    private final OwnedLeaseConnectionFactoryImpl factory;
     private final R2dbcTransactionManager manager;
     private final DatabaseClient client;
     private final R2dbcEntityTemplate template;
-    private BoundedR2dbcResources(OwnedLeaseConnectionFactory factory,DatabaseClient client,R2dbcEntityTemplate template,R2dbcTransactionManager manager){this.factory=factory;this.client=client;this.template=template;this.manager=manager;}
-    public static BoundedR2dbcResources verify(OwnedLeaseConnectionFactory factory,DatabaseClient client,
+    private BoundedR2dbcResources(OwnedLeaseConnectionFactoryImpl factory,DatabaseClient client,R2dbcEntityTemplate template,R2dbcTransactionManager manager){this.factory=factory;this.client=client;this.template=template;this.manager=manager;}
+    public static BoundedR2dbcResources verify(OwnedLeaseConnectionFactoryImpl factory,DatabaseClient client,
             R2dbcEntityTemplate template,R2dbcTransactionManager manager){
         Objects.requireNonNull(factory);Objects.requireNonNull(client);Objects.requireNonNull(template);Objects.requireNonNull(manager);
         if(client.getConnectionFactory()!=factory||template.getDatabaseClient()!=client||manager.getConnectionFactory()!=factory)throw new IllegalArgumentException("One qualified factory/client/template/manager graph required");
@@ -23,6 +23,6 @@ public final class BoundedR2dbcResources {
     }
     boolean current(){return client.getConnectionFactory()==factory&&template.getDatabaseClient()==client&&manager.getConnectionFactory()==factory;}
     boolean sameGraph(BoundedR2dbcResources other){return other!=null&&factory==other.factory&&client==other.client&&template==other.template&&manager==other.manager;}
-    public OwnedLeaseConnectionFactory factory(){return factory;}
+    public OwnedLeaseConnectionFactoryImpl factory(){return factory;}
     public R2dbcTransactionManager manager(){return manager;}
 }

@@ -20,7 +20,7 @@ import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -113,7 +113,7 @@ import java.util.UUID;
 public abstract class AbstractResilientSyncDataJobService implements SyncDataJobService {
 
     private final JobTracingService tracingService;
-    private final JobMetricsService metricsService;
+    private final JobMetricsServiceImpl metricsService;
     private final ResiliencyDecoratorService resiliencyService;
     private final JobEventPublisher eventPublisher;
     private final JobAuditService auditService;
@@ -130,7 +130,7 @@ public abstract class AbstractResilientSyncDataJobService implements SyncDataJob
      * @param resultService service for execution result persistence
      */
     protected AbstractResilientSyncDataJobService(JobTracingService tracingService,
-                                                  JobMetricsService metricsService,
+                                                  JobMetricsServiceImpl metricsService,
                                                   ResiliencyDecoratorService resiliencyService,
                                                   JobEventPublisher eventPublisher,
                                                   JobAuditService auditService,
@@ -147,7 +147,7 @@ public abstract class AbstractResilientSyncDataJobService implements SyncDataJob
      * Constructor without persistence services for backward compatibility.
      */
     protected AbstractResilientSyncDataJobService(JobTracingService tracingService,
-                                                  JobMetricsService metricsService,
+                                                  JobMetricsServiceImpl metricsService,
                                                   ResiliencyDecoratorService resiliencyService,
                                                   JobEventPublisher eventPublisher) {
         this(tracingService, metricsService, resiliencyService, eventPublisher, null, null);
@@ -157,7 +157,7 @@ public abstract class AbstractResilientSyncDataJobService implements SyncDataJob
      * Constructor without JobEventPublisher for backward compatibility.
      */
     protected AbstractResilientSyncDataJobService(JobTracingService tracingService,
-                                                  JobMetricsService metricsService,
+                                                  JobMetricsServiceImpl metricsService,
                                                   ResiliencyDecoratorService resiliencyService) {
         this(tracingService, metricsService, resiliencyService, null, null, null);
     }
@@ -330,7 +330,7 @@ public abstract class AbstractResilientSyncDataJobService implements SyncDataJob
     /**
      * Gets the metrics service for custom metrics.
      */
-    protected JobMetricsService getMetricsService() {
+    protected JobMetricsServiceImpl getMetricsService() {
         return metricsService;
     }
 

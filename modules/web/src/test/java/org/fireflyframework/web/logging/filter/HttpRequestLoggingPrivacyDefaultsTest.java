@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class HttpRequestLoggingPrivacyDefaultsTest {
-    private final Logger logger = (Logger) LoggerFactory.getLogger(HttpRequestLoggingWebFilter.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(HttpRequestLoggingWebFilterImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level priorLevel;
     private boolean priorAdditive;
@@ -106,7 +106,7 @@ class HttpRequestLoggingPrivacyDefaultsTest {
                 .header("Authorization", "Bearer synthetic-secret-value").body(requestBody);
         var exchange = MockServerWebExchange.from(request);
         var received = new AtomicReference<String>();
-        var filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
 
         filter.filter(exchange, actual -> DataBufferUtils.join(actual.getRequest().getBody()).flatMap(buffer -> {
             received.set(buffer.toString(StandardCharsets.UTF_8));

@@ -44,10 +44,10 @@ class ExceptionConverterServiceTest {
     @BeforeEach
     void setUp() {
         converterService = new ExceptionConverterService(Arrays.asList(
-                new DataAccessExceptionConverter(),
-                new HttpClientErrorExceptionConverter(),
-                new HttpServerErrorExceptionConverter(),
-                new OptimisticLockingFailureExceptionConverter()
+                new DataAccessExceptionConverterImpl(),
+                new HttpClientErrorExceptionConverterImpl(),
+                new HttpServerErrorExceptionConverterImpl(),
+                new OptimisticLockingFailureExceptionConverterImpl()
         ));
     }
 

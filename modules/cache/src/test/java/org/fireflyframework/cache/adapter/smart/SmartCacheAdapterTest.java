@@ -16,7 +16,7 @@
 
 package org.fireflyframework.cache.adapter.smart;
 
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheStats;
@@ -34,7 +34,7 @@ class SmartCacheAdapterTest {
 
     private CacheAdapter l1;
     private CacheAdapter l2;
-    private SmartCacheAdapter smart;
+    private SmartCacheAdapterImpl smart;
 
     @BeforeEach
     void setUp() {
@@ -50,9 +50,9 @@ class SmartCacheAdapterTest {
                 .expireAfterWrite(Duration.ofMinutes(10))
                 .recordStats(true)
                 .build();
-        l1 = new CaffeineCacheAdapter("smart", cfg1);
-        l2 = new CaffeineCacheAdapter("smart", cfg2);
-        smart = new SmartCacheAdapter("smart", l1, l2, Duration.ofMinutes(10), true);
+        l1 = new CaffeineCacheAdapterImpl("smart", cfg1);
+        l2 = new CaffeineCacheAdapterImpl("smart", cfg2);
+        smart = new SmartCacheAdapterImpl("smart", l1, l2, Duration.ofMinutes(10), true);
         // clean
         l1.clear().block();
         l2.clear().block();

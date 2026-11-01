@@ -59,7 +59,7 @@ public class FireflyBannerAutoConfiguration implements ApplicationListener<Appli
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnMissingBean
     public Banner fireflyBanner() {
-        return new FireflyBanner();
+        return new FireflyBannerImpl();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class FireflyBannerAutoConfiguration implements ApplicationListener<Appli
         event.getSpringApplication().setBannerMode(Banner.Mode.CONSOLE);
         
         // Set our custom banner - this happens very early in the application lifecycle
-        event.getSpringApplication().setBanner(new FireflyBanner());
+        event.getSpringApplication().setBanner(new FireflyBannerImpl());
     }
 
     /**
@@ -107,7 +107,7 @@ public class FireflyBannerAutoConfiguration implements ApplicationListener<Appli
      * Custom banner implementation that displays the Firefly ASCII art
      * and copyright information using Spring Boot's ResourceBanner for proper processing.
      */
-    public static class FireflyBanner implements Banner {
+    public static class FireflyBannerImpl implements Banner {
         
         @Override
         public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {

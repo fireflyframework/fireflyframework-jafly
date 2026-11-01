@@ -695,7 +695,7 @@ public class EquifaxSpainCreditReportEnricher
 
     public EquifaxSpainCreditReportEnricher(
             JobTracingService tracingService,
-            JobMetricsService metricsService,
+            JobMetricsServiceImpl metricsService,
             ResiliencyDecoratorService resiliencyService,
             EnrichmentEventPublisher eventPublisher,
             EquifaxSpainClient equifaxClient) {
@@ -1754,7 +1754,7 @@ package org.fireflyframework.creditbureaus.enricher;
 import org.fireflyframework.data.enrichment.EnricherMetadata;
 import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.model.EnrichmentRequest;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import org.fireflyframework.data.service.DataEnricher;
@@ -1779,7 +1779,7 @@ public class EquifaxSpainCreditReportEnricher
 
     public EquifaxSpainCreditReportEnricher(
             JobTracingService tracingService,
-            JobMetricsService metricsService,
+            JobMetricsServiceImpl metricsService,
             ResiliencyDecoratorService resiliencyService,
             EnrichmentEventPublisher eventPublisher,
             EquifaxSpainClient equifaxClient) {
@@ -2437,7 +2437,7 @@ public class EquifaxSpainCreditReportEnricher
 
     public EquifaxSpainCreditReportEnricher(
             JobTracingService tracingService,
-            JobMetricsService metricsService,
+            JobMetricsServiceImpl metricsService,
             ResiliencyDecoratorService resiliencyService,
             EnrichmentEventPublisher eventPublisher,
             EquifaxSpainClient equifaxClient,
@@ -2706,7 +2706,7 @@ package org.fireflyframework.creditbureaus.enricher;
 
 import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.model.EnrichmentRequest;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import org.fireflyframework.creditbureaus.equifax.spain.client.EquifaxSpainClient;
@@ -2733,7 +2733,7 @@ class EquifaxSpainCreditReportEnricherTest {
     private JobTracingService tracingService;
 
     @Mock
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
 
     @Mock
     private ResiliencyDecoratorService resiliencyService;

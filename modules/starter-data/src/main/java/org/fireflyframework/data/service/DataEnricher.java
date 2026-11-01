@@ -26,7 +26,7 @@ import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.model.EnrichmentRequest;
 import org.fireflyframework.data.model.EnrichmentResponse;
 import org.fireflyframework.data.model.EnrichmentStrategy;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.operation.EnricherOperationInterface;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
@@ -118,7 +118,7 @@ import java.util.UUID;
 public abstract class DataEnricher<TSource, TProvider, TTarget> implements EndpointAware {
 
     private final JobTracingService tracingService;
-    private final JobMetricsService metricsService;
+    private final JobMetricsServiceImpl metricsService;
     private final ResiliencyDecoratorService resiliencyService;
     private final EnrichmentEventPublisher eventPublisher;
     private final EnrichmentCacheService cacheService;
@@ -136,7 +136,7 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
      * @param targetClass the target DTO class
      */
     protected DataEnricher(JobTracingService tracingService,
-                          JobMetricsService metricsService,
+                          JobMetricsServiceImpl metricsService,
                           ResiliencyDecoratorService resiliencyService,
                           EnrichmentEventPublisher eventPublisher,
                           EnrichmentCacheService cacheService,
@@ -153,7 +153,7 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
      * Constructor without cache for backward compatibility.
      */
     protected DataEnricher(JobTracingService tracingService,
-                          JobMetricsService metricsService,
+                          JobMetricsServiceImpl metricsService,
                           ResiliencyDecoratorService resiliencyService,
                           EnrichmentEventPublisher eventPublisher,
                           Class<TTarget> targetClass) {
@@ -164,7 +164,7 @@ public abstract class DataEnricher<TSource, TProvider, TTarget> implements Endpo
      * Constructor without event publisher for backward compatibility.
      */
     protected DataEnricher(JobTracingService tracingService,
-                          JobMetricsService metricsService,
+                          JobMetricsServiceImpl metricsService,
                           ResiliencyDecoratorService resiliencyService,
                           Class<TTarget> targetClass) {
         this(tracingService, metricsService, resiliencyService, null, null, targetClass);

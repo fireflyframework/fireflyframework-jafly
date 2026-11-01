@@ -102,11 +102,11 @@ public final class RestrictedHtmlTemplateRenderer {
                     || source.getBytes(StandardCharsets.UTF_8).length > limits.templateBytes()) {
                 return failure("UNSUPPORTED_TEMPLATE");
             }
-            var budget = new Budget();
+            var budget = new BudgetImpl();
             Object copied = copy(model, 0, budget);
             if (!(copied instanceof Map<?, ?>)) return failure("UNSUPPORTED_MODEL");
             var template = new Template("restricted-published-template", new StringReader(source), configuration);
-            var writer = new BoundedWriter(limits.outputBytes());
+            var writer = new BoundedWriterImpl(limits.outputBytes());
             Environment environment = template.createProcessingEnvironment(copied, writer);
             environment.setTemplateProcessingTracer(budget);
             environment.process();
@@ -124,7 +124,7 @@ public final class RestrictedHtmlTemplateRenderer {
         }
     }
 
-    private Object copy(Object value, int depth, Budget budget) {
+    private Object copy(Object value, int depth, BudgetImpl budget) {
         if (++budget.nodes > limits.modelNodes() || depth > limits.depth()) throw new UnsupportedModel();
         budget.deadline();
         if (value == null || value instanceof Boolean) return value;
@@ -219,7 +219,7 @@ public final class RestrictedHtmlTemplateRenderer {
     private static final class UnsupportedModel extends RuntimeException { }
     private static final class InvalidHtml extends RuntimeException { }
 
-    private final class Budget implements TemplateProcessingTracer {
+    private final class BudgetImpl implements TemplateProcessingTracer {
         private final long end = System.nanoTime() + limits.renderMillis() * 1_000_000;
         private int nodes, steps, depth;
         void deadline() { if (System.nanoTime() > end) throw new RenderLimit(); }
@@ -230,12 +230,12 @@ public final class RestrictedHtmlTemplateRenderer {
         public void exitElement(Environment environment, TracedElement element) { depth--; }
     }
 
-    private static final class BoundedWriter extends Writer {
+    private static final class BoundedWriterImpl extends Writer {
         private final int limit;
         private final StringBuilder text = new StringBuilder();
         private int bytes;
         private boolean high;
-        BoundedWriter(int limit) { this.limit = limit; }
+        BoundedWriterImpl(int limit) { this.limit = limit; }
         @Override public void write(char[] value, int offset, int length) {
             for (int i = offset; i < offset + length; i++) {
                 char character = value[i];

@@ -32,7 +32,7 @@ The library automatically creates traces for all job operations when using `Abst
 public class CustomerDataJobService extends AbstractResilientDataJobService {
 
     public CustomerDataJobService(JobTracingService tracingService,
-                                  JobMetricsService metricsService,
+                                  JobMetricsServiceImpl metricsService,
                                   ResiliencyDecoratorService resiliencyService,
                                   JobEventPublisher eventPublisher,
                                   JobAuditService auditService,
@@ -271,13 +271,13 @@ Note: The `<metric-prefix>` is configurable via `firefly.data.orchestration.obse
 
 ### Custom Metrics
 
-Record custom metrics using `JobMetricsService`:
+Record custom metrics using `JobMetricsServiceImpl`:
 
 ```java
 @Service
 public class CustomService {
     
-    private final JobMetricsService metricsService;
+    private final JobMetricsServiceImpl metricsService;
     
     public void processData(String executionId) {
         metricsService.recordJobExecutionStart(executionId);
@@ -335,7 +335,7 @@ Response example:
 @Service
 public class MonitoringService {
     
-    private final JobOrchestratorHealthIndicator healthIndicator;
+    private final JobOrchestratorHealthIndicatorImpl healthIndicator;
     
     public void checkHealth() {
         healthIndicator.health()
@@ -485,7 +485,7 @@ public class CustomerDataJobService extends AbstractResilientDataJobService {
     private final CustomerRepository repository;
 
     public CustomerDataJobService(JobTracingService tracingService,
-                                  JobMetricsService metricsService,
+                                  JobMetricsServiceImpl metricsService,
                                   ResiliencyDecoratorService resiliencyService,
                                   JobEventPublisher eventPublisher,
                                   JobAuditService auditService,

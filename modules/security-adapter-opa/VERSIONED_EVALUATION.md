@@ -1,6 +1,6 @@
 # Optional versioned policy evaluation
 
-`PolicyDecisionPort`, `Decision`, and the existing boolean OPA adapter retain their existing contracts. The separate `PolicyEvaluationPort` and explicitly constructed `OpaPolicyEvaluationAdapter` support consumers that require a decision and server-reported provenance from one response. Nothing activates this capability automatically.
+`PolicyDecisionPort`, `Decision`, and the existing boolean OPA adapter retain their existing contracts. The separate `PolicyEvaluationPort` and explicitly constructed `OpaPolicyEvaluationAdapterImpl` support consumers that require a decision and server-reported provenance from one response. Nothing activates this capability automatically.
 
 The configured OPA data document must return an object containing exactly a literal boolean `allow` and a `policy_revision` string, while OPA decision logging must supply the response-level `decision_id`. Additional result fields, including obligations and constraints, are unsupported and make the evaluation indeterminate with empty provenance. They are never silently dropped or treated as fulfilled. Legitimate response-level OPA metadata, such as metrics, explanations and provenance, remains accepted and does not replace the required result revision. For example, the response shape is:
 

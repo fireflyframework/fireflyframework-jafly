@@ -45,7 +45,7 @@ class TccEngineTest {
     void setUp() {
         events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         // Use a null registry — we pass TccDefinition directly to engine
         engine = new TccEngine(null, events, orchestrator, null, null, noOpPublisher);

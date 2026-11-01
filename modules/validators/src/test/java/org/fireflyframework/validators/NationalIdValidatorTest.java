@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class NationalIdValidatorTest {
 
-    private NationalIdValidator validator;
+    private NationalIdValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new NationalIdValidator();
+        validator = new NationalIdValidatorImpl();
     }
 
     @Test

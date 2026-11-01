@@ -17,14 +17,14 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.IbanValidator;
+import org.fireflyframework.validators.IbanValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = IbanValidator.class)
+@Constraint(validatedBy = IbanValidatorImpl.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidIban {

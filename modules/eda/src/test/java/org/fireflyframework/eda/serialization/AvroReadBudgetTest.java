@@ -84,19 +84,19 @@ class AvroReadBudgetTest {
     }
 
     @Test void shallowIncomingReflectedRecursionRemainsSupported() throws IOException {
-        var value = new AvroMessageSerializer().deserialize(nodes(4), ReflectedNode.class);
+        var value = new AvroMessageSerializerImpl().deserialize(nodes(4), ReflectedNode.class);
         assertThat(value.name).isEmpty();
         assertThat(value.next.next.next.next).isNull();
     }
 
     @Test void shallowIncomingSpecificRecursionRemainsSupported() throws IOException {
-        var value = new AvroMessageSerializer().deserialize(nodes(4), SpecificNode.class);
+        var value = new AvroMessageSerializerImpl().deserialize(nodes(4), SpecificNode.class);
         assertThat(value.name.toString()).isEmpty();
         assertThat(value.next.next.next.next).isNull();
     }
 
     @Test void deepIncomingReflectedRecursionIsRejectedBeforeConstructionExhaustsTheStack() throws IOException {
-        var serializer = new AvroMessageSerializer();
+        var serializer = new AvroMessageSerializerImpl();
         byte[] data = nodes(20_000);
         ReflectedNode.constructions = 0;
         assertThatThrownBy(() -> serializer.deserialize(data, ReflectedNode.class))
@@ -108,7 +108,7 @@ class AvroReadBudgetTest {
     }
 
     @Test void deepIncomingSpecificRecursionIsRejectedBeforeConstructionExhaustsTheStack() throws IOException {
-        var serializer = new AvroMessageSerializer();
+        var serializer = new AvroMessageSerializerImpl();
         byte[] data = nodes(20_000);
         SpecificNode.constructions = 0;
         assertThatThrownBy(() -> serializer.deserialize(data, SpecificNode.class))
@@ -122,7 +122,7 @@ class AvroReadBudgetTest {
     @Test void incomingReflectedRecordVisitsAreRejectedDuringReading() throws IOException {
         byte[] data = emptyRecords(100_001);
         Empty.constructions = 0;
-        assertThatThrownBy(() -> new AvroMessageSerializer().deserialize(data, ReflectedMany.class))
+        assertThatThrownBy(() -> new AvroMessageSerializerImpl().deserialize(data, ReflectedMany.class))
                 .isInstanceOf(SerializationException.class)
                 .hasRootCauseMessage("Avro read traversal exceeds bounds");
         assertThat(Empty.constructions).isBetween(1, 100_000);
@@ -131,7 +131,7 @@ class AvroReadBudgetTest {
     @Test void incomingSpecificRecordVisitsAreRejectedDuringReading() throws IOException {
         byte[] data = emptyRecords(100_001);
         SpecificEmpty.constructions = 0;
-        assertThatThrownBy(() -> new AvroMessageSerializer().deserialize(data, SpecificMany.class))
+        assertThatThrownBy(() -> new AvroMessageSerializerImpl().deserialize(data, SpecificMany.class))
                 .isInstanceOf(SerializationException.class)
                 .hasRootCauseMessage("Avro read traversal exceeds bounds");
         assertThat(SpecificEmpty.constructions).isBetween(1, 100_000);

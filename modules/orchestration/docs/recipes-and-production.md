@@ -219,7 +219,7 @@ void saga_fullExecution_success() {
 
     var events = new OrchestrationEvents() {};
     var invoker = new StepInvoker(new ArgumentResolver());
-    var noOpPublisher = new NoOpEventPublisher();
+    var noOpPublisher = new NoOpEventPublisherImpl();
     var orchestrator = new SagaExecutionOrchestrator(invoker, events, noOpPublisher);
     var compensator = new SagaCompensator(events,
         CompensationPolicy.STRICT_SEQUENTIAL, invoker);
@@ -392,11 +392,11 @@ The framework provides several compensation error handler strategies. Select the
 
 | Handler | Behavior | Use When |
 |---------|----------|----------|
-| `"default"` (`DefaultCompensationErrorHandler`) | Retry with backoff | General-purpose default |
-| `"fail-fast"` (`FailFastErrorHandler`) | Always returns `FAIL_SAGA` | Critical compensations that must not be retried |
-| `"log-and-continue"` (`LogAndContinueErrorHandler`) | Logs WARN, returns `CONTINUE` | Best-effort compensations |
-| `"retry"` (`RetryWithBackoffErrorHandler`) | Configurable retry with backoff | Transient failures expected |
-| `"robust"` (`CompositeCompensationErrorHandler`) | Chains retry then log-and-continue | Production systems |
+| `"default"` (`DefaultCompensationErrorHandlerImpl`) | Retry with backoff | General-purpose default |
+| `"fail-fast"` (`FailFastErrorHandlerImpl`) | Always returns `FAIL_SAGA` | Critical compensations that must not be retried |
+| `"log-and-continue"` (`LogAndContinueErrorHandlerImpl`) | Logs WARN, returns `CONTINUE` | Best-effort compensations |
+| `"retry"` (`RetryWithBackoffErrorHandlerImpl`) | Configurable retry with backoff | Transient failures expected |
+| `"robust"` (`CompositeCompensationErrorHandlerImpl`) | Chains retry then log-and-continue | Production systems |
 
 Configure globally via application properties:
 
@@ -448,7 +448,7 @@ Implement `OrchestrationEventPublisher` to forward to your message broker:
 
 ```java
 @Component
-public class KafkaEventPublisher implements OrchestrationEventPublisher {
+public class KafkaEventPublisherImpl implements OrchestrationEventPublisher {
     private final KafkaTemplate<String, OrchestrationEvent> kafka;
 
     @Override
@@ -670,7 +670,7 @@ Check: Steps only run in parallel if they're in the same DAG layer. Steps in the
 
 Check:
 1. Is `publishEvents = true` on the `@Workflow`? (or `@StepEvent` on the saga step?)
-2. Is there a custom `OrchestrationEventPublisher` bean? The default is `NoOpEventPublisher`.
+2. Is there a custom `OrchestrationEventPublisher` bean? The default is `NoOpEventPublisherImpl`.
 3. Is the `EventGateway` initialized? Check startup logs for `[event-gateway] Scan complete`.
 
 ### "TCC Cancel runs for participants that didn't Try"
@@ -794,12 +794,12 @@ Execution reporting works the same across all patterns:
 
 ### Setup
 
-Configure the `EventSourcedPersistenceProvider` to store execution state as an append-only event log instead of mutable snapshots:
+Configure the `EventSourcedPersistenceProviderImpl` to store execution state as an append-only event log instead of mutable snapshots:
 
 ```java
 @Bean
 public ExecutionPersistenceProvider persistenceProvider(EventStore eventStore, ObjectMapper mapper) {
-    return new EventSourcedPersistenceProvider(eventStore, mapper);
+    return new EventSourcedPersistenceProviderImpl(eventStore, mapper);
 }
 ```
 
@@ -817,7 +817,7 @@ firefly:
 The event-sourced provider includes an `OrchestrationProjection` for querying materialized views of execution history:
 
 ```java
-EventSourcedPersistenceProvider provider = ...;
+EventSourcedPersistenceProviderImpl provider = ...;
 OrchestrationProjection projection = provider.getProjection();
 
 // Find all failed executions

@@ -185,7 +185,7 @@ class DocuSignAuthenticationContractTest {
                     .run(context -> {
                         assertNull(context.getStartupFailure());
                         owned.set(context.getBean(ApiClient.class));
-                        assertInstanceOf(org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient.class, owned.get());
+                        assertInstanceOf(org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl.class, owned.get());
                         assertTrue(transport.exchanges.isEmpty());
                     });
             assertTrue(((org.glassfish.jersey.client.JerseyClient) owned.get().getHttpClient()).isClosed());

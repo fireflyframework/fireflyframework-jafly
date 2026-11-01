@@ -18,7 +18,7 @@ package org.fireflyframework.client.integration;
 
 import org.fireflyframework.client.ServiceClient;
 import org.fireflyframework.client.health.ServiceClientHealthManager;
-import org.fireflyframework.client.interceptor.MetricsInterceptor;
+import org.fireflyframework.client.interceptor.MetricsInterceptorImpl;
 import org.fireflyframework.client.resilience.AdvancedResilienceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,7 +50,7 @@ class AdvancedServiceClientTest {
     private ServiceClient mockServiceClient;
 
     private ServiceClientHealthManager healthManager;
-    private MetricsInterceptor.InMemoryMetricsCollector metricsCollector;
+    private MetricsInterceptorImpl.InMemoryMetricsCollectorImpl metricsCollector;
     private AdvancedResilienceManager resilienceManager;
 
     @BeforeEach
@@ -61,10 +61,10 @@ class AdvancedServiceClientTest {
             3
         );
         
-        metricsCollector = new MetricsInterceptor.InMemoryMetricsCollector();
+        metricsCollector = new MetricsInterceptorImpl.InMemoryMetricsCollectorImpl();
         
         resilienceManager = new AdvancedResilienceManager(
-            new AdvancedResilienceManager.SystemLoadSheddingStrategy(
+            new AdvancedResilienceManager.SystemLoadSheddingStrategyImpl(
                 0.8,    // maxCpuUsage
                 0.9,    // maxMemoryUsage
                 0.95,   // maxThreadPoolUtilization
@@ -78,13 +78,13 @@ class AdvancedServiceClientTest {
     @DisplayName("Should collect comprehensive metrics for banking operations")
     void shouldCollectComprehensiveMetricsForBankingOperations() {
         // Given: A metrics interceptor
-        MetricsInterceptor metricsInterceptor = new MetricsInterceptor(metricsCollector, true, true);
+        MetricsInterceptorImpl metricsInterceptor = new MetricsInterceptorImpl(metricsCollector, true, true);
         
         // When: Simulating multiple banking operations
         simulateBankingOperations();
         
         // Then: Metrics should be collected
-        MetricsInterceptor.MetricsSnapshot snapshot = metricsCollector.getSnapshot();
+        MetricsInterceptorImpl.MetricsSnapshot snapshot = metricsCollector.getSnapshot();
         
         assertThat(snapshot.getRequestCounts()).isNotEmpty();
         assertThat(snapshot.getSuccessCounts()).isNotEmpty();
@@ -132,7 +132,7 @@ class AdvancedServiceClientTest {
     void shouldApplyBulkheadIsolationForHighVolumeBankingOperations() {
         // Given: Create a resilience manager without load shedding for this test
         AdvancedResilienceManager testResilienceManager = new AdvancedResilienceManager(
-            new AdvancedResilienceManager.SystemLoadSheddingStrategy(
+            new AdvancedResilienceManager.SystemLoadSheddingStrategyImpl(
                 1.0,    // maxCpuUsage - 100% (disabled)
                 1.0,    // maxMemoryUsage - 100% (disabled)
                 1.0,    // maxThreadPoolUtilization - 100% (disabled)

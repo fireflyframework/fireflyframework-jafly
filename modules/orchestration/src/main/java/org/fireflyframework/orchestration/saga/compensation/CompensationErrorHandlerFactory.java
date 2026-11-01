@@ -90,7 +90,7 @@ public final class CompensationErrorHandlerFactory {
      * @return a composite handler
      */
     public static CompensationErrorHandler composite(CompensationErrorHandler... handlers) {
-        return new CompositeCompensationErrorHandler(Arrays.asList(handlers));
+        return new CompositeCompensationErrorHandlerImpl(Arrays.asList(handlers));
     }
 
     /**
@@ -102,12 +102,12 @@ public final class CompensationErrorHandlerFactory {
     }
 
     private static void registerDefaults() {
-        REGISTRY.put("default", DefaultCompensationErrorHandler::new);
-        REGISTRY.put("fail-fast", FailFastErrorHandler::new);
-        REGISTRY.put("log-and-continue", LogAndContinueErrorHandler::new);
-        REGISTRY.put("retry", () -> new RetryWithBackoffErrorHandler(3));
+        REGISTRY.put("default", DefaultCompensationErrorHandlerImpl::new);
+        REGISTRY.put("fail-fast", FailFastErrorHandlerImpl::new);
+        REGISTRY.put("log-and-continue", LogAndContinueErrorHandlerImpl::new);
+        REGISTRY.put("retry", () -> new RetryWithBackoffErrorHandlerImpl(3));
         REGISTRY.put("robust", () -> {
-            var retryHandler = new RetryWithBackoffErrorHandler(3);
+            var retryHandler = new RetryWithBackoffErrorHandlerImpl(3);
             // Wrap retry: convert FAIL_SAGA to CONTINUE so the composite falls through
             // to the log-and-continue handler when retries are exhausted
             CompensationErrorHandler retryOrDefer = (sagaName, stepId, error, attempt) -> {
@@ -115,9 +115,9 @@ public final class CompensationErrorHandlerFactory {
                 return result == CompensationErrorResult.FAIL_SAGA
                         ? CompensationErrorResult.CONTINUE : result;
             };
-            return new CompositeCompensationErrorHandler(List.of(
+            return new CompositeCompensationErrorHandlerImpl(List.of(
                     retryOrDefer,
-                    new LogAndContinueErrorHandler()
+                    new LogAndContinueErrorHandlerImpl()
             ));
         });
     }

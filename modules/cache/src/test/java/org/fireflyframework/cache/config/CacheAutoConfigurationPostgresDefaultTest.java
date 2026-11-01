@@ -3,7 +3,7 @@ package org.fireflyframework.cache.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -56,7 +56,7 @@ class CacheAutoConfigurationPostgresDefaultTest {
         cache.withPropertyValues("firefly.cache.default-cache-type=CAFFEINE")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
-                    assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
+                    assertThat(context.getBean(FireflyCacheManagerImpl.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
                     assertThat(context).doesNotHaveBean("fireflyCachePostgresConnectionFactory");
                 });
     }
@@ -65,7 +65,7 @@ class CacheAutoConfigurationPostgresDefaultTest {
     void disabledCachingCreatesNoManagerOrPostgresFactory() {
         cache.withPropertyValues("firefly.cache.enabled=false").run(context -> {
             assertThat(context).hasNotFailed();
-            assertThat(context).doesNotHaveBean(FireflyCacheManager.class);
+            assertThat(context).doesNotHaveBean(FireflyCacheManagerImpl.class);
             assertThat(context).doesNotHaveBean("fireflyCachePostgresConnectionFactory");
         });
     }

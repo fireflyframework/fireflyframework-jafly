@@ -19,8 +19,8 @@ package org.fireflyframework.rules.core.dsl.parser;
 import org.fireflyframework.rules.core.dsl.SourceLocation;
 import org.fireflyframework.rules.core.dsl.condition.*;
 import org.fireflyframework.rules.core.dsl.expression.Expression;
-import org.fireflyframework.rules.core.dsl.expression.LiteralExpression;
-import org.fireflyframework.rules.core.dsl.expression.VariableExpression;
+import org.fireflyframework.rules.core.dsl.expression.LiteralExpressionImpl;
+import org.fireflyframework.rules.core.dsl.expression.VariableExpressionImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,13 +91,13 @@ public class ComplexConditionsParser {
                     .map(this::parseComplexCondition)
                     .collect(Collectors.toList());
             
-            return new LogicalCondition(location, operator, operands);
+            return new LogicalConditionImpl(location, operator, operands);
         }
         
         if (operandsObj instanceof Map || operandsObj instanceof String) {
             // Single operand (for NOT operator or single-item lists)
             Condition operand = parseComplexCondition(operandsObj);
-            return new LogicalCondition(location, operator, List.of(operand));
+            return new LogicalConditionImpl(location, operator, List.of(operand));
         }
         
         throw new ParseException("Invalid operands for logical operator " + operator + ": " + operandsObj,
@@ -133,11 +133,11 @@ public class ComplexConditionsParser {
             Object rangeEndObj = compareMap.get("rangeEnd");
             if (rangeEndObj != null) {
                 Expression rangeEnd = parseExpression(rangeEndObj);
-                return new ComparisonCondition(location, left, operator, right, rangeEnd);
+                return new ComparisonConditionImpl(location, left, operator, right, rangeEnd);
             }
         }
         
-        return new ComparisonCondition(location, left, operator, right);
+        return new ComparisonConditionImpl(location, left, operator, right);
     }
     
     /**
@@ -150,24 +150,24 @@ public class ComplexConditionsParser {
             String str = (String) obj;
             // Check if it's a variable name or a string literal
             if (isVariableName(str)) {
-                return new VariableExpression(location, str, null);
+                return new VariableExpressionImpl(location, str, null);
             } else {
                 // Explicitly use the constructor with SourceLocation first
-                LiteralExpression expr = new LiteralExpression(location, (Object) str);
+                LiteralExpressionImpl expr = new LiteralExpressionImpl(location, (Object) str);
                 return expr;
             }
         }
 
         if (obj instanceof Number) {
-            return new LiteralExpression(location, obj);
+            return new LiteralExpressionImpl(location, obj);
         }
 
         if (obj instanceof Boolean) {
-            return new LiteralExpression(location, obj);
+            return new LiteralExpressionImpl(location, obj);
         }
 
         if (obj == null) {
-            return new LiteralExpression(location, (Object) null);
+            return new LiteralExpressionImpl(location, (Object) null);
         }
 
         throw new ParseException("Cannot parse expression from object: " + obj,

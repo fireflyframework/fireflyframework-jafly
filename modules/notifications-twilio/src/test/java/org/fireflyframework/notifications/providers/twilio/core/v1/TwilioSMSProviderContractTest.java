@@ -119,14 +119,14 @@ class TwilioSMSProviderContractTest {
         assertThat(trap.requests).isEmpty();
     }
     @Test void legacyConstructorStillValidatesANullRequestWithoutInitializingAClient() {
-        var result = new TwilioSMSProvider(new TwilioProperties()).sendSMS(null).block(WAIT);
+        var result = new TwilioSMSProviderImpl(new TwilioProperties()).sendSMS(null).block(WAIT);
         assertThat(result.getStatus()).isEqualTo("FAILED"); assertThat(result.getErrorMessage()).isEqualTo("Request cannot be null");
     }
     @ParameterizedTest @ValueSource(strings={"RECIPIENT", "BODY", "SENDER"})
     void originalValidationFailuresNeverIssueSdkRequests(String field) {
         var transport = new Transport(SID_A); Twilio.setRestClient(client(ACCOUNT_A, TOKEN_A, transport)); var properties = properties(); var request = request();
         if (field.equals("RECIPIENT")) request.setPhoneNumber(" "); if (field.equals("BODY")) request.setMessage(" "); if (field.equals("SENDER")) properties.setPhoneNumber(" ");
-        var result = new TwilioSMSProvider(properties).sendSMS(request).block(WAIT); assertThat(result.getStatus()).isEqualTo("FAILED"); assertThat(result.getErrorMessage()).isNotBlank(); assertThat(transport.requests).isEmpty();
+        var result = new TwilioSMSProviderImpl(properties).sendSMS(request).block(WAIT); assertThat(result.getStatus()).isEqualTo("FAILED"); assertThat(result.getErrorMessage()).isNotBlank(); assertThat(transport.requests).isEmpty();
     }
     void exercise(Transport transport, java.util.function.Consumer<SMSProvider> action) {
         var instance = client(ACCOUNT_A, TOKEN_A, transport);

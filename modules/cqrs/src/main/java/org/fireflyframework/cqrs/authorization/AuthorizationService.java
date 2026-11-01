@@ -90,9 +90,9 @@ import java.util.Objects;
 public class AuthorizationService {
 
     private final AuthorizationProperties properties;
-    private final Optional<AuthorizationMetrics> authorizationMetrics;
+    private final Optional<AuthorizationMetricsImpl> authorizationMetrics;
 
-    public AuthorizationService(AuthorizationProperties properties, Optional<AuthorizationMetrics> authorizationMetrics) {
+    public AuthorizationService(AuthorizationProperties properties, Optional<AuthorizationMetricsImpl> authorizationMetrics) {
         this.properties = properties;
         this.authorizationMetrics = authorizationMetrics;
         log.info("Authorization service initialized - using standalone custom authorization");

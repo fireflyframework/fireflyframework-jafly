@@ -17,7 +17,7 @@
 package org.fireflyframework.cache.config;
 
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -41,7 +41,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
     void shouldStartWithExplicitCaffeineSelection() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
-            assertThat(context).hasSingleBean(FireflyCacheManager.class);
+            assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
         });
     }
 
@@ -52,9 +52,9 @@ class CacheAutoConfigurationCaffeineDefaultTest {
 
             // The default fireflyCacheManager bean must be present and Caffeine-backed.
             assertThat(context).hasBean("fireflyCacheManager");
-            assertThat(context).hasSingleBean(FireflyCacheManager.class);
+            assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
 
-            FireflyCacheManager manager = context.getBean(FireflyCacheManager.class);
+            FireflyCacheManagerImpl manager = context.getBean(FireflyCacheManagerImpl.class);
             assertThat(manager.getCacheType()).isEqualTo(CacheType.CAFFEINE);
             assertThat(manager.getCacheName()).isEqualTo("default");
         });
@@ -81,9 +81,9 @@ class CacheAutoConfigurationCaffeineDefaultTest {
                 )
                 .run(context -> {
                     assertThat(context).hasNotFailed();
-                    assertThat(context).hasSingleBean(FireflyCacheManager.class);
+                    assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
 
-                    FireflyCacheManager manager = context.getBean(FireflyCacheManager.class);
+                    FireflyCacheManagerImpl manager = context.getBean(FireflyCacheManagerImpl.class);
                     assertThat(manager.getCacheType()).isEqualTo(CacheType.CAFFEINE);
                 });
     }
@@ -96,7 +96,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
                     assertThat(context).hasNotFailed();
 
                     // Should NOT have cache manager when disabled
-                    assertThat(context).doesNotHaveBean(FireflyCacheManager.class);
+                    assertThat(context).doesNotHaveBean(FireflyCacheManagerImpl.class);
                 });
     }
 
@@ -117,7 +117,7 @@ class CacheAutoConfigurationCaffeineDefaultTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed();
 
-                    FireflyCacheManager manager = context.getBean(FireflyCacheManager.class);
+                    FireflyCacheManagerImpl manager = context.getBean(FireflyCacheManagerImpl.class);
                     assertThat(manager).isNotNull();
                     assertThat(manager.getCacheName()).isEqualTo("my-custom-cache");
                 });

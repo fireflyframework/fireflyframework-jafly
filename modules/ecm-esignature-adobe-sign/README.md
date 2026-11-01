@@ -62,7 +62,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ContractService {
 
-    private final SignatureEnvelopePort envelopes; // AdobeSignSignatureEnvelopeAdapter injected by auto-config
+    private final SignatureEnvelopePort envelopes; // AdobeSignSignatureEnvelopeAdapterImpl injected by auto-config
 
 
 
@@ -73,7 +73,7 @@ public class ContractService {
 }
 ```
 
-When `firefly.ecm.esignature.provider` is `adobe-sign`, `AdobeSignAutoConfiguration` registers the `WebClient`, circuit breaker, retry and `AdobeSignSignatureEnvelopeAdapter` beans automatically and exposes the adapter as the active `SignatureEnvelopePort`.
+When `firefly.ecm.esignature.provider` is `adobe-sign`, `AdobeSignAutoConfiguration` registers the `WebClient`, circuit breaker, retry and `AdobeSignSignatureEnvelopeAdapterImpl` beans automatically and exposes the adapter as the active `SignatureEnvelopePort`.
 
 ## Configuration
 
@@ -91,7 +91,7 @@ The `firefly.ecm.adapter.adobe-sign` namespace is bound by [AdobeSignAdapterProp
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AdobeSignSignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapter.java) | Defines `AdobeSignSignatureEnvelopeAdapter`, `createEnvelope`, `ensureValidAccessToken`, `buildAgreementRequest` operations. |
+| [`AdobeSignSignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapterImpl.java) | Defines `AdobeSignSignatureEnvelopeAdapterImpl`, `createEnvelope`, `ensureValidAccessToken`, `buildAgreementRequest` operations. |
 | [`AdobeSignAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignAdapterProperties.java) | Carries `clientId`, `clientSecret`, `refreshToken`, `baseUrl`, `apiVersion` data; field constraints and defaults are declared in the linked source. |
 | [`AdobeSignAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignAutoConfiguration.java) | Defines `adobeSignWebClient`, `adobeSignCircuitBreaker`, `adobeSignRetry`, `adobeSignSignatureEnvelopeAdapter` operations. |
 

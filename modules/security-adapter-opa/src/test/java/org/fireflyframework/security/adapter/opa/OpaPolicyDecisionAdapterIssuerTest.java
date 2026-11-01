@@ -46,7 +46,7 @@ class OpaPolicyDecisionAdapterIssuerTest {
                                         .header("Content-Type", "application/json").body("{\"result\":true}").build();
                             }));
                 }).build();
-        var decision = new OpaPolicyDecisionAdapter(web, "firefly/allow")
+        var decision = new OpaPolicyDecisionAdapterImpl(web, "firefly/allow")
                 .authorize(principal, "read", "resource", context).block(Duration.ofSeconds(3));
         assertNotNull(decision);
         assertTrue(decision.granted());

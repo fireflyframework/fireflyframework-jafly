@@ -16,7 +16,7 @@
 
 package org.fireflyframework.security.webflux.bridge;
 
-import org.fireflyframework.security.core.tenant.ConfigurableTenantResolver;
+import org.fireflyframework.security.core.tenant.ConfigurableTenantResolverImpl;
 import org.fireflyframework.security.spi.SecurityContextPort;
 import org.fireflyframework.security.spi.TenantResolverPort;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -42,15 +42,15 @@ public class WebFluxBridgeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public TenantResolverPort fireflyTenantResolverPort(PrincipalHeaderBridgeProperties properties) {
-        return new ConfigurableTenantResolver(properties.getTenantClaimPaths());
+        return new ConfigurableTenantResolverImpl(properties.getTenantClaimPaths());
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public PrincipalHeaderBridgeWebFilter fireflyPrincipalHeaderBridgeWebFilter(
+    public PrincipalHeaderBridgeWebFilterImpl fireflyPrincipalHeaderBridgeWebFilter(
             SecurityContextPort securityContext,
             TenantResolverPort tenantResolver,
             PrincipalHeaderBridgeProperties properties) {
-        return new PrincipalHeaderBridgeWebFilter(securityContext, tenantResolver, properties);
+        return new PrincipalHeaderBridgeWebFilterImpl(securityContext, tenantResolver, properties);
     }
 }

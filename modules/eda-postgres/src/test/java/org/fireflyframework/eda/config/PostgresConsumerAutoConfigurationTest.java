@@ -14,10 +14,10 @@ import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.InfrastructureProxy;
 import org.fireflyframework.eda.consumer.postgres.*;
-import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder;
+import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoderImpl;
 import org.fireflyframework.eda.error.CustomErrorHandlerRegistry;
-import org.fireflyframework.eda.listener.EventListenerProcessor;
-import org.fireflyframework.eda.serialization.JsonMessageSerializer;
+import org.fireflyframework.eda.listener.EventListenerProcessorImpl;
+import org.fireflyframework.eda.serialization.JsonMessageSerializerImpl;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,7 +53,7 @@ class PostgresConsumerAutoConfigurationTest {
                         "firefly.eda.consumer.postgres.default.host=127.0.0.1","firefly.eda.consumer.postgres.default.port=9",
                         "firefly.eda.consumer.postgres.default.database=technical","firefly.eda.consumer.postgres.default.username=technical",
                         "firefly.eda.consumer.postgres.default.max-pool-size=3");
-        return decoder?r.withBean(PostgresEventDecoder.class,()->new RegisteredPostgresEventDecoder(new JsonMessageSerializer(new ObjectMapper()),Map.of("java.lang.String",String.class))):r;
+        return decoder?r.withBean(PostgresEventDecoder.class,()->new RegisteredPostgresEventDecoderImpl(new JsonMessageSerializerImpl(new ObjectMapper()),Map.of("java.lang.String",String.class))):r;
     }
     @Test void namedRealPoolIsLazyBoundedAndDistinctFromRawListen(){
         final ConnectionPool[] owned=new ConnectionPool[1];
@@ -64,17 +64,17 @@ class PostgresConsumerAutoConfigurationTest {
         assertThat(owned[0].isDisposed()).isTrue();
     }
     @Test void explicitWorkerAndRepositoryDoNotPretendToBeRunningAtBeanCreation(){
-        runner(true).run(c->{assertThat(c).hasNotFailed().hasSingleBean(PostgresEventConsumer.class).hasSingleBean(PostgresDeliveryRepository.class);assertThat(c.getBean(PostgresEventConsumer.class).isRunning()).isFalse();assertThat(c).doesNotHaveBean(R2dbcEntityTemplate.class).doesNotHaveBean(R2dbcTransactionManager.class);});
+        runner(true).run(c->{assertThat(c).hasNotFailed().hasSingleBean(PostgresEventConsumerImpl.class).hasSingleBean(PostgresDeliveryRepository.class);assertThat(c.getBean(PostgresEventConsumerImpl.class).isRunning()).isFalse();assertThat(c).doesNotHaveBean(R2dbcEntityTemplate.class).doesNotHaveBean(R2dbcTransactionManager.class);});
     }
     @Test void selectedPgWithoutRegisteredDecoderFailsClearly(){runner(false).run(c->assertThat(c).hasFailed());}
     @Test void disabledPgDoesNotValidateOrCreateItsTechnicalResources(){
-        runner(false).withPropertyValues("firefly.eda.consumer.postgres.default.enabled=false","firefly.eda.consumer.postgres.default.connect-timeout=PT0S").run(c->{assertThat(c).hasNotFailed().doesNotHaveBean(PostgresEventConsumer.class);assertThat(c).doesNotHaveBean("fireflyEdaPostgresConsumerQueryConnectionFactory");});
+        runner(false).withPropertyValues("firefly.eda.consumer.postgres.default.enabled=false","firefly.eda.consumer.postgres.default.connect-timeout=PT0S").run(c->{assertThat(c).hasNotFailed().doesNotHaveBean(PostgresEventConsumerImpl.class);assertThat(c).doesNotHaveBean("fireflyEdaPostgresConsumerQueryConnectionFactory");});
     }
     @Test void invalidSelectedPgDurationsFailBeforeConnectionUse(){runner(true).withPropertyValues("firefly.eda.consumer.postgres.default.connect-timeout=PT0S").run(c->assertThat(c).hasFailed());}
     @Test void externalExactNamedQueryFactoryIsNeverDisposedOrReplaced(){
         var external=mock(ConnectionFactory.class,withSettings().extraInterfaces(reactor.core.Disposable.class));when(external.getMetadata()).thenReturn(()->"PostgreSQL");
         runner(true).withBean("fireflyEdaPostgresConsumerQueryConnectionFactory",ConnectionFactory.class,()->external,b->((AbstractBeanDefinition)b).setDefaultCandidate(false)).run(c->{
-            assertThat(c).hasNotFailed().hasSingleBean(PostgresEventConsumer.class);assertThat(c.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory")).isSameAs(external);assertThat(c).doesNotHaveBean("fireflyEdaPostgresConsumerQueryPoolOwner");verify(external,never()).create();});
+            assertThat(c).hasNotFailed().hasSingleBean(PostgresEventConsumerImpl.class);assertThat(c.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory")).isSameAs(external);assertThat(c).doesNotHaveBean("fireflyEdaPostgresConsumerQueryPoolOwner");verify(external,never()).create();});
         verify((reactor.core.Disposable)external,never()).dispose();
     }
     @ParameterizedTest @ValueSource(strings={"URL","DETAILS","EXPLICIT"})
@@ -122,8 +122,8 @@ class PostgresConsumerAutoConfigurationTest {
     }
     static class WorkerDependencies {
         @Bean ObjectMapper objectMapper(){return new ObjectMapper();}
-        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new JsonMessageSerializer(mapper);}
-        @Bean EventListenerProcessor eventListenerProcessor(ApplicationContext context,ApplicationEventPublisher publisher,Environment environment){return new EventListenerProcessor(context,publisher,mock(CustomErrorHandlerRegistry.class),environment);}
+        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new JsonMessageSerializerImpl(mapper);}
+        @Bean EventListenerProcessorImpl eventListenerProcessor(ApplicationContext context,ApplicationEventPublisher publisher,Environment environment){return new EventListenerProcessorImpl(context,publisher,mock(CustomErrorHandlerRegistry.class),environment);}
     }
     @EnableR2dbcRepositories(basePackageClasses=PostgresConsumerAutoConfigurationTest.class,considerNestedRepositories=true,includeFilters=@ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE,classes=BusinessRepository.class))
     static class CoreRepositoryFixture { }

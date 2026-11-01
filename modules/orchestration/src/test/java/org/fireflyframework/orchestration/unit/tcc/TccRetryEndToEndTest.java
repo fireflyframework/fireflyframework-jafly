@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.unit.tcc;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
@@ -43,7 +43,7 @@ class TccRetryEndToEndTest {
     void setUp() {
         var events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         engine = new TccEngine(null, events, orchestrator, null, null, noOpPublisher);
     }

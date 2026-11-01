@@ -52,8 +52,8 @@ class XhrAwareLogoutSuccessHandlerTest {
                 r.getHeaders().setLocation(URI.create(END_SESSION));
             });
 
-    private final XhrAwareLogoutSuccessHandler handler =
-            new XhrAwareLogoutSuccessHandler(delegate, new ObjectMapper());
+    private final XhrAwareLogoutSuccessHandlerImpl handler =
+            new XhrAwareLogoutSuccessHandlerImpl(delegate, new ObjectMapper());
 
     private WebFilterExchange exchangeFor(MockServerWebExchange exchange) {
         WebFilterChain noop = e -> Mono.empty();

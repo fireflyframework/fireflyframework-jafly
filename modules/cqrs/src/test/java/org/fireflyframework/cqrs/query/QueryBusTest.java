@@ -35,13 +35,13 @@ class QueryBusTest {
         AutoValidationProcessor validationProcessor = new AutoValidationProcessor(null);
 
         // Create query bus without cache adapter for this test
-        queryBus = new DefaultQueryBus(applicationContext, correlationContext, validationProcessor,
+        queryBus = new DefaultQueryBusImpl(applicationContext, correlationContext, validationProcessor,
                                       new org.fireflyframework.cqrs.authorization.AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty()),
                                       null, null);
 
         // Register handlers manually for testing - using the external classes with @QueryHandlerComponent
-        ((DefaultQueryBus) queryBus).registerHandler(new GetAccountBalanceHandler());
-        ((DefaultQueryBus) queryBus).registerHandler(new GetTransactionHistoryHandler());
+        ((DefaultQueryBusImpl) queryBus).registerHandler(new GetAccountBalanceHandler());
+        ((DefaultQueryBusImpl) queryBus).registerHandler(new GetTransactionHistoryHandler());
     }
 
     @Test

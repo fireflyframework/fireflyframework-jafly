@@ -90,9 +90,9 @@ class DateTimeValidatorClockProviderTest {
 
     @Test
     void retainsTheSystemClockFallbackForANullContext() throws Exception {
-        var noPast = new DateTimeValidator();
+        var noPast = new DateTimeValidatorImpl();
         noPast.initialize(NoPast.class.getDeclaredField("value").getAnnotation(ValidDateTime.class));
-        var noFuture = new DateTimeValidator();
+        var noFuture = new DateTimeValidatorImpl();
         noFuture.initialize(NoFuture.class.getDeclaredField("value").getAnnotation(ValidDateTime.class));
         Instant now = Instant.now();
         String before = format(now.minusSeconds(86400));

@@ -1,1 +1,1 @@
-org.springframework.boot.EnvironmentPostProcessor=org.fireflyframework.common.application.config.StatelessApplicationEnvironmentPostProcessor
+org.springframework.boot.EnvironmentPostProcessor=org.fireflyframework.common.application.config.StatelessApplicationEnvironmentPostProcessorImpl

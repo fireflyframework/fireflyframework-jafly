@@ -83,9 +83,9 @@ sagaEngine.execute("HelloSaga", StepInputs.of("greet", "World"))
 No configuration is required for development. The module starts with:
 
 - All three patterns enabled (Workflow, Saga, TCC)
-- `InMemoryPersistenceProvider` for execution state
-- SLF4J structured logging via `OrchestrationLoggerEvents`
-- Dead-letter queue enabled with `InMemoryDeadLetterStore`
+- `InMemoryPersistenceProviderImpl` for execution state
+- SLF4J structured logging via `OrchestrationLoggerEventsImpl`
+- Dead-letter queue enabled with `InMemoryDeadLetterStoreImpl`
 - Scheduler with 4 threads
 - No-op event publisher (replace with Kafka/RabbitMQ adapter for production)
 - Recovery service enabled with 1-hour stale threshold
@@ -162,9 +162,9 @@ The module is organized into four layers. Your application defines orchestration
 **Infrastructure Layer**: Pluggable adapters:
 - `ExecutionPersistenceProvider`: state storage (`InMemory`, `Redis`, `Cache`, `EventSourced`)
 - `OrchestrationEvents`: lifecycle event callbacks (26 methods)
-- `OrchestrationMetrics`: Micrometer counters and timers (8 metrics)
+- `OrchestrationMetricsImpl`: Micrometer counters and timers (8 metrics)
 - `OrchestrationTracer`: Micrometer Observation API spans
-- `OrchestrationEventPublisher`: domain event publishing (`NoOpEventPublisher` default)
+- `OrchestrationEventPublisher`: domain event publishing (`NoOpEventPublisherImpl` default)
 - `OrchestrationMetricsEndpoint`: Actuator endpoint for orchestration metrics summary
 
 ### Data Flow

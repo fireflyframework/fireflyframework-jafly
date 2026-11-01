@@ -158,7 +158,7 @@ public class EventPublisherFactory {
         // Wrap with destination-aware publisher
         log.debug("Creating destination-aware publisher: type={}, connectionId={}, customDestination={}",
                  publisherType, connectionId, trimmedDestination);
-        return new DestinationAwarePublisher(basePublisher, trimmedDestination);
+        return new DestinationAwarePublisherImpl(basePublisher, trimmedDestination);
     }
 
     /**

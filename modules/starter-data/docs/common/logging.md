@@ -26,7 +26,7 @@ The `AbstractResilientDataJobService` provides logging for all job operations:
 public class MyDataJobService extends AbstractResilientDataJobService {
 
     public MyDataJobService(JobTracingService tracingService,
-                           JobMetricsService metricsService,
+                           JobMetricsServiceImpl metricsService,
                            ResiliencyDecoratorService resiliencyService,
                            JobEventPublisher eventPublisher,
                            JobAuditService auditService,

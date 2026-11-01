@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.fireflyframework.eda.config.*;
 import org.fireflyframework.eda.consumer.postgres.model.*;
-import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher;
+import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl;
 import org.fireflyframework.eda.publisher.postgres.PostgresChannelMapper;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -72,14 +72,14 @@ public final class PostgresConsumerGroupNativeFixture {
             runner.run(context->{
                 assertThat(context).hasNotFailed();
                 var repository=context.getBean(PostgresConsumerGroupRepository.class);
-                try(var worker=new Worker(group,context.getBean(PostgresEventConsumer.class),context.getBean(PostgresEventPublisher.class),context.getBean(PostgresConsumerNativeFixture.Handler.class),repository,pool,listens)){action.accept(worker);}
+                try(var worker=new Worker(group,context.getBean(PostgresEventConsumerImpl.class),context.getBean(PostgresEventPublisherImpl.class),context.getBean(PostgresConsumerNativeFixture.Handler.class),repository,pool,listens)){action.accept(worker);}
             });
         }finally{pool.disposeLater().block(Duration.ofSeconds(5));}
     }
     final class Worker implements AutoCloseable {
-        final String group;final PostgresEventConsumer consumer;final PostgresEventPublisher publisher;final PostgresConsumerNativeFixture.Handler handler;
+        final String group;final PostgresEventConsumerImpl consumer;final PostgresEventPublisherImpl publisher;final PostgresConsumerNativeFixture.Handler handler;
         final PostgresConsumerGroupRepository repository;final ConnectionPool queryPool;final AtomicInteger listens;
-        Worker(String group,PostgresEventConsumer consumer,PostgresEventPublisher publisher,PostgresConsumerNativeFixture.Handler handler,PostgresConsumerGroupRepository repository,ConnectionPool queryPool,AtomicInteger listens){this.group=group;this.consumer=consumer;this.publisher=publisher;this.handler=handler;this.repository=repository;this.queryPool=queryPool;this.listens=listens;assertThat(consumer.isRunning()).isFalse();}
+        Worker(String group,PostgresEventConsumerImpl consumer,PostgresEventPublisherImpl publisher,PostgresConsumerNativeFixture.Handler handler,PostgresConsumerGroupRepository repository,ConnectionPool queryPool,AtomicInteger listens){this.group=group;this.consumer=consumer;this.publisher=publisher;this.handler=handler;this.repository=repository;this.queryPool=queryPool;this.listens=listens;assertThat(consumer.isRunning()).isFalse();}
         void register(){register(new GroupSubscription(java.util.Set.of(PostgresChannelMapper.toChannel(destination)),3));}
         void register(GroupSubscription policy){repository.registerGroup(policy,RetainedReplayPolicy.ALL_RETAINED).block(Duration.ofSeconds(5));}
         void start(){consumer.start().block(Duration.ofSeconds(5));assertThat(consumer.isRunning()).isTrue();}

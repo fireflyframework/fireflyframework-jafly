@@ -25,7 +25,7 @@ import org.fireflyframework.data.examples.enricher.FinancialDataEnricher;
 import org.fireflyframework.data.model.EnrichmentRequest;
 import org.fireflyframework.data.model.EnrichmentResponse;
 import org.fireflyframework.data.model.EnrichmentStrategy;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ class DataEnrichmentExamplesTest {
     private JobTracingService tracingService;
 
     @Mock
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
 
     @Mock
     private ResiliencyDecoratorService resiliencyService;

@@ -20,7 +20,7 @@
 package org.fireflyframework.cache.spi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheOperationPolicy;

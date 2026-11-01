@@ -17,7 +17,7 @@
 package org.fireflyframework.rules.core.services.impl;
 
 import org.fireflyframework.cache.CacheProviderType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.fireflyframework.rules.core.dsl.model.ASTRulesDSL;
 import org.fireflyframework.rules.core.services.CacheService;
@@ -49,7 +49,7 @@ import java.util.Optional;
 @Slf4j
 public class CacheServiceImpl implements CacheService {
 
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final ConstantService constantService;
 
     /**
@@ -59,7 +59,7 @@ public class CacheServiceImpl implements CacheService {
      * @param constantService service for managing constants
      */
     public CacheServiceImpl(
-            @Qualifier("ruleEngineCacheManager") FireflyCacheManager cacheManager,
+            @Qualifier("ruleEngineCacheManager") FireflyCacheManagerImpl cacheManager,
             ConstantService constantService) {
         this.cacheManager = cacheManager;
         this.constantService = constantService;

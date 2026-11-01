@@ -19,7 +19,7 @@ package org.fireflyframework.orchestration.unit.workflow;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
@@ -27,7 +27,7 @@ import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.workflow.child.ChildWorkflowResult;
 import org.fireflyframework.orchestration.workflow.child.ChildWorkflowService;
@@ -53,14 +53,14 @@ import static org.assertj.core.api.Assertions.*;
 class ChildWorkflowAnnotationTest {
 
     private OrchestrationEvents events;
-    private NoOpEventPublisher noOpPublisher;
-    private InMemoryPersistenceProvider persistence;
+    private NoOpEventPublisherImpl noOpPublisher;
+    private InMemoryPersistenceProviderImpl persistence;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
-        noOpPublisher = new NoOpEventPublisher();
-        persistence = new InMemoryPersistenceProvider();
+        noOpPublisher = new NoOpEventPublisherImpl();
+        persistence = new InMemoryPersistenceProviderImpl();
     }
 
     @SuppressWarnings("unused")

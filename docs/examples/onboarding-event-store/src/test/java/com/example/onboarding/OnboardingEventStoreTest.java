@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.fireflyframework.eventsourcing.config.EventSourcingProperties;
 import org.fireflyframework.eventsourcing.domain.Event;
 import org.fireflyframework.eventsourcing.store.ConcurrencyException;
-import org.fireflyframework.eventsourcing.store.r2dbc.R2dbcEventStore;
+import org.fireflyframework.eventsourcing.store.r2dbc.R2dbcEventStoreImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -39,7 +39,7 @@ class OnboardingEventStoreTest {
             .withInitScript("events.sql");
 
     private DatabaseClient database;
-    private R2dbcEventStore store;
+    private R2dbcEventStoreImpl store;
     private OnboardingEventService service;
 
     @BeforeEach
@@ -53,7 +53,7 @@ class OnboardingEventStoreTest {
         var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         mapper.registerSubtypes(new NamedType(ApplicationSubmitted.class, "onboarding.application.submitted"),
                 new NamedType(ApplicationApproved.class, "onboarding.application.approved"));
-        store = new R2dbcEventStore(database, new R2dbcEntityTemplate(connectionFactory), mapper,
+        store = new R2dbcEventStoreImpl(database, new R2dbcEntityTemplate(connectionFactory), mapper,
                 new EventSourcingProperties(), manager, TransactionalOperator.create(manager), connectionFactory);
         service = new OnboardingEventService(store);
     }

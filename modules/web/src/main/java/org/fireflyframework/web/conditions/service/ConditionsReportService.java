@@ -222,7 +222,7 @@ public class ConditionsReportService {
             return "OpenAPI documentation for idempotency features";
         } else if (className.contains("org.fireflyframework.web.logging.config.PiiMaskingAutoConfiguration")) {
             return "PII (Personally Identifiable Information) masking in logs";
-        } else if (className.contains("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter")) {
+        } else if (className.contains("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl")) {
             return "HTTP request/response logging filter";
         } else if (className.contains("org.fireflyframework.web.conditions.config.ConditionsReportAutoConfiguration")) {
             return "Conditions evaluation report (this feature)";

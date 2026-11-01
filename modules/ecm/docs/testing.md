@@ -320,7 +320,7 @@ Test each adapter against its current port contract. Mocked service tests check 
 
 #### S3 adapter testing
 
-The shipped adapter is `S3DocumentContentAdapter`, implementing `DocumentContentPort`. Its [test fixture](../../ecm-storage-aws/src/test/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapterTest.java) supplies the Spring configuration, mock client, presigner, properties, and imports. This method is an excerpt from that fixture, not a standalone test:
+The shipped adapter is `S3DocumentContentAdapterImpl`, implementing `DocumentContentPort`. Its [test fixture](../../ecm-storage-aws/src/test/java/org/fireflyframework/ecm/adapter/s3/S3DocumentContentAdapterTest.java) supplies the Spring configuration, mock client, presigner, properties, and imports. This method is an excerpt from that fixture, not a standalone test:
 
 ```java
 @Test
@@ -355,7 +355,7 @@ class DocuSignSignatureEnvelopeAdapterTest {
     @Mock
     private DocuSignAdapterProperties properties;
 
-    private DocuSignSignatureEnvelopeAdapter adapter;
+    private DocuSignSignatureEnvelopeAdapterImpl adapter;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -369,10 +369,10 @@ class DocuSignSignatureEnvelopeAdapterTest {
         apiClient = new ApiClient();
         apiClient.setBasePath("https://demo.docusign.net/restapi");
 
-        adapter = new DocuSignSignatureEnvelopeAdapter(apiClient, properties, documentContentPort, documentPort);
+        adapter = new DocuSignSignatureEnvelopeAdapterImpl(apiClient, properties, documentContentPort, documentPort);
 
         // Use reflection to inject mocked EnvelopesApi
-        Field envelopesApiField = DocuSignSignatureEnvelopeAdapter.class.getDeclaredField("envelopesApi");
+        Field envelopesApiField = DocuSignSignatureEnvelopeAdapterImpl.class.getDeclaredField("envelopesApi");
         envelopesApiField.setAccessible(true);
         envelopesApiField.set(adapter, envelopesApi);
     }

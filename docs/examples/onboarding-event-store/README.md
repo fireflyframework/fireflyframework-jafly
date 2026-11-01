@@ -2,7 +2,7 @@
 
 ![Onboarding event store](../../site/assets/banners/onboarding-event-store.svg)
 
-Submit a customer application, approve it, and reconstruct its state from PostgreSQL events. The example uses Jafly's `AggregateRoot` and `R2dbcEventStore`, with an application-owned `OnboardingEventService` connecting them.
+Submit a customer application, approve it, and reconstruct its state from PostgreSQL events. The example uses Jafly's `AggregateRoot` and `R2dbcEventStoreImpl`, with an application-owned `OnboardingEventService` connecting them.
 
 Run from the framework checkout after installing its libraries:
 

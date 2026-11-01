@@ -8,12 +8,12 @@ import java.util.stream.Stream;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.fireflyframework.eda.consumer.postgres.*;
-import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepository;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoderImpl;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepositoryImpl;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupId;
 import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupTables;
-import org.fireflyframework.eda.serialization.JsonMessageSerializer;
+import org.fireflyframework.eda.serialization.JsonMessageSerializerImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -39,7 +39,7 @@ class PostgresConsumerGroupSelectionTest {
     private ApplicationContextRunner runner(){
         return new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FireflyEdaPostgresConsumerAutoConfiguration.class))
                 .withUserConfiguration(PostgresConsumerAutoConfigurationTest.WorkerDependencies.class)
-                .withBean(PostgresEventDecoder.class,()->new RegisteredPostgresEventDecoder(new JsonMessageSerializer(new ObjectMapper()),Map.of("java.lang.String",String.class)))
+                .withBean(PostgresEventDecoder.class,()->new RegisteredPostgresEventDecoderImpl(new JsonMessageSerializerImpl(new ObjectMapper()),Map.of("java.lang.String",String.class)))
                 .withPropertyValues("firefly.eda.consumer.enabled=true","firefly.eda.consumer.postgres.default.enabled=true",
                         "firefly.eda.consumer.postgres.default.host=127.0.0.1","firefly.eda.consumer.postgres.default.port=9",
                         "firefly.eda.consumer.postgres.default.database=technical","firefly.eda.consumer.postgres.default.username=technical");
@@ -47,14 +47,14 @@ class PostgresConsumerGroupSelectionTest {
     @Test void absentPostgresGroupKeepsGlobalCompatibilityWithoutInferringTheGlobalConsumerGroup(){
         runner().withPropertyValues("firefly.eda.consumer.group-id=unrelated-global-id").run(context->{
             assertThat(context).hasNotFailed();
-            assertThat(context.getBean("fireflyEdaPostgresDeliveryRepository")).isInstanceOf(SpringDataPostgresDeliveryRepository.class);
+            assertThat(context.getBean("fireflyEdaPostgresDeliveryRepository")).isInstanceOf(SpringDataPostgresDeliveryRepositoryImpl.class);
         });
     }
     @Test void actualPostgresGroupPropertySelectsTheGroupBoundAdapter(){
         runner().withPropertyValues("firefly.eda.consumer.postgres.default.group-id=orders-service").run(context->{
             assertThat(context).hasNotFailed();
-            assertThat(context.getBean("fireflyEdaPostgresDeliveryRepository")).isInstanceOf(SpringDataPostgresConsumerGroupRepository.class);
-            assertThat(context.getBean(PostgresEventConsumer.class).isRunning()).isFalse();
+            assertThat(context.getBean("fireflyEdaPostgresDeliveryRepository")).isInstanceOf(SpringDataPostgresConsumerGroupRepositoryImpl.class);
+            assertThat(context.getBean(PostgresEventConsumerImpl.class).isRunning()).isFalse();
         });
     }
     @ParameterizedTest @ValueSource(strings={""," "})
@@ -81,7 +81,7 @@ class PostgresConsumerGroupSelectionTest {
                 .withBean("fireflyEdaPostgresConsumerQueryConnectionFactory",ConnectionFactory.class,()->external,bean->{
                     ((AbstractBeanDefinition)bean).setDefaultCandidate(false);((AbstractBeanDefinition)bean).setDestroyMethodName("");
                 }).run(context->{
-                    assertThat(context).hasNotFailed();assertThat(context.getBean(PostgresDeliveryRepository.class)).isInstanceOf(SpringDataPostgresConsumerGroupRepository.class);
+                    assertThat(context).hasNotFailed();assertThat(context.getBean(PostgresDeliveryRepository.class)).isInstanceOf(SpringDataPostgresConsumerGroupRepositoryImpl.class);
                     assertThat(context.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory")).isSameAs(external);
                     assertThat(context.getBean("fireflyEdaPostgresConsumerConnectionFactory")).isNotSameAs(external);
                     assertThat(context).doesNotHaveBean("fireflyEdaPostgresConsumerQueryPoolOwner");verify(external,never()).create();
@@ -90,7 +90,7 @@ class PostgresConsumerGroupSelectionTest {
     }
     @Test void explicitNamedGroupPortIsPreserved(){
         var factory=mock(ConnectionFactory.class);when(factory.getMetadata()).thenReturn(()->"PostgreSQL");
-        var repository=new SpringDataPostgresConsumerGroupRepository(factory,new ConsumerGroupTables("public","events","registry","deliveries","redrives"),new ConsumerGroupId("orders-service"),java.time.Duration.ofSeconds(5));
+        var repository=new SpringDataPostgresConsumerGroupRepositoryImpl(factory,new ConsumerGroupTables("public","events","registry","deliveries","redrives"),new ConsumerGroupId("orders-service"),java.time.Duration.ofSeconds(5));
         runner().withPropertyValues("firefly.eda.consumer.postgres.default.group-id=orders-service")
                 .withBean("fireflyEdaPostgresDeliveryRepository",PostgresDeliveryRepository.class,()->repository).run(context->{
                     assertThat(context).hasNotFailed();assertThat(context.getBean(PostgresDeliveryRepository.class)).isSameAs(repository);verify(factory,never()).create();
@@ -111,7 +111,7 @@ class PostgresConsumerGroupSelectionTest {
             assertThat(context.getBean(R2dbcTransactionManager.class).getConnectionFactory()).isSameAs(businessFactory);
             assertThat(context.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory")).isNotSameAs(businessFactory);
             assertThat(context.getBean("fireflyEdaPostgresConsumerConnectionFactory")).isNotSameAs(businessFactory);
-            assertThat(context.getBean(PostgresDeliveryRepository.class)).isInstanceOf(SpringDataPostgresConsumerGroupRepository.class);
+            assertThat(context.getBean(PostgresDeliveryRepository.class)).isInstanceOf(SpringDataPostgresConsumerGroupRepositoryImpl.class);
         });
     }
     @ParameterizedTest @ValueSource(strings={"SCOPED","INFRASTRUCTURE_SCOPED"})

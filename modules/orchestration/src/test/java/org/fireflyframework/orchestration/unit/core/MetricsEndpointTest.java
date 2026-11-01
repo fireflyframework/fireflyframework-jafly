@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.unit.core;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
-import org.fireflyframework.orchestration.core.observability.OrchestrationMetrics;
+import org.fireflyframework.orchestration.core.observability.OrchestrationMetricsImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationMetricsEndpoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +30,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MetricsEndpointTest {
 
     private SimpleMeterRegistry registry;
-    private OrchestrationMetrics metrics;
+    private OrchestrationMetricsImpl metrics;
     private OrchestrationMetricsEndpoint endpoint;
 
     @BeforeEach
     void setUp() {
         registry = new SimpleMeterRegistry();
-        metrics = new OrchestrationMetrics(registry);
+        metrics = new OrchestrationMetricsImpl(registry);
         endpoint = new OrchestrationMetricsEndpoint(registry);
     }
 

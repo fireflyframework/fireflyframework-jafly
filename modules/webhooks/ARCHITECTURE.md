@@ -232,7 +232,7 @@ Benefits:
 │  - WebhookProcessor (Port)                                   │
 │  - AbstractWebhookEventListener (Adapter)                    │
 │  - WebhookIdempotencyService (Port)                          │
-│  - CacheBasedWebhookIdempotencyService (Adapter)             │
+│  - CacheBasedWebhookIdempotencyServiceImpl (Adapter)             │
 │  - WebhookSignatureValidator (Port)                          │
 │  - WebhookProcessingContext                                  │
 │  - WebhookProcessingResult                                   │
@@ -279,19 +279,19 @@ org.fireflyframework.webhooks.core/
 ├── domain/events/             # Domain events
 │   └── WebhookReceivedEvent   # Webhook received event
 ├── filter/                    # Web filters
-│   └── TracingWebFilter       # Distributed tracing
+│   └── TracingWebFilterImpl       # Distributed tracing
 ├── health/                    # Health indicators
-│   └── WebhookCircuitBreakerHealthIndicator
+│   └── WebhookCircuitBreakerHealthIndicatorImpl
 ├── idempotency/              # (Removed - now using lib-common-web)
-│   # HTTP-level idempotency moved to lib-common-web IdempotencyWebFilter
+│   # HTTP-level idempotency moved to lib-common-web IdempotencyWebFilterImpl
 ├── mappers/                   # MapStruct mappers
 │   └── WebhookEventMapper     # DTO ↔ Event mapping
 ├── metrics/                   # Metrics services
-│   └── WebhookMetricsService  # Custom metrics
+│   └── WebhookMetricsServiceImpl  # Custom metrics
 ├── ratelimit/                # Rate limiting
 │   └── WebhookRateLimitService
 ├── resilience/               # Resilience patterns
-│   └── ResilientWebhookProcessingService
+│   └── ResilientWebhookProcessingServiceImpl
 ├── services/                  # Business services
 │   ├── WebhookProcessingService
 │   └── impl/WebhookProcessingServiceImpl
@@ -303,8 +303,8 @@ Key Features:
 - Resilience Patterns: Circuit breaker, rate limiter, timeout, bulkhead
 - Security: Payload validation, rate limiting, IP whitelisting
 - Observability: Custom metrics, distributed tracing, health indicators
-- HTTP Idempotency: Handled by lib-common-web IdempotencyWebFilter (transparent)
-- Event Idempotency: Worker-level via CacheBasedWebhookIdempotencyService (processor module)
+- HTTP Idempotency: Handled by lib-common-web IdempotencyWebFilterImpl (transparent)
+- Event Idempotency: Worker-level via CacheBasedWebhookIdempotencyServiceImpl (processor module)
 
 Dependencies:
 - `lib-common-eda` - Event publishing
@@ -316,7 +316,7 @@ Dependencies:
 - Apache Commons Net - CIDR notation IP matching
 
 Design Decisions:
-- Decorator Pattern: `ResilientWebhookProcessingService` decorates `WebhookProcessingServiceImpl`
+- Decorator Pattern: `ResilientWebhookProcessingServiceImpl` decorates `WebhookProcessingServiceImpl`
 - Environment Variables: All properties support environment variable configuration
 - Reactive Programming: All services return Mono/Flux for non-blocking operations
 - Separation of Concerns: Each package has a single responsibility
@@ -360,7 +360,7 @@ Key Classes:
 
 - Adapters (Implementations):
   - `AbstractWebhookEventListener` - Kafka consumer adapter
-  - `CacheBasedWebhookIdempotencyService` - Redis adapter
+  - `CacheBasedWebhookIdempotencyServiceImpl` - Redis adapter
 
 - Models:
   - `WebhookProcessingContext` - Context object
@@ -927,7 +927,7 @@ Implementation:
 ```java
 @Service
 @Primary
-public class ResilientWebhookProcessingService implements WebhookProcessingService {
+public class ResilientWebhookProcessingServiceImpl implements WebhookProcessingService {
 
     private final WebhookProcessingService delegate;
     private final CircuitBreaker circuitBreaker;

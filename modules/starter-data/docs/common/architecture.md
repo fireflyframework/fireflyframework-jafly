@@ -289,9 +289,9 @@ quality/
 ├── QualitySeverity           # INFO, WARNING, CRITICAL
 ├── QualityStrategy           # FAIL_FAST, COLLECT_ALL
 └── rules/
-    ├── NotNullRule            # Built-in: required field validation
-    ├── PatternRule            # Built-in: regex pattern validation
-    └── RangeRule              # Built-in: numeric range validation
+    ├── NotNullRuleImpl            # Built-in: required field validation
+    ├── PatternRuleImpl            # Built-in: regex pattern validation
+    └── RangeRuleImpl              # Built-in: numeric range validation
 ```
 
 ### 9. Data Lineage Layer
@@ -302,7 +302,7 @@ Provenance tracking for data operations:
 lineage/
 ├── LineageTracker            # Port interface
 ├── LineageRecord             # Immutable lineage entry
-└── InMemoryLineageTracker    # Default in-memory implementation
+└── InMemoryLineageTrackerImpl    # Default in-memory implementation
 ```
 
 ### 10. Data Transformation Layer
@@ -314,8 +314,8 @@ transform/
 ├── DataTransformer<S, T>     # Functional interface
 ├── TransformationChain<S, T> # Composable chain with then()
 ├── TransformContext           # Request context carrier
-├── FieldMappingTransformer   # Rename map keys
-└── ComputedFieldTransformer  # Add derived fields
+├── FieldMappingTransformerImpl   # Rename map keys
+└── ComputedFieldTransformerImpl  # Add derived fields
 ```
 
 ### 11. Enrichment Fallback Layer
@@ -624,7 +624,7 @@ Purpose: Quality gate event publishing
 
 Implementation:
 - `DataQualityEngine` publishes `DataQualityEvent` on evaluation
-- `InMemoryLineageTracker` publishes `LineageEvent` on record
+- `InMemoryLineageTrackerImpl` publishes `LineageEvent` on record
 - Spring's `ApplicationEventPublisher` for decoupled notifications
 
 ---

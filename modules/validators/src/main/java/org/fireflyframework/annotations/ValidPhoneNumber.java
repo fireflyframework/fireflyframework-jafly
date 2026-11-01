@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.PhoneNumberValidator;
+import org.fireflyframework.validators.PhoneNumberValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * By default, validates phone numbers in the international E.164 format.
  */
 @Documented
-@Constraint(validatedBy = PhoneNumberValidator.class)
+@Constraint(validatedBy = PhoneNumberValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPhoneNumber {

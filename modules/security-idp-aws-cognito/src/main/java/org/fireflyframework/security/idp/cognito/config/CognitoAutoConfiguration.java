@@ -17,7 +17,7 @@
 package org.fireflyframework.security.idp.cognito.config;
 
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
-import org.fireflyframework.security.idp.cognito.adapter.CognitoIdpAdapter;
+import org.fireflyframework.security.idp.cognito.adapter.CognitoIdpAdapterImpl;
 import org.fireflyframework.security.idp.cognito.client.CognitoClientFactory;
 import org.fireflyframework.security.idp.cognito.properties.CognitoProperties;
 import org.fireflyframework.security.idp.cognito.service.CognitoAdminService;
@@ -86,6 +86,6 @@ public class CognitoAutoConfiguration {
     @ConditionalOnMissingBean(IdpAdapter.class)
     public IdpAdapter cognitoIdpAdapter(CognitoUserService userService, CognitoAdminService adminService) {
         log.info("Configuring Cognito IDP Adapter");
-        return new CognitoIdpAdapter(userService, adminService);
+        return new CognitoIdpAdapterImpl(userService, adminService);
     }
 }

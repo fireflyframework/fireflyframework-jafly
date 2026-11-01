@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.fireflyframework.core.audit.impl.SpringDataTransactionalAuditAppender;
+import org.fireflyframework.core.audit.impl.SpringDataTransactionalAuditAppenderImpl;
 import org.fireflyframework.kernel.audit.*;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 class TransactionalAuditAppenderTest {
     AuditEvent event(){return LocalAuditRepositoryTest.event();}
     AuditAppendAuthority authority(AtomicInteger calls){return e->{calls.incrementAndGet();return Mono.just(new AuditAppendAuthority.Permit(e.stream(),e.actor(),Instant.now().plusSeconds(60)));};}
-    SpringDataTransactionalAuditAppender appender(AuditTestFixture f,AuditAppendAuthority authority){return new SpringDataTransactionalAuditAppender(f.resources,f.client,f.template,f.manager,authority,f.clock,f.nanos,UUID::randomUUID);}
+    SpringDataTransactionalAuditAppenderImpl appender(AuditTestFixture f,AuditAppendAuthority authority){return new SpringDataTransactionalAuditAppenderImpl(f.resources,f.client,f.template,f.manager,authority,f.clock,f.nanos,UUID::randomUUID);}
     @org.springframework.data.relational.core.mapping.Table("audit_test_business") record Business(@org.springframework.data.annotation.Id UUID id,long version) { }
     @Test void mappedBusinessAndAuditOutboxCommitOnTheSameExistingLease(){var f=new AuditTestFixture();var service=appender(f,authority(new AtomicInteger()));var done=f.execute(scope->f.template.insert(new Business(UUID.randomUUID(),1)).then(service.append(scope,event()))).block();assertTrue(done.transactionFacts().commitAcknowledged());assertEquals(1,f.driver.creates);for(String table:List.of("audit_test_business","audit_event","audit_outbox"))assertEquals(1,f.driver.tables.get(table).size());}
     @Test void caughtZeroTwoOrMissingMappedCountStillCannotCommitBusinessEffect(){
@@ -58,6 +58,6 @@ class TransactionalAuditAppenderTest {
         }
     }
     @Test void originalExpiredDeadlineRefusesBeforeAuditStatements(){var f=new AuditTestFixture();var service=appender(f,authority(new AtomicInteger()));assertThrows(RuntimeException.class,()->f.execute(scope->{scope.narrow(org.fireflyframework.core.transaction.R2dbcOperationBudget.observed(Instant.now().minusSeconds(2),Instant.now().minusSeconds(1),System.nanoTime(),Duration.ofSeconds(1),Clock.systemUTC(),System::nanoTime));return service.append(scope,event());}).block());assertEquals(0,f.driver.writes);assertEquals(0,f.driver.nativeEnters);}
-    @Test void aDifferentMonotonicSupplierCannotReplaceTheOriginalBudgetPair(){var f=new AuditTestFixture();var service=new SpringDataTransactionalAuditAppender(f.resources,f.client,f.template,f.manager,authority(new AtomicInteger()),f.clock,System::nanoTime,UUID::randomUUID);assertThrows(RuntimeException.class,()->f.execute(scope->service.append(scope,event())).block());assertEquals(0,f.driver.writes);assertEquals(1,f.driver.rollbacks);}
+    @Test void aDifferentMonotonicSupplierCannotReplaceTheOriginalBudgetPair(){var f=new AuditTestFixture();var service=new SpringDataTransactionalAuditAppenderImpl(f.resources,f.client,f.template,f.manager,authority(new AtomicInteger()),f.clock,System::nanoTime,UUID::randomUUID);assertThrows(RuntimeException.class,()->f.execute(scope->service.append(scope,event())).block());assertEquals(0,f.driver.writes);assertEquals(1,f.driver.rollbacks);}
     @Test void missingScopeOutsideOwnerRootRefusesBeforeCurrentAuthorityOrAcquisition(){var f=new AuditTestFixture();var calls=new AtomicInteger();var service=appender(f,authority(calls));assertThrows(RuntimeException.class,()->service.append(null,event()).block());assertEquals(0,calls.get());assertEquals(0,f.driver.creates);}
 }

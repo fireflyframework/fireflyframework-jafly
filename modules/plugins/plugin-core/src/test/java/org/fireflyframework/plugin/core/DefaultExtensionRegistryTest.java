@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultExtensionRegistryTest {
     
-    private DefaultExtensionRegistry registry;
+    private DefaultExtensionRegistryImpl registry;
     
     // Test extension point interface
     interface TestExtensionPoint {
@@ -41,7 +41,7 @@ class DefaultExtensionRegistryTest {
     
     @BeforeEach
     void setUp() {
-        registry = new DefaultExtensionRegistry();
+        registry = new DefaultExtensionRegistryImpl();
     }
     
     @Test

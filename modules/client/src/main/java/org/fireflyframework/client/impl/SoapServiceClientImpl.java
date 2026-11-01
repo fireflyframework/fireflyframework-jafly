@@ -410,7 +410,7 @@ public class SoapServiceClientImpl implements SoapClient {
     // ========================================
 
     public OperationBuilder invoke(String operationName) {
-        return new SoapOperationBuilder(operationName);
+        return new SoapOperationBuilderImpl(operationName);
     }
 
     public <Req, Res> Mono<Res> invokeAsync(String operationName, Req request, Class<Res> responseType) {
@@ -703,13 +703,13 @@ public class SoapServiceClientImpl implements SoapClient {
     /**
      * SOAP-specific operation builder implementation.
      */
-    private class SoapOperationBuilder implements SoapClient.OperationBuilder {
+    private class SoapOperationBuilderImpl implements SoapClient.OperationBuilder {
         private final String operationName;
         private final Map<String, Object> parameters = new HashMap<>();
         private final Map<String, String> headers = new HashMap<>();
         private Duration requestTimeout;
 
-        public SoapOperationBuilder(String operationName) {
+        public SoapOperationBuilderImpl(String operationName) {
             this.operationName = operationName;
             this.requestTimeout = timeout;
         }

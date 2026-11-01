@@ -18,7 +18,7 @@ A cache is not the durable source of an application record. A blob store does no
 
 ## Reconstruct one application
 
-Follow [Keep an onboarding history](../guides/onboarding-event-store.md). Its separate project uses `R2dbcEventStore` with a real PostgreSQL container:
+Follow [Keep an onboarding history](../guides/onboarding-event-store.md). Its separate project uses `R2dbcEventStoreImpl` with a real PostgreSQL container:
 
 1. Submit an application and append `ApplicationSubmitted`.
 2. Reload a fresh aggregate from its typed event history.

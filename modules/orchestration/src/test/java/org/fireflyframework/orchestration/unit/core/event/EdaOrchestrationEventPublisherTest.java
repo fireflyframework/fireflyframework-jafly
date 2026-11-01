@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.unit.core.event;
 
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
-import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisher;
+import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisherImpl;
 import org.fireflyframework.orchestration.core.event.OrchestrationEvent;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
@@ -77,8 +77,8 @@ class EdaOrchestrationEventPublisherTest {
                 "tenant.created",
                 "key-abc"
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "fallback.topic");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "fallback.topic");
 
         // When publishing
         StepVerifier.create(bridge.publish(event)).verifyComplete();
@@ -107,8 +107,8 @@ class EdaOrchestrationEventPublisherTest {
     void publish_fallsBackToDefaultTopic_whenEventTopicIsBlank() {
         OrchestrationEvent event = OrchestrationEvent.executionStarted(
                 "OnboardTenantSaga", "corr-1", ExecutionPattern.SAGA);
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "idp.admin-identity.events");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "idp.admin-identity.events");
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -125,8 +125,8 @@ class EdaOrchestrationEventPublisherTest {
                 null,           // topic = null
                 null, null
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "default.topic");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "default.topic");
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -143,8 +143,8 @@ class EdaOrchestrationEventPublisherTest {
                 "",     // topic blank
                 null, null
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "   ");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "   ");
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -160,8 +160,8 @@ class EdaOrchestrationEventPublisherTest {
                 null,
                 null, null
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, null);
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, null);
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -183,8 +183,8 @@ class EdaOrchestrationEventPublisherTest {
                 "step.event",
                 null            // key null → fallback expected
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "idp.orchestration.events");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "idp.orchestration.events");
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -210,8 +210,8 @@ class EdaOrchestrationEventPublisherTest {
                 null,
                 "   "           // key blank → fallback expected
         );
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, null);
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, null);
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -227,8 +227,8 @@ class EdaOrchestrationEventPublisherTest {
         when(factory.getDefaultPublisher()).thenReturn(null);
         OrchestrationEvent event = OrchestrationEvent.executionStarted(
                 "S", "c", ExecutionPattern.SAGA);
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "default.topic");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "default.topic");
 
         StepVerifier.create(bridge.publish(event)).verifyComplete();
 
@@ -241,8 +241,8 @@ class EdaOrchestrationEventPublisherTest {
                 .thenReturn(Mono.error(new RuntimeException("kafka down")));
         OrchestrationEvent event = OrchestrationEvent.stepCompleted(
                 "S", "c", ExecutionPattern.SAGA, "step1", "result");
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "default.topic");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "default.topic");
 
         StepVerifier.create(bridge.publish(event))
                 .expectErrorMatches(t -> t instanceof RuntimeException
@@ -252,8 +252,8 @@ class EdaOrchestrationEventPublisherTest {
 
     @Test
     void publish_handlesNullEvent_returnsEmpty() {
-        EdaOrchestrationEventPublisher bridge =
-                new EdaOrchestrationEventPublisher(factory, "default.topic");
+        EdaOrchestrationEventPublisherImpl bridge =
+                new EdaOrchestrationEventPublisherImpl(factory, "default.topic");
 
         StepVerifier.create(bridge.publish(null)).verifyComplete();
 

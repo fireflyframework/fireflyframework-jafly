@@ -4,7 +4,7 @@
 
 Adapt a host-managed JCache implementation to the common cache contract.
 
-Provide the JCache CacheManager expected by JCacheProvider and select JCACHE through the core settings. The application owns the JSR-107 implementation and cache configuration.
+Provide the JCache CacheManager expected by JCacheProviderImpl and select JCACHE through the core settings. The application owns the JSR-107 implementation and cache configuration.
 
 [Module guide](../../docs/site/modules/cache-jcache.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
@@ -64,7 +64,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final FireflyCacheManager cache; // from fireflyframework-cache
+    private final FireflyCacheManagerImpl cache; // from fireflyframework-cache
 
 
 
@@ -84,7 +84,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`JCacheProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/spi/providers/JCacheProvider.java) | Defines `create` operations. |
+| [`JCacheProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/spi/providers/JCacheProviderImpl.java) | Defines `create` operations. |
 | [`JCacheCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/factory/JCacheCacheHelper.java) | Reflection-based helper to create a JCache-backed CacheAdapter (JSR-107) without a compile-time dependency. |
 
 ## Continue the application

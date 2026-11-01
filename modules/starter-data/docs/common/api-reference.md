@@ -1812,9 +1812,9 @@ Flux<LineageRecord> byOp = lineageTracker.getLineageByOperator("EquifaxCreditEnr
 // Build a transformation chain
 TransformationChain<Map<String, Object>, Map<String, Object>> chain =
     TransformationChain.of(
-        new FieldMappingTransformer(Map.of("first_name", "firstName", "last_name", "lastName"))
+        new FieldMappingTransformerImpl(Map.of("first_name", "firstName", "last_name", "lastName"))
     ).then(
-        new ComputedFieldTransformer(Map.of(
+        new ComputedFieldTransformerImpl(Map.of(
             "fullName", data -> data.get("firstName") + " " + data.get("lastName")
         ))
     );

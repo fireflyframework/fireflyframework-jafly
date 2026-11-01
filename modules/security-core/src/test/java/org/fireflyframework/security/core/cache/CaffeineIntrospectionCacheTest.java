@@ -24,7 +24,7 @@ import java.time.Duration;
 
 class CaffeineIntrospectionCacheTest {
 
-    private final CaffeineIntrospectionCache cache = new CaffeineIntrospectionCache(100);
+    private final CaffeineIntrospectionCacheImpl cache = new CaffeineIntrospectionCacheImpl(100);
     private final SecurityPrincipal principal = SecurityPrincipal.builder().subject("u1").build();
 
     @Test

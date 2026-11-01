@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {S3AdapterAutoConfiguration.class, S3Beans.class, S3DocumentContentAdapter.class})
+@SpringBootTest(classes = {S3AdapterAutoConfiguration.class, S3Beans.class, S3DocumentContentAdapterImpl.class})
 @TestPropertySource(properties = {
         "firefly.ecm.enabled=true",
         "firefly.ecm.adapter-type=s3",
@@ -22,6 +22,6 @@ class S3AdapterAutoConfigurationTest {
 
     @Test
     void contextLoads_andS3DocumentContentAdapterPresent() {
-        assertThat(contentPort).isInstanceOf(S3DocumentContentAdapter.class);
+        assertThat(contentPort).isInstanceOf(S3DocumentContentAdapterImpl.class);
     }
 }

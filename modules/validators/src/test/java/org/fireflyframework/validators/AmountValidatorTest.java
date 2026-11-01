@@ -31,11 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AmountValidatorTest {
 
-    private AmountValidator validator;
+    private AmountValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new AmountValidator();
+        validator = new AmountValidatorImpl();
         // Initialize with default values (EUR currency, min=0, max=Double.MAX_VALUE, allowZero=true)
         validator.initialize(new org.fireflyframework.annotations.ValidAmount() {
             @Override
@@ -90,7 +90,7 @@ class AmountValidatorTest {
         assertThat(validator.isValid(100.555, null)).isFalse(); // Too many decimal places
         
         // JPY allows 0 decimal places
-        AmountValidator jpyValidator = new AmountValidator();
+        AmountValidatorImpl jpyValidator = new AmountValidatorImpl();
         jpyValidator.initialize(new org.fireflyframework.annotations.ValidAmount() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -122,7 +122,7 @@ class AmountValidatorTest {
     @Test
     void shouldValidateMinMaxConstraints() {
         // Create validator with min=10, max=1000
-        AmountValidator minMaxValidator = new AmountValidator();
+        AmountValidatorImpl minMaxValidator = new AmountValidatorImpl();
         minMaxValidator.initialize(new org.fireflyframework.annotations.ValidAmount() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -159,7 +159,7 @@ class AmountValidatorTest {
         assertThat(validator.isValid(0.0, null)).isTrue();
         
         // Create validator that doesn't allow zero
-        AmountValidator noZeroValidator = new AmountValidator();
+        AmountValidatorImpl noZeroValidator = new AmountValidatorImpl();
         noZeroValidator.initialize(new org.fireflyframework.annotations.ValidAmount() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }

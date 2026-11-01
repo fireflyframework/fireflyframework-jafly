@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SortCodeValidatorTest {
 
-    private SortCodeValidator validator;
+    private SortCodeValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new SortCodeValidator();
+        validator = new SortCodeValidatorImpl();
     }
 
     @Test

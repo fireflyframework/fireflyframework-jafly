@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("FireflyApplicationInfoContributor Tests")
 class FireflyApplicationInfoContributorTest {
     
-    private FireflyApplicationInfoContributor infoContributor;
+    private FireflyApplicationInfoContributorImpl infoContributor;
     
     @Test
     @DisplayName("Should contribute complete application metadata")
@@ -67,7 +67,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When
@@ -116,7 +116,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When
@@ -162,7 +162,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When
@@ -195,7 +195,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When
@@ -232,7 +232,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When
@@ -270,7 +270,7 @@ class FireflyApplicationInfoContributorTest {
                 .customProperties(new HashMap<>())
                 .build();
         
-        infoContributor = new FireflyApplicationInfoContributor(metadata);
+        infoContributor = new FireflyApplicationInfoContributorImpl(metadata);
         Info.Builder builder = new Info.Builder();
         
         // When

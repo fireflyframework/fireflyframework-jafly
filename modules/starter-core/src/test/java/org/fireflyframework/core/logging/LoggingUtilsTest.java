@@ -283,12 +283,12 @@ class LoggingUtilsTest {
         
         Map<String, Object> result = LoggingUtils.log("HTTP Request Logging")
                 .with("responseData", complexJson)
-                .with("logger", "org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter")
+                .with("logger", "org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl")
                 .with("thread", "reactor-tcp-nio-5")
                 .build();
         
         assertEquals("HTTP Request Logging", result.get("message"));
-        assertEquals("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter", result.get("logger"));
+        assertEquals("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl", result.get("logger"));
         assertEquals("reactor-tcp-nio-5", result.get("thread"));
         
         // Complex JSON should be parsed in the responseData field
@@ -451,7 +451,7 @@ class LoggingUtilsTest {
         String microserviceLogMessage = "{\"durationMs\":140,\"headers\":{\"Content-Length\":\"117\",\"Content-Type\":\"application/json\",\"Vary\":[\"Origin\",\"Access-Control-Request-Method\",\"Access-Control-Request-Headers\"],\"X-Transaction-Id\":\"03132499-e3be-461c-a2b7-633d3c98c37f\",\"transfer-encoding\":\"chunked\"},\"requestId\":\"67132534563458\",\"statusCode\":201,\"timestamp\":\"2025-08-23T09:30:25.443559Z\",\"type\":\"HTTP_RESPONSE\"}";
         
         Map<String, Object> result = LoggingUtils.log(microserviceLogMessage)
-                .with("logger", "org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter")
+                .with("logger", "org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl")
                 .with("thread", "reactor-tcp-nio-5")
                 .with("level", "INFO")
                 .with("HOSTNAME", "Andress-MacBook-Pro.local")
@@ -483,7 +483,7 @@ class LoggingUtilsTest {
         assertEquals("Access-Control-Request-Headers", varyNode.get(2).asText());
         
         // Other fields should remain as strings
-        assertEquals("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter", result.get("logger"));
+        assertEquals("org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl", result.get("logger"));
         assertEquals("reactor-tcp-nio-5", result.get("thread"));
         assertEquals("INFO", result.get("level"));
     }

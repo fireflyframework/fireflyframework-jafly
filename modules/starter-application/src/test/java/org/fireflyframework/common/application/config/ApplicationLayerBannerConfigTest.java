@@ -33,13 +33,13 @@ import static org.mockito.Mockito.*;
 @DisplayName("ApplicationLayerBannerConfig Tests")
 class ApplicationLayerBannerConfigTest {
     
-    private ApplicationLayerBannerConfig bannerConfig;
+    private ApplicationLayerBannerConfigImpl bannerConfig;
     private ApplicationStartingEvent event;
     private SpringApplication springApplication;
     
     @BeforeEach
     void setUp() {
-        bannerConfig = new ApplicationLayerBannerConfig();
+        bannerConfig = new ApplicationLayerBannerConfigImpl();
         springApplication = mock(SpringApplication.class);
         event = mock(ApplicationStartingEvent.class);
         when(event.getSpringApplication()).thenReturn(springApplication);

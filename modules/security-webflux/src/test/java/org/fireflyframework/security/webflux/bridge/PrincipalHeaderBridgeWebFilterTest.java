@@ -17,7 +17,7 @@
 package org.fireflyframework.security.webflux.bridge;
 
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.core.tenant.ConfigurableTenantResolver;
+import org.fireflyframework.security.core.tenant.ConfigurableTenantResolverImpl;
 import org.fireflyframework.security.spi.SecurityContextPort;
 import org.fireflyframework.security.spi.TenantResolverPort;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PrincipalHeaderBridgeWebFilterTest {
 
     private final PrincipalHeaderBridgeProperties properties = new PrincipalHeaderBridgeProperties();
-    private final TenantResolverPort tenantResolver = new ConfigurableTenantResolver(List.of("tenant_ids"));
+    private final TenantResolverPort tenantResolver = new ConfigurableTenantResolverImpl(List.of("tenant_ids"));
 
     /** Records how many times it ran and the exchange it saw — to assert single execution + mutation. */
     private static final class CapturingChain implements WebFilterChain {
@@ -60,8 +60,8 @@ class PrincipalHeaderBridgeWebFilterTest {
         return () -> principal == null ? Mono.empty() : Mono.just(principal);
     }
 
-    private PrincipalHeaderBridgeWebFilter filter(SecurityContextPort port) {
-        return new PrincipalHeaderBridgeWebFilter(port, tenantResolver, properties);
+    private PrincipalHeaderBridgeWebFilterImpl filter(SecurityContextPort port) {
+        return new PrincipalHeaderBridgeWebFilterImpl(port, tenantResolver, properties);
     }
 
     @Test

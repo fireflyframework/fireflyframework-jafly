@@ -25,7 +25,7 @@ class UtcOffsetDateTimeProviderTest {
     static ReactiveIsNewAwareAuditingHandler handler() {
         var context=new R2dbcMappingContext();context.setSimpleTypeHolder(R2dbcSimpleTypeHolder.HOLDER);
         for(var type:new Class<?>[]{InheritedAudit.class,LocalAudit.class,InstantAudit.class,DateAudit.class,LongAudit.class,ImmutableAudit.class})context.getRequiredPersistentEntity(type);
-        var result=new ReactiveIsNewAwareAuditingHandler(PersistentEntities.of(context));result.setDateTimeProvider(new UtcOffsetDateTimeProvider(Clock.fixed(NOW,ZoneId.of("Asia/Tokyo"))));return result;
+        var result=new ReactiveIsNewAwareAuditingHandler(PersistentEntities.of(context));result.setDateTimeProvider(new UtcOffsetDateTimeProviderImpl(Clock.fixed(NOW,ZoneId.of("Asia/Tokyo"))));return result;
     }
     @Test void ordinaryInfrastructureDoesNotAutoRegisterOrEnableProvider() {
         new org.springframework.boot.test.context.runner.ApplicationContextRunner()
@@ -34,16 +34,16 @@ class UtcOffsetDateTimeProviderTest {
             .run(app->{assertNull(app.getStartupFailure());assertTrue(app.getBeansOfType(org.springframework.data.auditing.DateTimeProvider.class).isEmpty());assertTrue(app.getBeansOfType(org.springframework.data.auditing.ReactiveAuditingHandler.class).isEmpty());});
     }
     @Test void injectedClockIsNormalizedToUtcAndNullIsRejected() {
-        var provider=new UtcOffsetDateTimeProvider(Clock.fixed(NOW,ZoneId.of("Asia/Tokyo")));
-        assertEquals(OffsetDateTime.ofInstant(NOW,ZoneOffset.UTC),provider.getNow().orElseThrow());assertThrows(NullPointerException.class,()->new UtcOffsetDateTimeProvider(null));
+        var provider=new UtcOffsetDateTimeProviderImpl(Clock.fixed(NOW,ZoneId.of("Asia/Tokyo")));
+        assertEquals(OffsetDateTime.ofInstant(NOW,ZoneOffset.UTC),provider.getNow().orElseThrow());assertThrows(NullPointerException.class,()->new UtcOffsetDateTimeProviderImpl(null));
     }
     @Test void inheritedFieldsUseStandardCreateAndUpdateAndIsNewDetection() {
         var handler=handler();var entity=new InheritedAudit();var created=(InheritedAudit)handler.markAudited(entity).block();assertSame(entity,created);assertEquals(NOW,created.created.toInstant());assertEquals(created.created,created.modified);
-        entity.version=3L;handler.setDateTimeProvider(new UtcOffsetDateTimeProvider(Clock.fixed(NOW.plusSeconds(5),ZoneOffset.UTC)));var updated=(InheritedAudit)handler.markAudited(entity).block();assertEquals(NOW,updated.created.toInstant());assertEquals(NOW.plusSeconds(5),updated.modified.toInstant());
+        entity.version=3L;handler.setDateTimeProvider(new UtcOffsetDateTimeProviderImpl(Clock.fixed(NOW.plusSeconds(5),ZoneOffset.UTC)));var updated=(InheritedAudit)handler.markAudited(entity).block();assertEquals(NOW,updated.created.toInstant());assertEquals(NOW.plusSeconds(5),updated.modified.toInstant());
     }
     @Test void standardMappingPreservesImmutableCreateAndUpdateCopies() {
         var handler=handler();var original=new ImmutableAudit(null,null,null,null);var created=(ImmutableAudit)handler.markAudited(original).block();assertNotSame(original,created);assertNull(original.created());assertEquals(NOW,created.created().toInstant());
-        handler.setDateTimeProvider(new UtcOffsetDateTimeProvider(Clock.fixed(NOW.plusSeconds(5),ZoneOffset.UTC)));var updated=(ImmutableAudit)handler.markAudited(new ImmutableAudit("present",1L,created.created(),created.modified())).block();assertEquals(created.created(),updated.created());assertEquals(NOW.plusSeconds(5),updated.modified().toInstant());
+        handler.setDateTimeProvider(new UtcOffsetDateTimeProviderImpl(Clock.fixed(NOW.plusSeconds(5),ZoneOffset.UTC)));var updated=(ImmutableAudit)handler.markAudited(new ImmutableAudit("present",1L,created.created(),created.modified())).block();assertEquals(created.created(),updated.created());assertEquals(NOW.plusSeconds(5),updated.modified().toInstant());
     }
     @Test void localOffsetAndInstantFieldsRemainUtcInNonUtcJvm() {
         var previous=TimeZone.getDefault();try {TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));var handler=handler();var local=(LocalAudit)handler.markAudited(new LocalAudit()).block();var offset=(InheritedAudit)handler.markAudited(new InheritedAudit()).block();var instant=(InstantAudit)handler.markAudited(new InstantAudit()).block();assertEquals(LocalDateTime.ofInstant(NOW,ZoneOffset.UTC),local.created);assertEquals(ZoneOffset.UTC,offset.created.getOffset());assertEquals(NOW,offset.created.toInstant());assertEquals(NOW,instant.created);}finally{TimeZone.setDefault(previous);}

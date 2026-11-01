@@ -46,11 +46,11 @@ import static org.mockito.Mockito.when;
 
 class ExternalServiceExceptionConverterTest {
 
-    private ExternalServiceExceptionConverter converter;
+    private ExternalServiceExceptionConverterImpl converter;
 
     @BeforeEach
     void setUp() {
-        converter = new ExternalServiceExceptionConverter();
+        converter = new ExternalServiceExceptionConverterImpl();
     }
 
     @Test

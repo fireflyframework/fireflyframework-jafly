@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.fireflyframework.ecm.port.document.DocumentPort;
 import org.fireflyframework.ecm.port.document.DocumentContentPort;
 import org.junit.jupiter.api.Test;
@@ -32,9 +32,9 @@ class DocuSignImmutableIntentTest {
                 .encodeToString(generator.generateKeyPair().getPrivate().getEncoded())+"\n-----END PRIVATE KEY-----\n");
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
         try(var transport=new ScopedSdkConnector.Scope(service)) {
-            try(var client=new ManagedDocuSignApiClient(DocuSignClientSettings.from(p))) {
+            try(var client=new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(p))) {
                 var documents=mock(DocumentPort.class);var content=mock(DocumentContentPort.class);
-                var port=new DocuSignSignatureEnvelopeAdapter(client,p,content,documents);
+                var port=new DocuSignSignatureEnvelopeAdapterImpl(client,p,content,documents);
                 var original=DocuSignEnvelopeMappingTest.envelope();
                 var envelopeMetadata=new HashMap<String,Object>();var requestMetadata=new HashMap<String,Object>();var fieldMetadata=new HashMap<String,Object>();
                 var fields=new ArrayList<>(List.of(original.getSignatureRequests().getFirst().getSignatureFields().getFirst()

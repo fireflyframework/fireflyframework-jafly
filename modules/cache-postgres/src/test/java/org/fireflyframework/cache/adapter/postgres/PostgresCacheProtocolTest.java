@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import io.r2dbc.spi.*;
 import java.time.Duration;
 import java.util.*;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,9 +35,9 @@ class PostgresCacheProtocolTest {
         when(result.getRowsUpdated()).thenReturn(Mono.just(1L));
     }
 
-    PostgresCacheAdapter adapter() {
-        return new PostgresCacheAdapter("logical",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),
-                new JsonCacheSerializer(new ObjectMapper()));
+    PostgresCacheAdapterImpl adapter() {
+        return new PostgresCacheAdapterImpl("logical",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),
+                new JsonCacheSerializerImpl(new ObjectMapper()));
     }
 
     @Test void expiredConflictUsesOneAtomicConditionalUpdateWithPostLockDatabaseClocks() {

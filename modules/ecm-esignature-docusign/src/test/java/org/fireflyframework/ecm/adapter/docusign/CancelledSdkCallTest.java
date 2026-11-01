@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ class CancelledSdkCallTest {
             @Override protected void append(ILoggingEvent event) { super.append(event); dropped.countDown(); }
         };
         captured.start(); logger.addAppender(captured);
-        try (var transport = new ScopedSdkConnector.Scope(service); var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(value))) {
+        try (var transport = new ScopedSdkConnector.Scope(service); var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(value))) {
             transport.responder = wire -> {
                 if (wire.uri().getPath().endsWith("/envelopes/controlled-envelope")) {
                     entered.countDown(); boolean wasInterrupted = false; long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);

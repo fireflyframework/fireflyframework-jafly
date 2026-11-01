@@ -25,7 +25,7 @@ The Firefly Common Core actuator components extend Spring Boot Actuator with enh
 
 ### Current indicator contracts
 
-Custom indicators implement Spring Boot's `org.springframework.boot.health.contributor.HealthIndicator` SPI. The starter's [LoggingHealthIndicator](health/LoggingHealthIndicator.java) is a current implementation; its [ActuatorProperties](config/ActuatorProperties.java) binds `firefly.actuator`. The former `AbstractMessagingHealthIndicator` example is not a shipped base class.
+Custom indicators implement Spring Boot's `org.springframework.boot.health.contributor.HealthIndicator` SPI. The starter's [LoggingHealthIndicatorImpl](health/LoggingHealthIndicatorImpl.java) is a current implementation; its [ActuatorProperties](config/ActuatorProperties.java) binds `firefly.actuator`. The former `AbstractMessagingHealthIndicator` example is not a shipped base class.
 
 The custom examples below are application fragments. Their clients, probes, properties, and registration belong to the host service; they are not indicators automatically supplied for every messaging platform.
 

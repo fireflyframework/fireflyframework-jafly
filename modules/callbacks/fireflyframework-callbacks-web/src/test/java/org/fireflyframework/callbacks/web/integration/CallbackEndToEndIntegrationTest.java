@@ -22,7 +22,7 @@ import org.fireflyframework.callbacks.interfaces.dto.CallbackConfigurationDTO;
 import org.fireflyframework.callbacks.interfaces.enums.CallbackStatus;
 import org.fireflyframework.callbacks.interfaces.enums.HttpMethod;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.*;
@@ -119,7 +119,7 @@ class CallbackEndToEndIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     @Test
     @Order(1)

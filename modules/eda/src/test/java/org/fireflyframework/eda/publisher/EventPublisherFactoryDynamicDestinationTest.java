@@ -95,7 +95,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo("custom-topic");
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.KAFKA);
     }
@@ -109,7 +109,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo("custom-exchange");
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.RABBITMQ);
     }
@@ -122,7 +122,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher).isSameAs(mockKafkaPublisher);
     }
 
@@ -134,7 +134,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher).isSameAs(mockKafkaPublisher);
     }
 
@@ -146,7 +146,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isNotInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher).isSameAs(mockKafkaPublisher);
     }
 
@@ -168,7 +168,7 @@ class EventPublisherFactoryDynamicDestinationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo("custom-default-topic");
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.KAFKA); // Default type
     }

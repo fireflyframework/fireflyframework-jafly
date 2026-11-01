@@ -51,7 +51,7 @@ class JCacheProviderWiringTest {
         assertThat(jcache)
                 .as("ServiceLoader must discover a CacheProviderFactory with getType() == JCACHE")
                 .isNotNull();
-        assertThat(jcache).isInstanceOf(JCacheProvider.class);
+        assertThat(jcache).isInstanceOf(JCacheProviderImpl.class);
         assertThat(jcache.getType()).isEqualTo(CacheType.JCACHE);
         assertThat(jcache.priority()).isEqualTo(30);
     }
@@ -63,7 +63,7 @@ class JCacheProviderWiringTest {
             CacheProviderFactory.ProviderContext ctx = new CacheProviderFactory.ProviderContext(
                     null, null, null, null, cacheManager);
 
-            JCacheProvider provider = new JCacheProvider();
+            JCacheProviderImpl provider = new JCacheProviderImpl();
 
             assertThat(provider.isAvailable(ctx))
                     .as("JCache provider must report available when a JSR-107 CacheManager bean is supplied")

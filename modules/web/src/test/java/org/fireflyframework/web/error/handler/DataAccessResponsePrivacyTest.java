@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.fireflyframework.web.error.config.ErrorHandlingProperties;
-import org.fireflyframework.web.error.converter.DataAccessExceptionConverter;
+import org.fireflyframework.web.error.converter.DataAccessExceptionConverterImpl;
 import org.fireflyframework.web.error.converter.ExceptionConverterService;
 import org.fireflyframework.web.error.service.ErrorResponseNegotiator;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,7 +49,7 @@ class DataAccessResponsePrivacyTest {
         properties.setIncludeExceptionCause(true);
         var environment = new MockEnvironment();
         environment.setActiveProfiles(profile);
-        var converters = new ExceptionConverterService(List.of(new DataAccessExceptionConverter()));
+        var converters = new ExceptionConverterService(List.of(new DataAccessExceptionConverterImpl()));
         var handler = new GlobalExceptionHandler(converters, Optional.empty(), properties,
                 Optional.empty(), Optional.empty(), environment, mapper,
                 new ErrorResponseNegotiator(mapper), Optional.empty());

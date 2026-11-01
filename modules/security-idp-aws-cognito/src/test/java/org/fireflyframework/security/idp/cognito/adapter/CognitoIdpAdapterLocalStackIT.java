@@ -98,7 +98,7 @@ class CognitoIdpAdapterLocalStackIT {
             .withEnv("EAGER_SERVICE_LOADING", "1");  // Load services eagerly
 
     private static CognitoIdentityProviderClient cognitoClient;
-    private static CognitoIdpAdapter adapter;
+    private static CognitoIdpAdapterImpl adapter;
     private static String userPoolId;
     private static String clientId;
     private static String testUserId;
@@ -180,7 +180,7 @@ class CognitoIdpAdapterLocalStackIT {
 
         CognitoUserService userService = new CognitoUserService(clientFactory, properties);
         CognitoAdminService adminService = new CognitoAdminService(clientFactory, properties);
-        adapter = new CognitoIdpAdapter(userService, adminService);
+        adapter = new CognitoIdpAdapterImpl(userService, adminService);
     }
 
     @AfterAll

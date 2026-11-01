@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.r2dbc.spi.*;
 import java.util.function.BiFunction;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -33,7 +33,7 @@ class PostgresCacheNamespaceBindingTest {
 
     @Test void applicationNameProvidesTheNamespaceOnlyWhenExplicitPrefixIsMissing() {
         context.withPropertyValues("spring.application.name=service-a").run(application -> {
-            assertThat(application).hasNotFailed();assertThat(application).hasSingleBean(FireflyCacheManager.class);
+            assertThat(application).hasNotFailed();assertThat(application).hasSingleBean(FireflyCacheManagerImpl.class);
             assertThat(application.getBean(CacheProperties.class).getPostgres().getKeyPrefix()).isEqualTo("service-a");
         });
     }

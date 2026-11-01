@@ -32,8 +32,8 @@ This retained report records verification of the earlier plugin build and artifa
 
 #### Plugin Core Module (`plugin-core`)
 - ✅ **Implementations** (3):
-  - `DefaultPluginManager` - Full plugin lifecycle management
-  - `DefaultExtensionRegistry` - Thread-safe extension registry
+  - `DefaultPluginManagerImpl` - Full plugin lifecycle management
+  - `DefaultExtensionRegistryImpl` - Thread-safe extension registry
   - `PluginDependencyResolver` - Topological sort-based dependency resolution
 
 ---

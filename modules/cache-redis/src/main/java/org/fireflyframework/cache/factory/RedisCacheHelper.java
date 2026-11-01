@@ -17,12 +17,12 @@
 package org.fireflyframework.cache.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fireflyframework.cache.adapter.redis.RedisCacheAdapter;
+import org.fireflyframework.cache.adapter.redis.RedisCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.redis.RedisCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.serialization.CacheSerializer;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -63,7 +63,7 @@ public class RedisCacheHelper {
         }
 
         CacheProperties.RedisConfig redisProps = properties.getRedis();
-        CacheSerializer serializer = new JsonCacheSerializer(objectMapper);
+        CacheSerializer serializer = new JsonCacheSerializerImpl(objectMapper);
 
         // Create Redis template with custom key prefix
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
@@ -96,6 +96,6 @@ public class RedisCacheHelper {
                 .ssl(redisProps.isSsl())
                 .build();
 
-        return new RedisCacheAdapter(cacheName, redisTemplate, redisConnectionFactory, config, serializer);
+        return new RedisCacheAdapterImpl(cacheName, redisTemplate, redisConnectionFactory, config, serializer);
     }
 }

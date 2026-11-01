@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class IdempotencyOpenAPICustomizerTest {
 
-    private IdempotencyOpenAPICustomizer customizer;
+    private IdempotencyOpenAPICustomizerImpl customizer;
     private OpenAPI openAPI;
     private Paths paths;
     private PathItem pathItem;
@@ -52,7 +52,7 @@ class IdempotencyOpenAPICustomizerTest {
     void setUp() {
         IdempotencyProperties properties = new IdempotencyProperties();
         properties.setHeaderName("X-Idempotency-Key");
-        customizer = new IdempotencyOpenAPICustomizer(properties);
+        customizer = new IdempotencyOpenAPICustomizerImpl(properties);
 
         // Set up OpenAPI structure
         openAPI = new OpenAPI();
@@ -111,7 +111,7 @@ class IdempotencyOpenAPICustomizerTest {
     void shouldNotAddIdempotencyKeyHeaderToOperationsWithDisableIdempotencyExtension() {
         // Arrange
         Map<String, Object> extensions = new HashMap<>();
-        extensions.put(IdempotencyOperationCustomizer.DISABLE_IDEMPOTENCY_EXTENSION, true);
+        extensions.put(IdempotencyOperationCustomizerImpl.DISABLE_IDEMPOTENCY_EXTENSION, true);
         postOperation.setExtensions(extensions);
 
         // Act

@@ -12,7 +12,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapter;
+import org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.postgres.PostgresCacheConfig;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.properties.CacheProperties;
@@ -40,8 +40,8 @@ class PostgresCacheStartupTest {
         when(connection.close()).thenReturn(Mono.empty());
     }
 
-    PostgresCacheAdapter create() {
-        return (PostgresCacheAdapter) PostgresCacheHelper.createPostgresCacheAdapter(
+    PostgresCacheAdapterImpl create() {
+        return (PostgresCacheAdapterImpl) PostgresCacheHelper.createPostgresCacheAdapter(
                 "orders", "tenant", Duration.ofMinutes(7), factory, properties, new ObjectMapper());
     }
 
@@ -111,7 +111,7 @@ class PostgresCacheStartupTest {
         var manager = new CacheManagerFactory(properties, new ObjectMapper(), null, null, null, factory)
                 .createDefaultCacheManager("default");
         assertThat(ReflectionTestUtils.getField(manager, "primaryCache").getClass().getSimpleName())
-                .isEqualTo("SmartCacheAdapter");
+                .isEqualTo("SmartCacheAdapterImpl");
     }
 
     @Test void automaticAdapterSelectionPrefersPostgresToRedis() {
@@ -123,7 +123,7 @@ class PostgresCacheStartupTest {
         when(redis.getCacheType()).thenReturn(CacheType.REDIS);
         when(postgres.getCacheName()).thenReturn("z-postgres");
         when(redis.getCacheName()).thenReturn("a-redis");
-        assertThat(new org.fireflyframework.cache.manager.AutoCacheSelectionStrategy()
+        assertThat(new org.fireflyframework.cache.manager.AutoCacheSelectionStrategyImpl()
                 .selectCache(List.of(redis, postgres))).contains(postgres);
     }
 

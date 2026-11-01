@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.fireflyframework.orchestration.core.observability.OrchestrationMetrics;
+import org.fireflyframework.orchestration.core.observability.OrchestrationMetricsImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationMetricsEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -44,9 +44,9 @@ public class OrchestrationMetricsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public OrchestrationMetrics orchestrationMetrics(MeterRegistry meterRegistry) {
+    public OrchestrationMetricsImpl orchestrationMetrics(MeterRegistry meterRegistry) {
         log.info("[orchestration] Metrics collection initialized");
-        return new OrchestrationMetrics(meterRegistry);
+        return new OrchestrationMetricsImpl(meterRegistry);
     }
 
     @Bean

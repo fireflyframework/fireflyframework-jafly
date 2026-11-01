@@ -32,10 +32,10 @@ Delegate an onboarding authorization decision to a configured OPA policy through
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-Contribute an `OpaPolicyDecisionAdapter` as your `PolicyDecisionPort`. Because `security-webflux` selects whatever `PolicyDecisionPort` bean is present, this single bean replaces the in-process `EmbeddedPolicyDecisionAdapter` for every non-permitted exchange. No other wiring required:
+Contribute an `OpaPolicyDecisionAdapterImpl` as your `PolicyDecisionPort`. Because `security-webflux` selects whatever `PolicyDecisionPort` bean is present, this single bean replaces the in-process `EmbeddedPolicyDecisionAdapterImpl` for every non-permitted exchange. No other wiring required:
 
 ```java
-import org.fireflyframework.security.adapter.opa.OpaPolicyDecisionAdapter;
+import org.fireflyframework.security.adapter.opa.OpaPolicyDecisionAdapterImpl;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +47,7 @@ class OpaPolicyConfiguration {
     @Bean
     PolicyDecisionPort policyDecisionPort() {
         WebClient opa = WebClient.create("http://opa:8181");
-        return new OpaPolicyDecisionAdapter(opa, "firefly/allow");
+        return new OpaPolicyDecisionAdapterImpl(opa, "firefly/allow");
     }
 }
 ```
@@ -67,7 +67,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`OpaPolicyDecisionAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-opa/src/main/java/org/fireflyframework/security/adapter/opa/OpaPolicyDecisionAdapter.java) | `PolicyDecisionPort` backed by Open Policy Agent. |
+| [`OpaPolicyDecisionAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-opa/src/main/java/org/fireflyframework/security/adapter/opa/OpaPolicyDecisionAdapterImpl.java) | `PolicyDecisionPort` backed by Open Policy Agent. |
 
 ## Related components
 
@@ -104,7 +104,7 @@ The `permitsAllowedActionForAnySubject` test demonstrates one concrete behavior.
 ```java
 @Test
 void permitsAllowedActionForAnySubject() {
-    OpaPolicyDecisionAdapter adapter = new OpaPolicyDecisionAdapter(webClient, "firefly/allow");
+    OpaPolicyDecisionAdapterImpl adapter = new OpaPolicyDecisionAdapterImpl(webClient, "firefly/allow");
     StepVerifier.create(adapter.authorize(principal(Set.of("teller")), "read", "doc:1", Map.of()))
             .expectNextMatches(d -> d.granted())
             .verifyComplete();
@@ -127,15 +127,15 @@ security-api  →  security-spi  →  security-core  →  security-webflux  → 
 
 - `security-api` defines the domain this adapter speaks in: `SecurityPrincipal` (the subject) and `Decision` (the outcome, with its `Effect` enum).
 - `security-spi` defines the driven port this module implements: `PolicyDecisionPort`.
-- `security-core` ships the in-process default, `EmbeddedPolicyDecisionAdapter`, which this module replaces.
-- `security-webflux` consumes whichever `PolicyDecisionPort` bean is present through its `PolicyAuthorizationManager`, so swapping the embedded engine for OPA is transparent to the filter chain.
-- This module is an outboard adapter: contribute an `OpaPolicyDecisionAdapter` bean and every non-permitted exchange is authorized by your OPA server instead of in-process rules.
+- `security-core` ships the in-process default, `EmbeddedPolicyDecisionAdapterImpl`, which this module replaces.
+- `security-webflux` consumes whichever `PolicyDecisionPort` bean is present through its `PolicyAuthorizationManagerImpl`, so swapping the embedded engine for OPA is transparent to the filter chain.
+- This module is an outboard adapter: contribute an `OpaPolicyDecisionAdapterImpl` bean and every non-permitted exchange is authorized by your OPA server instead of in-process rules.
 
 This adapter depends only on `security-api`, `security-spi`, `spring-webflux`, and `jackson-databind`. It pulls in no vendor SDK and no Spring Boot auto-configuration. It is a plain port implementation you wire as a bean.
 
 ### What it provides
 
-`OpaPolicyDecisionAdapter` contributes a single capability: a `PolicyDecisionPort` whose decisions come from a live OPA server.
+`OpaPolicyDecisionAdapterImpl` contributes a single capability: a `PolicyDecisionPort` whose decisions come from a live OPA server.
 
 - Reactive, SDK-free transport. Construction takes a `WebClient` whose base URL points at the OPA server plus a `decisionPath` (the OPA data path of the boolean allow rule, e.g. `firefly/allow`). A leading slash on the path is tolerated and stripped. The call is issued against `/v1/data/<decisionPath>` and is non-blocking throughout.
 - A stable `input` shape. Every request sends OPA an `input` document with a nested `subject` (`subject`, `authorities`, `scopes`, `tenantId` drawn from the `SecurityPrincipal`), plus top-level `action`, `resource`, and `context` (a `null` context is sent as an empty object). Rego policies bind against this contract.
@@ -146,8 +146,8 @@ This adapter depends only on `security-api`, `security-spi`, `spring-webflux`, a
 
 | Type | Role |
 | --- | --- |
-| `OpaPolicyDecisionAdapter` | `PolicyDecisionPort` implementation; POSTs the `input` document to OPA's Data API and maps the boolean result to a `Decision`, fail-closed. |
-| `OpaPolicyDecisionAdapter.OpaResult` | Package-private `record OpaResult(Boolean result)`. the deserialized subset of OPA's data response (`{"result": <bool>}`), `@JsonIgnoreProperties(ignoreUnknown = true)`. |
+| `OpaPolicyDecisionAdapterImpl` | `PolicyDecisionPort` implementation; POSTs the `input` document to OPA's Data API and maps the boolean result to a `Decision`, fail-closed. |
+| `OpaPolicyDecisionAdapterImpl.OpaResult` | Package-private `record OpaResult(Boolean result)`. the deserialized subset of OPA's data response (`{"result": <bool>}`), `@JsonIgnoreProperties(ignoreUnknown = true)`. |
 
 Port implemented (from `security-spi`): `PolicyDecisionPort`. Domain types consumed (from `security-api`): `SecurityPrincipal`, `Decision` (and its `Decision.Effect`).
 

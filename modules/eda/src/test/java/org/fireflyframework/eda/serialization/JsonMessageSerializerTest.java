@@ -43,14 +43,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class JsonMessageSerializerTest {
 
-    private JsonMessageSerializer serializer;
+    private JsonMessageSerializerImpl serializer;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        serializer = new JsonMessageSerializer(objectMapper);
+        serializer = new JsonMessageSerializerImpl(objectMapper);
     }
 
     @Test

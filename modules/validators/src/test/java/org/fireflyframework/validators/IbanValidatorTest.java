@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class IbanValidatorTest {
 
-    private IbanValidator validator;
+    private IbanValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new IbanValidator();
+        validator = new IbanValidatorImpl();
     }
 
     @Test

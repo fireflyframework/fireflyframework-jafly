@@ -44,7 +44,7 @@ class ProjectionFrameworkTest {
         String projectionName = "test-projection";
         
         // When
-        ProjectionMetrics metrics = new ProjectionMetrics(projectionName, meterRegistry);
+        ProjectionMetricsImpl metrics = new ProjectionMetricsImpl(projectionName, meterRegistry);
         
         // Then
         assertThat(metrics.getProjectionName()).isEqualTo(projectionName);
@@ -69,7 +69,7 @@ class ProjectionFrameworkTest {
     @Test
     void shouldRecordMetricsCorrectly() {
         // Given
-        ProjectionMetrics metrics = new ProjectionMetrics("test-projection", meterRegistry);
+        ProjectionMetricsImpl metrics = new ProjectionMetricsImpl("test-projection", meterRegistry);
         
         // When
         metrics.recordEventProcessed();

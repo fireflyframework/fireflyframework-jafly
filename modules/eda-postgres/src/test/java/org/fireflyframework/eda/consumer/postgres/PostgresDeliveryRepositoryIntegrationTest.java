@@ -21,9 +21,9 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.*;
-import org.fireflyframework.eda.publisher.postgres.impl.SpringDataPostgresOutboxWriter;
+import org.fireflyframework.eda.publisher.postgres.impl.SpringDataPostgresOutboxWriterImpl;
 import org.fireflyframework.eda.publisher.postgres.model.PostgresOutboxAppend;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -88,16 +88,16 @@ class PostgresDeliveryRepositoryIntegrationTest {
                 .concatMap(result -> Mono.from(result.getRowsUpdated())).then(),
                 held -> Mono.defer(() -> Mono.from(held.close())));
     }
-    private SpringDataPostgresDeliveryRepository repository(ConnectionFactory factory) {
-        return new SpringDataPostgresDeliveryRepository(factory, schema, table, Duration.ofSeconds(10));
+    private SpringDataPostgresDeliveryRepositoryImpl repository(ConnectionFactory factory) {
+        return new SpringDataPostgresDeliveryRepositoryImpl(factory, schema, table, Duration.ofSeconds(10));
     }
-    private SpringDataPostgresDeliveryRepository ready() {
+    private SpringDataPostgresDeliveryRepositoryImpl ready() {
         install(); var repository = repository(pool); repository.verifyProtocol().block(WAIT); return repository;
     }
     private ClaimRequest request(int limit, int attempts, Duration lease) { return new ClaimRequest(Set.of("events"), limit, attempts, lease); }
     private ClaimRequest request() { return request(8, 3, Duration.ofSeconds(5)); }
     private long append(String channel) {
-        new SpringDataPostgresOutboxWriter(new R2dbcEntityTemplate(database, PostgresDialect.INSTANCE))
+        new SpringDataPostgresOutboxWriterImpl(new R2dbcEntityTemplate(database, PostgresDialect.INSTANCE))
                 .append(schema, table, new PostgresOutboxAppend(null, "orders.created", channel, null, payload,
                         Json.of("{\"decimal\":12.3400}"), null, "POSTGRES", "default", "untrusted.MustNotInitialize")).block(WAIT);
         return database.sql("SELECT max(id) AS id FROM " + qualified()).map((row, metadata) -> row.get("id", Long.class)).one().block(WAIT);
@@ -115,7 +115,7 @@ class PostgresDeliveryRepositoryIntegrationTest {
     private OffsetDateTime clock() {
         return database.sql("SELECT pg_catalog.clock_timestamp() AS now").map((row, metadata) -> row.get("now", OffsetDateTime.class)).one().block(WAIT);
     }
-    private DeliveryClaim one(SpringDataPostgresDeliveryRepository repository, ClaimRequest request) {
+    private DeliveryClaim one(SpringDataPostgresDeliveryRepositoryImpl repository, ClaimRequest request) {
         var batch = repository.claim(request).block(WAIT); assertThat(batch.claims()).hasSize(1); return batch.claims().getFirst();
     }
     private void expire(DeliveryClaim claim) { update(claim.row().id(), "lease_until=pg_catalog.clock_timestamp()-INTERVAL '1 second'"); }

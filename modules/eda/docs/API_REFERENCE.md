@@ -1067,45 +1067,45 @@ public interface EventFilter {
 
 ### Built-in Filter Implementations
 
-#### DestinationEventFilter
+#### DestinationEventFilterImpl
 Filters events based on destination patterns.
 
 ```java
-public class DestinationEventFilter implements EventFilter {
-    public DestinationEventFilter(String destinationPattern);
-    public DestinationEventFilter(Pattern destinationPattern);
+public class DestinationEventFilterImpl implements EventFilter {
+    public DestinationEventFilterImpl(String destinationPattern);
+    public DestinationEventFilterImpl(Pattern destinationPattern);
 }
 ```
 
-#### EventTypeFilter
+#### EventTypeFilterImpl
 Filters events based on event type patterns with glob support.
 
 ```java
-public class EventTypeFilter implements EventFilter {
-    public EventTypeFilter(String eventTypePattern);
-    public EventTypeFilter(Pattern eventTypePattern);
+public class EventTypeFilterImpl implements EventFilter {
+    public EventTypeFilterImpl(String eventTypePattern);
+    public EventTypeFilterImpl(Pattern eventTypePattern);
 }
 ```
 
-#### HeaderEventFilter
+#### HeaderEventFilterImpl
 Filters events based on header values.
 
 ```java
-public class HeaderEventFilter implements EventFilter {
-    public HeaderEventFilter(String headerName, String expectedValue);
-    public HeaderEventFilter(String headerName, Pattern valuePattern);
+public class HeaderEventFilterImpl implements EventFilter {
+    public HeaderEventFilterImpl(String headerName, String expectedValue);
+    public HeaderEventFilterImpl(String headerName, Pattern valuePattern);
 }
 ```
 
-#### CompositeEventFilter
+#### CompositeEventFilterImpl
 Combines multiple filters with logical operations.
 
 ```java
-public class CompositeEventFilter implements EventFilter {
+public class CompositeEventFilterImpl implements EventFilter {
     public enum LogicType { AND, OR }
     
-    public CompositeEventFilter(LogicType logicType, EventFilter... filters);
-    public CompositeEventFilter(LogicType logicType, List<EventFilter> filters);
+    public CompositeEventFilterImpl(LogicType logicType, EventFilter... filters);
+    public CompositeEventFilterImpl(LogicType logicType, List<EventFilter> filters);
 }
 ```
 
@@ -1161,13 +1161,13 @@ firefly.eda.retry.attempt{publisher_type, attempt, status}
 firefly.eda.rate.limiter.rejection{publisher_type}
 ```
 
-### EdaMetrics Class
+### EdaMetricsImpl Class
 
 Service for recording custom metrics.
 
 ```java
 @Component
-public class EdaMetrics {
+public class EdaMetricsImpl {
     /**
      * Records a successful event publication.
      */
@@ -1221,7 +1221,7 @@ public class EdaMetrics {
 
 ## Health Indicators
 
-### EdaHealthIndicator
+### EdaHealthIndicatorImpl
 
 The EDA library provides a built-in health indicator component:
 
@@ -1229,7 +1229,7 @@ The EDA library provides a built-in health indicator component:
 @Component
 @ConditionalOnClass(name = "org.springframework.boot.actuator.health.HealthIndicator")
 @ConditionalOnProperty(prefix = "firefly.eda", name = "health-enabled", havingValue = "true", matchIfMissing = true)
-public class EdaHealthIndicator {
+public class EdaHealthIndicatorImpl {
     /**
      * Returns comprehensive health information about:
      * - EDA library configuration and availability

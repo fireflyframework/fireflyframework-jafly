@@ -33,7 +33,7 @@ import java.lang.annotation.*;
  * Invalid examples: CREDIT_SCORE, credit_score, CreditScore
  */
 @Documented
-@Constraint(validatedBy = ValidInputVariableNamesValidator.class)
+@Constraint(validatedBy = ValidInputVariableNamesValidatorImpl.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidInputVariableNames {

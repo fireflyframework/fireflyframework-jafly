@@ -20,7 +20,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.fireflyframework.kernel.logging.LogFields;
 import org.fireflyframework.webhooks.core.config.WebhookSecurityProperties;
 import org.fireflyframework.webhooks.core.ratelimit.WebhookRateLimitService;
-import org.fireflyframework.webhooks.core.resilience.ResilientWebhookProcessingService;
+import org.fireflyframework.webhooks.core.resilience.ResilientWebhookProcessingServiceImpl;
 import org.fireflyframework.webhooks.core.services.WebhookProcessingService;
 import org.fireflyframework.webhooks.core.validation.WebhookValidator;
 import org.fireflyframework.webhooks.interfaces.dto.WebhookEventDTO;
@@ -53,7 +53,7 @@ class WebhookGuardLoggingTest {
 
     @BeforeEach void capture() {
         events.start();
-        for (Class<?> type : List.of(WebhookValidator.class, WebhookRateLimitService.class, ResilientWebhookProcessingService.class)) {
+        for (Class<?> type : List.of(WebhookValidator.class, WebhookRateLimitService.class, ResilientWebhookProcessingServiceImpl.class)) {
             var logger = (Logger) LoggerFactory.getLogger(type);
             levels.put(logger, logger.getLevel()); additive.put(logger, logger.isAdditive());
             logger.setLevel(Level.DEBUG); logger.setAdditive(false); logger.addAppender(events);
@@ -205,8 +205,8 @@ class WebhookGuardLoggingTest {
     private static RateLimiterRegistry rateRegistry() {
         return RateLimiterRegistry.of(RateLimiterConfig.custom().limitForPeriod(1).limitRefreshPeriod(Duration.ofHours(1)).timeoutDuration(Duration.ZERO).build());
     }
-    private static ResilientWebhookProcessingService resilient(WebhookProcessingService delegate) {
-        return new ResilientWebhookProcessingService(delegate, CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults());
+    private static ResilientWebhookProcessingServiceImpl resilient(WebhookProcessingService delegate) {
+        return new ResilientWebhookProcessingServiceImpl(delegate, CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults());
     }
     private static WebhookEventDTO dto(String provider) {
         return WebhookEventDTO.builder().eventId(UUID.randomUUID()).providerName(provider).payload(JsonNodeFactory.instance.objectNode().put("kind", "sandbox")).build();

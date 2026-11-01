@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.spi.CacheProviderFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,7 +145,7 @@ public class PrimaryOnlyServiceDiscoveryTest {
         assertEquals(0, STRICT_CREATES.get()); assertEquals(0, LEGACY_CREATES.get()); assertEquals(0, RESOLVERS.get());
     }
 
-    private FireflyCacheManager strict(CacheManagerFactory factory) {
+    private FireflyCacheManagerImpl strict(CacheManagerFactory factory) {
         return factory.createCacheManager("fixture", CacheType.POSTGRES, "fixture:", Duration.ofMinutes(1),
                 "ServiceLoader completion fixture", "test", CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
     }

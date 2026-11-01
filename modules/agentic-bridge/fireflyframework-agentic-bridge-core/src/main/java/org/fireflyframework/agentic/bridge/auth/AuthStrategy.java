@@ -46,30 +46,30 @@ public interface AuthStrategy {
     }
 
     static AuthStrategy none() {
-        return NoAuth.INSTANCE;
+        return NoAuthImpl.INSTANCE;
     }
 
     static AuthStrategy apiKey(String value) {
-        return new ApiKeyAuth(() -> value);
+        return new ApiKeyAuthImpl(() -> value);
     }
 
     static AuthStrategy apiKey(Supplier<String> supplier) {
-        return new ApiKeyAuth(supplier);
+        return new ApiKeyAuthImpl(supplier);
     }
 
     static AuthStrategy apiKey(String header, Supplier<String> supplier) {
-        return new ApiKeyAuth(header, supplier);
+        return new ApiKeyAuthImpl(header, supplier);
     }
 
     static AuthStrategy bearer(String token) {
-        return new BearerTokenAuth(() -> token);
+        return new BearerTokenAuthImpl(() -> token);
     }
 
     static AuthStrategy bearer(Supplier<String> supplier) {
-        return new BearerTokenAuth(supplier);
+        return new BearerTokenAuthImpl(supplier);
     }
 
     static AuthStrategy composite(AuthStrategy... strategies) {
-        return new CompositeAuth(strategies);
+        return new CompositeAuthImpl(strategies);
     }
 }

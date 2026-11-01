@@ -29,7 +29,7 @@ class EmbeddedPolicyDecisionAdapterTest {
 
     private final SecurityPrincipal p = SecurityPrincipal.builder().subject("u1").build();
 
-    private void assertGranted(EmbeddedPolicyDecisionAdapter pdp, boolean expected) {
+    private void assertGranted(EmbeddedPolicyDecisionAdapterImpl pdp, boolean expected) {
         StepVerifier.create(pdp.authorize(p, "read", "doc:1", Map.of()))
                 .expectNextMatches(d -> d.granted() == expected)
                 .verifyComplete();
@@ -37,12 +37,12 @@ class EmbeddedPolicyDecisionAdapterTest {
 
     @Test
     void noRulesPermitsToDeferToRbac() {
-        assertGranted(new EmbeddedPolicyDecisionAdapter(List.of()), true);
+        assertGranted(new EmbeddedPolicyDecisionAdapterImpl(List.of()), true);
     }
 
     @Test
     void denyOverridesPermit() {
-        EmbeddedPolicyDecisionAdapter pdp = new EmbeddedPolicyDecisionAdapter(List.of(
+        EmbeddedPolicyDecisionAdapterImpl pdp = new EmbeddedPolicyDecisionAdapterImpl(List.of(
                 (pr, a, r, c) -> Mono.just(Decision.permit()),
                 (pr, a, r, c) -> Mono.just(Decision.deny("blocked"))));
         assertGranted(pdp, false);
@@ -50,7 +50,7 @@ class EmbeddedPolicyDecisionAdapterTest {
 
     @Test
     void permitsWhenARulePermitsAndNoneDeny() {
-        EmbeddedPolicyDecisionAdapter pdp = new EmbeddedPolicyDecisionAdapter(List.of(
+        EmbeddedPolicyDecisionAdapterImpl pdp = new EmbeddedPolicyDecisionAdapterImpl(List.of(
                 (pr, a, r, c) -> Mono.just(Decision.indeterminate("n/a")),
                 (pr, a, r, c) -> Mono.just(Decision.permit())));
         assertGranted(pdp, true);
@@ -58,14 +58,14 @@ class EmbeddedPolicyDecisionAdapterTest {
 
     @Test
     void allAbstainDeniesFailClosed() {
-        EmbeddedPolicyDecisionAdapter pdp = new EmbeddedPolicyDecisionAdapter(List.of(
+        EmbeddedPolicyDecisionAdapterImpl pdp = new EmbeddedPolicyDecisionAdapterImpl(List.of(
                 (pr, a, r, c) -> Mono.just(Decision.indeterminate("n/a"))));
         assertGranted(pdp, false);
     }
 
     @Test
     void ruleErrorIsTreatedAsDenyNotPermit() {
-        EmbeddedPolicyDecisionAdapter pdp = new EmbeddedPolicyDecisionAdapter(List.of(
+        EmbeddedPolicyDecisionAdapterImpl pdp = new EmbeddedPolicyDecisionAdapterImpl(List.of(
                 (pr, a, r, c) -> Mono.error(new IllegalStateException("boom"))));
         assertGranted(pdp, false);
     }

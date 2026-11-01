@@ -18,7 +18,7 @@
 package org.fireflyframework.notifications.providers.firebase.config.v1;
 
 import org.fireflyframework.notifications.interfaces.providers.push.v1.PushProvider;
-import org.fireflyframework.notifications.providers.firebase.core.v1.FcmPushProvider;
+import org.fireflyframework.notifications.providers.firebase.core.v1.FcmPushProviderImpl;
 import org.fireflyframework.notifications.providers.firebase.properties.v1.FcmProperties;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -75,6 +75,6 @@ public class FcmAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(PushProvider.class)
     public PushProvider fcmPushProvider(FirebaseMessaging firebaseMessaging) {
-        return new FcmPushProvider(firebaseMessaging);
+        return new FcmPushProviderImpl(firebaseMessaging);
     }
 }

@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 class PostgresCacheAdapterLoggingTest {
     private static final String NAME = "cache\r\nregion\u000bvertical\fform\u0085next\u2028line\u2029paragraph";
-    private final Logger logger = (Logger) LoggerFactory.getLogger(PostgresCacheAdapter.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(PostgresCacheAdapterImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level previousLevel;
     private boolean previousAdditive;
@@ -59,7 +59,7 @@ class PostgresCacheAdapterLoggingTest {
     @Test void readEvictAndExistsErrorsKeepTheirFallbacksAndTypeOnlyWarnings() {
         var factory = mock(io.r2dbc.spi.ConnectionFactory.class); var failure = new IllegalStateException("PRIVATE_MESSAGE\r\nforged");
         when(factory.create()).thenAnswer(invocation -> Mono.error(failure));
-        var adapter = new PostgresCacheAdapter(NAME, factory, PostgresCacheConfig.builder().keyPrefix("synthetic-service").build(), mock(org.fireflyframework.cache.serialization.CacheSerializer.class));
+        var adapter = new PostgresCacheAdapterImpl(NAME, factory, PostgresCacheConfig.builder().keyPrefix("synthetic-service").build(), mock(org.fireflyframework.cache.serialization.CacheSerializer.class));
         var key = new Key(); assertEquals(Optional.empty(), adapter.get(key).block()); safeEvent(Level.WARN, true); assertEquals(1,key.renders);
         assertEquals(false, adapter.evict(key).block()); safeEvent(Level.WARN, true); assertEquals(2,key.renders);
         assertEquals(false, adapter.exists(key).block()); safeEvent(Level.WARN, true); assertEquals(3,key.renders);
@@ -74,7 +74,7 @@ class PostgresCacheAdapterLoggingTest {
         when(result.map(any(java.util.function.BiFunction.class))).thenAnswer(invocation -> reactor.core.publisher.Flux.just(((java.util.function.BiFunction)invocation.getArgument(0)).apply(row,mock(io.r2dbc.spi.RowMetadata.class))));
         var serializer = mock(org.fireflyframework.cache.serialization.CacheSerializer.class);
         when(serializer.deserialize(any(),any())).thenThrow(new IllegalStateException("PRIVATE_MESSAGE\r\nforged"));
-        var adapter = new PostgresCacheAdapter(NAME,factory,PostgresCacheConfig.builder().keyPrefix("synthetic-service").build(),serializer); var key = new Key();
+        var adapter = new PostgresCacheAdapterImpl(NAME,factory,PostgresCacheConfig.builder().keyPrefix("synthetic-service").build(),serializer); var key = new Key();
         assertEquals(Optional.empty(),adapter.get(key,String.class).block()); safeEvent(Level.WARN,true); assertEquals(1,key.renders);
         verify(connection).close();
     }

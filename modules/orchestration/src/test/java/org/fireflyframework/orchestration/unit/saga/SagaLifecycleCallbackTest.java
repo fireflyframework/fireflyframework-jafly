@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.unit.saga;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.step.StepHandler;
@@ -46,7 +46,7 @@ class SagaLifecycleCallbackTest {
     private SagaEngine createEngine() {
         var events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         var compensator = new SagaCompensator(events, CompensationPolicy.STRICT_SEQUENTIAL, stepInvoker);
         return new SagaEngine(null, events, orchestrator, null, null, compensator, noOpPublisher);

@@ -21,7 +21,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
@@ -42,17 +42,17 @@ class TccCheckpointTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private org.fireflyframework.orchestration.core.event.NoOpEventPublisher noOpPublisher;
+    private org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl noOpPublisher;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
     }
 
     private ExecutionPersistenceProvider capturingPersistence(List<ExecutionState> captured,
-                                                              InMemoryPersistenceProvider delegate) {
+                                                              InMemoryPersistenceProviderImpl delegate) {
         return new ExecutionPersistenceProvider() {
             @Override
             public Mono<Void> save(ExecutionState state) {
@@ -97,7 +97,7 @@ class TccCheckpointTest {
     @Test
     void checkpoint_savedAfterTryPhase() {
         List<ExecutionState> savedStates = new ArrayList<>();
-        InMemoryPersistenceProvider delegate = new InMemoryPersistenceProvider();
+        InMemoryPersistenceProviderImpl delegate = new InMemoryPersistenceProviderImpl();
         ExecutionPersistenceProvider persistence = capturingPersistence(savedStates, delegate);
 
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher, persistence);
@@ -143,7 +143,7 @@ class TccCheckpointTest {
     @Test
     void checkpoint_savedAfterConfirmPhase() {
         List<ExecutionState> savedStates = new ArrayList<>();
-        InMemoryPersistenceProvider delegate = new InMemoryPersistenceProvider();
+        InMemoryPersistenceProviderImpl delegate = new InMemoryPersistenceProviderImpl();
         ExecutionPersistenceProvider persistence = capturingPersistence(savedStates, delegate);
 
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher, persistence);

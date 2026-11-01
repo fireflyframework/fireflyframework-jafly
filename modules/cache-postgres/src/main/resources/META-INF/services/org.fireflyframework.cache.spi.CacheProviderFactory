@@ -1,1 +1,1 @@
-org.fireflyframework.cache.spi.providers.PostgresProvider
+org.fireflyframework.cache.spi.providers.PostgresProviderImpl

@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Unit tests for {@link CsrfCookieWebFilter}. */
 class CsrfCookieWebFilterTest {
 
-    private final CsrfCookieWebFilter filter = new CsrfCookieWebFilter();
+    private final CsrfCookieWebFilterImpl filter = new CsrfCookieWebFilterImpl();
 
     @Test
     void subscribesDeferredTokenThenProceeds() {

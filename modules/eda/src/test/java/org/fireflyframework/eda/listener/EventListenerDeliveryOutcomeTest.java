@@ -42,7 +42,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 class EventListenerDeliveryOutcomeTest {
-    private EventListenerProcessor processor(Object... beans) {
+    private EventListenerProcessorImpl processor(Object... beans) {
         var context = mock(ApplicationContext.class);
         var environment = mock(Environment.class);
         when(environment.resolvePlaceholders(anyString())).thenAnswer(call -> call.getArgument(0));
@@ -52,7 +52,7 @@ class EventListenerDeliveryOutcomeTest {
             when(context.getBean(names[i])).thenReturn(beans[i]);
         }
         when(context.getBeanDefinitionNames()).thenReturn(names);
-        var processor = new EventListenerProcessor(context, mock(ApplicationEventPublisher.class),
+        var processor = new EventListenerProcessorImpl(context, mock(ApplicationEventPublisher.class),
                 mock(CustomErrorHandlerRegistry.class), environment);
         processor.initializeEventListeners();
         return processor;
@@ -64,7 +64,7 @@ class EventListenerDeliveryOutcomeTest {
                 "POSTGRES", "default", mock(EventEnvelope.AckCallback.class));
     }
 
-    private EventDeliveryOutcome run(EventListenerProcessor processor, EventEnvelope envelope) {
+    private EventDeliveryOutcome run(EventListenerProcessorImpl processor, EventEnvelope envelope) {
         return processor.processDelivery(envelope).block(Duration.ofSeconds(2));
     }
 

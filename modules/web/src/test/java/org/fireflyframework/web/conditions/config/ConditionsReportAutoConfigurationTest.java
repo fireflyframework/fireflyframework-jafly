@@ -16,7 +16,7 @@
 
 package org.fireflyframework.web.conditions.config;
 
-import org.fireflyframework.web.conditions.listener.ConditionsReportListener;
+import org.fireflyframework.web.conditions.listener.ConditionsReportListenerImpl;
 import org.fireflyframework.web.conditions.service.ConditionsReportService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -41,7 +41,7 @@ class ConditionsReportAutoConfigurationTest {
                 .withPropertyValues("firefly.web.conditions-report.enabled=false")
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(ConditionsReportService.class);
-                    assertThat(context).doesNotHaveBean(ConditionsReportListener.class);
+                    assertThat(context).doesNotHaveBean(ConditionsReportListenerImpl.class);
                 });
     }
 
@@ -50,7 +50,7 @@ class ConditionsReportAutoConfigurationTest {
         contextRunner
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(ConditionsReportService.class);
-                    assertThat(context).doesNotHaveBean(ConditionsReportListener.class);
+                    assertThat(context).doesNotHaveBean(ConditionsReportListenerImpl.class);
                 });
     }
 
@@ -60,7 +60,7 @@ class ConditionsReportAutoConfigurationTest {
                 .withPropertyValues("firefly.web.conditions-report.enabled=true")
                 .run(context -> {
                     assertThat(context).hasSingleBean(ConditionsReportService.class);
-                    assertThat(context).hasSingleBean(ConditionsReportListener.class);
+                    assertThat(context).hasSingleBean(ConditionsReportListenerImpl.class);
                     assertThat(context).hasSingleBean(ConditionsReportProperties.class);
                 });
     }

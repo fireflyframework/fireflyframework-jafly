@@ -19,8 +19,8 @@ package org.fireflyframework.orchestration.config;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
 import org.fireflyframework.eda.resilience.ResilientEventPublisherFactory;
-import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisher;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisherImpl;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
@@ -68,7 +68,7 @@ class OrchestrationOptionalEdaTest {
                         assertThat(context).hasNotFailed();
                         assertThat(context).hasSingleBean(SagaEngine.class).hasSingleBean(TccEngine.class)
                                 .hasSingleBean(WorkflowEngine.class);
-                        assertThat(context.getBean(OrchestrationEventPublisher.class)).isInstanceOf(NoOpEventPublisher.class);
+                        assertThat(context.getBean(OrchestrationEventPublisher.class)).isInstanceOf(NoOpEventPublisherImpl.class);
                     });
         }
     }
@@ -85,7 +85,7 @@ class OrchestrationOptionalEdaTest {
                 .run(context -> {
                     assertThat(context).hasNotFailed().hasSingleBean(OrchestrationEventPublisher.class);
                     assertThat(context.getBean(OrchestrationEventPublisher.class))
-                            .isInstanceOf(EdaOrchestrationEventPublisher.class);
+                            .isInstanceOf(EdaOrchestrationEventPublisherImpl.class);
                 });
     }
 }

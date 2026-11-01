@@ -47,7 +47,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 class HttpRequestLoggingStreamingTest {
-    private final Logger logger = (Logger) LoggerFactory.getLogger(HttpRequestLoggingWebFilter.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(HttpRequestLoggingWebFilterImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private final NettyDataBufferFactory buffers = new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT);
     private final List<NettyDataBuffer> allocated = new ArrayList<>();
@@ -160,7 +160,7 @@ class HttpRequestLoggingStreamingTest {
         var sink = new Drain(false);
         Flux<DataBuffer> body = Flux.defer(() -> Flux.just(pooled("!abc", 1), pooled("def")));
         var properties = properties(true, true, 4);
-        var filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
         ServerWebExchange exchange = exchange(response ? Flux.empty() : body, sink);
         Mono<Void> operation = filter.filter(exchange, actual -> response
                 ? actual.getResponse().writeWith(body) : sink.consume(actual.getRequest().getBody()));
@@ -244,7 +244,7 @@ class HttpRequestLoggingStreamingTest {
         var sink = new Drain(false);
         var first = pooled("abc");
         var second = pooled("def");
-        var filter = new HttpRequestLoggingWebFilter(properties(false, true, 5), Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties(false, true, 5), Optional.empty());
         filter.filter(exchange(Flux.empty(), sink), actual -> actual.getResponse().writeAndFlushWith(
                 Flux.just(Flux.just(first), Flux.just(second)))).block();
 
@@ -262,7 +262,7 @@ class HttpRequestLoggingStreamingTest {
         var sink = new Drain(false);
         var buffer = pooled("event");
         var cancelled = new AtomicBoolean();
-        var filter = new HttpRequestLoggingWebFilter(properties(false, true, 5), Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties(false, true, 5), Optional.empty());
         Disposable subscription = filter.filter(exchange(Flux.empty(), sink), actual -> actual.getResponse()
                 .writeAndFlushWith(Flux.just(Flux.<DataBuffer>concat(Mono.just(buffer), Mono.never())
                         .doOnCancel(() -> cancelled.set(true))))).subscribe();
@@ -285,7 +285,7 @@ class HttpRequestLoggingStreamingTest {
         var buffer = pooled("partial");
         var failure = new IllegalStateException("flush-source-error");
         var observed = new AtomicReference<Throwable>();
-        var filter = new HttpRequestLoggingWebFilter(properties(false, true, 7), Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties(false, true, 7), Optional.empty());
         filter.filter(exchange(Flux.empty(), sink), actual -> actual.getResponse().writeAndFlushWith(
                 Flux.just(Flux.concat(Mono.just(buffer), Flux.error(failure)))))
                 .onErrorResume(error -> { observed.set(error); return Mono.empty(); }).block();
@@ -303,7 +303,7 @@ class HttpRequestLoggingStreamingTest {
             sink.terminalFailure = new IllegalStateException("transport-failure");
             var buffer = pooled("written-prefix");
             var observed = new AtomicReference<Throwable>();
-            var filter = new HttpRequestLoggingWebFilter(properties(false, true, 7), Optional.empty());
+            var filter = new HttpRequestLoggingWebFilterImpl(properties(false, true, 7), Optional.empty());
             filter.filter(exchange(Flux.empty(), sink), actual -> flush
                     ? actual.getResponse().writeAndFlushWith(Flux.just(Flux.just(buffer)))
                     : actual.getResponse().writeWith(Flux.just(buffer)))
@@ -333,7 +333,7 @@ class HttpRequestLoggingStreamingTest {
 
     private Mono<Void> transfer(boolean response, HttpRequestLoggingProperties properties,
                                 Flux<DataBuffer> body, Drain sink) {
-        var filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        var filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
         return filter.filter(exchange(response ? Flux.empty() : body, sink), actual -> response
                 ? actual.getResponse().writeWith(body) : sink.consume(actual.getRequest().getBody()));
     }

@@ -16,8 +16,8 @@
 
 package org.fireflyframework.web.idempotency.config;
 
-import org.fireflyframework.web.openapi.IdempotencyOpenAPICustomizer;
-import org.fireflyframework.web.openapi.IdempotencyOperationCustomizer;
+import org.fireflyframework.web.openapi.IdempotencyOpenAPICustomizerImpl;
+import org.fireflyframework.web.openapi.IdempotencyOperationCustomizerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -56,13 +56,13 @@ public class IdempotencyOpenAPIAutoConfiguration {
      * @return the OpenAPI customizer
      */
     @Bean
-    @ConditionalOnMissingBean(IdempotencyOpenAPICustomizer.class)
-    public IdempotencyOpenAPICustomizer idempotencyOpenAPICustomizer(
+    @ConditionalOnMissingBean(IdempotencyOpenAPICustomizerImpl.class)
+    public IdempotencyOpenAPICustomizerImpl idempotencyOpenAPICustomizer(
             IdempotencyProperties properties) {
         
         log.info("Configuring idempotency OpenAPI customizer");
         
-        return new IdempotencyOpenAPICustomizer(properties);
+        return new IdempotencyOpenAPICustomizerImpl(properties);
     }
 
     /**
@@ -75,12 +75,12 @@ public class IdempotencyOpenAPIAutoConfiguration {
      * @return the operation customizer
      */
     @Bean
-    @ConditionalOnMissingBean(IdempotencyOperationCustomizer.class)
-    public IdempotencyOperationCustomizer idempotencyOperationCustomizer() {
+    @ConditionalOnMissingBean(IdempotencyOperationCustomizerImpl.class)
+    public IdempotencyOperationCustomizerImpl idempotencyOperationCustomizer() {
         
         log.info("Configuring idempotency operation customizer");
         
-        return new IdempotencyOperationCustomizer();
+        return new IdempotencyOperationCustomizerImpl();
     }
 }
 

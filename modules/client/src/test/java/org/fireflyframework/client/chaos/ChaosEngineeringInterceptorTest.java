@@ -16,7 +16,7 @@
 
 package org.fireflyframework.client.chaos;
 
-import org.fireflyframework.client.chaos.ChaosEngineeringInterceptor.ChaosStatistics;
+import org.fireflyframework.client.chaos.ChaosEngineeringInterceptorImpl.ChaosStatistics;
 import org.fireflyframework.client.exception.ServiceConnectionException;
 import org.fireflyframework.client.exception.ServiceTimeoutException;
 import org.fireflyframework.client.interceptor.InterceptorChain;
@@ -51,7 +51,7 @@ class ChaosEngineeringInterceptorTest {
     @Mock
     private InterceptorChain chain;
 
-    private ChaosEngineeringInterceptor interceptor;
+    private ChaosEngineeringInterceptorImpl interceptor;
 
     @BeforeEach
     void setUp() {
@@ -73,7 +73,7 @@ class ChaosEngineeringInterceptorTest {
             .enabled(false)
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         Mono<InterceptorResponse> result = interceptor.intercept(request, chain);
@@ -95,7 +95,7 @@ class ChaosEngineeringInterceptorTest {
             .maxLatency(Duration.ofMillis(100))
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         long startTime = System.currentTimeMillis();
@@ -122,7 +122,7 @@ class ChaosEngineeringInterceptorTest {
             .networkFailureProbability(1.0) // Always inject
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         Mono<InterceptorResponse> result = interceptor.intercept(request, chain);
@@ -146,7 +146,7 @@ class ChaosEngineeringInterceptorTest {
             .timeoutDuration(Duration.ofMillis(10))
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         Mono<InterceptorResponse> result = interceptor.intercept(request, chain);
@@ -170,7 +170,7 @@ class ChaosEngineeringInterceptorTest {
             .errorType(FaultInjectionConfig.ErrorType.SERVICE_UNAVAILABLE)
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         Mono<InterceptorResponse> result = interceptor.intercept(request, chain);
@@ -195,7 +195,7 @@ class ChaosEngineeringInterceptorTest {
             .maxLatency(Duration.ofMillis(10))
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
 
         // When
         for (int i = 0; i < 10; i++) {
@@ -220,7 +220,7 @@ class ChaosEngineeringInterceptorTest {
             .maxLatency(Duration.ofMillis(10))
             .build();
 
-        interceptor = new ChaosEngineeringInterceptor(config);
+        interceptor = new ChaosEngineeringInterceptorImpl(config);
         interceptor.intercept(request, chain).block();
 
         // When

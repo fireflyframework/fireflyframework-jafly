@@ -12,8 +12,8 @@
 +----------------------+    +------------------------+
 |   Domain Layer       |    | Infrastructure Layer   |
 |                      |    |                        |
-| Event                |    | R2dbcEventStore        |
-| AbstractDomainEvent  |    | R2dbcSnapshotStore     |
+| Event                |    | R2dbcEventStoreImpl        |
+| AbstractDomainEvent  |    | R2dbcSnapshotStoreImpl     |
 | AggregateRoot        |    | EventTypeRegistry      |
 | @DomainEvent         |    | EventOutboxService     |
 | StoredEventEnvelope  |    | EventSourcingPublisher |
@@ -101,7 +101,7 @@ Event handler resolution (in the private `applyEvent` method):
 
 ## Infrastructure Layer
 
-### R2dbcEventStore
+### R2dbcEventStoreImpl
 
 Implements `EventStore` using Spring R2DBC `DatabaseClient`. Key behaviors:
 
@@ -112,7 +112,7 @@ Implements `EventStore` using Spring R2DBC `DatabaseClient`. Key behaviors:
 
 JSON data is bound as `String` (TEXT columns), not as JSONB. This makes the store database-agnostic.
 
-### R2dbcSnapshotStore
+### R2dbcSnapshotStoreImpl
 
 Implements `SnapshotStore` using `DatabaseClient`. The `snapshots` table has a composite PK of `(aggregate_id, aggregate_type)`, meaning only one snapshot per aggregate is stored (UPSERT on save).
 
@@ -175,13 +175,13 @@ The library has 9 auto-configuration classes. They are loaded via Spring Boot's 
 | Order | Class | Condition | Creates |
 |-------|-------|-----------|---------|
 | 1 | `R2dbcBeansAutoConfiguration` | `@ConditionalOnClass(ConnectionFactory, R2dbcEntityTemplate)` | `DatabaseClient`, `R2dbcEntityTemplate` (fallbacks) |
-| 2 | `EventStoreAutoConfiguration` | `@AutoConfigureAfter(R2dbcBeansAutoConfiguration)`, `@ConditionalOnBean(DatabaseClient, R2dbcEntityTemplate, ConnectionFactory)` | `R2dbcEventStore` |
-| 3 | `SnapshotAutoConfiguration` | `firefly.eventsourcing.snapshot.enabled=true` (default) | `R2dbcSnapshotStore`, `SnapshotTrigger` |
-| 4 | `EventSourcingAutoConfiguration` | `firefly.eventsourcing.enabled=true` (default) | `EventSourcingPublisher`, `ObjectMapper`, `EventStoreMetrics`, `EventTypeRegistry`, `EventSourcingTransactionalAspect`, `EventUpcastingService`, `EventOutboxService`, `EventOutboxProcessor` |
+| 2 | `EventStoreAutoConfiguration` | `@AutoConfigureAfter(R2dbcBeansAutoConfiguration)`, `@ConditionalOnBean(DatabaseClient, R2dbcEntityTemplate, ConnectionFactory)` | `R2dbcEventStoreImpl` |
+| 3 | `SnapshotAutoConfiguration` | `firefly.eventsourcing.snapshot.enabled=true` (default) | `R2dbcSnapshotStoreImpl`, `SnapshotTrigger` |
+| 4 | `EventSourcingAutoConfiguration` | `firefly.eventsourcing.enabled=true` (default) | `EventSourcingPublisher`, `ObjectMapper`, `EventStoreMetricsImpl`, `EventTypeRegistry`, `EventSourcingTransactionalAspect`, `EventUpcastingService`, `EventOutboxService`, `EventOutboxProcessor` |
 | 5 | `EventSourcingJacksonConfiguration` | `@ConditionalOnMissingBean(ObjectMapper)` | `ObjectMapper` with JavaTimeModule, polymorphic Event handling |
-| 6 | `EventSourcingHealthAutoConfiguration` | `@ConditionalOnClass(HealthIndicator)` | `EventStoreHealthIndicator`, `OutboxHealthIndicator`, `SnapshotStoreHealthIndicator`, `ProjectionHealthIndicator` |
-| 7 | `EventSourcingMetricsAutoConfiguration` | `@ConditionalOnClass(MeterRegistry)` | `EventStoreMetrics` |
-| 8 | `EventSourcingProjectionAutoConfiguration` | `@ConditionalOnClass(ProjectionService, MeterRegistry)` | `ProjectionHealthIndicator` |
+| 6 | `EventSourcingHealthAutoConfiguration` | `@ConditionalOnClass(HealthIndicator)` | `EventStoreHealthIndicatorImpl`, `OutboxHealthIndicatorImpl`, `SnapshotStoreHealthIndicatorImpl`, `ProjectionHealthIndicatorImpl` |
+| 7 | `EventSourcingMetricsAutoConfiguration` | `@ConditionalOnClass(MeterRegistry)` | `EventStoreMetricsImpl` |
+| 8 | `EventSourcingProjectionAutoConfiguration` | `@ConditionalOnClass(ProjectionService, MeterRegistry)` | `ProjectionHealthIndicatorImpl` |
 | 9 | `CircuitBreakerAutoConfiguration` | `@ConditionalOnClass(CircuitBreaker)`, `firefly.eventsourcing.resilience.circuit-breaker.enabled=true` (default: false) | `eventStoreCircuitBreaker`, `outboxCircuitBreaker`, `projectionCircuitBreaker` |
 
 Additionally, `MultiTenancyAutoConfiguration` loads when `firefly.eventsourcing.multitenancy.enabled=true` (default: false).

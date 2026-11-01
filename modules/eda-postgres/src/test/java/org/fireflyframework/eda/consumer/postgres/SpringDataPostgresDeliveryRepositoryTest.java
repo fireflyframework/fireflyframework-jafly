@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,8 +45,8 @@ class SpringDataPostgresDeliveryRepositoryTest {
     }
 
     Session session() { var session = new Session(); sessions.add(session); return session; }
-    SpringDataPostgresDeliveryRepository repository() {
-        return new SpringDataPostgresDeliveryRepository(factory, "custom\"schema", "custom\"outbox", Duration.ofSeconds(10));
+    SpringDataPostgresDeliveryRepositoryImpl repository() {
+        return new SpringDataPostgresDeliveryRepositoryImpl(factory, "custom\"schema", "custom\"outbox", Duration.ofSeconds(10));
     }
     ClaimRequest request() { return new ClaimRequest(Set.of("events"), 4, 3, Duration.ofSeconds(20)); }
     PostgresDeliveryRow row() {

@@ -296,7 +296,7 @@ public class CustomerDataJobService extends AbstractResilientDataJobService {
     private final CustomerRepository repository;
 
     public CustomerDataJobService(JobTracingService tracingService,
-                                  JobMetricsService metricsService,
+                                  JobMetricsServiceImpl metricsService,
                                   ResiliencyDecoratorService resiliencyService,
                                   JobEventPublisher eventPublisher,
                                   JobAuditService auditService,

@@ -8,7 +8,7 @@ This document explains the simplified architecture of the Firefly Common Cache l
 
 The library follows these key principles:
 
-1. Simplicity First: `FireflyCacheManager` IS the cache instance (no Spring Cache abstraction required)
+1. Simplicity First: `FireflyCacheManagerImpl` IS the cache instance (no Spring Cache abstraction required)
 2. Multiple Isolated Caches: Create as many independent caches as you need via `CacheManagerFactory`
 3. Automatic Fallback: Built-in support for primary/fallback pattern (e.g., Redis → Caffeine)
 4. Hexagonal Architecture: Clean separation between public API and internal adapters
@@ -21,7 +21,7 @@ The library follows these key principles:
 │                    Application Layer                        │
 │                                                             │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │      FireflyCacheManager (implements CacheAdapter)     │ │
+│  │      FireflyCacheManagerImpl (implements CacheAdapter)     │ │
 │  │                                                        │ │
 │  │  • Direct cache operations (get, put, evict, etc.)     │ │
 │  │  • Automatic fallback support                          │ │
@@ -50,7 +50,7 @@ The library follows these key principles:
 ## Hexagonal Architecture (Ports and Adapters)
 
 ### Public API (Application Layer)
-- `FireflyCacheManager`: Cache instance API (manager implements cache)
+- `FireflyCacheManagerImpl`: Cache instance API (manager implements cache)
   - Implements `CacheAdapter` directly
   - One bean per logical cache in your app (e.g., default, http-idempotency, rule-engine, webhooks)
   - Delegates to primary cache with optional fallback
@@ -63,8 +63,8 @@ The library follows these key principles:
   - Not exposed to application code
 
 ### Adapters (Infrastructure Layer)
-- `CaffeineCacheAdapter`: High-performance in-memory cache (always available)
-- `RedisCacheAdapter`: Distributed cache with persistence (optional)
+- `CaffeineCacheAdapterImpl`: High-performance in-memory cache (always available)
+- `RedisCacheAdapterImpl`: Distributed cache with persistence (optional)
 - `Hazelcast`/`JCache` adapters: Optional providers discovered via SPI
 - `NoOpCacheAdapter`: Disabled cache for testing
 
@@ -75,18 +75,18 @@ Smart L1+L2 cache
 - Reads hit L1; on L1 miss, read from L2 and optionally backfill L1; writes update both.
 - Benefits: low latency, fewer network trips, consistent keys, safe isolation per cache name/prefix.
 
-The main entry point is the `FireflyCacheManager` class:
+The main entry point is the `FireflyCacheManagerImpl` class:
 
 ```java
 package org.fireflyframework.cache.manager;
 
-public class FireflyCacheManager implements CacheAdapter {
+public class FireflyCacheManagerImpl implements CacheAdapter {
 
     // Constructor with primary cache only
-    public FireflyCacheManager(CacheAdapter primaryCache);
+    public FireflyCacheManagerImpl(CacheAdapter primaryCache);
 
     // Constructor with primary and fallback caches
-    public FireflyCacheManager(CacheAdapter primaryCache, CacheAdapter fallbackCache);
+    public FireflyCacheManagerImpl(CacheAdapter primaryCache, CacheAdapter fallbackCache);
 
     // Cache operations (from CacheAdapter interface)
     <K, V> Mono<Optional<V>> get(K key);
@@ -158,19 +158,19 @@ For Caffeine + Redis (distributed cache):
 </dependency>
 ```
 
-### 2. Inject FireflyCacheManager
+### 2. Inject FireflyCacheManagerImpl
 
 ```java
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 public class MyService {
 
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
 
-    public MyService(FireflyCacheManager cacheManager) {
+    public MyService(FireflyCacheManagerImpl cacheManager) {
         this.cacheManager = cacheManager;
     }
 
@@ -199,7 +199,7 @@ public class MyService {
 If you want to enable features only when the cache is available:
 
 ```java
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -208,14 +208,14 @@ import org.springframework.context.annotation.Configuration;
 public class MyConfiguration {
 
     @Bean
-    @ConditionalOnBean(FireflyCacheManager.class)
-    public MyCachedService myCachedService(FireflyCacheManager cacheManager) {
+    @ConditionalOnBean(FireflyCacheManagerImpl.class)
+    public MyCachedService myCachedService(FireflyCacheManagerImpl cacheManager) {
         return new MyCachedService(cacheManager);
     }
 }
 ```
 
-Important: Always use `org.fireflyframework.cache.manager.FireflyCacheManager` (the concrete class) in `@ConditionalOnBean`.
+Important: Always use `org.fireflyframework.cache.manager.FireflyCacheManagerImpl` (the concrete class) in `@ConditionalOnBean`.
 
 ## Auto-Configuration
 
@@ -225,7 +225,7 @@ The library provides two auto-configuration classes:
 - Package: `org.fireflyframework.cache.config`
 - Provides:
   - `CacheManagerFactory` bean (to create named cache instances)
-  - `FireflyCacheManager` default bean (primary cache instance)
+  - `FireflyCacheManagerImpl` default bean (primary cache instance)
   - `CacheSerializer` bean (JSON serialization)
 
 ### 2. RedisCacheAutoConfiguration (Conditionally Loaded)
@@ -248,7 +248,7 @@ fireflyframework-cache exposes an SPI so new providers can be plugged in without
 ```java
 @Bean
 @Primary
-public FireflyCacheManager fireflyCacheManager(
+public FireflyCacheManagerImpl fireflyCacheManager(
         CacheProperties properties,
         List<CacheAdapter> cacheAdapters) {
 
@@ -258,7 +258,7 @@ public FireflyCacheManager fireflyCacheManager(
     // Optional fallback cache
     CacheAdapter fallback = selectFallbackCache(properties, cacheAdapters, primary);
 
-    return new FireflyCacheManager(primary, fallback);
+    return new FireflyCacheManagerImpl(primary, fallback);
 }
 ```
 
@@ -297,16 +297,16 @@ firefly:
 
 ```java
 // Always use the full package name for clarity
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 
 // Inject the concrete class
 @Autowired
-private FireflyCacheManager cacheManager;
+private FireflyCacheManagerImpl cacheManager;
 
 // Use in @ConditionalOnBean
 @Bean
-@ConditionalOnBean(FireflyCacheManager.class)
-public MyService myService(FireflyCacheManager cacheManager) {
+@ConditionalOnBean(FireflyCacheManagerImpl.class)
+public MyService myService(FireflyCacheManagerImpl cacheManager) {
     return new MyService(cacheManager);
 }
 ```
@@ -321,7 +321,7 @@ public MyService myService(FireflyCacheManager cacheManager) {
    - Clear ownership via bean names and key prefixes
 
 2. Direct Implementation of CacheAdapter
-   - `FireflyCacheManager` implements `CacheAdapter` directly
+   - `FireflyCacheManagerImpl` implements `CacheAdapter` directly
    - No need for `selectCache()` or `getCache()` methods
    - Direct method calls: `cacheManager.get()`, `cacheManager.put()`
 
@@ -357,8 +357,8 @@ void testCacheManager() {
         .maximumSize(100L)
         .build();
 
-    CacheAdapter primaryCache = new CaffeineCacheAdapter("test", config);
-    FireflyCacheManager manager = new FireflyCacheManager(primaryCache);
+    CacheAdapter primaryCache = new CaffeineCacheAdapterImpl("test", config);
+    FireflyCacheManagerImpl manager = new FireflyCacheManagerImpl(primaryCache);
 
     // Direct usage - manager IS the cache
     manager.put("key", "value").block();
@@ -380,7 +380,7 @@ void testCacheManager() {
 class MyIntegrationTest {
 
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     @Test
     void testCacheIsAvailable() {
@@ -404,14 +404,14 @@ class MyIntegrationTest {
 
 1. Always use the full package name
    ```java
-   import org.fireflyframework.cache.manager.FireflyCacheManager;
+   import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
    ```
 
 2. Use `@ConditionalOnBean` for optional features
    ```java
    @Bean
-   @ConditionalOnBean(FireflyCacheManager.class)
-   public MyService myService(FireflyCacheManager cacheManager) {
+   @ConditionalOnBean(FireflyCacheManagerImpl.class)
+   public MyService myService(FireflyCacheManagerImpl cacheManager) {
        return new MyService(cacheManager);
    }
    ```
@@ -433,7 +433,7 @@ class MyIntegrationTest {
 
 ## Summary
 
-- ✅ Public API: `org.fireflyframework.cache.manager.FireflyCacheManager`
+- ✅ Public API: `org.fireflyframework.cache.manager.FireflyCacheManagerImpl`
 - ✅ Internal API: `org.fireflyframework.cache.core.CacheAdapter`
 - ✅ Single cache instance: One cache per application
 - ✅ Automatic fallback: Primary/fallback pattern built-in
@@ -441,7 +441,7 @@ class MyIntegrationTest {
 - ✅ Redis is optional: Works without Redis dependencies
 - ✅ Auto-configuration: Automatically sets up based on classpath
 - ✅ Reactive API: Non-blocking operations with Project Reactor
-- ✅ Bean matching: Use `FireflyCacheManager.class` in conditions
+- ✅ Bean matching: Use `FireflyCacheManagerImpl.class` in conditions
 - ✅ Clean architecture: Clear separation of concerns
 
 For more information, see:

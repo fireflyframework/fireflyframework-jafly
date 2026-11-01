@@ -46,7 +46,7 @@ firefly:
         base-url: https://api.logalty.com
 ```
 
-That is all the wiring required. `LogaltyAdapterAutoConfiguration` contributes the `WebClient`, `CircuitBreaker`, `Retry`, `ObjectMapper` and the `LogaltySignatureEnvelopeAdapter` bean automatically.
+That is all the wiring required. `LogaltyAdapterAutoConfiguration` contributes the `WebClient`, `CircuitBreaker`, `Retry`, `ObjectMapper` and the `LogaltySignatureEnvelopeAdapterImpl` bean automatically.
 
 ### 2. Use the ECM signature port
 
@@ -98,7 +98,7 @@ The `firefly.ecm.adapter.logalty` namespace is bound by [LogaltyAdapterPropertie
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`LogaltySignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapter.java) | Defines `LogaltySignatureEnvelopeAdapter`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
+| [`LogaltySignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapterImpl.java) | Defines `LogaltySignatureEnvelopeAdapterImpl`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
 | [`LogaltyAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltyAdapterProperties.java) | Configuration properties for the Logalty eSignature adapter. |
 | [`LogaltyAdapterAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltyAdapterAutoConfiguration.java) | Defines `logaltyWebClient`, `logaltyCircuitBreaker`, `logaltyRetry`, `logaltyObjectMapper` operations. |
 

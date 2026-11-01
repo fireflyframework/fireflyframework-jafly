@@ -16,7 +16,7 @@
 
 package org.fireflyframework.observability.autoconfigure;
 
-import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessor;
+import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessorImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.MutablePropertySources;
@@ -26,8 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FireflyObservabilityEnvironmentPostProcessorTest {
 
-    private final FireflyObservabilityEnvironmentPostProcessor processor =
-            new FireflyObservabilityEnvironmentPostProcessor();
+    private final FireflyObservabilityEnvironmentPostProcessorImpl processor =
+            new FireflyObservabilityEnvironmentPostProcessorImpl();
 
     @Test
     void defaultsAreLoadedFromYaml() {

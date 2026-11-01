@@ -31,14 +31,14 @@ class DocuSignEnvelopeMappingTest {
         Files.writeString(service, ScopedSdkConnector.Builder.class.getName() + "\n");
         return new ScopedSdkConnector.Scope(service);
     }
-    private DocuSignSignatureEnvelopeAdapter adapter(ApiClient client, boolean content) {
+    private DocuSignSignatureEnvelopeAdapterImpl adapter(ApiClient client, boolean content) {
         client.setBasePath("https://owned.invalid/restapi");
         var props = new DocuSignAdapterProperties(); props.setAccountId("owned-account");
         var documents = mock(DocumentPort.class); var bytes = mock(DocumentContentPort.class);
         when(documents.getDocument(DOCUMENT)).thenReturn(Mono.just(Document.builder().id(DOCUMENT)
                 .name("agreement.pdf").extension("pdf").mimeType("application/pdf").size((long) PDF.length).encrypted(true).build()));
         when(bytes.getContent(DOCUMENT)).thenReturn(content ? Mono.just(PDF.clone()) : Mono.empty());
-        return new DocuSignSignatureEnvelopeAdapter(client, props, bytes, documents);
+        return new DocuSignSignatureEnvelopeAdapterImpl(client, props, bytes, documents);
     }
     static SignatureEnvelope envelope() {
         return SignatureEnvelope.builder().title("Agreement").description("Review and sign")

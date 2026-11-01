@@ -152,7 +152,7 @@ security-api  →  security-spi  →  security-core  →  security-authorization
 
 - `security-api` defines the domain. including `SigningKey`, the RSA key-pair record this server turns into JWKS entries.
 - `security-spi` defines the driven port this module consumes: `KeyManagementPort` (`activeSigningKey()`, `verificationKeys()`, `jwkSetJson()`, `rotate()`).
-- `security-core` supplies the framework-neutral default key adapter, `InMemoryKeyManagementAdapter`, used as the dev/default `KeyManagementPort`.
+- `security-core` supplies the framework-neutral default key adapter, `InMemoryKeyManagementAdapterImpl`, used as the dev/default `KeyManagementPort`.
 - This module binds the above into a concrete Spring Authorization Server deployment: it builds a Nimbus `JWKSource` from the port's `verificationKeys()` and wires the standard OAuth2/OIDC filter chains.
 - Adapters (key management, client store) replace the in-process defaults by contributing their own `KeyManagementPort` or `RegisteredClientRepository` beans. e.g. a Vault/AWS-KMS key adapter and an internal-db client store for production.
 
@@ -167,7 +167,7 @@ This module depends only on `security-spi` and `security-core` (which transitive
 - A JWKS sourced from the framework key port. `jwkSource(KeyManagementPort)` (`@ConditionalOnMissingBean`) collects `KeyManagementPort.verificationKeys()`, converts each `SigningKey` into a Nimbus `RSAKey` (public key, private key, and `kid`), and exposes them as an `ImmutableJWKSet<SecurityContext>`. The published JWKS and signer use this key set. Resource servers must be configured to trust the published keys.
 - A JWT decoder built from that JWK source via `OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource)`, for the server's own introspection/validation needs.
 - Authorization-server settings. A default `AuthorizationServerSettings` (`@ConditionalOnMissingBean`), overridable to customise issuer URL and endpoint paths.
-- A default `KeyManagementPort`. `authorizationServerKeyManagementPort()` (`@ConditionalOnMissingBean`) returns an `InMemoryKeyManagementAdapter` so the server boots with a working dev key; production contributes a real key adapter and this default steps aside.
+- A default `KeyManagementPort`. `authorizationServerKeyManagementPort()` (`@ConditionalOnMissingBean`) returns an `InMemoryKeyManagementAdapterImpl` so the server boots with a working dev key; production contributes a real key adapter and this default steps aside.
 - A demo `client_credentials` client. `registeredClientRepository()` (`@ConditionalOnMissingBean`) registers a single `RegisteredClient`. client id `firefly-demo`, secret `{noop}firefly-secret`, `client_secret_basic` authentication, the `client_credentials` grant, and scope `read`. in an `InMemoryRegisteredClientRepository`. Production overrides this bean (e.g. with an internal-db-backed store).
 
 The auto-configuration is registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
@@ -178,7 +178,7 @@ The auto-configuration is registered via `META-INF/spring/org.springframework.bo
 | --- | --- |
 | `AuthorizationServerConfiguration` | `@AutoConfiguration` entry point; builds the two servlet `SecurityFilterChain`s, the `JWKSource`, the `JwtDecoder`, the `AuthorizationServerSettings`, the default `KeyManagementPort`, and the demo `RegisteredClientRepository`. |
 
-Port consumed (from `security-spi`): `KeyManagementPort`. Domain type (from `security-api`): `SigningKey`. Default key adapter (from `security-core`): `InMemoryKeyManagementAdapter`. The protocol machinery (`OAuth2AuthorizationServerConfiguration`, `OAuth2AuthorizationServerConfigurer`, `RegisteredClient`, `InMemoryRegisteredClientRepository`, `AuthorizationServerSettings`, Nimbus `JWKSource`/`RSAKey`) comes from Spring Authorization Server and Nimbus JOSE.
+Port consumed (from `security-spi`): `KeyManagementPort`. Domain type (from `security-api`): `SigningKey`. Default key adapter (from `security-core`): `InMemoryKeyManagementAdapterImpl`. The protocol machinery (`OAuth2AuthorizationServerConfiguration`, `OAuth2AuthorizationServerConfigurer`, `RegisteredClient`, `InMemoryRegisteredClientRepository`, `AuthorizationServerSettings`, Nimbus `JWKSource`/`RSAKey`) comes from Spring Authorization Server and Nimbus JOSE.
 
 ### Endpoints
 

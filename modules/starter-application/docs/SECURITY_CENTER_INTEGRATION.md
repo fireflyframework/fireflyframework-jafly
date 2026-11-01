@@ -43,7 +43,7 @@ The integration connects the Security Center's `FireflySessionManager` with the 
 │                        │                                     │
 │                        ↓                                     │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │   DefaultContextResolver                           │    │
+│  │   DefaultContextResolverImpl                           │    │
 │  │   - Extracts partyId from X-Party-Id header        │    │
 │  │   - Calls FireflySessionManager.createOrGetSession │    │
 │  │   - Uses SessionContextMapper to extract roles     │    │
@@ -52,7 +52,7 @@ The integration connects the Security Center's `FireflySessionManager` with the 
 │                        │                                     │
 │                        ↓                                     │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │   DefaultSecurityAuthorizationService              │    │
+│  │   DefaultSecurityAuthorizationServiceImpl              │    │
 │  │   - Validates product access via sessionManager    │    │
 │  │   - Checks roles and permissions                   │    │
 │  └────────────────────────────────────────────────────┘    │
@@ -90,7 +90,7 @@ public Mono<List<Transaction>> getTransactions(
 }
 ```
 
-**2. DefaultContextResolver Resolves Context**
+**2. DefaultContextResolverImpl Resolves Context**
 ```java
 // Extract partyId from Istio header
 UUID partyId = extractFromHeader(exchange, "X-Party-Id");
@@ -239,9 +239,9 @@ public static boolean hasPermission(
 
 ---
 
-### 3. DefaultContextResolver Integration
+### 3. DefaultContextResolverImpl Integration
 
-**File:** `lib-common-application/src/main/java/org/fireflyframework/common/application/resolver/DefaultContextResolver.java`
+**File:** `lib-common-application/src/main/java/org/fireflyframework/common/application/resolver/DefaultContextResolverImpl.java`
 
 **Changes:**
 
@@ -293,9 +293,9 @@ protected Mono<Set<String>> resolvePermissions(AppContext context, ServerWebExch
 
 ---
 
-### 4. DefaultSecurityAuthorizationService Integration
+### 4. DefaultSecurityAuthorizationServiceImpl Integration
 
-**File:** `lib-common-application/src/main/java/org/fireflyframework/common/application/security/DefaultSecurityAuthorizationService.java`
+**File:** `lib-common-application/src/main/java/org/fireflyframework/common/application/security/DefaultSecurityAuthorizationServiceImpl.java`
 
 **Changes:**
 
@@ -648,10 +648,10 @@ Security Center caches sessions with **30-minute TTL** by default:
 
 ```
 First Request:
-  Controller → DefaultContextResolver → Security Center → (500ms)
+  Controller → DefaultContextResolverImpl → Security Center → (500ms)
   
 Subsequent Requests (within 30 min):
-  Controller → DefaultContextResolver → Cache → (5ms)
+  Controller → DefaultContextResolverImpl → Cache → (5ms)
   
   → 100x faster! 🚀
 ```

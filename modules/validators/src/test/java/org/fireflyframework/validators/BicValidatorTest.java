@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BicValidatorTest {
 
-    private BicValidator validator;
+    private BicValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new BicValidator();
+        validator = new BicValidatorImpl();
     }
 
     @Test

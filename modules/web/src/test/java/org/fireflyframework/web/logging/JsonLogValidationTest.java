@@ -18,7 +18,7 @@
 package org.fireflyframework.web.logging;
 
 import org.fireflyframework.web.logging.config.HttpRequestLoggingProperties;
-import org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter;
+import org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl;
 import org.fireflyframework.web.logging.service.PiiMaskingService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,14 +46,14 @@ import static org.mockito.Mockito.*;
 class JsonLogValidationTest {
 
     private HttpRequestLoggingProperties properties;
-    private HttpRequestLoggingWebFilter filter;
+    private HttpRequestLoggingWebFilterImpl filter;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         properties = new HttpRequestLoggingProperties();
         properties.setEnabled(true);
-        filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
         objectMapper = new ObjectMapper();
     }
 
@@ -67,11 +67,11 @@ class JsonLogValidationTest {
                 .build();
 
         // Use reflection to access private methods for testing
-        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilter.class
+        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilterImpl.class
                 .getDeclaredMethod("formatHeadersAsMap", HttpHeaders.class);
         formatHeadersAsMapMethod.setAccessible(true);
 
-        Method formatQueryParamsAsMapMethod = HttpRequestLoggingWebFilter.class
+        Method formatQueryParamsAsMapMethod = HttpRequestLoggingWebFilterImpl.class
                 .getDeclaredMethod("formatQueryParamsAsMap", org.springframework.util.MultiValueMap.class);
         formatQueryParamsAsMapMethod.setAccessible(true);
 
@@ -132,7 +132,7 @@ class JsonLogValidationTest {
         logData.put("durationMs", 250L);
 
         // Use reflection to test header formatting
-        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilter.class
+        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilterImpl.class
                 .getDeclaredMethod("formatHeadersAsMap", HttpHeaders.class);
         formatHeadersAsMapMethod.setAccessible(true);
 
@@ -186,7 +186,7 @@ class JsonLogValidationTest {
                 .header("Content-Type", "application/json")
                 .build();
 
-        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilter.class
+        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilterImpl.class
                 .getDeclaredMethod("formatHeadersAsMap", HttpHeaders.class);
         formatHeadersAsMapMethod.setAccessible(true);
 

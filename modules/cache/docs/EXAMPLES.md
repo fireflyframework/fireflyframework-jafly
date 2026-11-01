@@ -24,7 +24,7 @@ Practical examples and common use cases for the Firefly Common Cache Library.
 @RequiredArgsConstructor
 public class BasicCacheExample {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     public Mono<String> getValue(String key) {
         return cacheManager.get(key, String.class)
@@ -61,11 +61,11 @@ Complete example of caching user data.
 @Slf4j
 public class UserService {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final UserRepository userRepository;
     
 @Qualifier("userCacheManager")
-private final FireflyCacheManager userCacheManager; // dedicated cache manager for users
+private final FireflyCacheManagerImpl userCacheManager; // dedicated cache manager for users
 private static final Duration USER_TTL = Duration.ofMinutes(30);
  
 /**
@@ -157,7 +157,7 @@ Caching product information with different TTLs.
 @Slf4j
 public class ProductService {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final ProductRepository productRepository;
     
     private static final String PRODUCT_CACHE = "products";
@@ -239,7 +239,7 @@ Using cache for session storage.
 @RequiredArgsConstructor
 public class SessionService {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     private static final String SESSION_CACHE = "sessions";
     private static final Duration SESSION_TTL = Duration.ofMinutes(30);
@@ -309,7 +309,7 @@ Implementing rate limiting with cache.
 @Slf4j
 public class RateLimiter {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     private static final String RATE_LIMIT_CACHE = "rate-limits";
     private static final int MAX_REQUESTS = 100;
@@ -373,7 +373,7 @@ The most common caching pattern.
 @RequiredArgsConstructor
 public class CacheAsideExample {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final DataRepository repository;
     
     /**
@@ -411,7 +411,7 @@ Update cache and database together.
 @RequiredArgsConstructor
 public class WriteThroughExample {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final DataRepository repository;
     
     /**
@@ -441,7 +441,7 @@ Pre-populate cache on startup.
 @Slf4j
 public class CacheWarmer {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final ProductRepository productRepository;
     
     @EventListener(ApplicationReadyEvent.class)
@@ -469,7 +469,7 @@ Using multiple caches for different data types.
 @RequiredArgsConstructor
 public class MultiLevelCacheExample {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     /**
      * Use different caches for different data
@@ -519,7 +519,7 @@ Graceful error handling with caching.
 @Slf4j
 public class ErrorHandlingExample {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final ExternalApiClient apiClient;
     
     /**

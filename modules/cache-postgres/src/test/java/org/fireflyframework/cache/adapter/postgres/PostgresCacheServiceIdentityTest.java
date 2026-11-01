@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.cache.factory.PostgresCacheHelper;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.serialization.CacheSerializer;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,7 +28,7 @@ class PostgresCacheServiceIdentityTest {
     final Result result=mock(Result.class);
     final AtomicReference<String> physical=new AtomicReference<>();
     final AtomicReference<String> fullKey=new AtomicReference<>();
-    final CacheSerializer serializer=new JsonCacheSerializer(new ObjectMapper());
+    final CacheSerializer serializer=new JsonCacheSerializerImpl(new ObjectMapper());
     @SuppressWarnings({"unchecked","rawtypes"})
     PostgresCacheServiceIdentityTest() {
         doReturn(Mono.just(connection)).when(factory).create();when(connection.close()).thenReturn(Mono.empty());
@@ -38,12 +38,12 @@ class PostgresCacheServiceIdentityTest {
         doReturn(Flux.just(result)).when(statement).execute();when(result.getRowsUpdated()).thenReturn(Mono.just(0L));
         when(result.map(any(BiFunction.class))).thenReturn(Flux.empty());
     }
-    PostgresCacheAdapter helper(String service,String logical,String feature) {
+    PostgresCacheAdapterImpl helper(String service,String logical,String feature) {
         var properties=new CacheProperties();properties.getPostgres().setKeyPrefix(service);
-        return (PostgresCacheAdapter)PostgresCacheHelper.createPostgresCacheAdapter(logical,feature,Duration.ofMinutes(1),
+        return (PostgresCacheAdapterImpl)PostgresCacheHelper.createPostgresCacheAdapter(logical,feature,Duration.ofMinutes(1),
                 factory,properties,new ObjectMapper());
     }
-    String capture(PostgresCacheAdapter cache) {cache.clear().block();return physical.get();}
+    String capture(PostgresCacheAdapterImpl cache) {cache.clear().block();return physical.get();}
     @Test void fixedFeaturePrefixCannotOverrideDifferentServiceNamespaces() {
         assertThat(capture(helper("service-a","logical","fixed-feature")))
                 .isNotEqualTo(capture(helper("service-b","logical","fixed-feature")));
@@ -66,11 +66,11 @@ class PostgresCacheServiceIdentityTest {
         assertThat(capture(helper("other-service","logical",""))).isNotEqualTo(emptyPhysical);
     }
     @Test void retainedDirectConstructorAndHelperAgreeWhenServiceAndFeatureCoincide() {
-        var direct=new PostgresCacheAdapter("logical",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),serializer);
+        var direct=new PostgresCacheAdapterImpl("logical",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),serializer);
         assertThat(capture(direct)).isEqualTo(capture(helper("service","logical","service")));
     }
     @Test void explicitNamespaceOverloadAndHelperHaveTheSameIdentity() throws Exception {
-        var constructor=PostgresCacheAdapter.class.getConstructor(String.class,ConnectionFactory.class,
+        var constructor=PostgresCacheAdapterImpl.class.getConstructor(String.class,ConnectionFactory.class,
                 PostgresCacheConfig.class,CacheSerializer.class,String.class);
         var direct=constructor.newInstance("logical",factory,PostgresCacheConfig.builder().keyPrefix("feature").build(),serializer,"service");
         assertThat(capture(direct)).isEqualTo(capture(helper("service","logical","feature")));

@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,8 +32,8 @@ class SpringDataPostgresConsumerGroupRepositoryTest {
         doReturn(Mono.defer(()->Mono.just(sessions.get(acquired.getAndIncrement()).connection))).when(factory).create();
     }
     ConsumerGroupTables tables(){return new ConsumerGroupTables("scope\"schema","outbox","registry","deliveries","journal");}
-    SpringDataPostgresConsumerGroupRepository repository(){return repository("group-A");}
-    SpringDataPostgresConsumerGroupRepository repository(String group){return new SpringDataPostgresConsumerGroupRepository(factory,tables(),new ConsumerGroupId(group),Duration.ofSeconds(10));}
+    SpringDataPostgresConsumerGroupRepositoryImpl repository(){return repository("group-A");}
+    SpringDataPostgresConsumerGroupRepositoryImpl repository(String group){return new SpringDataPostgresConsumerGroupRepositoryImpl(factory,tables(),new ConsumerGroupId(group),Duration.ofSeconds(10));}
     GroupSubscription subscription(){return new GroupSubscription(Set.of("events"),3);}
     ClaimRequest request(){return new ClaimRequest(Set.of("events"),4,3,Duration.ofSeconds(20));}
     DeliveryClaim claim(){return new DeliveryClaim(new PostgresDeliveryRow(11L,"orders.created","events",null,new byte[]{0,1,(byte)255},Json.of("{\"a\":12.3400}"),null,"POSTGRES","default","untrusted.MustNotLoad","IN_FLIGHT",1,null,NOW,null,null,TOKEN,1,NOW.plusSeconds(20),null),7);}
@@ -231,7 +231,7 @@ class SpringDataPostgresConsumerGroupRepositoryTest {
             ConnectionFactory scoped=(ConnectionFactory)proxyFactory.getObject();
             assertThat(scoped).isInstanceOf(org.springframework.aop.scope.ScopedObject.class);
             ConnectionFactory supplied=provider.equals("alias")?new GroupInfrastructureAlias(scoped):scoped;
-            assertThatThrownBy(()->new SpringDataPostgresConsumerGroupRepository(supplied,tables(),new ConsumerGroupId("group-A"),Duration.ofSeconds(10)))
+            assertThatThrownBy(()->new SpringDataPostgresConsumerGroupRepositoryImpl(supplied,tables(),new ConsumerGroupId("group-A"),Duration.ofSeconds(10)))
                     .isInstanceOf(IllegalArgumentException.class);
             assertThat(resolutions.get()).isZero();assertThat(acquired.get()).isZero();
         }

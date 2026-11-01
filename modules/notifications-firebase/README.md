@@ -75,7 +75,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AlertService {
 
-    private final PushProvider pushProvider; // FcmPushProvider injected by auto-config
+    private final PushProvider pushProvider; // FcmPushProviderImpl injected by auto-config
 
 
 
@@ -109,7 +109,7 @@ The `firefly.notifications.firebase` namespace is bound by [FcmProperties.java](
 | --- | --- |
 | [`FcmProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/properties/v1/FcmProperties.java) | Carries `credentialsPath`, `projectId` data; field constraints and defaults are declared in the linked source. |
 | [`FcmAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/config/v1/FcmAutoConfiguration.java) | Defines `firebaseApp`, `firebaseMessaging`, `fcmPushProvider` operations. |
-| [`FcmPushProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/core/v1/FcmPushProvider.java) | Defines `FcmPushProvider`, `sendPush` operations. |
+| [`FcmPushProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/core/v1/FcmPushProviderImpl.java) | Defines `FcmPushProviderImpl`, `sendPush` operations. |
 
 ## Continue the application
 

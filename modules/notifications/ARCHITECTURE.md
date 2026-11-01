@@ -68,7 +68,7 @@ Traditional layered architectures often suffer from tight coupling between busin
 │  │ fireflyframework-notifications-   │  │ fireflyframework-notifications-   │                 │
 │  │      sendgrid        │  │      resend          │                 │
 │  │                      │  │                      │                 │
-│  │ SendGridEmailProvider│  │ ResendEmailProvider  │                 │
+│  │ SendGridEmailProviderImpl│  │ ResendEmailProviderImpl  │                 │
 │  │   implements         │  │   implements         │                 │
 │  │   EmailProvider      │  │   EmailProvider      │                 │
 │  └──────────────────────┘  └──────────────────────┘                 │
@@ -77,7 +77,7 @@ Traditional layered architectures often suffer from tight coupling between busin
 │  │ fireflyframework-notifications-   │  │ fireflyframework-notifications-   │                 │
 │  │      twilio          │  │      firebase        │                 │
 │  │                      │  │                      │                 │
-│  │  TwilioSMSProvider   │  │   FcmPushProvider    │                 │
+│  │  TwilioSMSProviderImpl   │  │   FcmPushProviderImpl    │                 │
 │  │   implements         │  │   implements         │                 │
 │  │   SMSProvider        │  │   PushProvider       │                 │
 │  └──────────────────────┘  └──────────────────────┘                 │
@@ -115,7 +115,7 @@ public class EmailServiceImpl implements EmailService {
 @Service
 public class EmailServiceImpl implements EmailService {
     @Autowired
-    private SendGridEmailProvider sendGridProvider;  // Concrete class - bad!
+    private SendGridEmailProviderImpl sendGridProvider;  // Concrete class - bad!
 }
 ```
 
@@ -225,7 +225,7 @@ fireflyframework-notifications-sendgrid/
 ├── README.md                                  # Adapter-specific docs
 └── src/main/java/.../providers/sendgrid/
     ├── core/v1/
-    │   └── SendGridEmailProvider.java        # Port implementation
+    │   └── SendGridEmailProviderImpl.java        # Port implementation
     ├── config/v1/
     │   └── SendGridConfig.java               # Spring configuration
     └── properties/v1/
@@ -236,7 +236,7 @@ Adapter Implementation Example:
 
 ```java
 @Component  // Spring bean
-public class SendGridEmailProvider implements EmailProvider {
+public class SendGridEmailProviderImpl implements EmailProvider {
     
     @Autowired
     private SendGridProperties properties;
@@ -280,10 +280,10 @@ fireflyframework-notifications-firebase (Adapter)
 ```
 1. Spring scans for @Component/@Service beans
 2. Finds EmailServiceImpl (needs EmailProvider)
-3. Finds SendGridEmailProvider (implements EmailProvider)
-4. Injects SendGridEmailProvider into EmailServiceImpl
+3. Finds SendGridEmailProviderImpl (implements EmailProvider)
+4. Injects SendGridEmailProviderImpl into EmailServiceImpl
 5. Client code calls EmailService methods
-6. Calls are routed to SendGridEmailProvider at runtime
+6. Calls are routed to SendGridEmailProviderImpl at runtime
 ```
 
 ### Key Insight

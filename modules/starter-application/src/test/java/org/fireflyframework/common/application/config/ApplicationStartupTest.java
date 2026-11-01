@@ -3,7 +3,7 @@ package org.fireflyframework.common.application.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.common.application.metadata.ApplicationMetadataProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ class ApplicationStartupTest {
 
     @Autowired CacheManager cacheManager;
 
-    @Autowired FireflyCacheManager fireflyCacheManager;
+    @Autowired FireflyCacheManagerImpl fireflyCacheManager;
 
     @Autowired ApplicationContext applicationContext;
 

@@ -21,7 +21,7 @@ import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -50,14 +50,14 @@ import java.time.Instant;
 public abstract class AbstractResilientDataJobService implements DataJobService {
 
     private final JobTracingService tracingService;
-    private final JobMetricsService metricsService;
+    private final JobMetricsServiceImpl metricsService;
     private final ResiliencyDecoratorService resiliencyService;
     private final JobEventPublisher eventPublisher;
     private final JobAuditService auditService;
     private final JobExecutionResultService resultService;
 
     protected AbstractResilientDataJobService(JobTracingService tracingService,
-                                              JobMetricsService metricsService,
+                                              JobMetricsServiceImpl metricsService,
                                               ResiliencyDecoratorService resiliencyService,
                                               JobEventPublisher eventPublisher,
                                               JobAuditService auditService,
@@ -74,7 +74,7 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
      * Constructor without persistence services for backward compatibility.
      */
     protected AbstractResilientDataJobService(JobTracingService tracingService,
-                                              JobMetricsService metricsService,
+                                              JobMetricsServiceImpl metricsService,
                                               ResiliencyDecoratorService resiliencyService,
                                               JobEventPublisher eventPublisher) {
         this(tracingService, metricsService, resiliencyService, eventPublisher, null, null);
@@ -84,7 +84,7 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
      * Constructor without JobEventPublisher for backward compatibility.
      */
     protected AbstractResilientDataJobService(JobTracingService tracingService,
-                                              JobMetricsService metricsService,
+                                              JobMetricsServiceImpl metricsService,
                                               ResiliencyDecoratorService resiliencyService) {
         this(tracingService, metricsService, resiliencyService, null, null, null);
     }
@@ -348,7 +348,7 @@ public abstract class AbstractResilientDataJobService implements DataJobService 
     /**
      * Gets the metrics service for custom metrics.
      */
-    protected JobMetricsService getMetricsService() {
+    protected JobMetricsServiceImpl getMetricsService() {
         return metricsService;
     }
 

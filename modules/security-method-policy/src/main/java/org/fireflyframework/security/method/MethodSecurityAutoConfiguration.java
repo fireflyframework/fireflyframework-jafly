@@ -42,6 +42,6 @@ public class MethodSecurityAutoConfiguration {
         Pointcut pointcut = new ComposablePointcut(new AnnotationMatchingPointcut(null, Secure.class, true))
                 .union(new AnnotationMatchingPointcut(Secure.class, true));
         return new AuthorizationManagerBeforeReactiveMethodInterceptor(
-                pointcut, new SecureMethodAuthorizationManager(environment::resolvePlaceholders));
+                pointcut, new SecureMethodAuthorizationManagerImpl(environment::resolvePlaceholders));
     }
 }

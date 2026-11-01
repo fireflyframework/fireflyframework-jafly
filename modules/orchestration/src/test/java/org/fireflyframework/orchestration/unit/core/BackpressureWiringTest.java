@@ -17,10 +17,10 @@
 package org.fireflyframework.orchestration.unit.core;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategy;
+import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategyImpl;
 import org.fireflyframework.orchestration.core.backpressure.BackpressureStrategy;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
@@ -71,7 +71,7 @@ class BackpressureWiringTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private NoOpEventPublisher noOpPublisher;
+    private NoOpEventPublisherImpl noOpPublisher;
 
     @Mock
     private TccEngine tccEngine;
@@ -83,13 +83,13 @@ class BackpressureWiringTest {
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new NoOpEventPublisher();
+        noOpPublisher = new NoOpEventPublisherImpl();
     }
 
     @Test
     void sagaOrchestrator_withBackpressure_appliesStrategy() {
         // Create a spy backpressure strategy to verify it is called
-        var realStrategy = new AdaptiveBackpressureStrategy(2, 8, 1, 0.1);
+        var realStrategy = new AdaptiveBackpressureStrategyImpl(2, 8, 1, 0.1);
         var strategyUsed = new AtomicBoolean(false);
 
         BackpressureStrategy spyStrategy = new BackpressureStrategy() {
@@ -156,7 +156,7 @@ class BackpressureWiringTest {
     @Test
     void tccCompositor_withBackpressure_appliesStrategy() {
         var strategyUsed = new AtomicBoolean(false);
-        var realStrategy = new AdaptiveBackpressureStrategy(2, 8, 1, 0.1);
+        var realStrategy = new AdaptiveBackpressureStrategyImpl(2, 8, 1, 0.1);
 
         BackpressureStrategy spyStrategy = new BackpressureStrategy() {
             @Override
@@ -199,7 +199,7 @@ class BackpressureWiringTest {
     @Test
     void compositionOrchestrator_withBackpressure_appliesStrategy() {
         var strategyUsed = new AtomicBoolean(false);
-        var realStrategy = new AdaptiveBackpressureStrategy(2, 8, 1, 0.1);
+        var realStrategy = new AdaptiveBackpressureStrategyImpl(2, 8, 1, 0.1);
 
         BackpressureStrategy spyStrategy = new BackpressureStrategy() {
             @Override

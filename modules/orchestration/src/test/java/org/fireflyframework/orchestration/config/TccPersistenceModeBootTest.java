@@ -17,12 +17,12 @@
 package org.fireflyframework.orchestration.config;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.exception.TccPersistenceException;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
@@ -115,7 +115,7 @@ class TccPersistenceModeBootTest {
     void requiredBootPropertyRejectsCustomBestEffortOrchestrator() {
         var provider = new RetainingProvider(false);
         var custom = new TccExecutionOrchestrator(new StepInvoker(new ArgumentResolver()),
-                new OrchestrationEvents() {}, new NoOpEventPublisher(), provider);
+                new OrchestrationEvents() {}, new NoOpEventPublisherImpl(), provider);
         assertThatThrownBy(() -> application(provider).initializers(context ->
                         context.getBeanFactory().registerSingleton("customTccOrchestrator", custom))
                 .properties("firefly.orchestration.tcc.persistence-mode=REQUIRED").run())
@@ -153,7 +153,7 @@ class TccPersistenceModeBootTest {
         final AtomicInteger cancels = new AtomicInteger();
     }
 
-    static class RetainingProvider extends InMemoryPersistenceProvider {
+    static class RetainingProvider extends InMemoryPersistenceProviderImpl {
         final List<ExecutionState> attempted = new ArrayList<>();
         final List<ExecutionState> accepted = new ArrayList<>();
         final IllegalStateException cause = new IllegalStateException("private-provider-detail");

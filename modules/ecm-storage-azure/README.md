@@ -57,7 +57,7 @@ public class DocumentService {
     private final DocumentContentPort content;
 
     public DocumentService(DocumentContentPort content) {
-        this.content = content; // AzureBlobDocumentContentAdapter at runtime
+        this.content = content; // AzureBlobDocumentContentAdapterImpl at runtime
     }
 
     public Mono<String> upload(UUID documentId, byte[] bytes, String mimeType) {
@@ -89,7 +89,7 @@ The `firefly.ecm.adapter.azure-blob` namespace is bound by [AzureBlobAdapterProp
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AzureBlobDocumentContentAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapter.java) | Defines `AzureBlobDocumentContentAdapter`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
+| [`AzureBlobDocumentContentAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapterImpl.java) | Defines `AzureBlobDocumentContentAdapterImpl`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
 | [`AzureBlobAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobAdapterProperties.java) | Configuration properties for the Microsoft Azure Blob Storage ECM adapter. |
 | [`AzureBlobAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobAutoConfiguration.java) | Defines `blobServiceClient`, `blobContainerClient`, `objectMapper`, `azureBlobCircuitBreaker` operations. |
 

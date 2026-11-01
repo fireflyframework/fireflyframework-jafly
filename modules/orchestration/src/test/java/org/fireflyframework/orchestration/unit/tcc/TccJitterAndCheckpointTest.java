@@ -17,12 +17,12 @@
 package org.fireflyframework.orchestration.unit.tcc;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
@@ -45,13 +45,13 @@ class TccJitterAndCheckpointTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private NoOpEventPublisher noOpPublisher;
+    private NoOpEventPublisherImpl noOpPublisher;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new NoOpEventPublisher();
+        noOpPublisher = new NoOpEventPublisherImpl();
     }
 
     // --- Jitter field tests ---
@@ -111,7 +111,7 @@ class TccJitterAndCheckpointTest {
     // --- CANCELING checkpoint test ---
 
     private ExecutionPersistenceProvider capturingPersistence(List<ExecutionState> captured,
-                                                              InMemoryPersistenceProvider delegate) {
+                                                              InMemoryPersistenceProviderImpl delegate) {
         return new ExecutionPersistenceProvider() {
             @Override
             public Mono<Void> save(ExecutionState state) {
@@ -157,7 +157,7 @@ class TccJitterAndCheckpointTest {
     @Test
     void cancelPhaseWritesCancelingCheckpoint() {
         List<ExecutionState> savedStates = new ArrayList<>();
-        InMemoryPersistenceProvider delegate = new InMemoryPersistenceProvider();
+        InMemoryPersistenceProviderImpl delegate = new InMemoryPersistenceProviderImpl();
         ExecutionPersistenceProvider persistence = capturingPersistence(savedStates, delegate);
 
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher, persistence);

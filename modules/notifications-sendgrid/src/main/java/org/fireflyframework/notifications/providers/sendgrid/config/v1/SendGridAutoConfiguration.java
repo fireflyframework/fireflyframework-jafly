@@ -18,7 +18,7 @@
 package org.fireflyframework.notifications.providers.sendgrid.config.v1;
 
 import org.fireflyframework.notifications.interfaces.providers.email.v1.EmailProvider;
-import org.fireflyframework.notifications.providers.sendgrid.core.v1.SendGridEmailProvider;
+import org.fireflyframework.notifications.providers.sendgrid.core.v1.SendGridEmailProviderImpl;
 import org.fireflyframework.notifications.providers.sendgrid.properties.v1.SendGridProperties;
 import com.sendgrid.SendGrid;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +47,6 @@ public class SendGridAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(EmailProvider.class)
     public EmailProvider sendGridEmailProvider(SendGridProperties properties, SendGrid sendGrid) {
-        return new SendGridEmailProvider(properties, sendGrid);
+        return new SendGridEmailProviderImpl(properties, sendGrid);
     }
 }

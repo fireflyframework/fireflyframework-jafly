@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.rs.JwtToFireflyPrincipalConverter;
+import org.fireflyframework.security.rs.JwtToFireflyPrincipalConverterImpl;
 import org.fireflyframework.security.rs.ResourceServerAutoConfiguration;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.fireflyframework.security.webflux.authentication.FireflyAuthenticationToken;
@@ -116,7 +116,7 @@ class OAuth2ClientProductionRegistrationTest {
             assertThat(context).hasNotFailed().hasSingleBean(SecurityWebFilterChain.class);
             assertThat(context).hasBean("fireflySecurityWebFilterChain");
             assertThat(context.getBean(ReactiveJwtDecoder.class)).isInstanceOf(NimbusReactiveJwtDecoder.class);
-            assertThat(context).hasSingleBean(JwtToFireflyPrincipalConverter.class);
+            assertThat(context).hasSingleBean(JwtToFireflyPrincipalConverterImpl.class);
             var chain = context.getBean(SecurityWebFilterChain.class);
             var filters = chain.getWebFilters().collectList().block(WAIT);
             assertThat(filters).noneMatch(filter -> filter.getClass().getName().contains("OAuth2Login")

@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 class CaffeineCacheAdapterLoggingTest {
     private static final String NAME = "cache\r\nregion\u000bvertical\fform\u0085next\u2028line\u2029paragraph";
-    private final Logger logger = (Logger) LoggerFactory.getLogger(CaffeineCacheAdapter.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(CaffeineCacheAdapterImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level previousLevel;
     private boolean previousAdditive;
@@ -56,7 +56,7 @@ class CaffeineCacheAdapterLoggingTest {
         @Override public String toString() { renders++; return "PRIVATE_KEY\r\nforged\u2028entry"; }
     }
 
-    private CaffeineCacheAdapter adapter() { return new CaffeineCacheAdapter(NAME, CaffeineCacheConfig.builder().maximumSize(10L).build()); }
+    private CaffeineCacheAdapterImpl adapter() { return new CaffeineCacheAdapterImpl(NAME, CaffeineCacheConfig.builder().maximumSize(10L).build()); }
     @Test void successfulOperationsLogKeyPresenceAndEscapeOnlyTheCacheName() {
         var cache = adapter(); var key = new Key(); cache.put(key, "value").block();
         safeEvent(Level.DEBUG, false); assertEquals(1, key.renders);

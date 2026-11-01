@@ -23,7 +23,7 @@ import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.config.*;
 import org.fireflyframework.eda.consumer.postgres.model.PostgresDeliveryRow;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
-import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher;
+import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -45,8 +45,8 @@ import static org.awaitility.Awaitility.await;
 /** Explicit operator setup and actual configured resources, only inside an owned native test. */
 public final class PostgresConsumerNativeFixture implements AutoCloseable {
     public record NativeEvent(String value) { }
-    public final PostgresEventConsumer consumer;
-    public final PostgresEventPublisher publisher;
+    public final PostgresEventConsumerImpl consumer;
+    public final PostgresEventPublisherImpl publisher;
     public final EventPublisherFactory publisherFactory;
     public final Handler handler;
     public final ConnectionPool queryPool;
@@ -58,7 +58,7 @@ public final class PostgresConsumerNativeFixture implements AutoCloseable {
     public final String destination;
     private PostgresConsumerNativeFixture(AssertableApplicationContext context,ConnectionFactory inspection,String schema,
             String destination,AtomicReference<PostgresqlConnection> listen,AtomicInteger creates,boolean externalPool){
-        consumer=context.getBean(PostgresEventConsumer.class);publisher=context.getBean(PostgresEventPublisher.class);publisherFactory=context.getBean(EventPublisherFactory.class);handler=context.getBean(Handler.class);
+        consumer=context.getBean(PostgresEventConsumerImpl.class);publisher=context.getBean(PostgresEventPublisherImpl.class);publisherFactory=context.getBean(EventPublisherFactory.class);handler=context.getBean(Handler.class);
         queryPool=context.getBean("fireflyEdaPostgresConsumerQueryConnectionFactory",ConnectionPool.class);inspectionFactory=inspection;relation=SqlIdentifier.from(SqlIdentifier.quoted(schema),SqlIdentifier.quoted("firefly_eda_outbox"));this.destination=destination;recordedListen=listen;listenConnections=creates;this.externalPool=externalPool;
         assertThat(consumer.isRunning()).isFalse();
     }
@@ -82,10 +82,10 @@ public final class PostgresConsumerNativeFixture implements AutoCloseable {
         }
         try {
             runner.run(context->{
-                assertThat(context).hasNotFailed().hasSingleBean(PostgresEventConsumer.class).hasSingleBean(PostgresDeliveryRepository.class);
+                assertThat(context).hasNotFailed().hasSingleBean(PostgresEventConsumerImpl.class).hasSingleBean(PostgresDeliveryRepository.class);
                 // Explicit fixture/operator migration, never a runtime auto-install path.
                 Mono.usingWhen(raw.create(),c->Flux.from(c.createStatement(PostgresDeliverySchema.installationSql(schema,"firefly_eda_outbox")).execute()).concatMap(r->r.getRowsUpdated()).then(),Connection::close).block(Duration.ofSeconds(10));
-                new org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository(
+                new org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepositoryImpl(
                         raw,schema,"firefly_eda_outbox",Duration.ofSeconds(5)).verifyProtocol().block(Duration.ofSeconds(5));
                 try(var fixture=new PostgresConsumerNativeFixture(context,raw,schema,destination,listen,creates,observeListen)){action.accept(fixture);}
             });
@@ -100,12 +100,12 @@ public final class PostgresConsumerNativeFixture implements AutoCloseable {
     private static String quote(String value){return "\""+value.replace("\"","\"\"")+"\"";}
     static class Dependencies {
         @Bean ObjectMapper objectMapper(){return new ObjectMapper();}
-        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new org.fireflyframework.eda.serialization.JsonMessageSerializer(mapper);}
+        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new org.fireflyframework.eda.serialization.JsonMessageSerializerImpl(mapper);}
         @Bean org.fireflyframework.eda.error.CustomErrorHandlerRegistry customErrorHandlerRegistry(){return new org.fireflyframework.eda.error.CustomErrorHandlerRegistry();}
-        @Bean org.fireflyframework.eda.listener.EventListenerProcessor eventListenerProcessor(org.springframework.context.ApplicationContext context,org.springframework.context.ApplicationEventPublisher publisher,org.fireflyframework.eda.error.CustomErrorHandlerRegistry registry,org.springframework.core.env.Environment environment){return new org.fireflyframework.eda.listener.EventListenerProcessor(context,publisher,registry,environment);}
+        @Bean org.fireflyframework.eda.listener.EventListenerProcessorImpl eventListenerProcessor(org.springframework.context.ApplicationContext context,org.springframework.context.ApplicationEventPublisher publisher,org.fireflyframework.eda.error.CustomErrorHandlerRegistry registry,org.springframework.core.env.Environment environment){return new org.fireflyframework.eda.listener.EventListenerProcessorImpl(context,publisher,registry,environment);}
         @Bean EventPublisherFactory eventPublisherFactory(List<org.fireflyframework.eda.publisher.EventPublisher> publishers,org.fireflyframework.eda.properties.EdaProperties properties,org.springframework.beans.factory.ObjectProvider<org.fireflyframework.eda.resilience.ResilientEventPublisherFactory> resilience){return new EventPublisherFactory(publishers,properties,resilience);}
 
-        @Bean PostgresEventDecoder postgresEventDecoder(MessageSerializer serializer){return new org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder(serializer,Map.of(NativeEvent.class.getName(),NativeEvent.class,String.class.getName(),String.class));}
+        @Bean PostgresEventDecoder postgresEventDecoder(MessageSerializer serializer){return new org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoderImpl(serializer,Map.of(NativeEvent.class.getName(),NativeEvent.class,String.class.getName(),String.class));}
         @Bean Handler nativeHandler(){return new Handler();}
     }
     public static final class Handler {

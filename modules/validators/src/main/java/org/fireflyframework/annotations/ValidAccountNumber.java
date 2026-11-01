@@ -17,14 +17,14 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.AccountNumberValidator;
+import org.fireflyframework.validators.AccountNumberValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = AccountNumberValidator.class)
+@Constraint(validatedBy = AccountNumberValidatorImpl.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidAccountNumber {

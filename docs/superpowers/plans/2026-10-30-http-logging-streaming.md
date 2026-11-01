@@ -35,7 +35,7 @@
 
 ## Task 2: Transparent bounded capture
 
-**Files:** Modify `modules/web/src/main/java/org/fireflyframework/web/logging/filter/HttpRequestLoggingWebFilter.java`.
+**Files:** Modify `modules/web/src/main/java/org/fireflyframework/web/logging/filter/HttpRequestLoggingWebFilterImpl.java`.
 
 **Interfaces:** Preserve existing public constructor/WebFilter API. Private prefix capture accepts a borrowed DataBuffer and completes/abandons diagnostic bytes. The obsolete aggregate-list extraction helper is replaced by the same non-consuming absolute-byte copy inside the capture.
 

@@ -17,7 +17,7 @@ class PrimaryOnlyCacheFactoryTest {
         var factory=new CacheManagerFactory(properties,new ObjectMapper(),null,null,null);
         ReflectionTestUtils.setField(factory,"providerFactories",List.of(providers));return factory;
     }
-    org.fireflyframework.cache.manager.FireflyCacheManager create(CacheManagerFactory factory,CacheType type) {
+    org.fireflyframework.cache.manager.FireflyCacheManagerImpl create(CacheManagerFactory factory,CacheType type) {
         return factory.createCacheManager("policy",type,
                 "service:policy",Duration.ofMinutes(1),"primary-only test","test",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
     }
@@ -56,7 +56,7 @@ class PrimaryOnlyCacheFactoryTest {
         assertThatThrownBy(()->create(factory(empty),CacheType.POSTGRES)).isInstanceOf(IllegalStateException.class);
     }
     @Test void currentlyUnsupportedBuiltinProviderRefusesExplicitly() {
-        assertThatThrownBy(()->create(factory(new org.fireflyframework.cache.spi.providers.CaffeineProvider()),CacheType.CAFFEINE))
+        assertThatThrownBy(()->create(factory(new org.fireflyframework.cache.spi.providers.CaffeineProviderImpl()),CacheType.CAFFEINE))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
     @Test void providerCannotReturnADifferentBackend() {

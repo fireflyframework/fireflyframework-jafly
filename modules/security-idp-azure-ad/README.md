@@ -98,7 +98,7 @@ The `firefly.security.idp.azure-ad` namespace is bound by [AzureAdProperties.jav
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AzureAdIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/adapter/AzureAdIdpAdapter.java) | Azure AD implementation of the Firefly IDP Adapter. |
+| [`AzureAdIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/adapter/AzureAdIdpAdapterImpl.java) | Azure AD implementation of the Firefly IDP Adapter. |
 | [`AzureAdProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/config/AzureAdProperties.java) | Carries `mode`, `tenantId`, `clientId`, `clientSecret`, `b2c` data; field constraints and defaults are declared in the linked source. |
 | [`AzureAdAdminService`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/service/AzureAdAdminService.java) | Admin service interface for Azure AD user management operations. |
 | [`GraphClientFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-azure-ad/src/main/java/org/fireflyframework/security/idp/azuread/client/GraphClientFactory.java) | Defines `createClient`, `destroy` operations. |

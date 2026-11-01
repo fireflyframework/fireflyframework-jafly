@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 
@@ -41,7 +41,7 @@ public final class IndependentClientBuildCloseProbe {
         properties.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" + Base64.getMimeEncoder(64, new byte[]{10})
                 .encodeToString(generator.generateKeyPair().getPrivate().getEncoded()) + "\n-----END PRIVATE KEY-----\n");
         try (var transport = new ScopedSdkConnector.Scope(service)) {
-            var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties));
+            var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties));
             var worker = Executors.newSingleThreadExecutor();
             try {
                 pause = true;

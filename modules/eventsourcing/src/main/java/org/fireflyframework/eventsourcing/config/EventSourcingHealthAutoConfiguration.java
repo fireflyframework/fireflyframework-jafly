@@ -17,10 +17,10 @@
 package org.fireflyframework.eventsourcing.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.fireflyframework.eventsourcing.health.EventStoreHealthIndicator;
-import org.fireflyframework.eventsourcing.health.OutboxHealthIndicator;
-import org.fireflyframework.eventsourcing.health.ProjectionHealthIndicator;
-import org.fireflyframework.eventsourcing.health.SnapshotStoreHealthIndicator;
+import org.fireflyframework.eventsourcing.health.EventStoreHealthIndicatorImpl;
+import org.fireflyframework.eventsourcing.health.OutboxHealthIndicatorImpl;
+import org.fireflyframework.eventsourcing.health.ProjectionHealthIndicatorImpl;
+import org.fireflyframework.eventsourcing.health.SnapshotStoreHealthIndicatorImpl;
 import org.fireflyframework.eventsourcing.outbox.EventOutboxService;
 import org.fireflyframework.eventsourcing.projection.ProjectionService;
 import org.fireflyframework.eventsourcing.snapshot.SnapshotStore;
@@ -52,34 +52,34 @@ public class EventSourcingHealthAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(EventStore.class)
-    @ConditionalOnMissingBean(EventStoreHealthIndicator.class)
-    public EventStoreHealthIndicator eventStoreHealthIndicator(EventStore eventStore) {
+    @ConditionalOnMissingBean(EventStoreHealthIndicatorImpl.class)
+    public EventStoreHealthIndicatorImpl eventStoreHealthIndicator(EventStore eventStore) {
         log.debug("Creating EventStoreHealthIndicator bean");
-        return new EventStoreHealthIndicator(eventStore);
+        return new EventStoreHealthIndicatorImpl(eventStore);
     }
 
     @Bean
     @ConditionalOnBean(EventOutboxService.class)
-    @ConditionalOnMissingBean(OutboxHealthIndicator.class)
-    public OutboxHealthIndicator outboxHealthIndicator(EventOutboxService outboxService) {
+    @ConditionalOnMissingBean(OutboxHealthIndicatorImpl.class)
+    public OutboxHealthIndicatorImpl outboxHealthIndicator(EventOutboxService outboxService) {
         log.debug("Creating OutboxHealthIndicator bean");
-        return new OutboxHealthIndicator(outboxService);
+        return new OutboxHealthIndicatorImpl(outboxService);
     }
 
     @Bean
     @ConditionalOnBean(SnapshotStore.class)
-    @ConditionalOnMissingBean(SnapshotStoreHealthIndicator.class)
-    public SnapshotStoreHealthIndicator snapshotStoreHealthIndicator(SnapshotStore snapshotStore) {
+    @ConditionalOnMissingBean(SnapshotStoreHealthIndicatorImpl.class)
+    public SnapshotStoreHealthIndicatorImpl snapshotStoreHealthIndicator(SnapshotStore snapshotStore) {
         log.debug("Creating SnapshotStoreHealthIndicator bean");
-        return new SnapshotStoreHealthIndicator(snapshotStore);
+        return new SnapshotStoreHealthIndicatorImpl(snapshotStore);
     }
 
     @Bean
-    @ConditionalOnMissingBean(ProjectionHealthIndicator.class)
-    public ProjectionHealthIndicator projectionHealthIndicator(List<ProjectionService<?>> projectionServices,
+    @ConditionalOnMissingBean(ProjectionHealthIndicatorImpl.class)
+    public ProjectionHealthIndicatorImpl projectionHealthIndicator(List<ProjectionService<?>> projectionServices,
                                                                 EventSourcingProjectionProperties projectionProperties) {
         log.debug("Creating ProjectionHealthIndicator bean with {} projections", projectionServices.size());
-        return new ProjectionHealthIndicator(
+        return new ProjectionHealthIndicatorImpl(
                 projectionServices,
                 projectionProperties.getHealthCheck().getTimeout(),
                 projectionProperties.getHealthCheck().getMaxAcceptableLag()

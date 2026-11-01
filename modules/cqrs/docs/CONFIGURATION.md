@@ -357,7 +357,7 @@ Example Response Structure:
 
 ### Available Micrometer Metrics
 
-The `CommandMetricsService` automatically registers these metrics:
+The `CommandMetricsServiceImpl` automatically registers these metrics:
 
 #### Global Command Metrics
 - `firefly.cqrs.command.processed` - Total commands processed successfully

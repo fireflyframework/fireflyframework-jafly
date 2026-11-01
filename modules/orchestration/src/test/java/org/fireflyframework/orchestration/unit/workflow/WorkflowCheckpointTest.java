@@ -19,7 +19,7 @@ package org.fireflyframework.orchestration.unit.workflow;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
@@ -28,7 +28,7 @@ import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
@@ -70,10 +70,10 @@ class WorkflowCheckpointTest {
     void setUp() {
         registry = new WorkflowRegistry();
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var stepInvoker = new StepInvoker(new ArgumentResolver());
 
-        mockPersistence = spy(new InMemoryPersistenceProvider());
+        mockPersistence = spy(new InMemoryPersistenceProviderImpl());
 
         var executor = new WorkflowExecutor(stepInvoker, events, noOpPublisher, null, null, mockPersistence);
         engine = new WorkflowEngine(registry, executor, stepInvoker, mockPersistence, events, noOpPublisher);
@@ -116,12 +116,12 @@ class WorkflowCheckpointTest {
     void checkpoint_nullPersistence_noError() throws Exception {
         // Create executor without persistence (null) — should still work
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var stepInvoker = new StepInvoker(new ArgumentResolver());
         var noPersistenceExecutor = new WorkflowExecutor(stepInvoker, events, noOpPublisher, null, null);
 
         var noPersistenceRegistry = new WorkflowRegistry();
-        var inMemoryPersistence = new InMemoryPersistenceProvider();
+        var inMemoryPersistence = new InMemoryPersistenceProviderImpl();
         var noPersistenceEngine = new WorkflowEngine(noPersistenceRegistry, noPersistenceExecutor,
                 stepInvoker, inMemoryPersistence, events, noOpPublisher);
 

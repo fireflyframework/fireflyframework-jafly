@@ -15,7 +15,7 @@ import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.controller.AbstractSyncDataJobController;
 import org.fireflyframework.data.event.*;
 import org.fireflyframework.data.model.*;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.orchestration.model.JobExecutionStatus;
 import org.fireflyframework.data.persistence.model.JobExecutionResult;
 import org.fireflyframework.data.persistence.port.JobExecutionResultRepository;
@@ -42,8 +42,8 @@ class RemainingDataLogSafetyTest {
     @Test void enrichmentMetricDiagnosticsPreserveExactRawTags() {
         var properties = new JobOrchestrationProperties();
         var registry = new SimpleMeterRegistry();
-        try (var logs = new Capture(JobMetricsService.class)) {
-            var service = new JobMetricsService(registry, properties);
+        try (var logs = new Capture(JobMetricsServiceImpl.class)) {
+            var service = new JobMetricsServiceImpl(registry, properties);
             service.recordEnrichmentMetrics(FIELD, FIELD, true, 42, 3, 1.5);
             service.recordEnrichmentError(FIELD, FIELD, FIELD, 42);
             assertNotNull(registry.find("firefly.data.enrichment.duration").tags("type", FIELD, "provider", FIELD).timer());
@@ -55,8 +55,8 @@ class RemainingDataLogSafetyTest {
     @Test void ordinaryJobMetricsKeepRawExecutionKeysAndStatuses() {
         var properties = new JobOrchestrationProperties();
         var registry = new SimpleMeterRegistry();
-        try (var logs = new Capture(JobMetricsService.class)) {
-            var service = new JobMetricsService(registry, properties);
+        try (var logs = new Capture(JobMetricsServiceImpl.class)) {
+            var service = new JobMetricsServiceImpl(registry, properties);
             service.recordJobStageExecution(JobStage.START, FIELD, Duration.ofMillis(2));
             service.incrementJobStageCounter(JobStage.CHECK, FIELD);
             service.recordJobExecutionStart(FIELD);

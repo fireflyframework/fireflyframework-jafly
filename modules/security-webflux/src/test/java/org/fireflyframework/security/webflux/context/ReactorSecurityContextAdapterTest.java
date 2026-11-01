@@ -26,7 +26,7 @@ import java.util.Set;
 
 class ReactorSecurityContextAdapterTest {
 
-    private final ReactorSecurityContextAdapter adapter = new ReactorSecurityContextAdapter();
+    private final ReactorSecurityContextAdapterImpl adapter = new ReactorSecurityContextAdapterImpl();
 
     @Test
     void returnsPrincipalFromReactiveSecurityContext() {

@@ -63,7 +63,7 @@ class EventListenerProcessorTest {
     @Mock
     private Environment environment;
 
-    private EventListenerProcessor eventListenerProcessor;
+    private EventListenerProcessorImpl eventListenerProcessor;
     private TestEventListenerBean testBean;
 
     @BeforeEach
@@ -78,7 +78,7 @@ class EventListenerProcessorTest {
         // Mock environment to resolve placeholders (lenient because not all tests use it)
         lenient().when(environment.resolvePlaceholders(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        eventListenerProcessor = new EventListenerProcessor(
+        eventListenerProcessor = new EventListenerProcessorImpl(
             applicationContext, applicationEventPublisher, customErrorHandlerRegistry, environment
         );
     }

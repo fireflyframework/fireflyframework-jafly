@@ -84,9 +84,9 @@ The AST system follows a multi-layered architecture that separates concerns and 
 │                      Parsing Layer                              │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │ YAML Parser │  │ DSL Parser  │  │ Specialized Parsers     │  │
-│  │             │  │ (Main)      │  │ • ExpressionParser      │  │
-│  │             │  │             │  │ • ConditionParser       │  │
-│  │             │  │             │  │ • ActionParser          │  │
+│  │             │  │ (Main)      │  │ • ExpressionParserImpl      │  │
+│  │             │  │             │  │ • ConditionParserImpl       │  │
+│  │             │  │             │  │ • ActionParserImpl          │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                                 │
@@ -95,11 +95,11 @@ The AST system follows a multi-layered architecture that separates concerns and 
 │                     AST Model Layer                             │ 
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │ Expression  │  │ Condition   │  │ Action Nodes            │  │
-│  │ Nodes       │  │ Nodes       │  │ • SetAction             │  │
-│  │ • Binary    │  │ • Comparison│  │ • CalculateAction       │  │
-│  │ • Unary     │  │ • Logical   │  │ • FunctionCallAction    │  │
-│  │ • Literal   │  │ • Expression│  │ • ConditionalAction     │  │
-│  │ • Variable  │  │             │  │ • CircuitBreakerAction  │  │
+│  │ Nodes       │  │ Nodes       │  │ • SetActionImpl             │  │
+│  │ • Binary    │  │ • Comparison│  │ • CalculateActionImpl       │  │
+│  │ • Unary     │  │ • Logical   │  │ • FunctionCallActionImpl    │  │
+│  │ • Literal   │  │ • Expression│  │ • ConditionalActionImpl     │  │
+│  │ • Variable  │  │             │  │ • CircuitBreakerActionImpl  │  │
 │  │ • Function  │  │             │  │                         │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
@@ -109,7 +109,7 @@ The AST system follows a multi-layered architecture that separates concerns and 
 │                   Visitor Pattern Layer                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │ Expression  │  │ Action      │  │ Validation & Analysis   │  │
-│  │ Evaluator   │  │ Executor    │  │ • ValidationVisitor     │  │
+│  │ Evaluator   │  │ Executor    │  │ • ValidationVisitorImpl     │  │
 │  │             │  │             │  │ • VariableCollector     │  │
 │  │             │  │             │  │ • TypeChecker           │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
@@ -158,10 +158,10 @@ Why Tokenization Matters: This step converts raw text into meaningful symbols th
 Tokens are assembled into AST nodes using recursive descent parsing:
 
 ```
-ComparisonCondition
-├── left: VariableExpression("creditScore")
+ComparisonConditionImpl
+├── left: VariableExpressionImpl("creditScore")
 ├── operator: GREATER_THAN
-└── right: VariableExpression("MIN_CREDIT_SCORE")
+└── right: VariableExpressionImpl("MIN_CREDIT_SCORE")
 ```
 
 Recursive Descent Parsing: This is a top-down parsing technique where each grammar rule is implemented as a method. The parser starts with high-level constructs and recursively breaks them down into smaller components.
@@ -200,48 +200,48 @@ org.fireflyframework.rules.core.dsl.ast/
 │   └── LexerException.java  # Lexer-specific exceptions
 ├── parser/                   # Parsing components
 │   ├── DSLParser.java       # Main DSL parser coordinator
-│   ├── ExpressionParser.java # Expression parsing (arithmetic, logical)
-│   ├── ConditionParser.java # Condition parsing (comparisons, validations)
-│   ├── ActionParser.java    # Action parsing (assignments, calculations)
+│   ├── ExpressionParserImpl.java # Expression parsing (arithmetic, logical)
+│   ├── ConditionParserImpl.java # Condition parsing (comparisons, validations)
+│   ├── ActionParserImpl.java    # Action parsing (assignments, calculations)
 │   ├── ASTRulesDSLParser.java # YAML to AST converter
 │   └── BaseParser.java      # Common parsing utilities
 ├── expression/              # Expression AST nodes
 │   ├── Expression.java      # Base expression class
-│   ├── BinaryExpression.java # Binary operations (+, -, *, /, %, **, comparisons)
-│   ├── UnaryExpression.java # Unary operations (-, !, validation ops)
-│   ├── LiteralExpression.java # Literal values (numbers, strings, booleans, arrays)
-│   ├── VariableExpression.java # Variable references with property/index access
-│   ├── FunctionCallExpression.java # Function calls with parameters
+│   ├── BinaryExpressionImpl.java # Binary operations (+, -, *, /, %, **, comparisons)
+│   ├── UnaryExpressionImpl.java # Unary operations (-, !, validation ops)
+│   ├── LiteralExpressionImpl.java # Literal values (numbers, strings, booleans, arrays)
+│   ├── VariableExpressionImpl.java # Variable references with property/index access
+│   ├── FunctionCallExpressionImpl.java # Function calls with parameters
 │   ├── BinaryOperator.java  # Binary operator enumeration
 │   ├── UnaryOperator.java   # Unary operator enumeration
 │   └── ExpressionType.java  # Expression type enumeration
 ├── condition/               # Condition AST nodes
 │   ├── Condition.java       # Base condition class
-│   ├── ComparisonCondition.java # Comparison operations (>, <, ==, between, in_list, etc.)
-│   ├── LogicalCondition.java # Logical operations (AND, OR, NOT)
-│   ├── ExpressionCondition.java # Expression-based conditions
+│   ├── ComparisonConditionImpl.java # Comparison operations (>, <, ==, between, in_list, etc.)
+│   ├── LogicalConditionImpl.java # Logical operations (AND, OR, NOT)
+│   ├── ExpressionConditionImpl.java # Expression-based conditions
 │   └── ComparisonOperator.java # Comparison operator enumeration
 ├── action/                  # Action AST nodes
 │   ├── Action.java          # Base action class
-│   ├── SetAction.java       # Variable assignment (`set var to value`)
-│   ├── CalculateAction.java # Pure-math arithmetic (`calculate var as expr`)
-│   ├── RunAction.java       # Function-call assignment (`run var as fn(...)`)
-│   ├── FunctionCallAction.java # Standalone function execution (`call fn with [...]`)
-│   ├── ConditionalAction.java # Inline if-then-else as an action
-│   ├── ArithmeticAction.java # `add`/`subtract`/`multiply`/`divide` X to/from/by var
-│   ├── ListAction.java      # List operations (append, prepend, remove)
-│   ├── CircuitBreakerAction.java # Early termination with a structured message
-│   ├── ForEachAction.java   # `forEach item in items: ...`
-│   ├── WhileAction.java     # `while condition: ...`
-│   └── DoWhileAction.java   # `do: ... while condition`
+│   ├── SetActionImpl.java       # Variable assignment (`set var to value`)
+│   ├── CalculateActionImpl.java # Pure-math arithmetic (`calculate var as expr`)
+│   ├── RunActionImpl.java       # Function-call assignment (`run var as fn(...)`)
+│   ├── FunctionCallActionImpl.java # Standalone function execution (`call fn with [...]`)
+│   ├── ConditionalActionImpl.java # Inline if-then-else as an action
+│   ├── ArithmeticActionImpl.java # `add`/`subtract`/`multiply`/`divide` X to/from/by var
+│   ├── ListActionImpl.java      # List operations (append, prepend, remove)
+│   ├── CircuitBreakerActionImpl.java # Early termination with a structured message
+│   ├── ForEachActionImpl.java   # `forEach item in items: ...`
+│   ├── WhileActionImpl.java     # `while condition: ...`
+│   └── DoWhileActionImpl.java   # `do: ... while condition`
 ├── function/                # Extension point for user-defined functions
 │   ├── RuleFunction.java    # Functional interface: `Object apply(Object[] args)`
 │   └── CustomFunctionRegistry.java # @Component holding registered functions
 ├── visitor/                 # Visitor pattern implementations
 │   ├── EvaluationContext.java # Execution context and state
-│   ├── ExpressionEvaluator.java # Expression evaluation visitor
-│   ├── ActionExecutor.java  # Action execution visitor
-│   ├── ValidationVisitor.java # AST validation visitor
+│   ├── ExpressionEvaluatorImpl.java # Expression evaluation visitor
+│   ├── ActionExecutorImpl.java  # Action execution visitor
+│   ├── ValidationVisitorImpl.java # AST validation visitor
 │   ├── VariableReferenceCollector.java # Variable extraction visitor
 │   └── ValidationError.java # Validation error representation
 ├── model/                   # AST model classes
@@ -665,27 +665,27 @@ Key Design Decisions:
 ```
 ASTNode (abstract base)
 ├── Expression (abstract)
-│   ├── LiteralExpression           # numbers, strings, booleans, null, array literals
-│   ├── VariableExpression          # variable refs with optional property path / index access
-│   ├── BinaryExpression            # +, -, *, /, %, **, comparisons, and/or, contains, starts_with, etc.
-│   ├── UnaryExpression             # -, +, NOT, EXISTS, IS_NULL, IS_EMAIL, IS_POSITIVE, etc.
-│   └── FunctionCallExpression      # math, string, date, list, financial, validation, REST, JSON funcs
+│   ├── LiteralExpressionImpl           # numbers, strings, booleans, null, array literals
+│   ├── VariableExpressionImpl          # variable refs with optional property path / index access
+│   ├── BinaryExpressionImpl            # +, -, *, /, %, **, comparisons, and/or, contains, starts_with, etc.
+│   ├── UnaryExpressionImpl             # -, +, NOT, EXISTS, IS_NULL, IS_EMAIL, IS_POSITIVE, etc.
+│   └── FunctionCallExpressionImpl      # math, string, date, list, financial, validation, REST, JSON funcs
 ├── Condition (abstract)
-│   ├── ComparisonCondition         # `>=`, `at_least`, `between ... and ...`, `in_list [...]`, `is_email`, etc.
-│   ├── LogicalCondition            # AND / OR / NOT composition
-│   └── ExpressionCondition         # wraps any boolean-valued Expression
+│   ├── ComparisonConditionImpl         # `>=`, `at_least`, `between ... and ...`, `in_list [...]`, `is_email`, etc.
+│   ├── LogicalConditionImpl            # AND / OR / NOT composition
+│   └── ExpressionConditionImpl         # wraps any boolean-valued Expression
 └── Action (abstract)
-    ├── SetAction                   # `set var to value`
-    ├── CalculateAction             # `calculate var as <pure-math-expr>`
-    ├── RunAction                   # `run var as <function-or-rest-expr>`
-    ├── FunctionCallAction          # `call fn with [args]`
-    ├── ConditionalAction           # `if cond then actions [else actions]`
-    ├── ArithmeticAction            # `add X to var`, `subtract X from var`, `multiply var by X`, `divide var by X`
-    ├── ListAction                  # `append X to list`, `prepend X to list`, `remove X from list`
-    ├── ForEachAction               # `forEach item[, index] in items: actions`
-    ├── WhileAction                 # `while cond: actions`
-    ├── DoWhileAction               # `do: actions while cond`
-    └── CircuitBreakerAction        # `circuit_breaker "MESSAGE"` -- early termination
+    ├── SetActionImpl                   # `set var to value`
+    ├── CalculateActionImpl             # `calculate var as <pure-math-expr>`
+    ├── RunActionImpl                   # `run var as <function-or-rest-expr>`
+    ├── FunctionCallActionImpl          # `call fn with [args]`
+    ├── ConditionalActionImpl           # `if cond then actions [else actions]`
+    ├── ArithmeticActionImpl            # `add X to var`, `subtract X from var`, `multiply var by X`, `divide var by X`
+    ├── ListActionImpl                  # `append X to list`, `prepend X to list`, `remove X from list`
+    ├── ForEachActionImpl               # `forEach item[, index] in items: actions`
+    ├── WhileActionImpl                 # `while cond: actions`
+    ├── DoWhileActionImpl               # `do: actions while cond`
+    └── CircuitBreakerActionImpl        # `circuit_breaker "MESSAGE"` -- early termination
 ```
 
 > Note: The DSL was simplified in 2026-05 to remove orphan AST classes that were never produced by the parser. The compound-assignment family (`+=`, `-=`, etc.) and the multi-operand `ArithmeticExpression` n-ary form are no longer present. Use `add`/`subtract`/`multiply`/`divide` arithmetic actions or `calculate`/`run` with `+`/`-`/`*`/`/` for the same outcomes.
@@ -773,7 +773,7 @@ Examples:
 Binary Expression Design:
 
 ```java
-public class BinaryExpression extends Expression {
+public class BinaryExpressionImpl extends Expression {
     private final Expression left;        // Left operand (can be any expression)
     private final BinaryOperator operator; // The operation to perform
     private final Expression right;       // Right operand (can be any expression)
@@ -815,13 +815,13 @@ Example AST Structure:
 For the expression `(income + bonus) > threshold`:
 
 ```
-BinaryExpression (>)
-├── left: BinaryExpression (+)
-│   ├── left: VariableExpression("income")
+BinaryExpressionImpl (>)
+├── left: BinaryExpressionImpl (+)
+│   ├── left: VariableExpressionImpl("income")
 │   ├── operator: ADD
-│   └── right: VariableExpression("bonus")
+│   └── right: VariableExpressionImpl("bonus")
 ├── operator: GREATER_THAN
-└── right: VariableExpression("threshold")
+└── right: VariableExpressionImpl("threshold")
 ```
 
 #### Binary Operators: The Heart of Expression Evaluation
@@ -898,7 +898,7 @@ Unary expressions handle operations on a single operand, including validation op
 ````java
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class UnaryExpression extends Expression {
+public class UnaryExpressionImpl extends Expression {
     private final UnaryOperator operator;
     private final Expression operand;
 
@@ -988,7 +988,7 @@ Handle comparisons between expressions using various operators:
 ````java
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ComparisonCondition extends Condition {
+public class ComparisonConditionImpl extends Condition {
     private final Expression left;
     private final ComparisonOperator operator;
     private final Expression right;  // Optional for unary operators
@@ -1077,7 +1077,7 @@ The most common action type for variable assignment:
 ````java
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SetAction extends Action {
+public class SetActionImpl extends Action {
     private final String variableName;
     private final Expression value;
 
@@ -1105,7 +1105,7 @@ For arithmetic calculations with result assignment:
 ````java
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CalculateAction extends Action {
+public class CalculateActionImpl extends Action {
     private final String resultVariable;
     private final Expression expression;
 
@@ -1116,7 +1116,7 @@ public class CalculateAction extends Action {
 
     @Override
     public String toDebugString() {
-        return String.format("CalculateAction(result=%s, expr=%s)",
+        return String.format("CalculateActionImpl(result=%s, expr=%s)",
                            resultVariable, expression.toDebugString());
     }
 }
@@ -1132,9 +1132,9 @@ The parsing system uses a recursive descent parser architecture with separate pa
 
 ```
 DSLParser (Main Coordinator)
-├── ExpressionParser (Arithmetic, logical, function calls)
-├── ConditionParser (Comparisons, validations, logical conditions)
-├── ActionParser (Assignments, calculations, function calls)
+├── ExpressionParserImpl (Arithmetic, logical, function calls)
+├── ConditionParserImpl (Comparisons, validations, logical conditions)
+├── ActionParserImpl (Assignments, calculations, function calls)
 └── BaseParser (Common parsing utilities)
 ```
 
@@ -1152,19 +1152,19 @@ public class DSLParser extends BaseParser {
         }
 
         List<Token> tokens = lexer.tokenize(expressionStr);
-        ExpressionParser parser = new ExpressionParser(tokens);
+        ExpressionParserImpl parser = new ExpressionParserImpl(tokens);
         return parser.parseExpression();
     }
 
     public Condition parseCondition(String conditionStr) {
         List<Token> tokens = lexer.tokenize(conditionStr);
-        ConditionParser parser = new ConditionParser(tokens);
+        ConditionParserImpl parser = new ConditionParserImpl(tokens);
         return parser.parseCondition();
     }
 
     public Action parseAction(String actionStr) {
         List<Token> tokens = lexer.tokenize(actionStr);
-        ActionParser parser = new ActionParser(tokens);
+        ActionParserImpl parser = new ActionParserImpl(tokens);
         return parser.parseAction();
     }
 }
@@ -1172,10 +1172,10 @@ public class DSLParser extends BaseParser {
 
 ### 📊 Expression Parser
 
-The `ExpressionParser` handles arithmetic, logical, and function call expressions using operator precedence parsing:
+The `ExpressionParserImpl` handles arithmetic, logical, and function call expressions using operator precedence parsing:
 
 ````java
-public class ExpressionParser extends BaseParser {
+public class ExpressionParserImpl extends BaseParser {
 
     public Expression parseExpression() {
         return logicalOr();
@@ -1187,7 +1187,7 @@ public class ExpressionParser extends BaseParser {
         while (match(TokenType.OR)) {
             BinaryOperator operator = BinaryOperator.OR;
             Expression right = logicalAnd();
-            expr = new BinaryExpression(null, expr, operator, right);
+            expr = new BinaryExpressionImpl(null, expr, operator, right);
         }
 
         return expr;
@@ -1199,7 +1199,7 @@ public class ExpressionParser extends BaseParser {
         while (match(TokenType.AND)) {
             BinaryOperator operator = BinaryOperator.AND;
             Expression right = equality();
-            expr = new BinaryExpression(null, expr, operator, right);
+            expr = new BinaryExpressionImpl(null, expr, operator, right);
         }
 
         return expr;
@@ -1211,7 +1211,7 @@ public class ExpressionParser extends BaseParser {
         while (matchAny(TokenType.EQUALS, TokenType.NOT_EQUALS)) {
             BinaryOperator operator = mapTokenToBinaryOperator(previous().getType());
             Expression right = comparison();
-            expr = new BinaryExpression(null, expr, operator, right);
+            expr = new BinaryExpressionImpl(null, expr, operator, right);
         }
 
         return expr;
@@ -1221,10 +1221,10 @@ public class ExpressionParser extends BaseParser {
 
 ### 🔍 Condition Parser
 
-The `ConditionParser` specializes in parsing comparison and logical conditions:
+The `ConditionParserImpl` specializes in parsing comparison and logical conditions:
 
 ````java
-public class ConditionParser extends BaseParser {
+public class ConditionParserImpl extends BaseParser {
 
     public Condition parseCondition() {
         return logicalOr();
@@ -1235,7 +1235,7 @@ public class ConditionParser extends BaseParser {
 
         while (match(TokenType.OR)) {
             Condition right = logicalAnd();
-            condition = new LogicalCondition(null, condition, LogicalOperator.OR, right);
+            condition = new LogicalConditionImpl(null, condition, LogicalOperator.OR, right);
         }
 
         return condition;
@@ -1246,14 +1246,14 @@ public class ConditionParser extends BaseParser {
 
         if (matchValidationOperator()) {
             ComparisonOperator operator = mapTokenToComparisonOperator(previous().getType());
-            return new ComparisonCondition(null, left, operator, null, null);
+            return new ComparisonConditionImpl(null, left, operator, null, null);
         }
 
         if (match(TokenType.BETWEEN)) {
             Expression min = expressionParser.parseExpressionWithoutLogical();
             consume(TokenType.AND, "Expected 'and' in between expression");
             Expression max = expressionParser.parseExpressionWithoutLogical();
-            return new ComparisonCondition(null, left, ComparisonOperator.BETWEEN, min, max);
+            return new ComparisonConditionImpl(null, left, ComparisonOperator.BETWEEN, min, max);
         }
 
         // Handle other comparison operators...
@@ -1263,10 +1263,10 @@ public class ConditionParser extends BaseParser {
 
 ### ⚡ Action Parser
 
-The `ActionParser` handles all action types including assignments and function calls:
+The `ActionParserImpl` handles all action types including assignments and function calls:
 
 ````java
-public class ActionParser extends BaseParser {
+public class ActionParserImpl extends BaseParser {
 
     public Action parseAction() {
         if (match(TokenType.SET)) {
@@ -1292,11 +1292,11 @@ public class ActionParser extends BaseParser {
         throw error("Expected action statement");
     }
 
-    private SetAction parseSetAction() {
+    private SetActionImpl parseSetAction() {
         String variableName = consume(TokenType.IDENTIFIER, "Expected variable name").getLexeme();
         consume(TokenType.TO, "Expected 'to' after variable name");
         Expression value = expressionParser.parseExpression();
-        return new SetAction(null, variableName, value);
+        return new SetActionImpl(null, variableName, value);
     }
 }
 ````
@@ -1311,7 +1311,7 @@ The Visitor Pattern is a behavioral design pattern that allows you to define new
 
 The Problem It Solves:
 
-Imagine you have an AST with many node types (BinaryExpression, VariableExpression, SetAction, etc.). You want to perform different operations on these nodes:
+Imagine you have an AST with many node types (BinaryExpressionImpl, VariableExpressionImpl, SetActionImpl, etc.). You want to perform different operations on these nodes:
 - Evaluate expressions
 - Validate syntax
 - Optimize the AST
@@ -1347,8 +1347,8 @@ public abstract class ASTNode {
 
 // Operations are separate visitor classes
 public interface ASTVisitor<T> {
-    T visitBinaryExpression(BinaryExpression node);
-    T visitVariableExpression(VariableExpression node);
+    T visitBinaryExpression(BinaryExpressionImpl node);
+    T visitVariableExpression(VariableExpressionImpl node);
     // ... one method for each node type
 }
 ```
@@ -1367,29 +1367,29 @@ The `ASTVisitor` interface is the heart of the visitor pattern implementation:
 public interface ASTVisitor<T> {
 
     // Expression visitors - handle value computation
-    T visitBinaryExpression(BinaryExpression node);             // a + b, a > b, a and b, etc.
-    T visitUnaryExpression(UnaryExpression node);               // -a, !a, is_positive(a)
-    T visitVariableExpression(VariableExpression node);         // creditScore, user.profile.name
-    T visitLiteralExpression(LiteralExpression node);           // 42, "hello", true, [1,2,3]
-    T visitFunctionCallExpression(FunctionCallExpression node); // max(a, b), if_else(...), coalesce(...), rest_get(...), json_get(...)
+    T visitBinaryExpression(BinaryExpressionImpl node);             // a + b, a > b, a and b, etc.
+    T visitUnaryExpression(UnaryExpressionImpl node);               // -a, !a, is_positive(a)
+    T visitVariableExpression(VariableExpressionImpl node);         // creditScore, user.profile.name
+    T visitLiteralExpression(LiteralExpressionImpl node);           // 42, "hello", true, [1,2,3]
+    T visitFunctionCallExpression(FunctionCallExpressionImpl node); // max(a, b), if_else(...), coalesce(...), rest_get(...), json_get(...)
 
     // Condition visitors - handle boolean logic
-    T visitComparisonCondition(ComparisonCondition node);       // a > b, a between x and y, etc.
-    T visitLogicalCondition(LogicalCondition node);             // a AND b, a OR b, NOT a
-    T visitExpressionCondition(ExpressionCondition node);       // any Expression as a condition
+    T visitComparisonCondition(ComparisonConditionImpl node);       // a > b, a between x and y, etc.
+    T visitLogicalCondition(LogicalConditionImpl node);             // a AND b, a OR b, NOT a
+    T visitExpressionCondition(ExpressionConditionImpl node);       // any Expression as a condition
 
     // Action visitors - handle state changes
-    T visitSetAction(SetAction node);                           // set var to value
-    T visitCalculateAction(CalculateAction node);               // calculate var as expr (pure-math only)
-    T visitRunAction(RunAction node);                           // run var as fn(...) / json_get(...) / rest_*(...)
-    T visitFunctionCallAction(FunctionCallAction node);         // call fn with [args]
-    T visitConditionalAction(ConditionalAction node);           // if cond then ... else ...
-    T visitArithmeticAction(ArithmeticAction node);             // add/subtract/multiply/divide ... to/from/by var
-    T visitListAction(ListAction node);                         // append/prepend/remove ... to/from list
-    T visitCircuitBreakerAction(CircuitBreakerAction node);     // circuit_breaker "MESSAGE"
-    T visitForEachAction(ForEachAction node);                   // forEach item[, index] in items: actions
-    T visitWhileAction(WhileAction node);                       // while cond: actions
-    T visitDoWhileAction(DoWhileAction node);                   // do: actions while cond
+    T visitSetAction(SetActionImpl node);                           // set var to value
+    T visitCalculateAction(CalculateActionImpl node);               // calculate var as expr (pure-math only)
+    T visitRunAction(RunActionImpl node);                           // run var as fn(...) / json_get(...) / rest_*(...)
+    T visitFunctionCallAction(FunctionCallActionImpl node);         // call fn with [args]
+    T visitConditionalAction(ConditionalActionImpl node);           // if cond then ... else ...
+    T visitArithmeticAction(ArithmeticActionImpl node);             // add/subtract/multiply/divide ... to/from/by var
+    T visitListAction(ListActionImpl node);                         // append/prepend/remove ... to/from list
+    T visitCircuitBreakerAction(CircuitBreakerActionImpl node);     // circuit_breaker "MESSAGE"
+    T visitForEachAction(ForEachActionImpl node);                   // forEach item[, index] in items: actions
+    T visitWhileAction(WhileActionImpl node);                       // while cond: actions
+    T visitDoWhileAction(DoWhileActionImpl node);                   // do: actions while cond
 }
 ```
 
@@ -1404,19 +1404,19 @@ Key Design Decisions:
 
 What is the Expression Evaluator?
 
-The `ExpressionEvaluator` is a concrete implementation of the `ASTVisitor` interface that traverses an AST and computes the actual values of expressions. It's the component that transforms the abstract syntax tree into concrete results.
+The `ExpressionEvaluatorImpl` is a concrete implementation of the `ASTVisitor` interface that traverses an AST and computes the actual values of expressions. It's the component that transforms the abstract syntax tree into concrete results.
 
 How the Visitor Pattern Works in Practice:
 
 ```java
-public class ExpressionEvaluator implements ASTVisitor<Object> {
+public class ExpressionEvaluatorImpl implements ASTVisitor<Object> {
 
     private final EvaluationContext context;  // Contains variables and state
     private final RestCallService restCallService;  // For REST API calls
     private final JsonPathService jsonPathService;  // For JSON path queries
 
     @Override
-    public Object visitBinaryExpression(BinaryExpression node) {
+    public Object visitBinaryExpression(BinaryExpressionImpl node) {
         // Step 1: Recursively evaluate left operand
         Object leftValue = node.getLeft().accept(this);
 
@@ -1428,7 +1428,7 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
 
     @Override
-    public Object visitUnaryExpression(UnaryExpression node) {
+    public Object visitUnaryExpression(UnaryExpressionImpl node) {
         // Step 1: Recursively evaluate the operand
         Object operandValue = node.getOperand().accept(this);
 
@@ -1445,19 +1445,19 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
 
     @Override
-    public Object visitVariableExpression(VariableExpression node) {
+    public Object visitVariableExpression(VariableExpressionImpl node) {
         // Look up variable value in the evaluation context
         return context.getVariable(node.getVariableName());
     }
 
     @Override
-    public Object visitLiteralExpression(LiteralExpression node) {
+    public Object visitLiteralExpression(LiteralExpressionImpl node) {
         // Literals evaluate to themselves
         return node.getValue();
     }
 
     @Override
-    public Object visitFunctionCallExpression(FunctionCallExpression node) {
+    public Object visitFunctionCallExpression(FunctionCallExpressionImpl node) {
         // Step 1: Evaluate all arguments
         Object[] args = node.hasArguments() ?
             node.getArguments().stream().map(arg -> arg.accept(this)).toArray() :
@@ -1502,7 +1502,7 @@ Why This Design is Powerful:
 
 What is the Action Executor?
 
-The `ActionExecutor` is another concrete visitor that executes actions - operations that modify the system state rather than just computing values. While expressions are "pure" (they don't change anything), actions have "side effects" (they modify variables, call external services, etc.).
+The `ActionExecutorImpl` is another concrete visitor that executes actions - operations that modify the system state rather than just computing values. While expressions are "pure" (they don't change anything), actions have "side effects" (they modify variables, call external services, etc.).
 
 Key Difference from Expression Evaluator:
 
@@ -1512,13 +1512,13 @@ Key Difference from Expression Evaluator:
 Action Executor Design:
 
 ```java
-public class ActionExecutor implements ASTVisitor<Void> {
+public class ActionExecutorImpl implements ASTVisitor<Void> {
 
     private final EvaluationContext context;           // State to modify
-    private final ExpressionEvaluator expressionEvaluator; // For evaluating expressions within actions
+    private final ExpressionEvaluatorImpl expressionEvaluator; // For evaluating expressions within actions
 
     @Override
-    public Void visitSetAction(SetAction node) {
+    public Void visitSetAction(SetActionImpl node) {
         // Step 1: Evaluate the value expression
         Object value = node.getValue().accept(expressionEvaluator);
 
@@ -1533,7 +1533,7 @@ public class ActionExecutor implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visitCalculateAction(CalculateAction node) {
+    public Void visitCalculateAction(CalculateActionImpl node) {
         // Step 1: Evaluate the calculation expression
         Object result = node.getExpression().accept(expressionEvaluator);
 
@@ -1545,7 +1545,7 @@ public class ActionExecutor implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visitArithmeticAction(ArithmeticAction node) {
+    public Void visitArithmeticAction(ArithmeticActionImpl node) {
         // Equivalent of an "in-place" compound assignment, expressed via dedicated keywords
         // in the DSL (`add X to var`, `subtract X from var`, etc.). Both operands must be
         // numeric; non-numeric operands raise IllegalArgumentException so authoring bugs
@@ -1576,7 +1576,7 @@ public class ActionExecutor implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visitConditionalAction(ConditionalAction node) {
+    public Void visitConditionalAction(ConditionalActionImpl node) {
         // Step 1: Evaluate the condition
         boolean conditionResult = (Boolean) node.getCondition().accept(
             new ConditionEvaluator(context, expressionEvaluator)
@@ -1815,9 +1815,9 @@ public class ASTRulesEvaluationEngine {
 
             // PHASE 4: VISITOR CREATION
             // Create the visitors that will traverse the AST
-            ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator(
+            ExpressionEvaluatorImpl expressionEvaluator = new ExpressionEvaluatorImpl(
                 context, restCallService, jsonPathService);
-            ActionExecutor actionExecutor = new ActionExecutor(
+            ActionExecutorImpl actionExecutor = new ActionExecutorImpl(
                 context, restCallService, jsonPathService);
 
             // PHASE 5: CONDITION EVALUATION
@@ -1890,8 +1890,8 @@ Why it's optimized:
 
 #### Phase 4: Visitor Creation
 ```java
-ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator(context, ...);
-ActionExecutor actionExecutor = new ActionExecutor(context, ...);
+ExpressionEvaluatorImpl expressionEvaluator = new ExpressionEvaluatorImpl(context, ...);
+ActionExecutorImpl actionExecutor = new ActionExecutorImpl(context, ...);
 ```
 
 What happens:
@@ -1903,7 +1903,7 @@ What happens:
 ```java
 boolean conditionResult = evaluateConditions(rulesDSL.getConditions(), expressionEvaluator);
 
-private boolean evaluateConditions(List<Condition> conditions, ExpressionEvaluator evaluator) {
+private boolean evaluateConditions(List<Condition> conditions, ExpressionEvaluatorImpl evaluator) {
     if (conditions.isEmpty()) {
         return true;  // No conditions means rule always applies
     }
@@ -1984,7 +1984,7 @@ public class YamlDslValidator implements ASTVisitor<List<ValidationError>> {
             ASTRulesDSL astModel = astParser.parseRules(yamlContent);
 
             // 4. Validate AST semantics
-            ValidationVisitor astValidator = new ValidationVisitor();
+            ValidationVisitorImpl astValidator = new ValidationVisitorImpl();
             List<ValidationError> astErrors = astModel.accept(astValidator);
             allErrors.addAll(astErrors);
 
@@ -2018,16 +2018,16 @@ public class YamlDslValidator implements ASTVisitor<List<ValidationError>> {
 
 ### 🎯 Validation Visitor
 
-The `ValidationVisitor` performs semantic validation of AST nodes:
+The `ValidationVisitorImpl` performs semantic validation of AST nodes:
 
 ````java
-public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
+public class ValidationVisitorImpl implements ASTVisitor<List<ValidationError>> {
 
     private final Set<String> declaredVariables = new HashSet<>();
     private final Set<String> referencedVariables = new HashSet<>();
 
     @Override
-    public List<ValidationError> visitBinaryExpression(BinaryExpression node) {
+    public List<ValidationError> visitBinaryExpression(BinaryExpressionImpl node) {
         List<ValidationError> errors = new ArrayList<>();
 
         // Validate operands
@@ -2051,7 +2051,7 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
     }
 
     @Override
-    public List<ValidationError> visitUnaryExpression(UnaryExpression node) {
+    public List<ValidationError> visitUnaryExpression(UnaryExpressionImpl node) {
         List<ValidationError> errors = new ArrayList<>();
 
         // Validate operand
@@ -2073,7 +2073,7 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
     }
 
     @Override
-    public List<ValidationError> visitVariableExpression(VariableExpression node) {
+    public List<ValidationError> visitVariableExpression(VariableExpressionImpl node) {
         referencedVariables.add(node.getVariableName());
 
         // Variable existence will be validated later
@@ -2081,7 +2081,7 @@ public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
     }
 
     @Override
-    public List<ValidationError> visitSetAction(SetAction node) {
+    public List<ValidationError> visitSetAction(SetActionImpl node) {
         List<ValidationError> errors = new ArrayList<>();
 
         // Validate value expression
@@ -2318,7 +2318,7 @@ Functions are complex operations that may have side effects, variable parameters
 
 - Purpose: Complex operations, calculations, and external integrations
 - Syntax: Function call notation (`rest_get(url, headers, timeout)`)
-- Implementation: Handled in the ExpressionEvaluator visitor
+- Implementation: Handled in the ExpressionEvaluatorImpl visitor
 - Characteristics:
   - Variable arity (0 to many parameters)
   - May have side effects (REST calls, logging, database access)
@@ -2359,7 +2359,7 @@ public enum TokenType {
 
 // Functions: Handled in expression evaluator
 @Override
-public Object visitFunctionCallExpression(FunctionCallExpression node) {
+public Object visitFunctionCallExpression(FunctionCallExpressionImpl node) {
     return switch (node.getFunctionName()) {
         case "rest_get" -> restGet(node.getArguments());
         case "json_get" -> jsonGet(node.getArguments());
@@ -2399,7 +2399,7 @@ Functions support variable parameters:
 Functions can access injected Spring services:
 ```java
 @Component
-public class ExpressionEvaluator implements ASTVisitor<Object> {
+public class ExpressionEvaluatorImpl implements ASTVisitor<Object> {
 
     @Autowired
     private RestCallService restCallService;
@@ -2436,11 +2436,11 @@ Let's walk through creating a new function called `calculate_credit_risk` that c
 
 #### Step 1: Define the Function Logic
 
-Add the function to the `ExpressionEvaluator` class:
+Add the function to the `ExpressionEvaluatorImpl` class:
 
 ```java
 @Override
-public Object visitFunctionCallExpression(FunctionCallExpression node) {
+public Object visitFunctionCallExpression(FunctionCallExpressionImpl node) {
     String functionName = node.getFunctionName();
     Object[] args = evaluateArguments(node.getArguments());
 
@@ -2780,8 +2780,8 @@ private Condition comparison() {
 
     if (match(TokenType.CREDIT_SCORE_RANGE)) {
         String range = consume(TokenType.STRING, "Expected credit score range").getLexeme();
-        return new ComparisonCondition(null, left, ComparisonOperator.CREDIT_SCORE_RANGE,
-                                     new LiteralExpression(null, range), null);
+        return new ComparisonConditionImpl(null, left, ComparisonOperator.CREDIT_SCORE_RANGE,
+                                     new LiteralExpressionImpl(null, range), null);
     }
 
     // ... handle other operators ...
@@ -2794,7 +2794,7 @@ Add the evaluation logic to the condition evaluator:
 
 ```java
 @Override
-public Object visitComparisonCondition(ComparisonCondition node) {
+public Object visitComparisonCondition(ComparisonConditionImpl node) {
     Object leftValue = node.getLeft().accept(this);
 
     return switch (node.getOperator()) {
@@ -3071,10 +3071,10 @@ static {
 
 #### Step 4: Implement Evaluation Logic
 
-Add evaluation logic to `ExpressionEvaluator.java`:
+Add evaluation logic to `ExpressionEvaluatorImpl.java`:
 
 ```java
-// In ExpressionEvaluator.java
+// In ExpressionEvaluatorImpl.java
 private Object evaluateOperation(String operator, Object left, Object right) {
     return switch (operator.toLowerCase()) {
         // ... existing operators
@@ -3100,7 +3100,7 @@ private Object evaluateCustomOperator(Object left, Object right) {
 
 #### Step 5: Add Validation
 
-Update validation logic in `ValidationVisitor.java`:
+Update validation logic in `ValidationVisitorImpl.java`:
 
 ```java
 private boolean isOperatorCompatible(BinaryOperator operator, ExpressionType left, ExpressionType right) {
@@ -3151,11 +3151,11 @@ void testCustomOperator() {
 
 #### Step 1: Implement Function Logic
 
-Add your function to `ExpressionEvaluator.java`:
+Add your function to `ExpressionEvaluatorImpl.java`:
 
 ```java
 @Override
-public Object visitFunctionCallExpression(FunctionCallExpression node) {
+public Object visitFunctionCallExpression(FunctionCallExpressionImpl node) {
     String functionName = node.getFunctionName();
     Object[] args = node.hasArguments() ?
         node.getArguments().stream().map(arg -> arg.accept(this)).toArray() :
@@ -3196,9 +3196,9 @@ private Object customFunction(Object[] args) {
 If your function can be used in actions:
 
 ```java
-// In ActionExecutor.java
+// In ActionExecutorImpl.java
 @Override
-public Void visitFunctionCallAction(FunctionCallAction node) {
+public Void visitFunctionCallAction(FunctionCallActionImpl node) {
     String functionName = node.getFunctionName();
     Object[] args = evaluateArguments(node.getArguments());
 
@@ -3222,7 +3222,7 @@ public Void visitFunctionCallAction(FunctionCallAction node) {
 Update validation to recognize your function:
 
 ```java
-// In ValidationVisitor.java
+// In ValidationVisitorImpl.java
 private static final Set<String> KNOWN_FUNCTIONS = Set.of(
     "abs", "round", "ceil", "floor", "max", "min",
     "length", "substring", "upper", "lower",
@@ -3230,7 +3230,7 @@ private static final Set<String> KNOWN_FUNCTIONS = Set.of(
 );
 
 @Override
-public List<ValidationError> visitFunctionCallExpression(FunctionCallExpression node) {
+public List<ValidationError> visitFunctionCallExpression(FunctionCallExpressionImpl node) {
     List<ValidationError> errors = new ArrayList<>();
 
     // Validate function exists
@@ -3323,7 +3323,7 @@ public interface ASTVisitor<T> {
 #### Step 3: Implement Visitor Methods
 
 ```java
-// In ExpressionEvaluator.java
+// In ExpressionEvaluatorImpl.java
 @Override
 public Object visitCustomExpression(CustomExpression node) {
     // Evaluate inner expression and parameters

@@ -37,11 +37,11 @@ import static org.mockito.Mockito.when;
  */
 class DateTimeValidatorTest {
 
-    private DateTimeValidator validator;
+    private DateTimeValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new DateTimeValidator();
+        validator = new DateTimeValidatorImpl();
         // Initialize with default values
         validator.initialize(new org.fireflyframework.annotations.ValidDateTime() {
             @Override
@@ -95,7 +95,7 @@ class DateTimeValidatorTest {
     @Test
     void shouldValidateDifferentDateTimeFormats() {
         // Create validator with different pattern
-        DateTimeValidator customValidator = new DateTimeValidator();
+        DateTimeValidatorImpl customValidator = new DateTimeValidatorImpl();
         customValidator.initialize(new org.fireflyframework.annotations.ValidDateTime() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -133,7 +133,7 @@ class DateTimeValidatorTest {
     @Test
     void shouldValidateMinMaxConstraints() {
         // Create validator with min=2023-01-01 00:00:00, max=2023-12-31 23:59:59
-        DateTimeValidator minMaxValidator = new DateTimeValidator();
+        DateTimeValidatorImpl minMaxValidator = new DateTimeValidatorImpl();
         minMaxValidator.initialize(new org.fireflyframework.annotations.ValidDateTime() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -191,7 +191,7 @@ class DateTimeValidatorTest {
         assertThat(validator.isValid(futureDateTimeStr, context)).isTrue();
         
         // Create validator that doesn't allow past date-times
-        DateTimeValidator noPastValidator = new DateTimeValidator();
+        DateTimeValidatorImpl noPastValidator = new DateTimeValidatorImpl();
         noPastValidator.initialize(new org.fireflyframework.annotations.ValidDateTime() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -222,7 +222,7 @@ class DateTimeValidatorTest {
         assertThat(noPastValidator.isValid(futureDateTimeStr, context)).isTrue();
         
         // Create validator that doesn't allow future date-times
-        DateTimeValidator noFutureValidator = new DateTimeValidator();
+        DateTimeValidatorImpl noFutureValidator = new DateTimeValidatorImpl();
         noFutureValidator.initialize(new org.fireflyframework.annotations.ValidDateTime() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }

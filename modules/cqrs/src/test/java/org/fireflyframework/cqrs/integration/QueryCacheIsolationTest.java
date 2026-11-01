@@ -5,7 +5,7 @@ import org.fireflyframework.cqrs.annotations.QueryHandlerComponent;
 import org.fireflyframework.cqrs.cache.QueryCacheAdapter;
 import org.fireflyframework.cqrs.config.CqrsAutoConfiguration;
 import org.fireflyframework.cqrs.context.ExecutionContext;
-import org.fireflyframework.cqrs.query.DefaultQueryBus;
+import org.fireflyframework.cqrs.query.DefaultQueryBusImpl;
 import org.fireflyframework.cqrs.query.Query;
 import org.fireflyframework.cqrs.query.QueryHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ class QueryCacheIsolationTest {
     @Configuration
     static class TestConfig { }
 
-    @Autowired DefaultQueryBus bus;
+    @Autowired DefaultQueryBusImpl bus;
     @Autowired QueryCacheAdapter cache;
     private UnkeyedHandler unkeyed;
     private KeyedHandler keyed;

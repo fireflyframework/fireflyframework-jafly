@@ -403,7 +403,7 @@ Registered in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfig
 | `WebFluxAutoConfiguration` | Jackson JSON codecs (JSR-310, ISO-8601) for WebFlux |
 | `WebClientAutoConfiguration` | Resilient `WebClient`, `WebClient.Builder`, and `WebClientTemplate` beans |
 | `WebClientBuilderCustomizer` | Applies timeouts, pooling, SSL, proxy, HTTP/2, codec config |
-| `WebFilterAutoConfiguration` | Registers the `TransactionFilter` |
+| `WebFilterAutoConfiguration` | Registers the `TransactionFilterImpl` |
 | `WebClientResilienceAutoConfiguration` | Resilience4j registries (circuit breaker, retry, time limiter, bulkhead) |
 | `ActuatorDefaultPropertiesAutoConfiguration` / `ActuatorAutoConfiguration` | Actuator endpoint, metrics, and health defaults |
 | `DefaultHealthAutoConfiguration` | Default health indicators |

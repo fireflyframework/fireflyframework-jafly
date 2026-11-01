@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.unit.saga;
 
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler.CompensationErrorResult;
-import org.fireflyframework.orchestration.saga.compensation.RetryWithBackoffErrorHandler;
+import org.fireflyframework.orchestration.saga.compensation.RetryWithBackoffErrorHandlerImpl;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ class CompensationErrorHandlerTest {
 
     @Test
     void retryHandler_retriesWithinLimit() {
-        var handler = new RetryWithBackoffErrorHandler(3);
+        var handler = new RetryWithBackoffErrorHandlerImpl(3);
         assertThat(handler.handle("saga", "step1", new RuntimeException(), 0))
                 .isEqualTo(CompensationErrorResult.RETRY);
         assertThat(handler.handle("saga", "step1", new RuntimeException(), 1))
@@ -40,14 +40,14 @@ class CompensationErrorHandlerTest {
 
     @Test
     void retryHandler_failsAfterMaxRetries() {
-        var handler = new RetryWithBackoffErrorHandler(2);
+        var handler = new RetryWithBackoffErrorHandlerImpl(2);
         assertThat(handler.handle("saga", "step1", new RuntimeException(), 2))
                 .isEqualTo(CompensationErrorResult.FAIL_SAGA);
     }
 
     @Test
     void retryHandler_filtersRetryableExceptions() {
-        var handler = new RetryWithBackoffErrorHandler(3, Set.of(IOException.class));
+        var handler = new RetryWithBackoffErrorHandlerImpl(3, Set.of(IOException.class));
 
         // IOException is retryable
         assertThat(handler.handle("saga", "s1", new IOException(), 0))
@@ -60,7 +60,7 @@ class CompensationErrorHandlerTest {
 
     @Test
     void retryHandler_emptyRetryableTypesRetriesAll() {
-        var handler = new RetryWithBackoffErrorHandler(3, Set.of());
+        var handler = new RetryWithBackoffErrorHandlerImpl(3, Set.of());
         assertThat(handler.handle("saga", "s1", new RuntimeException(), 0))
                 .isEqualTo(CompensationErrorResult.RETRY);
         assertThat(handler.handle("saga", "s1", new IOException(), 0))

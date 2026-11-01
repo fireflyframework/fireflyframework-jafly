@@ -104,8 +104,8 @@ graph TD
         METRICS[AgenticMetrics]
 
         subgraph Transports
-            REST[RestAgenticTransport<br/>HTTP/SSE]
-            WS[WebSocketAgenticTransport<br/>full-duplex]
+            REST[RestAgenticTransportImpl<br/>HTTP/SSE]
+            WS[WebSocketAgenticTransportImpl<br/>full-duplex]
             QUEUE[QueueAgenticPublisher<br/>Kafka/RabbitMQ/Redis]
         end
     end

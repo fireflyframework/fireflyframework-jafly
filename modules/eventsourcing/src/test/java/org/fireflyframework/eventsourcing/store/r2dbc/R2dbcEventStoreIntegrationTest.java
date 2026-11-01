@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class R2dbcEventStoreIntegrationTest {
 
-    private R2dbcEventStore eventStore;
+    private R2dbcEventStoreImpl eventStore;
     private DatabaseClient databaseClient;
     private R2dbcEntityTemplate entityTemplate;
     private ConnectionFactory connectionFactory;
@@ -80,7 +80,7 @@ class R2dbcEventStoreIntegrationTest {
         objectMapper.registerModule(new JavaTimeModule());
         
         EventSourcingProperties properties = new EventSourcingProperties();
-        eventStore = new R2dbcEventStore(
+        eventStore = new R2dbcEventStoreImpl(
             databaseClient, 
             entityTemplate, 
             objectMapper, 

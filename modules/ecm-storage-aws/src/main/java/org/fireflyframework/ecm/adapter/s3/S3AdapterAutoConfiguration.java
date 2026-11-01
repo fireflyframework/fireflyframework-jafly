@@ -46,7 +46,7 @@ import java.net.URI;
 // Register the presigner beans and the DocumentContentPort adapter. Both are @ConditionalOnProperty-gated
 // on the same discriminator, but they live in this package and would otherwise never be component-scanned
 // by a consuming application, so import them explicitly from the auto-configuration.
-@Import({S3Beans.class, S3DocumentContentAdapter.class})
+@Import({S3Beans.class, S3DocumentContentAdapterImpl.class})
 public class S3AdapterAutoConfiguration {
 
     @Bean

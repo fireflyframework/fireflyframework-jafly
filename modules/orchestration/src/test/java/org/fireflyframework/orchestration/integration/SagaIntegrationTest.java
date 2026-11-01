@@ -19,10 +19,10 @@ package org.fireflyframework.orchestration.integration;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.builder.OrchestrationBuilder;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStoreImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.compensation.SagaCompensator;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
@@ -50,11 +50,11 @@ class SagaIntegrationTest {
     void setUp() {
         events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var compensator = new SagaCompensator(events, CompensationPolicy.STRICT_SEQUENTIAL, stepInvoker);
-        var dlqStore = new InMemoryDeadLetterStore();
+        var dlqStore = new InMemoryDeadLetterStoreImpl();
         dlqService = new DeadLetterService(dlqStore, events);
         engine = new SagaEngine(null, events, orchestrator, persistence, dlqService, compensator, noOpPublisher);
     }

@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.unit.tcc;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.event.OrchestrationEvent;
 import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
 import org.fireflyframework.orchestration.core.exception.TccPersistenceException;
@@ -26,7 +26,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.annotation.OnTccComplete;
 import org.fireflyframework.orchestration.tcc.annotation.OnTccError;
@@ -287,14 +287,14 @@ class TccRequiredPersistenceTest {
         assertThatIllegalArgumentException().isThrownBy(() -> new TccEngine(null, events, required,
                 null, null, publisher, null, TccPersistenceMode.REQUIRED));
         assertThatIllegalArgumentException().isThrownBy(() -> new TccEngine(null, events, required,
-                new InMemoryPersistenceProvider(), null, publisher, null, TccPersistenceMode.REQUIRED));
+                new InMemoryPersistenceProviderImpl(), null, publisher, null, TccPersistenceMode.REQUIRED));
     }
 
     @Test
     void existingConstructorsRemainBestEffortAndPermitAbsentCheckpointProvider() {
         var counts = new Counts();
         var provider = new FailingProvider(1, false);
-        var oldOrchestrator = new TccExecutionOrchestrator(invoker, events, new NoOpEventPublisher());
+        var oldOrchestrator = new TccExecutionOrchestrator(invoker, events, new NoOpEventPublisherImpl());
         var oldEngine = new TccEngine(null, events, oldOrchestrator, provider, null, publisher);
         StepVerifier.create(oldEngine.execute(definition(counts, new Callbacks(), false, false), TccInputs.empty()))
                 .assertNext(result -> assertThat(result.isConfirmed()).isTrue()).verifyComplete();
@@ -347,7 +347,7 @@ class TccRequiredPersistenceTest {
         @OnTccError(suppressError = true) public void error() { error.incrementAndGet(); }
     }
 
-    static class FailingProvider extends InMemoryPersistenceProvider {
+    static class FailingProvider extends InMemoryPersistenceProviderImpl {
         final List<ExecutionState> attempted = new ArrayList<>();
         final List<ExecutionState> accepted = new ArrayList<>();
         final IllegalStateException cause = new IllegalStateException("private-provider-detail");

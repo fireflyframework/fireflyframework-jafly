@@ -45,9 +45,9 @@ class CerbosPolicyDecisionAdapterIntegrationTest {
             .withCommand("server", "--config=/conf/.cerbos.yaml")
             .waitingFor(Wait.forHttp("/_cerbos/health").forPort(3592).forStatusCode(200));
 
-    private CerbosPolicyDecisionAdapter adapter() {
+    private CerbosPolicyDecisionAdapterImpl adapter() {
         String baseUrl = "http://" + CERBOS.getHost() + ":" + CERBOS.getMappedPort(3592);
-        return new CerbosPolicyDecisionAdapter(WebClient.create(baseUrl));
+        return new CerbosPolicyDecisionAdapterImpl(WebClient.create(baseUrl));
     }
 
     private SecurityPrincipal principal(Set<String> roles) {

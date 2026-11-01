@@ -13,7 +13,7 @@ import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cache.config.PostgresCacheAutoConfiguration;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -43,13 +43,13 @@ class HttpFeatureCacheServiceNamespaceTest {
             .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class,PostgresCacheAutoConfiguration.class))
             .withUserConfiguration(TechnicalStorage.class);
 
-    FireflyCacheManager feature(CacheManagerFactory factory) {return new IdempotencyAutoConfiguration().httpIdempotencyCacheManager(factory,new IdempotencyProperties());}
+    FireflyCacheManagerImpl feature(CacheManagerFactory factory) {return new IdempotencyAutoConfiguration().httpIdempotencyCacheManager(factory,new IdempotencyProperties());}
     String namespace(String service,boolean useFeature) {
         var captured=new AtomicReference<String>();
         context.withPropertyValues("spring.application.name="+service).run(application -> {
             assertThat(application).hasNotFailed();
             var manager=useFeature?feature(application.getBean(CacheManagerFactory.class))
-                    :application.getBean("fireflyCacheManager",FireflyCacheManager.class);
+                    :application.getBean("fireflyCacheManager",FireflyCacheManagerImpl.class);
             manager.clear().block(java.time.Duration.ofSeconds(2));
             captured.set(application.getBean(AtomicReference.class).get().toString());
         });return captured.get();

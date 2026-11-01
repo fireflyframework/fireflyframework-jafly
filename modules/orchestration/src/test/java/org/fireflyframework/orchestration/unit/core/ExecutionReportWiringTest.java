@@ -18,13 +18,13 @@ package org.fireflyframework.orchestration.unit.core;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.Input;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.report.ExecutionReport;
 import org.fireflyframework.orchestration.core.step.StepHandler;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
@@ -62,13 +62,13 @@ class ExecutionReportWiringTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private NoOpEventPublisher noOpPublisher;
+    private NoOpEventPublisherImpl noOpPublisher;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new NoOpEventPublisher();
+        noOpPublisher = new NoOpEventPublisherImpl();
     }
 
     // ── Saga ────────────────────────────────────────────────────────────────
@@ -202,7 +202,7 @@ class ExecutionReportWiringTest {
     void workflowEngine_completed_attachesReport() throws Exception {
         var executor = new WorkflowExecutor(stepInvoker, events, noOpPublisher, null, null);
         var registry = new WorkflowRegistry();
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var engine = new WorkflowEngine(registry, executor, stepInvoker, persistence, events, noOpPublisher);
 
         var testSteps = new WfTestSteps();
@@ -233,7 +233,7 @@ class ExecutionReportWiringTest {
     void workflowEngine_failed_attachesReport() throws Exception {
         var executor = new WorkflowExecutor(stepInvoker, events, noOpPublisher, null, null);
         var registry = new WorkflowRegistry();
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var engine = new WorkflowEngine(registry, executor, stepInvoker, persistence, events, noOpPublisher);
 
         var testSteps = new WfTestSteps();

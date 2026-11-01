@@ -323,7 +323,7 @@ public class CommandBuilder<C extends Command<R>, R> {
             Method builderMethod = commandType.getMethod("builder");
             if (Modifier.isStatic(builderMethod.getModifiers())) {
                 log.debug("Using LombokBuilderStrategy for command type {}", commandType.getSimpleName());
-                return new LombokBuilderStrategy();
+                return new LombokBuilderStrategyImpl();
             }
         } catch (NoSuchMethodException e) {
             // Continue to next strategy
@@ -333,7 +333,7 @@ public class CommandBuilder<C extends Command<R>, R> {
         Constructor<?>[] constructors = commandType.getConstructors();
         if (constructors.length > 0) {
             log.debug("Using ConstructorStrategy for command type {}", commandType.getSimpleName());
-            return new ConstructorStrategy();
+            return new ConstructorStrategyImpl();
         }
 
         // Strategy 3: Try factory method pattern
@@ -344,7 +344,7 @@ public class CommandBuilder<C extends Command<R>, R> {
                     commandType.isAssignableFrom(method.getReturnType()) &&
                     (method.getName().startsWith("create") || method.getName().startsWith("of"))) {
                     log.debug("Using FactoryMethodStrategy for command type {}", commandType.getSimpleName());
-                    return new FactoryMethodStrategy();
+                    return new FactoryMethodStrategyImpl();
                 }
             }
         } catch (Exception e) {
@@ -353,7 +353,7 @@ public class CommandBuilder<C extends Command<R>, R> {
 
         // Strategy 4: Try setter-based creation (fallback)
         log.debug("Using SetterStrategy for command type {}", commandType.getSimpleName());
-        return new SetterStrategy();
+        return new SetterStrategyImpl();
     }
 
     /**
@@ -433,7 +433,7 @@ public class CommandBuilder<C extends Command<R>, R> {
     /**
      * Strategy for creating commands using Lombok @Builder pattern.
      */
-    private class LombokBuilderStrategy implements CommandCreationStrategy {
+    private class LombokBuilderStrategyImpl implements CommandCreationStrategy {
         @Override
         public Object createCommand(Class<?> commandType, Map<String, Object> properties,
                                   Map<String, Object> metadata, String commandId,
@@ -524,7 +524,7 @@ public class CommandBuilder<C extends Command<R>, R> {
     /**
      * Strategy for creating commands using constructor-based instantiation.
      */
-    private class ConstructorStrategy implements CommandCreationStrategy {
+    private class ConstructorStrategyImpl implements CommandCreationStrategy {
         @Override
         public Object createCommand(Class<?> commandType, Map<String, Object> properties,
                                   Map<String, Object> metadata, String commandId,
@@ -618,7 +618,7 @@ public class CommandBuilder<C extends Command<R>, R> {
     /**
      * Strategy for creating commands using factory methods.
      */
-    private class FactoryMethodStrategy implements CommandCreationStrategy {
+    private class FactoryMethodStrategyImpl implements CommandCreationStrategy {
         @Override
         public Object createCommand(Class<?> commandType, Map<String, Object> properties,
                                   Map<String, Object> metadata, String commandId,
@@ -681,7 +681,7 @@ public class CommandBuilder<C extends Command<R>, R> {
     /**
      * Strategy for creating commands using setter methods (fallback).
      */
-    private class SetterStrategy implements CommandCreationStrategy {
+    private class SetterStrategyImpl implements CommandCreationStrategy {
         @Override
         public Object createCommand(Class<?> commandType, Map<String, Object> properties,
                                   Map<String, Object> metadata, String commandId,

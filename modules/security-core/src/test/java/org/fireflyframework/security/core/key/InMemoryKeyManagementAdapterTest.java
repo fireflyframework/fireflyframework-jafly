@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InMemoryKeyManagementAdapterTest {
 
-    private final InMemoryKeyManagementAdapter keys = new InMemoryKeyManagementAdapter();
+    private final InMemoryKeyManagementAdapterImpl keys = new InMemoryKeyManagementAdapterImpl();
 
     @Test
     void activeKeyCanSignAndHasKid() {

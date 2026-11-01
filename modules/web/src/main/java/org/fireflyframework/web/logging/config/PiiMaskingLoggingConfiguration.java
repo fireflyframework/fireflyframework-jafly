@@ -21,7 +21,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.fireflyframework.web.logging.appender.PiiMaskingAppender;
+import org.fireflyframework.web.logging.appender.PiiMaskingAppenderImpl;
 import org.fireflyframework.web.logging.service.PiiMaskingService;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -87,7 +87,7 @@ public class PiiMaskingLoggingConfiguration implements ApplicationListener<Appli
         while (appenderIterator.hasNext()) {
             Appender<ILoggingEvent> appender = appenderIterator.next();
             // Skip if it's already a PiiMaskingAppender to avoid double-wrapping
-            if (!(appender instanceof PiiMaskingAppender)) {
+            if (!(appender instanceof PiiMaskingAppenderImpl)) {
                 existingAppenders.add(appender);
             }
         }
@@ -95,7 +95,7 @@ public class PiiMaskingLoggingConfiguration implements ApplicationListener<Appli
         // If we have existing appenders, wrap them with PII masking
         if (!existingAppenders.isEmpty()) {
             // Create a new PiiMaskingAppender that will wrap all existing appenders
-            PiiMaskingAppender piiMaskingAppender = new PiiMaskingAppender();
+            PiiMaskingAppenderImpl piiMaskingAppender = new PiiMaskingAppenderImpl();
             piiMaskingAppender.setName("PII_MASKING_WRAPPER");
             piiMaskingAppender.setContext(loggerContext);
             piiMaskingAppender.setPiiMaskingService(piiMaskingService);

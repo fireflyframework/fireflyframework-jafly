@@ -41,7 +41,7 @@ FaultInjectionConfig config = FaultInjectionConfig.builder()
     .build();
 
 // Create chaos interceptor
-ChaosEngineeringInterceptor chaosInterceptor = new ChaosEngineeringInterceptor(config);
+ChaosEngineeringInterceptorImpl chaosInterceptor = new ChaosEngineeringInterceptorImpl(config);
 
 // Add to client
 RestClient client = ServiceClient.rest("user-service")
@@ -96,7 +96,7 @@ HttpCacheConfig cacheConfig = HttpCacheConfig.builder()
 HttpCacheManager cacheManager = new HttpCacheManager(cacheConfig);
 
 // Use with interceptor
-HttpCacheInterceptor cacheInterceptor = new HttpCacheInterceptor(cacheManager, cacheConfig);
+HttpCacheInterceptorImpl cacheInterceptor = new HttpCacheInterceptorImpl(cacheManager, cacheConfig);
 
 RestClient client = ServiceClient.rest("user-service")
     .baseUrl("http://localhost:8080")

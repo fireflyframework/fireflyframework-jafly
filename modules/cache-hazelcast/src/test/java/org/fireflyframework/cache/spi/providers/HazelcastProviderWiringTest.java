@@ -53,6 +53,6 @@ class HazelcastProviderWiringTest {
                 .findFirst()
                 .orElseThrow();
 
-        assertThat(hazelcast).isInstanceOf(HazelcastProvider.class);
+        assertThat(hazelcast).isInstanceOf(HazelcastProviderImpl.class);
     }
 }

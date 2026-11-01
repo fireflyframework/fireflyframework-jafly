@@ -4,7 +4,7 @@
 
 Adapt a host-managed JCache implementation to the common cache contract.
 
-Provide the JCache CacheManager expected by JCacheProvider and select JCACHE through the core settings. The application owns the JSR-107 implementation and cache configuration.
+Provide the JCache CacheManager expected by JCacheProviderImpl and select JCACHE through the core settings. The application owns the JSR-107 implementation and cache configuration.
 
 | Maven artifact | Packaging | Source project |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final FireflyCacheManager cache; // from fireflyframework-cache
+    private final FireflyCacheManagerImpl cache; // from fireflyframework-cache
 
 
 
@@ -88,7 +88,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`JCacheProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/spi/providers/JCacheProvider.java) | Defines `create` operations. |
+| [`JCacheProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/spi/providers/JCacheProviderImpl.java) | Defines `create` operations. |
 | [`JCacheCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-jcache/src/main/java/org/fireflyframework/cache/factory/JCacheCacheHelper.java) | Reflection-based helper to create a JCache-backed CacheAdapter (JSR-107) without a compile-time dependency. |
 
 ## Related components
@@ -132,7 +132,7 @@ void serviceLoaderDiscoversJCacheProvider() {
     assertThat(jcache)
             .as("ServiceLoader must discover a CacheProviderFactory with getType() == JCACHE")
             .isNotNull();
-    assertThat(jcache).isInstanceOf(JCacheProvider.class);
+    assertThat(jcache).isInstanceOf(JCacheProviderImpl.class);
     assertThat(jcache.getType()).isEqualTo(CacheType.JCACHE);
     assertThat(jcache.priority()).isEqualTo(30);
 }
@@ -159,9 +159,9 @@ All other cache tuning (default TTL, per-cache settings, statistics, health) is 
 ### How It Works
 
 1. At startup, the Firefly cache core scans the classpath via `ServiceLoader` for `CacheProviderFactory` implementations registered under `META-INF/services/`.
-2. This module registers `JCacheProvider`, which advertises `CacheType.JCACHE` and priority `30`.
+2. This module registers `JCacheProviderImpl`, which advertises `CacheType.JCACHE` and priority `30`.
 3. When `firefly.cache.default-cache-type=JCACHE`, the core invokes the provider with a context carrying your `CacheManager` bean.
-4. `JCacheProvider` wraps the manager in `JCacheCacheHelper` (handling `javax`/`jakarta` reflectively) and returns a reactive `CacheAdapter` with a portable TTL overlay layered on top of the JCache store.
+4. `JCacheProviderImpl` wraps the manager in `JCacheCacheHelper` (handling `javax`/`jakarta` reflectively) and returns a reactive `CacheAdapter` with a portable TTL overlay layered on top of the JCache store.
 
 ## Continue the application
 

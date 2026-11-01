@@ -53,7 +53,7 @@ The core is normally wired by `security-autoconfigure`, but every component is a
 ```java
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapper;
+import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapperImpl;
 import org.fireflyframework.security.core.authz.SecureAuthorizationEvaluator;
 import org.fireflyframework.security.core.authz.SecureRequirement;
 import org.fireflyframework.security.core.context.PrincipalFactory;
@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Map;
 
 // 1. Project validated claims into a generic principal, normalizing authorities/scopes.
-var authorityMapper = new ConfigurableAuthorityMapper(null); // null -> sensible defaults
+var authorityMapper = new ConfigurableAuthorityMapperImpl(null); // null -> sensible defaults
 var principalFactory = new PrincipalFactory(authorityMapper);
 
 Map<String, Object> claims = Map.of(
@@ -95,10 +95,10 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | Type | Contract and responsibility |
 | --- | --- |
 | [`SecureAuthorizationEvaluator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authz/SecureAuthorizationEvaluator.java) | Evaluates a `SecureRequirement` against a `SecurityPrincipal`. |
-| [`EmbeddedPolicyDecisionAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/EmbeddedPolicyDecisionAdapter.java) | Zero-dependency, in-process default `PolicyDecisionPort`. |
-| [`AuthorityMappingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authority/AuthorityMappingProperties.java) | Configuration for `ConfigurableAuthorityMapper`: which claim paths carry roles/groups and scopes, and an optional authority prefix. |
-| [`PolicyRule`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/PolicyRule.java) | A single in-process ABAC rule for the `EmbeddedPolicyDecisionAdapter`. |
-| [`LoggingAuditEventAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/audit/LoggingAuditEventAdapter.java) | Default `AuditEventPort`: emits structured audit lines to a dedicated logger. |
+| [`EmbeddedPolicyDecisionAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/EmbeddedPolicyDecisionAdapterImpl.java) | Zero-dependency, in-process default `PolicyDecisionPort`. |
+| [`AuthorityMappingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authority/AuthorityMappingProperties.java) | Configuration for `ConfigurableAuthorityMapperImpl`: which claim paths carry roles/groups and scopes, and an optional authority prefix. |
+| [`PolicyRule`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/PolicyRule.java) | A single in-process ABAC rule for the `EmbeddedPolicyDecisionAdapterImpl`. |
+| [`LoggingAuditEventAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/audit/LoggingAuditEventAdapterImpl.java) | Default `AuditEventPort`: emits structured audit lines to a dedicated logger. |
 
 ## Related components
 
@@ -171,13 +171,13 @@ Each type below is a default implementation of a `security-spi` port, or a self-
 
 | Type | Port implemented | Responsibility |
 | --- | --- | --- |
-| `ConfigurableAuthorityMapper` | `AuthorityMappingPort` | Reads roles/groups and scopes from configured dot-path claims and normalizes them into authorities. Absorbs the old `JwtClaimsRoleExtractor`. |
+| `ConfigurableAuthorityMapperImpl` | `AuthorityMappingPort` | Reads roles/groups and scopes from configured dot-path claims and normalizes them into authorities. Absorbs the old `JwtClaimsRoleExtractor`. |
 | `SecureAuthorizationEvaluator` | _(backs `@Secure`)_ | Evaluates a `SecureRequirement` against a `SecurityPrincipal` with fixed AND-across-dimensions semantics, real SpEL, and default-deny. |
-| `EmbeddedPolicyDecisionAdapter` | `PolicyDecisionPort` | Zero-dependency in-process PDP combining `PolicyRule`s with deny-overrides; fail-closed. The default until OPA/Cerbos/OpenFGA adapters are bound. |
-| `CaffeineIntrospectionCache` | `TokenIntrospectionCachePort` | In-memory cache of opaque-introspection results with per-entry TTL bounded by token expiry. |
-| `InMemoryKeyManagementAdapter` | `KeyManagementPort` | Dev-default RS256 key source: generates a key pair, serves a JWKS, rotates with an overlap window. Not for production. |
+| `EmbeddedPolicyDecisionAdapterImpl` | `PolicyDecisionPort` | Zero-dependency in-process PDP combining `PolicyRule`s with deny-overrides; fail-closed. The default until OPA/Cerbos/OpenFGA adapters are bound. |
+| `CaffeineIntrospectionCacheImpl` | `TokenIntrospectionCachePort` | In-memory cache of opaque-introspection results with per-entry TTL bounded by token expiry. |
+| `InMemoryKeyManagementAdapterImpl` | `KeyManagementPort` | Dev-default RS256 key source: generates a key pair, serves a JWKS, rotates with an overlap window. Not for production. |
 | `PrincipalFactory` | _(projection helper)_ | Projects a validated claims map into a `SecurityPrincipal` via the `AuthorityMappingPort`; stack-neutral (JWT and opaque paths). |
-| `LoggingAuditEventAdapter` | `AuditEventPort` | Emits structured audit lines to a dedicated logger; never throws, never blocks the request path. |
+| `LoggingAuditEventAdapterImpl` | `AuditEventPort` | Emits structured audit lines to a dedicated logger; never throws, never blocks the request path. |
 | `BearerTokenExtractor` | _(parsing helper)_ | Parses the `Authorization` header into a classified `BearerToken`, matching the `Bearer` scheme case-insensitively (RFC 6750). |
 
 Supporting types: `SecureRequirement` (a framework-neutral view of `@Secure`, built from the annotation or programmatically), `AuthorityMappingProperties` (role/scope claim paths + authority prefix; defaults cover Keycloak `realm_access.roles`, Cognito `cognito:groups`, and generic `roles`/`groups`/`scope`/`scp`), `ClaimPaths` (dot-path traversal + string-set coercion), and `PolicyRule` (a `@FunctionalInterface` ABAC rule returning PERMIT / DENY / INDETERMINATE).
@@ -190,9 +190,9 @@ Scalar `scope` and configured `scp` strings use ASCII spaces as scope separators
 The engine is deliberately fail-closed at every decision point:
 
 - `SecureAuthorizationEvaluator`. a `null` (unauthenticated) principal is denied. Declared dimensions (roles, scopes, permissions, expression) are AND-ed; within a dimension, `requireAll*` selects ALL vs ANY (ANY by default). An empty requirement permits any authenticated principal ("require authentication"). A SpEL expression that evaluates false, or throws / is malformed, denies.
-- `EmbeddedPolicyDecisionAdapter`. The original constructor preserves legacy deny-overrides semantics and permits with no rules to defer to a separate RBAC gate. The `(List<PolicyRule>, boolean strict)` overload with `true` denies missing rules, failed/empty publishers, malformed decisions without an effect and explicit denials, requires an explicit permit, and retains permit obligations in rule order. Normal indeterminate abstention may coexist with an explicit permit. An enforcing caller must fulfill returned obligations or deny; a provider bean is not evidence of an institution policy. The resource-server binding selects this overload with `firefly.security.resource-server.strict-policy: true`.
-- `InMemoryKeyManagementAdapter`. flagged not-for-production; the autoconfigure layer fails closed at startup if no real key source resolves under prod profiles.
-- `CaffeineIntrospectionCache`. TTL is bounded by the token's own expiry, so a revoked-by-expiry token cannot outlive its `exp`.
+- `EmbeddedPolicyDecisionAdapterImpl`. The original constructor preserves legacy deny-overrides semantics and permits with no rules to defer to a separate RBAC gate. The `(List<PolicyRule>, boolean strict)` overload with `true` denies missing rules, failed/empty publishers, malformed decisions without an effect and explicit denials, requires an explicit permit, and retains permit obligations in rule order. Normal indeterminate abstention may coexist with an explicit permit. An enforcing caller must fulfill returned obligations or deny; a provider bean is not evidence of an institution policy. The resource-server binding selects this overload with `firefly.security.resource-server.strict-policy: true`.
+- `InMemoryKeyManagementAdapterImpl`. flagged not-for-production; the autoconfigure layer fails closed at startup if no real key source resolves under prod profiles.
+- `CaffeineIntrospectionCacheImpl`. TTL is bounded by the token's own expiry, so a revoked-by-expiry token cannot outlive its `exp`.
 
 ### Dependencies
 
@@ -202,7 +202,7 @@ Runtime dependencies are intentionally minimal and SDK-free:
 - `fireflyframework-security-spi`. the driven-port interfaces implemented here
 - `io.projectreactor:reactor-core`. `Mono`/`Flux` for the reactive ports
 - `org.springframework:spring-expression`. SpEL for `@Secure.expression` (the expression engine only. not Spring Security or Spring web)
-- `com.github.ben-manes.caffeine:caffeine`. backing store for `CaffeineIntrospectionCache`
+- `com.github.ben-manes.caffeine:caffeine`. backing store for `CaffeineIntrospectionCacheImpl`
 - `org.slf4j:slf4j-api`. logging facade (audit + policy/expression denials)
 - `org.projectlombok:lombok`. provided-scope, compile-time only
 

@@ -133,7 +133,7 @@ class PostgresConsumerRecoveryTest {
     }
     @Test void legacyConstructorFailsBeforeAnyFactoryAccess(){
         try(var f=new PostgresConsumerRuntimeTest.Fixture()){
-            var old=new PostgresEventConsumer(f.provider,f.processor,mock(org.fireflyframework.eda.serialization.MessageSerializer.class),f.properties,new com.fasterxml.jackson.databind.ObjectMapper());
+            var old=new PostgresEventConsumerImpl(f.provider,f.processor,mock(org.fireflyframework.eda.serialization.MessageSerializer.class),f.properties,new com.fasterxml.jackson.databind.ObjectMapper());
             StepVerifier.create(old.start()).expectErrorMessage("PostgreSQL delivery repository and registered decoder are required").verify();verifyNoInteractions(f.provider);verifyNoInteractions(f.factory);
         }
     }

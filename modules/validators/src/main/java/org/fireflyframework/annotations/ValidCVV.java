@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.CVVValidator;
+import org.fireflyframework.validators.CVVValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * By default, validates that the CVV is 3 or 4 digits.
  */
 @Documented
-@Constraint(validatedBy = CVVValidator.class)
+@Constraint(validatedBy = CVVValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidCVV {

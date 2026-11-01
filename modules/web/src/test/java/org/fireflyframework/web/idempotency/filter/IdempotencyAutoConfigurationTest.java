@@ -47,9 +47,9 @@ class IdempotencyAutoConfigurationTest {
         runner.withPropertyValues("spring.application.name=synthetic-auto-service")
                 .withBean(IdempotencyScopeResolver.class, () -> exchange -> Mono.just("synthetic-trusted-caller-and-tenant"))
                 .run(context -> {
-                    assertThat(context).hasSingleBean(IdempotencyWebFilter.class);
+                    assertThat(context).hasSingleBean(IdempotencyWebFilterImpl.class);
                     assertThat(context.getBean(IdempotencyProperties.class).getNamespace()).isEqualTo("synthetic-auto-service");
-                    var filter = context.getBean(IdempotencyWebFilter.class);
+                    var filter = context.getBean(IdempotencyWebFilterImpl.class);
                     AtomicInteger effects = new AtomicInteger();
                     org.springframework.web.server.WebFilterChain handler = exchange -> {
                         effects.incrementAndGet(); exchange.getResponse().setStatusCode(HttpStatus.NO_CONTENT);

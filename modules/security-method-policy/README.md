@@ -72,7 +72,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | Type | Contract and responsibility |
 | --- | --- |
 | [`MethodSecurityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/MethodSecurityAutoConfiguration.java) | Enables reactive method security (`@PreAuthorize`/`@PostAuthorize`) and registers the `Secure` interceptor so `@Secure` works as ergonomic, fail-closed sugar on top of it. |
-| [`SecureMethodAuthorizationManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/SecureMethodAuthorizationManager.java) | Reactive `ReactiveAuthorizationManager` that enforces the `Secure` annotation on methods (or their declaring class) using the framework's `SecureAuthorizationEvaluator`. |
+| [`SecureMethodAuthorizationManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/SecureMethodAuthorizationManagerImpl.java) | Reactive `ReactiveAuthorizationManager` that enforces the `Secure` annotation on methods (or their declaring class) using the framework's `SecureAuthorizationEvaluator`. |
 
 ## Continue the application
 

@@ -17,7 +17,7 @@
 package org.fireflyframework.cqrs.cache;
 
 import org.fireflyframework.cache.core.CacheAdapter;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -55,7 +55,7 @@ public class QueryCacheAdapter {
      *
      * @param cacheManager the Firefly cache manager (which implements CacheAdapter)
      */
-    public QueryCacheAdapter(FireflyCacheManager cacheManager) {
+    public QueryCacheAdapter(FireflyCacheManagerImpl cacheManager) {
         this.cache = cacheManager;
         log.info("QueryCacheAdapter initialized with FireflyCacheManager");
     }

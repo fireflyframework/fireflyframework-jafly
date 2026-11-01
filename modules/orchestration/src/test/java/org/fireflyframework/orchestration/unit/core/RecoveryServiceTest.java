@@ -21,7 +21,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.recovery.RecoveryService;
 import org.fireflyframework.orchestration.core.scheduling.OrchestrationScheduler;
 import org.junit.jupiter.api.AfterEach;
@@ -40,13 +40,13 @@ import static org.assertj.core.api.Assertions.*;
 
 class RecoveryServiceTest {
 
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
     private RecoveryService recoveryService;
     private OrchestrationScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        persistence = new InMemoryPersistenceProvider();
+        persistence = new InMemoryPersistenceProviderImpl();
         var events = new OrchestrationEvents() {};
         recoveryService = new RecoveryService(persistence, events, Duration.ofMinutes(30));
     }

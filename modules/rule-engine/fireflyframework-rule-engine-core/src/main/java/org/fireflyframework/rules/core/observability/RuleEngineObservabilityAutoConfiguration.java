@@ -36,7 +36,7 @@ public class RuleEngineObservabilityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(MeterRegistry.class)
-    RuleEngineMetrics ruleEngineMetrics(MeterRegistry meterRegistry) {
-        return new RuleEngineMetrics(meterRegistry);
+    RuleEngineMetricsImpl ruleEngineMetrics(MeterRegistry meterRegistry) {
+        return new RuleEngineMetricsImpl(meterRegistry);
     }
 }

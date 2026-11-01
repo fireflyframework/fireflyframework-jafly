@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.DateValidator;
+import org.fireflyframework.validators.DateValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * By default, validates dates in ISO format (yyyy-MM-dd).
  */
 @Documented
-@Constraint(validatedBy = DateValidator.class)
+@Constraint(validatedBy = DateValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidDate {

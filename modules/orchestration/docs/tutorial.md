@@ -1081,7 +1081,7 @@ spring:
         enabled: true
 ```
 
-The `RedisPersistenceProvider` activates automatically when:
+The `RedisPersistenceProviderImpl` activates automatically when:
 - `spring-data-redis-reactive` is on the classpath
 - `firefly.orchestration.persistence.provider=redis` is set
 
@@ -1227,7 +1227,7 @@ When the ledger step fails:
 4. `@OnSagaError` fires with the error details
 5. A DLQ entry is created for the failed step
 
-The complete execution flow is visible in the logs via `OrchestrationLoggerEvents` and in metrics via `firefly.orchestration.executions.completed{success=false}`.
+The complete execution flow is visible in the logs via `OrchestrationLoggerEventsImpl` and in metrics via `firefly.orchestration.executions.completed{success=false}`.
 
 ---
 

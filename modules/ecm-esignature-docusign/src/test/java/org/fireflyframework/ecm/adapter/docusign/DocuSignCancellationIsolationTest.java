@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,7 +44,7 @@ class DocuSignCancellationIsolationTest {
         }
     }
     @Test void cancellingUserInfoCannotPublishAndDoesNotPoisonTheNextSubscription() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(settings())) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(settings())) {
             var entered = new CountDownLatch(1); var interrupted = new CountDownLatch(1);
             var release = new CountDownLatch(1); var finished = new CountDownLatch(1);
             var first = new AtomicBoolean(true); var emitted = new AtomicBoolean();
@@ -70,7 +70,7 @@ class DocuSignCancellationIsolationTest {
         }
     }
     @Test void cancellingARefreshOwnerDoesNotCancelAnotherSubscriptionsRefresh() throws Exception {
-        try (var transport = scope(); var client = new ManagedDocuSignApiClient(settings())) {
+        try (var transport = scope(); var client = new ManagedDocuSignApiClientImpl(settings())) {
             var entered = new CountDownLatch(1); var interrupted = new CountDownLatch(1); var release = new CountDownLatch(1);
             var ownerFinished = new CountDownLatch(1); var waiterEntered = new CountDownLatch(1);
             var first = new AtomicBoolean(true); var ownerEmitted = new AtomicBoolean();

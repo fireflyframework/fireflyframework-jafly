@@ -94,10 +94,10 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`KafkaEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/publisher/kafka/KafkaEventPublisher.java) | Kafka event publisher implementation using Spring Kafka. |
-| [`KafkaEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumer.java) | Kafka event consumer implementation with dynamic topic subscription. |
+| [`KafkaEventPublisherImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/publisher/kafka/KafkaEventPublisherImpl.java) | Kafka event publisher implementation using Spring Kafka. |
+| [`KafkaEventConsumerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/consumer/kafka/KafkaEventConsumerImpl.java) | Kafka event consumer implementation with dynamic topic subscription. |
 | [`FireflyEdaKafkaConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaConsumerAutoConfiguration.java) | Auto-configuration for Kafka Consumer infrastructure. |
-| [`FireflyEdaKafkaEnvironmentPostProcessor`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaEnvironmentPostProcessor.java) | Environment post-processor that conditionally excludes Spring Boot's Kafka auto-configuration when the Firefly EDA Kafka transport is not enabled. |
+| [`FireflyEdaKafkaEnvironmentPostProcessorImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaEnvironmentPostProcessorImpl.java) | Environment post-processor that conditionally excludes Spring Boot's Kafka auto-configuration when the Firefly EDA Kafka transport is not enabled. |
 | [`FireflyEdaKafkaPublisherAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-kafka/src/main/java/org/fireflyframework/eda/config/FireflyEdaKafkaPublisherAutoConfiguration.java) | Auto-configuration for Kafka Publisher infrastructure. |
 
 ## Continue the application

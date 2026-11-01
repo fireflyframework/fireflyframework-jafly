@@ -56,10 +56,10 @@ The framework follows the hexagonal architecture pattern: rules are ports (abstr
 │   ┌──────────┴───────────────────────────────────┐     │
 │   │           Built-in Adapters                  │     │
 │   │  ┌──────────────┐ ┌──────────────┐           │     │
-│   │  │ NotNullRule   │ │ PatternRule  │           │     │
+│   │  │ NotNullRuleImpl   │ │ PatternRuleImpl  │           │     │
 │   │  └──────────────┘ └──────────────┘           │     │
 │   │  ┌──────────────┐ ┌──────────────┐           │     │
-│   │  │  RangeRule    │ │ CustomRule   │           │     │
+│   │  │  RangeRuleImpl    │ │ CustomRule   │           │     │
 │   │  └──────────────┘ └──────────────┘           │     │
 │   └──────────────────────────────────────────────┘     │
 │                                                        │
@@ -77,9 +77,9 @@ Key classes:
 | `QualityReport` | `o.f.data.quality` | Aggregated report with pass/fail statistics |
 | `QualitySeverity` | `o.f.data.quality` | Enum: `INFO`, `WARNING`, `CRITICAL` |
 | `QualityStrategy` | `o.f.data.quality` | Enum: `FAIL_FAST`, `COLLECT_ALL` |
-| `NotNullRule<T>` | `o.f.data.quality.rules` | Validates a field is not null |
-| `PatternRule<T>` | `o.f.data.quality.rules` | Validates a string field matches a regex |
-| `RangeRule<T>` | `o.f.data.quality.rules` | Validates a comparable field is within a range |
+| `NotNullRuleImpl<T>` | `o.f.data.quality.rules` | Validates a field is not null |
+| `PatternRuleImpl<T>` | `o.f.data.quality.rules` | Validates a string field matches a regex |
+| `RangeRuleImpl<T>` | `o.f.data.quality.rules` | Validates a comparable field is within a range |
 | `DataQualityAutoConfiguration` | `o.f.data.config` | Auto-configures the engine from Spring beans |
 | `DataQualityEvent` | `o.f.data.event` | Spring event published after each evaluation |
 
@@ -167,19 +167,19 @@ engine.evaluate(data, QualityStrategy.COLLECT_ALL)
 
 The framework ships three built-in rule implementations in the `o.f.data.quality.rules` package. Each accepts a field name, an extractor function, and an optional severity override.
 
-### NotNullRule
+### NotNullRuleImpl
 
 Validates that a field extracted from the data object is not null.
 
 ```java
 // Default severity (WARNING)
-DataQualityRule<Customer> rule = new NotNullRule<>(
+DataQualityRule<Customer> rule = new NotNullRuleImpl<>(
     "email",
     Customer::getEmail
 );
 
 // With CRITICAL severity
-DataQualityRule<Customer> criticalRule = new NotNullRule<>(
+DataQualityRule<Customer> criticalRule = new NotNullRuleImpl<>(
     "customerId",
     Customer::getId,
     QualitySeverity.CRITICAL
@@ -190,7 +190,7 @@ Rule name format: `not-null:<fieldName>` (e.g., `not-null:email`)
 
 Failure message: `"<fieldName> must not be null"`
 
-### PatternRule
+### PatternRuleImpl
 
 Validates that a string field matches a compiled regular expression pattern.
 
@@ -198,14 +198,14 @@ Validates that a string field matches a compiled regular expression pattern.
 import java.util.regex.Pattern;
 
 // Email format validation
-DataQualityRule<Customer> emailRule = new PatternRule<>(
+DataQualityRule<Customer> emailRule = new PatternRuleImpl<>(
     "email",
     Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$"),
     Customer::getEmail
 );
 
 // Phone number with CRITICAL severity
-DataQualityRule<Customer> phoneRule = new PatternRule<>(
+DataQualityRule<Customer> phoneRule = new PatternRuleImpl<>(
     "phone",
     Pattern.compile("^\\+?[1-9]\\d{1,14}$"),
     Customer::getPhone,
@@ -219,20 +219,20 @@ Failure message: `"<fieldName> does not match pattern: <regex>"`
 
 Note: If the extracted value is null, the rule fails (null does not match any pattern).
 
-### RangeRule
+### RangeRuleImpl
 
 Validates that a `Comparable` field falls within a minimum/maximum range (inclusive). Either bound can be `null` to make the range open-ended.
 
 ```java
 // Age between 0 and 150
-DataQualityRule<Customer> ageRule = new RangeRule<>(
+DataQualityRule<Customer> ageRule = new RangeRuleImpl<>(
     "age",
     0, 150,
     customer -> customer.getAge()
 );
 
 // Score at least 0.0, no upper bound
-DataQualityRule<Metric> scoreRule = new RangeRule<>(
+DataQualityRule<Metric> scoreRule = new RangeRuleImpl<>(
     "score",
     0.0, null,
     Metric::getScore,
@@ -295,12 +295,12 @@ public class QualityRulesConfig {
 
     @Bean
     public DataQualityRule<Customer> customerIdNotNull() {
-        return new NotNullRule<>("customerId", Customer::getId, QualitySeverity.CRITICAL);
+        return new NotNullRuleImpl<>("customerId", Customer::getId, QualitySeverity.CRITICAL);
     }
 
     @Bean
     public DataQualityRule<Customer> emailNotNull() {
-        return new NotNullRule<>("email", Customer::getEmail);
+        return new NotNullRuleImpl<>("email", Customer::getEmail);
     }
 }
 ```
@@ -344,10 +344,10 @@ For standalone usage without Spring auto-configuration:
 
 ```java
 List<DataQualityRule<?>> rules = List.of(
-    new NotNullRule<>("name", Customer::getName, QualitySeverity.CRITICAL),
-    new PatternRule<>("email",
+    new NotNullRuleImpl<>("name", Customer::getName, QualitySeverity.CRITICAL),
+    new PatternRuleImpl<>("email",
         Pattern.compile("^.+@.+\\..+$"), Customer::getEmail),
-    new RangeRule<>("age", 0, 150, c -> ((Customer) c).getAge())
+    new RangeRuleImpl<>("age", 0, 150, c -> ((Customer) c).getAge())
 );
 
 DataQualityEngine engine = new DataQualityEngine(rules);
@@ -521,12 +521,12 @@ public class EnrichmentQualityRules {
 
     @Bean
     public DataQualityRule<Customer> enrichedNameNotNull() {
-        return new NotNullRule<>("name", Customer::getName, QualitySeverity.CRITICAL);
+        return new NotNullRuleImpl<>("name", Customer::getName, QualitySeverity.CRITICAL);
     }
 
     @Bean
     public DataQualityRule<Customer> enrichedEmailFormat() {
-        return new PatternRule<>(
+        return new PatternRuleImpl<>(
             "email",
             Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$"),
             Customer::getEmail,
@@ -536,7 +536,7 @@ public class EnrichmentQualityRules {
 
     @Bean
     public DataQualityRule<Customer> enrichedScoreRange() {
-        return new RangeRule<>(
+        return new RangeRuleImpl<>(
             "enrichmentScore",
             0.0, 1.0,
             customer -> customer.getEnrichmentScore(),

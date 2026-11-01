@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class OpenFgaRelationshipAdapterProtocolTest {
     private static final Duration WAIT = Duration.ofSeconds(3);
 
-    private OpenFgaRelationshipAdapter adapter(String body) {
-        return new OpenFgaRelationshipAdapter(WebClient.builder().baseUrl("https://policy.example.test")
+    private OpenFgaRelationshipAdapterImpl adapter(String body) {
+        return new OpenFgaRelationshipAdapterImpl(WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.OK)
                         .header("Content-Type", "application/json").body(body).build())).build(), "protocol-store");
     }
@@ -46,7 +46,7 @@ class OpenFgaRelationshipAdapterProtocolTest {
     void unavailableTransportDenies() {
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.error(new IOException("Owned protocol transport unavailable"))).build();
-        var allowed = new OpenFgaRelationshipAdapter(client, "protocol-store")
+        var allowed = new OpenFgaRelationshipAdapterImpl(client, "protocol-store")
                 .check("subject", "member", "resource").block(WAIT);
         assertNotNull(allowed);
         assertFalse(allowed);

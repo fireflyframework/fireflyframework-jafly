@@ -17,7 +17,7 @@
 package org.fireflyframework.eda.integration;
 
 import org.fireflyframework.eda.annotation.PublisherType;
-import org.fireflyframework.eda.publisher.DestinationAwarePublisher;
+import org.fireflyframework.eda.publisher.DestinationAwarePublisherImpl;
 import org.fireflyframework.eda.publisher.EventPublisher;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
 import org.fireflyframework.eda.testconfig.BaseIntegrationTest;
@@ -56,7 +56,7 @@ class DynamicDestinationIntegrationTest extends BaseIntegrationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo(customDestination);
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.APPLICATION_EVENT);
         assertThat(publisher.isAvailable()).isTrue();
@@ -107,7 +107,7 @@ class DynamicDestinationIntegrationTest extends BaseIntegrationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo(customDestination);
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.APPLICATION_EVENT); // Default type
     }
@@ -166,7 +166,7 @@ class DynamicDestinationIntegrationTest extends BaseIntegrationTest {
         
         // When & Then - Should work as before
         assertThat(standardPublisher).isNotNull();
-        assertThat(standardPublisher).isNotInstanceOf(DestinationAwarePublisher.class);
+        assertThat(standardPublisher).isNotInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(standardPublisher.getDefaultDestination()).isEqualTo("default-app-events"); // From config
         
         TestEventModels.UserRegisteredEvent event = TestEventModels.UserRegisteredEvent.create(
@@ -189,7 +189,7 @@ class DynamicDestinationIntegrationTest extends BaseIntegrationTest {
 
         // Then
         assertThat(publisher).isNotNull();
-        assertThat(publisher).isInstanceOf(DestinationAwarePublisher.class);
+        assertThat(publisher).isInstanceOf(DestinationAwarePublisherImpl.class);
         assertThat(publisher.getDefaultDestination()).isEqualTo(customDestination);
     }
 

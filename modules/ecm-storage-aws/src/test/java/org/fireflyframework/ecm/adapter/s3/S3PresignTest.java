@@ -20,7 +20,7 @@ import static org.mockito.Mockito.mock;
  */
 class S3PresignTest {
 
-    private S3DocumentContentAdapter adapter;
+    private S3DocumentContentAdapterImpl adapter;
 
     private static S3AdapterProperties baseProps() {
         S3AdapterProperties p = new S3AdapterProperties();
@@ -38,7 +38,7 @@ class S3PresignTest {
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create("AKIDTEST", "SECRETTEST")))
                 .build();
-        adapter = new S3DocumentContentAdapter(mock(S3Client.class), props, presigner);
+        adapter = new S3DocumentContentAdapterImpl(mock(S3Client.class), props, presigner);
     }
 
     @Test
@@ -75,7 +75,7 @@ class S3PresignTest {
         props.setAccessKey("AKIDTEST");
         props.setSecretKey("SECRETTEST");
         S3Presigner presigner = new S3Beans().s3Presigner(props);
-        S3DocumentContentAdapter local = new S3DocumentContentAdapter(mock(S3Client.class), props, presigner);
+        S3DocumentContentAdapterImpl local = new S3DocumentContentAdapterImpl(mock(S3Client.class), props, presigner);
 
         String url = local.generateDownloadUrlByPath("documents/t/x.pdf", Duration.ofMinutes(5)).block();
         // path-style => host is the endpoint, bucket lives in the path (not a subdomain)

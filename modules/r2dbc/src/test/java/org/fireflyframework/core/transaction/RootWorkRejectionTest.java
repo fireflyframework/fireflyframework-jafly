@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.*;
-import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransaction;
+import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransactionImpl;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -39,10 +39,10 @@ class RootWorkRejectionTest {
     }
     static final class Fixture {
         final BoundedTransactionBoundaryTest.Time time=new BoundedTransactionBoundaryTest.Time();final Driver driver=new Driver();
-        final OwnedLeaseConnectionFactory factory=new OwnedLeaseConnectionFactory(driver);
+        final OwnedLeaseConnectionFactoryImpl factory=new OwnedLeaseConnectionFactoryImpl(driver);
         final DatabaseClient client=DatabaseClient.create(factory);final R2dbcEntityTemplate template=new R2dbcEntityTemplate(client,PostgresDialect.INSTANCE);
         final R2dbcTransactionManager manager=new R2dbcTransactionManager(factory);
-        final BoundedRootTransaction root=new DefaultBoundedRootTransaction(BoundedR2dbcResources.verify(factory,client,template,manager),new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)));
+        final BoundedRootTransaction root=new DefaultBoundedRootTransactionImpl(BoundedR2dbcResources.verify(factory,client,template,manager),new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)));
         final R2dbcOperationBudget budget=time.budget(5000);
         Mono<RootCompletion<String>> execute(Function<RootTransactionScope,Mono<String>> work){return root.execute(budget,new DefaultTransactionDefinition(),work);}
     }

@@ -20,7 +20,7 @@ import org.fireflyframework.client.ServiceClient;
 import org.fireflyframework.client.tracing.TracingWebClients;
 import org.fireflyframework.client.builder.GrpcClientBuilder;
 import org.fireflyframework.client.builder.RestClientBuilder;
-import org.fireflyframework.client.metrics.ServiceClientMetrics;
+import org.fireflyframework.client.metrics.ServiceClientMetricsImpl;
 import org.fireflyframework.resilience.CircuitBreakerConfig;
 import org.fireflyframework.resilience.CircuitBreakerManager;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -197,9 +197,9 @@ public class ServiceClientAutoConfiguration {
     @ConditionalOnBean(MeterRegistry.class)
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "firefly.service-client.metrics", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public ServiceClientMetrics serviceClientMetrics(MeterRegistry meterRegistry) {
+    public ServiceClientMetricsImpl serviceClientMetrics(MeterRegistry meterRegistry) {
         log.info("Configuring ServiceClient metrics integration with Micrometer");
-        return new ServiceClientMetrics(meterRegistry);
+        return new ServiceClientMetricsImpl(meterRegistry);
     }
 
     /**

@@ -17,14 +17,14 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.BicValidator;
+import org.fireflyframework.validators.BicValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = BicValidator.class)
+@Constraint(validatedBy = BicValidatorImpl.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidBic {
