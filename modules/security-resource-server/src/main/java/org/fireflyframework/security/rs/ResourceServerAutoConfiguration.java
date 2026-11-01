@@ -31,6 +31,7 @@ import org.fireflyframework.security.spi.AuthorityMappingPort;
 import org.fireflyframework.security.spi.KeyManagementPort;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.fireflyframework.security.spi.SecurityContextPort;
+import org.fireflyframework.security.spi.TokenValidationPort;
 import org.fireflyframework.security.webflux.authentication.FireflyAuthenticationToken;
 import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManager;
 import org.fireflyframework.security.webflux.context.ReactorSecurityContextAdapter;
@@ -188,9 +189,46 @@ public class ResourceServerAutoConfiguration {
         return validators;
     }
 
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(TokenValidationPort.class)
+    @ConditionalOnProperty(prefix = "firefly.security.resource-server", name = "admission-mode", havingValue = "LIVE")
+    public SpringLiveTokenValidationAdapter fireflyLiveTokenValidationPort(ResourceServerProperties properties) {
+        return SpringLiveTokenValidationAdapter.create(properties);
+    }
+
+    /** Retains the direct LOCAL factory API; LIVE callers must supply the explicit port. */
+    public SecurityWebFilterChain fireflySecurityWebFilterChain(
+            ServerHttpSecurity http,
+            ReactiveJwtDecoder jwtDecoder,
+            Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter,
+            PolicyDecisionPort policyDecisionPort,
+            ResourceServerProperties properties) {
+        if (properties.getAdmissionMode() != ResourceServerProperties.JwtAdmissionMode.LOCAL_JWT) {
+            throw new IllegalArgumentException("An explicit live validation port is required");
+        }
+        return buildSecurityWebFilterChain(http, jwtDecoder, jwtAuthenticationConverter, policyDecisionPort, properties);
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public SecurityWebFilterChain fireflySecurityWebFilterChain(
+            ServerHttpSecurity http,
+            ReactiveJwtDecoder jwtDecoder,
+            Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter,
+            PolicyDecisionPort policyDecisionPort,
+            ResourceServerProperties properties,
+            ObjectProvider<TokenValidationPort> livePorts) {
+        ReactiveJwtDecoder selected = jwtDecoder;
+        if (properties.getAdmissionMode() == ResourceServerProperties.JwtAdmissionMode.LIVE) {
+            TokenValidationPort live = livePorts.getObject();
+            selected = new LiveActiveJwtDecoder(jwtDecoder, live, properties);
+        } else if (properties.getAdmissionMode() != ResourceServerProperties.JwtAdmissionMode.LOCAL_JWT) {
+            throw new IllegalArgumentException("A valid JWT admission mode is required");
+        }
+        return buildSecurityWebFilterChain(http, selected, jwtAuthenticationConverter, policyDecisionPort, properties);
+    }
+
+    private SecurityWebFilterChain buildSecurityWebFilterChain(
             ServerHttpSecurity http,
             ReactiveJwtDecoder jwtDecoder,
             Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter,

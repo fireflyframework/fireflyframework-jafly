@@ -40,6 +40,11 @@ public record BearerToken(String value, TokenType type) {
         return dots == 2 ? TokenType.JWT : TokenType.OPAQUE;
     }
 
+    @Override
+    public final String toString() {
+        return "BearerToken[REDACTED]";
+    }
+
     /** @return the token value masked for safe logging. */
     public String masked() {
         if (value == null || value.length() <= 8) {

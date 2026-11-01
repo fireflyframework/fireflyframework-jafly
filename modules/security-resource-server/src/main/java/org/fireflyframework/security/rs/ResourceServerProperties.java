@@ -31,6 +31,25 @@ import java.util.List;
 @ConfigurationProperties(prefix = "firefly.security.resource-server")
 public class ResourceServerProperties {
 
+    public enum JwtAdmissionMode { LOCAL_JWT, LIVE }
+
+    /** Existing local verification remains the general default. */
+    private JwtAdmissionMode admissionMode = JwtAdmissionMode.LOCAL_JWT;
+    private LiveState liveState = new LiveState();
+
+    /** No generated toString: these settings include an introspection credential. */
+    @lombok.Getter
+    @lombok.Setter
+    public static class LiveState {
+        private String introspectionUri;
+        private String introspectionClientId;
+        private String introspectionClientSecret;
+        private String tokenClientClaim;
+        private List<String> allowedClients = new ArrayList<>();
+        private java.time.Duration timeout = java.time.Duration.ofSeconds(5);
+    }
+
+
     /** Ant-style path patterns that are publicly accessible without authentication. */
     private List<String> permitMatchers = new ArrayList<>();
 
