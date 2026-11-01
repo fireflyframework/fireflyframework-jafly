@@ -25,6 +25,8 @@ import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Statement;
 import io.r2dbc.spi.ValidationDepth;
 import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.core.CacheOperationPolicy;
+import org.fireflyframework.cache.exception.CacheException;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheStats;
 import org.fireflyframework.cache.core.CacheType;
@@ -71,6 +73,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
     private final PostgresCacheConfig config;
     private final CacheSerializer serializer;
     private final String qualifiedTable;
+    private final CacheOperationPolicy operationPolicy;
 
     private final AtomicLong requestCount = new AtomicLong();
     private final AtomicLong hitCount = new AtomicLong();
@@ -93,6 +96,16 @@ public class PostgresCacheAdapter implements CacheAdapter {
                                 PostgresCacheConfig config,
                                 CacheSerializer serializer,
                                 String serviceNamespace) {
+        this(cacheName, connectionFactory, config, serializer, serviceNamespace, CacheOperationPolicy.LEGACY);
+    }
+
+    public PostgresCacheAdapter(String cacheName,
+                                ConnectionFactory connectionFactory,
+                                PostgresCacheConfig config,
+                                CacheSerializer serializer,
+                                String serviceNamespace,
+                                CacheOperationPolicy policy) {
+        this.operationPolicy = java.util.Objects.requireNonNull(policy, "Cache operation policy required");
         config.validate(cacheName, serviceNamespace);
         String featurePrefix = config.effectiveKeyPrefix(serviceNamespace);
         this.cacheName = cacheName;
@@ -147,6 +160,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
      */
     private byte[] toBytes(Object value) {
         Object serialized = serializer.serialize(value);
+        if (primaryOnly() && serialized == null) throw new CacheException("Cache serialization returned no value");
         if (serialized instanceof byte[] bytes) {
             return bytes;
         }
@@ -154,6 +168,9 @@ public class PostgresCacheAdapter implements CacheAdapter {
             return str.getBytes(StandardCharsets.UTF_8);
         }
         // Primitives/Numbers are returned as-is by JsonCacheSerializer; stringify them.
+        if (primaryOnly() && !(serialized instanceof Number || serialized instanceof Boolean || serialized instanceof Character)) {
+            throw new CacheException("Cache serialization returned an unsupported representation");
+        }
         return String.valueOf(serialized).getBytes(StandardCharsets.UTF_8);
     }
 
@@ -166,6 +183,7 @@ public class PostgresCacheAdapter implements CacheAdapter {
     private byte[] readBytes(Readable row, String column) {
         Object raw = row.get(column);
         if (raw == null) {
+            if (primaryOnly()) throw new CacheException("Stored cache bytes are missing");
             return null;
         }
         if (raw instanceof byte[] bytes) {
@@ -173,9 +191,10 @@ public class PostgresCacheAdapter implements CacheAdapter {
         }
         if (raw instanceof java.nio.ByteBuffer buf) {
             byte[] out = new byte[buf.remaining()];
-            buf.get(out);
+            (primaryOnly() ? buf.duplicate() : buf).get(out);
             return out;
         }
+        if (primaryOnly()) throw new CacheException("Unsupported stored cache byte representation");
         return raw.toString().getBytes(StandardCharsets.UTF_8);
     }
 
@@ -184,8 +203,10 @@ public class PostgresCacheAdapter implements CacheAdapter {
      * connection is released afterward.
      */
     private <T> Mono<T> withConnection(java.util.function.Function<Connection, Mono<T>> work) {
+        Mono<Connection> acquired = Mono.from(connectionFactory.create());
+        if (primaryOnly()) acquired = acquired.switchIfEmpty(Mono.error(new CacheException("Cache connection acquisition completed empty")));
         return Mono.usingWhen(
-                Mono.from(connectionFactory.create()),
+                acquired,
                 work::apply,
                 Connection::close,
                 (conn, err) -> Mono.from(conn.close()).then(Mono.error(err)),
@@ -199,38 +220,45 @@ public class PostgresCacheAdapter implements CacheAdapter {
 
     @Override
     public <K, V> Mono<Optional<V>> get(K key, Class<V> valueType) {
-        String fullKey = buildKey(key);
-        long start = System.nanoTime();
-        requestCount.incrementAndGet();
-        String sql = "SELECT value FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND cache_key = $2"
-                + " AND (expires_at IS NULL OR expires_at > NOW())";
-        return withConnection(conn -> {
-            Statement st = conn.createStatement(sql)
-                    .bind("$1", storageCacheName)
-                    .bind("$2", fullKey);
-            return Flux.from(st.execute())
-                    .flatMap(result -> result.map((row, meta) -> readBytes(row, "value")))
-                    .next();
-        }).map(bytes -> {
-            try {
-                V value = fromBytes(bytes, valueType);
-                hitCount.incrementAndGet();
-                totalLoadTime.addAndGet(System.nanoTime() - start);
-                return Optional.ofNullable(value);
-            } catch (Exception e) {
-                log.warn("Failed to deserialize cached value for key present={} in cache '{}': type={}",
-                        key != null, LogFields.text(cacheName), LogFields.errorType(e));
+        return operation(() -> {
+            String fullKey = buildKey(key);
+            long start = System.nanoTime();
+            requestCount.incrementAndGet();
+            String sql = "SELECT value FROM " + qualifiedTable
+                    + " WHERE cache_name = $1 AND cache_key = $2"
+                    + " AND (expires_at IS NULL OR expires_at > NOW())";
+            return withConnection(conn -> {
+                Statement st = conn.createStatement(sql)
+                        .bind("$1", storageCacheName)
+                        .bind("$2", fullKey);
+                return results(st)
+                        .flatMap(result -> result.map((row, meta) -> readBytes(row, "value")))
+                        .next();
+            }).map(bytes -> {
+                try {
+                    V value = fromBytes(bytes, valueType);
+                    if (primaryOnly() && (value == null || !valueType.isInstance(value))) {
+                        throw new CacheException("Stored cache value does not match the requested type");
+                    }
+                    hitCount.incrementAndGet();
+                    totalLoadTime.addAndGet(System.nanoTime() - start);
+                    return Optional.ofNullable(value);
+                } catch (Exception e) {
+                    if (primaryOnly()) throw new CacheException("Cannot decode cached value", e);
+                    log.warn("Failed to deserialize cached value for key present={} in cache '{}': type={}",
+                            key != null, LogFields.text(cacheName), LogFields.errorType(e));
+                    missCount.incrementAndGet();
+                    return Optional.<V>empty();
+                }
+            }).switchIfEmpty(Mono.fromSupplier(() -> {
                 missCount.incrementAndGet();
                 return Optional.<V>empty();
-            }
-        }).switchIfEmpty(Mono.fromSupplier(() -> {
-            missCount.incrementAndGet();
-            return Optional.<V>empty();
-        })).onErrorResume(e -> {
-            log.warn("Error reading key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
-            missCount.incrementAndGet();
-            return Mono.just(Optional.<V>empty());
+            })).onErrorResume(e -> {
+                if (primaryOnly()) return Mono.error(e);
+                log.warn("Error reading key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
+                missCount.incrementAndGet();
+                return Mono.just(Optional.<V>empty());
+            });
         });
     }
 
@@ -241,40 +269,43 @@ public class PostgresCacheAdapter implements CacheAdapter {
 
     @Override
     public <K, V> Mono<Void> put(K key, V value, Duration ttl) {
-        String fullKey = buildKey(key);
-        return Mono.fromCallable(() -> toBytes(value))
-                .flatMap(bytes -> {
-                    boolean hasTtl = ttl != null && !ttl.isZero() && !ttl.isNegative();
-                    return withConnection(conn -> {
-                        Statement st;
-                        if (hasTtl) {
-                            String insertSql = "INSERT INTO " + qualifiedTable
-                                    + " (cache_name, cache_key, value, expires_at, created_at)"
-                                    + " VALUES ($1, $2, $3, pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, pg_catalog.clock_timestamp())"
-                                    + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
-                                    + " SET value = EXCLUDED.value, expires_at = pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, created_at = pg_catalog.clock_timestamp()";
-                            st = conn.createStatement(insertSql)
-                                    .bind("$1", storageCacheName)
-                                    .bind("$2", fullKey)
-                                    .bind("$3", bytes)
-                                    .bind("$4", String.valueOf(ttl.toMillis()));
-                        } else {
-                            String insertSql = "INSERT INTO " + qualifiedTable
-                                    + " (cache_name, cache_key, value, expires_at, created_at)"
-                                    + " VALUES ($1, $2, $3, NULL, pg_catalog.clock_timestamp())"
-                                    + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
-                                    + " SET value = EXCLUDED.value, expires_at = NULL, created_at = pg_catalog.clock_timestamp()";
-                            st = conn.createStatement(insertSql)
-                                    .bind("$1", storageCacheName)
-                                    .bind("$2", fullKey)
-                                    .bind("$3", bytes);
-                        }
-                        return rowsUpdated(st);
-                    }).doOnNext(count -> {
-                        if (count != 1) throw new IllegalStateException("PostgreSQL cache put requires exactly one affected row");
-                        putCount.incrementAndGet();
-                    }).then();
-                });
+        return operation(() -> {
+            if (primaryOnly() && value == null) return Mono.error(new CacheException("Non-null cache value required"));
+            String fullKey = buildKey(key);
+            return Mono.fromCallable(() -> toBytes(value))
+                    .flatMap(bytes -> {
+                        boolean hasTtl = ttl != null && !ttl.isZero() && !ttl.isNegative();
+                        return withConnection(conn -> {
+                            Statement st;
+                            if (hasTtl) {
+                                String insertSql = "INSERT INTO " + qualifiedTable
+                                        + " (cache_name, cache_key, value, expires_at, created_at)"
+                                        + " VALUES ($1, $2, $3, pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, pg_catalog.clock_timestamp())"
+                                        + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
+                                        + " SET value = EXCLUDED.value, expires_at = pg_catalog.clock_timestamp() + ($4 || ' milliseconds')::interval, created_at = pg_catalog.clock_timestamp()";
+                                st = conn.createStatement(insertSql)
+                                        .bind("$1", storageCacheName)
+                                        .bind("$2", fullKey)
+                                        .bind("$3", bytes)
+                                        .bind("$4", String.valueOf(ttl.toMillis()));
+                            } else {
+                                String insertSql = "INSERT INTO " + qualifiedTable
+                                        + " (cache_name, cache_key, value, expires_at, created_at)"
+                                        + " VALUES ($1, $2, $3, NULL, pg_catalog.clock_timestamp())"
+                                        + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
+                                        + " SET value = EXCLUDED.value, expires_at = NULL, created_at = pg_catalog.clock_timestamp()";
+                                st = conn.createStatement(insertSql)
+                                        .bind("$1", storageCacheName)
+                                        .bind("$2", fullKey)
+                                        .bind("$3", bytes);
+                            }
+                            return rowsUpdated(st);
+                        }).doOnNext(count -> {
+                            if (count != 1) throw new IllegalStateException("PostgreSQL cache put requires exactly one affected row");
+                            putCount.incrementAndGet();
+                        }).then();
+                    });
+        });
     }
 
     @Override
@@ -284,143 +315,162 @@ public class PostgresCacheAdapter implements CacheAdapter {
 
     @Override
     public <K, V> Mono<Boolean> putIfAbsent(K key, V value, Duration ttl) {
-        String fullKey = buildKey(key);
-        return Mono.fromCallable(() -> toBytes(value))
-                .flatMap(bytes -> {
-                    boolean hasTtl = ttl != null && !ttl.isZero() && !ttl.isNegative();
-                    String clock = "pg_catalog.clock_timestamp()";
-                    String expires = hasTtl ? clock + " + ($4 || ' milliseconds')::interval" : "NULL";
-                    String sql = "INSERT INTO " + qualifiedTable + " AS cache_entry"
-                            + " (cache_name, cache_key, value, expires_at, created_at)"
-                            + " VALUES ($1, $2, $3, " + expires + ", " + clock + ")"
-                            + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
-                            + " SET value = EXCLUDED.value, expires_at = " + expires + ", created_at = " + clock
-                            + " WHERE cache_entry.expires_at IS NOT NULL"
-                            + " AND cache_entry.expires_at <= " + clock;
-                    return withConnection(conn -> {
-                        Statement st = conn.createStatement(sql)
-                                .bind("$1", storageCacheName)
-                                .bind("$2", fullKey)
-                                .bind("$3", bytes);
-                        if (hasTtl) {
-                            st = st.bind("$4", String.valueOf(ttl.toMillis()));
-                        }
-                        return rowsUpdated(st);
-                    }).map(n -> {
-                        if (n != 0 && n != 1) {
-                            throw new IllegalStateException("PostgreSQL cache insertion requires zero or one affected row");
-                        }
-                        if (n == 1) putCount.incrementAndGet();
-                        return n == 1;
+        return operation(() -> {
+            if (primaryOnly() && value == null) return Mono.error(new CacheException("Non-null cache value required"));
+            String fullKey = buildKey(key);
+            return Mono.fromCallable(() -> toBytes(value))
+                    .flatMap(bytes -> {
+                        boolean hasTtl = ttl != null && !ttl.isZero() && !ttl.isNegative();
+                        String clock = "pg_catalog.clock_timestamp()";
+                        String expires = hasTtl ? clock + " + ($4 || ' milliseconds')::interval" : "NULL";
+                        String sql = "INSERT INTO " + qualifiedTable + " AS cache_entry"
+                                + " (cache_name, cache_key, value, expires_at, created_at)"
+                                + " VALUES ($1, $2, $3, " + expires + ", " + clock + ")"
+                                + " ON CONFLICT (cache_name, cache_key) DO UPDATE"
+                                + " SET value = EXCLUDED.value, expires_at = " + expires + ", created_at = " + clock
+                                + " WHERE cache_entry.expires_at IS NOT NULL"
+                                + " AND cache_entry.expires_at <= " + clock;
+                        return withConnection(conn -> {
+                            Statement st = conn.createStatement(sql)
+                                    .bind("$1", storageCacheName)
+                                    .bind("$2", fullKey)
+                                    .bind("$3", bytes);
+                            if (hasTtl) {
+                                st = st.bind("$4", String.valueOf(ttl.toMillis()));
+                            }
+                            return rowsUpdated(st);
+                        }).map(n -> {
+                            if (n != 0 && n != 1) {
+                                throw new IllegalStateException("PostgreSQL cache insertion requires zero or one affected row");
+                            }
+                            if (n == 1) putCount.incrementAndGet();
+                            return n == 1;
+                        });
                     });
-                });
+        });
     }
 
     @Override
     public <K> Mono<Boolean> evict(K key) {
-        String fullKey = buildKey(key);
-        String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1 AND cache_key = $2";
-        return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
-                .bind("$1", storageCacheName)
-                .bind("$2", fullKey)))
-                .map(n -> {
-                    boolean removed = n > 0;
-                    if (removed) {
-                        evictionCount.incrementAndGet();
-                    }
-                    return removed;
-                })
-                .onErrorResume(e -> {
-                    log.warn("Error evicting key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
-                    return Mono.just(false);
-                });
+        return operation(() -> {
+            String fullKey = buildKey(key);
+            String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1 AND cache_key = $2";
+            return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
+                    .bind("$1", storageCacheName)
+                    .bind("$2", fullKey)))
+                    .map(n -> {
+                        if (primaryOnly() && n != 0 && n != 1) throw new CacheException("Cache eviction returned an invalid count");
+                        boolean removed = n > 0;
+                        if (removed) {
+                            evictionCount.incrementAndGet();
+                        }
+                        return removed;
+                    })
+                    .onErrorResume(e -> {
+                        if (primaryOnly()) return Mono.error(e);
+                        log.warn("Error evicting key present={} from cache '{}': type={}", key != null, LogFields.text(cacheName), LogFields.errorType(e));
+                        return Mono.just(false);
+                    });
+        });
     }
 
     @Override
     public Mono<Void> clear() {
-        String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1";
-        return withConnection(conn -> rowsUpdated(conn.createStatement(sql).bind("$1", storageCacheName)))
-                .doOnNext(evictionCount::addAndGet)
-                .then();
+        return operation(() -> {
+            String sql = "DELETE FROM " + qualifiedTable + " WHERE cache_name = $1";
+            return withConnection(conn -> rowsUpdated(conn.createStatement(sql).bind("$1", storageCacheName)))
+                    .doOnNext(evictionCount::addAndGet)
+                    .then();
+        });
     }
 
     @Override
     public Mono<Long> evictByPrefix(String keyPrefixToMatch) {
-        String fullPrefix = literalLikePrefix(buildKey(keyPrefixToMatch));
-        String sql = "DELETE FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND cache_key LIKE $2 || '%' ESCAPE E'\\\\'";
-        return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
-                .bind("$1", storageCacheName)
-                .bind("$2", fullPrefix)))
-                .doOnNext(evictionCount::addAndGet);
+        return operation(() -> {
+            String fullPrefix = literalLikePrefix(buildKey(keyPrefixToMatch));
+            String sql = "DELETE FROM " + qualifiedTable
+                    + " WHERE cache_name = $1 AND cache_key LIKE $2 || '%' ESCAPE E'\\\\'";
+            return withConnection(conn -> rowsUpdated(conn.createStatement(sql)
+                    .bind("$1", storageCacheName)
+                    .bind("$2", fullPrefix)))
+                    .doOnNext(evictionCount::addAndGet);
+        });
     }
 
     @Override
     public <K> Mono<Boolean> exists(K key) {
-        String fullKey = buildKey(key);
-        String sql = "SELECT 1 FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND cache_key = $2"
-                + " AND (expires_at IS NULL OR expires_at > NOW())";
-        return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", storageCacheName)
-                .bind("$2", fullKey)
-                .execute())
-                .flatMap(result -> result.map((row, meta) -> Boolean.TRUE))
-                .next())
-                .defaultIfEmpty(false)
-                .onErrorResume(e -> {
-                    log.warn("Error checking existence of key present={} in cache '{}': type={}",
-                            key != null, LogFields.text(cacheName), LogFields.errorType(e));
-                    return Mono.just(false);
-                });
+        return operation(() -> {
+            String fullKey = buildKey(key);
+            String sql = "SELECT 1 FROM " + qualifiedTable
+                    + " WHERE cache_name = $1 AND cache_key = $2"
+                    + " AND (expires_at IS NULL OR expires_at > NOW())";
+            return withConnection(conn -> results(conn.createStatement(sql)
+                    .bind("$1", storageCacheName)
+                    .bind("$2", fullKey))
+                    .flatMap(result -> result.map((row, meta) -> Boolean.TRUE))
+                    .next())
+                    .defaultIfEmpty(false)
+                    .onErrorResume(e -> {
+                        if (primaryOnly()) return Mono.error(e);
+                        log.warn("Error checking existence of key present={} in cache '{}': type={}",
+                                key != null, LogFields.text(cacheName), LogFields.errorType(e));
+                        return Mono.just(false);
+                    });
+        });
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <K> Mono<Set<K>> keys() {
-        String sql = "SELECT cache_key FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
-        return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", storageCacheName)
-                .execute())
-                .flatMap(result -> result.map((row, meta) -> (String) row.get("cache_key")))
-                .map(this::extractOriginalKey)
-                .map(k -> (K) k)
-                .collect(HashSet::new, Set::add))
-                .map(set -> (Set<K>) set);
+        return operation(() -> {
+            String sql = "SELECT cache_key FROM " + qualifiedTable
+                    + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
+            return withConnection(conn -> results(conn.createStatement(sql)
+                    .bind("$1", storageCacheName))
+                    .flatMap(result -> result.map((row, meta) -> (String) row.get("cache_key")))
+                    .map(this::extractOriginalKey)
+                    .map(k -> (K) k)
+                    .collect(HashSet::new, Set::add))
+                    .map(set -> (Set<K>) set);
+        });
     }
 
     @Override
     public Mono<Long> size() {
-        String sql = "SELECT COUNT(*) AS cnt FROM " + qualifiedTable
-                + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
-        return withConnection(conn -> Flux.from(conn.createStatement(sql)
-                .bind("$1", storageCacheName)
-                .execute())
-                .flatMap(result -> result.map((row, meta) -> {
-                    Number n = (Number) row.get("cnt");
-                    return n == null ? 0L : n.longValue();
-                }))
-                .next())
-                .defaultIfEmpty(0L);
+        return operation(() -> {
+            String sql = "SELECT COUNT(*) AS cnt FROM " + qualifiedTable
+                    + " WHERE cache_name = $1 AND (expires_at IS NULL OR expires_at > NOW())";
+            return withConnection(conn -> results(conn.createStatement(sql)
+                    .bind("$1", storageCacheName))
+                    .flatMap(result -> result.map((row, meta) -> {
+                        Number n = (Number) row.get("cnt");
+                        if (primaryOnly() && (n == null || n.longValue() < 0)) throw new CacheException("Cache size returned an invalid count");
+                        return n == null ? 0L : n.longValue();
+                    }))
+                    .next())
+                    .switchIfEmpty(primaryOnly() ? Mono.error(new CacheException("Cache size completed without a result")) : Mono.empty())
+                    .defaultIfEmpty(0L);
+        });
     }
 
     @Override
     public Mono<CacheStats> getStats() {
-        return size().map(entryCount -> CacheStats.builder()
-                        .requestCount(requestCount.get())
-                        .hitCount(hitCount.get())
-                        .missCount(missCount.get())
-                        .loadCount(putCount.get())
-                        .evictionCount(evictionCount.get())
-                        .entryCount(entryCount)
-                        .averageLoadTime(hitCount.get() > 0 ? (double) totalLoadTime.get() / hitCount.get() : 0.0)
-                        .estimatedSize(0)
-                        .capturedAt(Instant.now())
-                        .cacheType(CacheType.POSTGRES)
-                        .cacheName(cacheName)
-                        .build())
-                .onErrorReturn(CacheStats.empty(CacheType.POSTGRES, cacheName));
+        return operation(() -> {
+            Mono<CacheStats> stats = size().map(entryCount -> CacheStats.builder()
+                            .requestCount(requestCount.get())
+                            .hitCount(hitCount.get())
+                            .missCount(missCount.get())
+                            .loadCount(putCount.get())
+                            .evictionCount(evictionCount.get())
+                            .entryCount(entryCount)
+                            .averageLoadTime(hitCount.get() > 0 ? (double) totalLoadTime.get() / hitCount.get() : 0.0)
+                            .estimatedSize(0)
+                            .capturedAt(Instant.now())
+                            .cacheType(CacheType.POSTGRES)
+                            .cacheName(cacheName)
+                            .build());
+            return primaryOnly() ? stats : stats.onErrorReturn(CacheStats.empty(CacheType.POSTGRES, cacheName));
+        });
     }
 
     @Override
@@ -473,7 +523,37 @@ public class PostgresCacheAdapter implements CacheAdapter {
         log.info("Closing PostgreSQL cache adapter '{}'", LogFields.text(cacheName));
     }
 
+    @Override
+    public CacheOperationPolicy operationPolicy() {
+        return operationPolicy;
+    }
+
+    private boolean primaryOnly() {
+        return operationPolicy == CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS;
+    }
+
+    private <T> Mono<T> operation(java.util.function.Supplier<Mono<T>> work) {
+        if (!primaryOnly()) return work.get();
+        return Mono.defer(() -> {
+            Mono<T> result = work.get();
+            return result == null ? Mono.error(new CacheException("Cache operation returned no publisher")) : result;
+        });
+    }
+
+    private Flux<Result> results(Statement statement) {
+        Flux<Result> results = Flux.from(statement.execute());
+        return primaryOnly() ? results.single().flux() : results;
+    }
+
     private Mono<Long> rowsUpdated(Statement statement) {
+        if (primaryOnly()) {
+            return results(statement).single()
+                    .flatMap(result -> Flux.from(result.getRowsUpdated()).single())
+                    .map(count -> {
+                        if (count < 0) throw new CacheException("Cache update returned an invalid count");
+                        return count.longValue();
+                    });
+        }
         return Flux.from(statement.execute())
                 .flatMap(result -> Mono.from(result.getRowsUpdated()))
                 .map(Number::longValue)

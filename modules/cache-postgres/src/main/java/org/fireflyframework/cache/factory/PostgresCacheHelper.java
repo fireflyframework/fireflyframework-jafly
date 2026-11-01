@@ -21,6 +21,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapter;
 import org.fireflyframework.cache.adapter.postgres.PostgresCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.core.CacheOperationPolicy;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.serialization.CacheSerializer;
 import org.fireflyframework.cache.serialization.JsonCacheSerializer;
@@ -58,6 +59,19 @@ public final class PostgresCacheHelper {
                                                           Object r2dbcConnectionFactory,
                                                           CacheProperties properties,
                                                           ObjectMapper objectMapper) {
+        return createPostgresCacheAdapter(cacheName, keyPrefix, defaultTtl, r2dbcConnectionFactory,
+                properties, objectMapper, CacheOperationPolicy.LEGACY);
+    }
+
+    /** Constructs an independent adapter with the explicitly selected operation policy. */
+    public static CacheAdapter createPostgresCacheAdapter(String cacheName,
+                                                          String keyPrefix,
+                                                          Duration defaultTtl,
+                                                          Object r2dbcConnectionFactory,
+                                                          CacheProperties properties,
+                                                          ObjectMapper objectMapper,
+                                                          CacheOperationPolicy policy) {
+        java.util.Objects.requireNonNull(policy, "Cache operation policy required");
         CacheSerializer serializer = new JsonCacheSerializer(objectMapper);
         CacheProperties.PostgresConfig postgres = properties.getPostgres();
 
@@ -78,6 +92,6 @@ public final class PostgresCacheHelper {
         config.validate(cacheName, serviceNamespace);
         ConnectionFactory connectionFactory = (ConnectionFactory) r2dbcConnectionFactory;
         PostgresCacheInitializer.initialize(connectionFactory, postgres, config);
-        return new PostgresCacheAdapter(cacheName, connectionFactory, config, serializer, serviceNamespace);
+        return new PostgresCacheAdapter(cacheName, connectionFactory, config, serializer, serviceNamespace, policy);
     }
 }
