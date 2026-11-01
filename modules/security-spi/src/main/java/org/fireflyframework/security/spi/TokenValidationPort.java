@@ -29,4 +29,12 @@ import reactor.core.publisher.Mono;
 public interface TokenValidationPort {
 
     Mono<SecurityPrincipal> validate(BearerToken token);
+
+    /**
+     * Performs an uncached current-state check. Implementations must explicitly support this
+     * stronger contract; ordinary local validation must never be used as a fallback.
+     */
+    default Mono<SecurityPrincipal> validateLive(BearerToken token) {
+        return Mono.error(new UnsupportedOperationException("Live token validation is not supported"));
+    }
 }

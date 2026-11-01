@@ -53,6 +53,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Strict bounded introspection JSON validation and native Spring Jackson3 codecs. -->
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!-- ===== Test: run a real reactive server and sign JWTs ===== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
