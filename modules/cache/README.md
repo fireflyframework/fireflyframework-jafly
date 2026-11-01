@@ -6,6 +6,8 @@ Use a common cache API with a PostgreSQL default and explicit local or distribut
 
 Depend on the core abstraction, inject FireflyCacheManager or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
 
+For an explicitly selected primary without L1/fallback and with operation failures propagated, see [Primary-only operations](docs/PRIMARY_ONLY_OPERATIONS.md). This opt-in source addition preserves legacy defaults and requires a matching qualified framework release.
+
 [Module guide](../../docs/site/modules/cache.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
 ## In the onboarding service

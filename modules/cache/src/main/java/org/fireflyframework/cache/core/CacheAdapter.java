@@ -38,6 +38,12 @@ import java.util.Set;
  */
 public interface CacheAdapter {
 
+    /** Declares the immutable policy implemented by this adapter, not its current health. */
+    default CacheOperationPolicy operationPolicy() {
+        return CacheOperationPolicy.LEGACY;
+    }
+
+
     /**
      * Retrieves a value from the cache.
      *
