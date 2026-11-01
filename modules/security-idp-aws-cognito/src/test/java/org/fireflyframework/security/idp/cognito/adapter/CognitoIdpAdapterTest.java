@@ -52,11 +52,11 @@ class CognitoIdpAdapterTest {
     @Mock
     private CognitoAdminService adminService;
 
-    private CognitoIdpAdapter adapter;
+    private CognitoIdpAdapterImpl adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new CognitoIdpAdapter(userService, adminService);
+        adapter = new CognitoIdpAdapterImpl(userService, adminService);
     }
 
     @Test

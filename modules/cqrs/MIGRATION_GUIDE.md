@@ -27,7 +27,7 @@ The following internal cache components have been removed:
 ### New Components
 
 - `QueryCacheAdapter` - Bridge adapter between fireflyframework-cache and CQRS query bus
-- Integration with `FireflyCacheManager` from fireflyframework-cache
+- Integration with `FireflyCacheManagerImpl` from fireflyframework-cache
 - Reactive cache operations using `Mono<T>` return types
 
 ### Configuration Changes
@@ -211,16 +211,16 @@ public class GetAccountBalanceHandler extends QueryHandler<GetAccountBalanceQuer
 
 ### Optional: Direct Cache Access
 
-If you need direct access to the cache, you can inject `FireflyCacheManager`:
+If you need direct access to the cache, you can inject `FireflyCacheManagerImpl`:
 
 ```java
 @Service
 public class MyService {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     @Autowired
-    public MyService(FireflyCacheManager cacheManager) {
+    public MyService(FireflyCacheManagerImpl cacheManager) {
         this.cacheManager = cacheManager;
     }
     

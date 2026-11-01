@@ -37,7 +37,7 @@ public class IdpObservabilityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(MeterRegistry.class)
-    IdpMetrics idpMetrics(MeterRegistry meterRegistry) {
-        return new IdpMetrics(meterRegistry);
+    IdpMetricsImpl idpMetrics(MeterRegistry meterRegistry) {
+        return new IdpMetricsImpl(meterRegistry);
     }
 }

@@ -17,7 +17,7 @@
 package org.fireflyframework.cache.config;
 
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -58,7 +58,7 @@ class CacheAutoConfigurationRedisIntegrationTest {
                 .run(context -> {
                     // Verify core beans exist
                     assertThat(context).hasSingleBean(CacheProperties.class);
-                    assertThat(context).hasSingleBean(FireflyCacheManager.class);
+                    assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
                     
                     // Verify Redis-specific beans
                     assertThat(context).hasSingleBean(ReactiveRedisConnectionFactory.class);
@@ -84,7 +84,7 @@ class CacheAutoConfigurationRedisIntegrationTest {
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(CacheProperties.class);
-                    assertThat(context).hasSingleBean(FireflyCacheManager.class);
+                    assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
                     
                     // Should not create Redis beans without configuration
                     assertThat(context).doesNotHaveBean(ReactiveRedisConnectionFactory.class);
@@ -92,7 +92,7 @@ class CacheAutoConfigurationRedisIntegrationTest {
                     
                     CacheProperties properties = context.getBean(CacheProperties.class);
                     assertThat(properties.getDefaultCacheType()).isEqualTo(CacheType.CAFFEINE);
-                    assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
+                    assertThat(context.getBean(FireflyCacheManagerImpl.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
                 });
     }
 
@@ -109,14 +109,14 @@ class CacheAutoConfigurationRedisIntegrationTest {
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(CacheProperties.class);
-                    assertThat(context).hasSingleBean(FireflyCacheManager.class);
+                    assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
                     
                     // Should have both Caffeine and Redis components
                     assertThat(context).hasSingleBean(ReactiveRedisConnectionFactory.class);
                     assertThat(context).hasSingleBean(ReactiveRedisTemplate.class);
                     
                     // Verify cache manager has adapters (indirectly)
-                    FireflyCacheManager cacheManager = context.getBean(FireflyCacheManager.class);
+                    FireflyCacheManagerImpl cacheManager = context.getBean(FireflyCacheManagerImpl.class);
                     assertThat(cacheManager).isNotNull();
                 });
     }
@@ -139,7 +139,7 @@ class CacheAutoConfigurationRedisIntegrationTest {
                     CacheProperties properties = context.getBean(CacheProperties.class);
                     CacheProperties.RedisConfig redisConfig = properties.getRedis();
 
-                    assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.REDIS);
+                    assertThat(context.getBean(FireflyCacheManagerImpl.class).getCacheType()).isEqualTo(CacheType.REDIS);
                     assertThat(redisConfig.getHost()).isEqualTo(redisContainer.getHost());
                     assertThat(redisConfig.getPort()).isEqualTo(redisContainer.getMappedPort(6379));
                     assertThat(redisConfig.getDatabase()).isEqualTo(2);
@@ -161,8 +161,8 @@ class CacheAutoConfigurationRedisIntegrationTest {
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(CacheProperties.class);
-                    assertThat(context).hasSingleBean(FireflyCacheManager.class);
-                    assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
+                    assertThat(context).hasSingleBean(FireflyCacheManagerImpl.class);
+                    assertThat(context.getBean(FireflyCacheManagerImpl.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
                     
                     // Should not create Redis beans when disabled
                     assertThat(context).doesNotHaveBean(ReactiveRedisConnectionFactory.class);

@@ -139,7 +139,7 @@ The `firefly.ecm.adapter.docusign` namespace is bound by [DocuSignAdapterPropert
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`DocuSignSignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapter.java) | Defines `DocuSignSignatureEnvelopeAdapter`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
+| [`DocuSignSignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapterImpl.java) | Defines `DocuSignSignatureEnvelopeAdapterImpl`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
 | [`DocuSignAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignAdapterProperties.java) | Carries `integrationKey`, `userId`, `accountId`, `privateKey`, `baseUrl` data; field constraints and defaults are declared in the linked source. |
 | [`DocuSignAdapterAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignAdapterAutoConfiguration.java) | Auto-configuration for the DocuSign ECM adapter. |
 

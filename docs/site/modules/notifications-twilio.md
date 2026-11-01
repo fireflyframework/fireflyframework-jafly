@@ -64,7 +64,7 @@ public class OtpService {
     private final SMSProvider smsProvider;
 
     public OtpService(SMSProvider smsProvider) {
-        this.smsProvider = smsProvider; // TwilioSMSProvider injected by auto-config
+        this.smsProvider = smsProvider; // TwilioSMSProviderImpl injected by auto-config
     }
 
     public Mono<SMSResponseDTO> sendOtp(String phoneNumber, String code) {
@@ -103,7 +103,7 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`TwilioSMSProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProvider.java) | Defines `TwilioSMSProvider`, `sendSMS`, `PhoneNumber` operations. |
+| [`TwilioSMSProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProviderImpl.java) | Defines `TwilioSMSProviderImpl`, `sendSMS`, `PhoneNumber` operations. |
 | [`TwilioProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/properties/v1/TwilioProperties.java) | Carries `accountSid`, `authToken`, `phoneNumber` data; field constraints and defaults are declared in the linked source. |
 | [`TwilioAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/config/v1/TwilioAutoConfiguration.java) | Defines `twilioInit`, `twilioSMSProvider` operations. |
 
@@ -130,12 +130,12 @@ This subproject has no authored `src/test/java` suite. Its Maven build still val
 
 ## API reference excerpt
 
-Contract excerpt from [TwilioSMSProvider.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProvider.java). This fragment needs the full type and its imports.
+Contract excerpt from [TwilioSMSProviderImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-twilio/src/main/java/org/fireflyframework/notifications/providers/twilio/core/v1/TwilioSMSProviderImpl.java). This fragment needs the full type and its imports.
 
 ```java
-public class TwilioSMSProvider implements SMSProvider {
+public class TwilioSMSProviderImpl implements SMSProvider {
     private final TwilioProperties twilioProperties;
-    public TwilioSMSProvider(TwilioProperties twilioProperties) {
+    public TwilioSMSProviderImpl(TwilioProperties twilioProperties) {
         this.twilioProperties = twilioProperties;
     }
     public Mono<SMSResponseDTO> sendSMS(SMSRequestDTO request) {
@@ -193,7 +193,7 @@ firefly:
 - `@ConditionalOnClass(com.twilio.Twilio.class)`. only when the Twilio SDK is present.
 - `@EnableConfigurationProperties(TwilioProperties.class)`. binds the `firefly.notifications.twilio.*` keys.
 
-When active, it initializes the static Twilio client with `Twilio.init(accountSid, authToken)` and registers a `TwilioSMSProvider` as the `SMSProvider` bean (both `@ConditionalOnMissingBean`, so you can override either). `TwilioSMSProvider.sendSMS` validates the request, builds a Twilio `Message` (recipient, sender, body), executes the REST call on `Schedulers.boundedElastic()`, and maps the result to an `SMSResponseDTO`.
+When active, it initializes the static Twilio client with `Twilio.init(accountSid, authToken)` and registers a `TwilioSMSProviderImpl` as the `SMSProvider` bean (both `@ConditionalOnMissingBean`, so you can override either). `TwilioSMSProviderImpl.sendSMS` validates the request, builds a Twilio `Message` (recipient, sender, body), executes the REST call on `Schedulers.boundedElastic()`, and maps the result to an `SMSResponseDTO`.
 
 ## Continue the application
 

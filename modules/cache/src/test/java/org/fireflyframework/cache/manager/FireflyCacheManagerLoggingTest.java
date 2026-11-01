@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 class FireflyCacheManagerLoggingTest {
     private static final String NAME = "cache\r\nregion\u000bvertical\fform\u0085next\u2028line\u2029paragraph";
-    private final Logger logger = (Logger) LoggerFactory.getLogger(FireflyCacheManager.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(FireflyCacheManagerImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level previousLevel;
     private boolean previousAdditive;
@@ -63,7 +63,7 @@ class FireflyCacheManagerLoggingTest {
     @Test void genericGetErrorsKeepEmptyFallbackWithoutRenderingKeysOrPayload() {
         var primary = primary(); var key = new Key();
         when(primary.get(key)).thenReturn(Mono.error(new IllegalStateException("PRIVATE_MESSAGE\r\nforged")));
-        assertEquals(Optional.empty(), new FireflyCacheManager(primary).get(key).block());
+        assertEquals(Optional.empty(), new FireflyCacheManagerImpl(primary).get(key).block());
         safeEvent(Level.ERROR, true); assertEquals(0, key.renders);
     }
     @Test void typedGetAndOtherFallbacksRetainResultsAndErrorLevels() {
@@ -75,7 +75,7 @@ class FireflyCacheManagerLoggingTest {
         when(primary.clear()).thenReturn(Mono.error(failure));
         when(primary.keys()).thenReturn(Mono.error(failure));
         when(primary.size()).thenReturn(Mono.error(failure));
-        var manager = new FireflyCacheManager(primary);
+        var manager = new FireflyCacheManagerImpl(primary);
         assertEquals(Optional.empty(), manager.get(key, String.class).block()); safeEvent(Level.ERROR, true);
         assertNull(manager.put(key, "value").block()); safeEvent(Level.ERROR, true);
         assertEquals(false, manager.evict(key).block()); safeEvent(Level.ERROR, true);
@@ -90,7 +90,7 @@ class FireflyCacheManagerLoggingTest {
         var reads = new java.util.concurrent.atomic.AtomicInteger();
         var error = new IllegalStateException() { @Override public String getMessage() { reads.incrementAndGet(); return "PRIVATE_MESSAGE"; } };
         when(primary.get(key)).thenReturn(Mono.error(error));
-        assertEquals(Optional.empty(), new FireflyCacheManager(primary).get(key).block());
+        assertEquals(Optional.empty(), new FireflyCacheManagerImpl(primary).get(key).block());
         assertEquals(0, key.renders); assertEquals(0, reads.get()); assertTrue(events.list.isEmpty());
     }
 }

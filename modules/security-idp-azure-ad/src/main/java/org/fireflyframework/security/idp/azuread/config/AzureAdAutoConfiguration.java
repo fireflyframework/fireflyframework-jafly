@@ -17,13 +17,13 @@ package org.fireflyframework.security.idp.azuread.config;
 
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
-import org.fireflyframework.security.idp.azuread.adapter.AzureAdIdpAdapter;
+import org.fireflyframework.security.idp.azuread.adapter.AzureAdIdpAdapterImpl;
 import org.fireflyframework.security.idp.azuread.client.GraphClientFactory;
 import org.fireflyframework.security.idp.azuread.client.MsalClientFactory;
 import org.fireflyframework.security.idp.azuread.service.AzureAdAdminService;
 import org.fireflyframework.security.idp.azuread.service.AzureAdAuthService;
-import org.fireflyframework.security.idp.azuread.service.B2CAdminService;
-import org.fireflyframework.security.idp.azuread.service.EntraIdAdminService;
+import org.fireflyframework.security.idp.azuread.service.B2CAdminServiceImpl;
+import org.fireflyframework.security.idp.azuread.service.EntraIdAdminServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -82,7 +82,7 @@ public class AzureAdAutoConfiguration {
     public AzureAdAdminService entraIdAdminService(GraphClientFactory graphClientFactory,
                                                     AzureAdProperties properties) {
         log.info("Configuring Entra ID Admin Service");
-        return new EntraIdAdminService(graphClientFactory, properties);
+        return new EntraIdAdminServiceImpl(graphClientFactory, properties);
     }
 
     @Bean
@@ -91,7 +91,7 @@ public class AzureAdAutoConfiguration {
     public AzureAdAdminService b2cAdminService(GraphClientFactory graphClientFactory,
                                                 AzureAdProperties properties) {
         log.info("Configuring B2C Admin Service");
-        return new B2CAdminService(graphClientFactory, properties);
+        return new B2CAdminServiceImpl(graphClientFactory, properties);
     }
 
     @Bean
@@ -99,6 +99,6 @@ public class AzureAdAutoConfiguration {
     public IdpAdapter azureAdIdpAdapter(AzureAdAuthService authService,
                                          AzureAdAdminService adminService) {
         log.info("Configuring Azure AD IDP Adapter");
-        return new AzureAdIdpAdapter(authService, adminService);
+        return new AzureAdIdpAdapterImpl(authService, adminService);
     }
 }

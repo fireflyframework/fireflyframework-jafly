@@ -4,7 +4,7 @@
 
 Check relationship authorization through an OpenFGA store.
 
-Construct OpenFgaRelationshipAdapter with a WebClient and store ID, then call check(subject, relation, object). The adapter posts tuple_key to the store check route and returns false for transport errors. Provision the authorization model and tuples in OpenFGA separately.
+Construct OpenFgaRelationshipAdapterImpl with a WebClient and store ID, then call check(subject, relation, object). The adapter posts tuple_key to the store check route and returns false for transport errors. Provision the authorization model and tuples in OpenFGA separately.
 
 [Module guide](../../docs/site/modules/security-adapter-openfga.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
@@ -36,12 +36,12 @@ RelationshipPort relationshipPort() {
     WebClient client = WebClient.builder()
             .baseUrl(System.getenv("OPENFGA_URL"))
             .build();
-    return new OpenFgaRelationshipAdapter(
+    return new OpenFgaRelationshipAdapterImpl(
             client, System.getenv("OPENFGA_STORE_ID"));
 }
 ```
 
-Call `relationshipPort.check("user:alice", "viewer", "document:budget")` to obtain `Mono<Boolean>`. The adapter sends these values as `tuple_key.user`, `tuple_key.relation`, and `tuple_key.object` to `/stores/{storeId}/check`. It returns `false` on transport errors. Add any deployment authentication headers to the host-owned `WebClient`. Imports: `org.fireflyframework.security.spi.RelationshipPort`, `org.fireflyframework.security.adapter.openfga.OpenFgaRelationshipAdapter`, Spring `Bean`, and WebFlux `WebClient`.
+Call `relationshipPort.check("user:alice", "viewer", "document:budget")` to obtain `Mono<Boolean>`. The adapter sends these values as `tuple_key.user`, `tuple_key.relation`, and `tuple_key.object` to `/stores/{storeId}/check`. It returns `false` on transport errors. Add any deployment authentication headers to the host-owned `WebClient`. Imports: `org.fireflyframework.security.spi.RelationshipPort`, `org.fireflyframework.security.adapter.openfga.OpenFgaRelationshipAdapterImpl`, Spring `Bean`, and WebFlux `WebClient`.
 
 ## Configuration
 
@@ -51,7 +51,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`OpenFgaRelationshipAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-openfga/src/main/java/org/fireflyframework/security/adapter/openfga/OpenFgaRelationshipAdapter.java) | Maps subject/relation/object checks to an OpenFGA store; transport failures return false. |
+| [`OpenFgaRelationshipAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-openfga/src/main/java/org/fireflyframework/security/adapter/openfga/OpenFgaRelationshipAdapterImpl.java) | Maps subject/relation/object checks to an OpenFGA store; transport failures return false. |
 
 ## Continue the application
 

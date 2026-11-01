@@ -17,8 +17,8 @@
 package org.fireflyframework.webhooks.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fireflyframework.eda.consumer.kafka.KafkaEventConsumer;
-import org.fireflyframework.eda.listener.EventListenerProcessor;
+import org.fireflyframework.eda.consumer.kafka.KafkaEventConsumerImpl;
+import org.fireflyframework.eda.listener.EventListenerProcessorImpl;
 import org.fireflyframework.webhooks.integration.support.StripeSignatureValidator;
 import org.fireflyframework.webhooks.integration.support.TestStripeWebhookListener;
 import org.fireflyframework.webhooks.integration.support.TestStripeWebhookProcessor;
@@ -70,7 +70,7 @@ public class WebhookIntegrationTestConfiguration {
                 }
 
                 // When EventListenerProcessor is created, manually initialize it
-                if (bean instanceof EventListenerProcessor processor) {
+                if (bean instanceof EventListenerProcessorImpl processor) {
                     log.info("🔧 Manually initializing EventListenerProcessor for test configuration");
                     processor.initializeEventListeners();
                     log.info("✅ EventListenerProcessor initialized with {} topics",
@@ -78,7 +78,7 @@ public class WebhookIntegrationTestConfiguration {
                 }
 
                 // After EventListenerProcessor is initialized, refresh KafkaEventConsumer topics
-                if (initialized && bean instanceof KafkaEventConsumer consumer) {
+                if (initialized && bean instanceof KafkaEventConsumerImpl consumer) {
                     log.info("🔄 Refreshing KafkaEventConsumer topics after EventListenerProcessor initialization");
                     consumer.refreshTopics();
                 }

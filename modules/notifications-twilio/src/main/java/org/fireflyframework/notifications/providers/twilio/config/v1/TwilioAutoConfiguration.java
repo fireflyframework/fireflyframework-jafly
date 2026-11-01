@@ -18,7 +18,7 @@
 package org.fireflyframework.notifications.providers.twilio.config.v1;
 
 import org.fireflyframework.notifications.interfaces.providers.sms.v1.SMSProvider;
-import org.fireflyframework.notifications.providers.twilio.core.v1.TwilioSMSProvider;
+import org.fireflyframework.notifications.providers.twilio.core.v1.TwilioSMSProviderImpl;
 import org.fireflyframework.notifications.providers.twilio.properties.v1.TwilioProperties;
 import com.twilio.Twilio;
 import com.twilio.http.TwilioRestClient;
@@ -58,12 +58,12 @@ public class TwilioAutoConfiguration {
     }
 
     public SMSProvider twilioSMSProvider(TwilioProperties twilioProperties) {
-        return new TwilioSMSProvider(twilioProperties);
+        return new TwilioSMSProviderImpl(twilioProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean(SMSProvider.class)
     public SMSProvider twilioSMSProvider(TwilioProperties twilioProperties, TwilioRestClient client) {
-        return new TwilioSMSProvider(twilioProperties, client);
+        return new TwilioSMSProviderImpl(twilioProperties, client);
     }
 }

@@ -98,10 +98,10 @@ public class WelcomeMailer {
 }
 ```
 
-The auto-configuration builds the `SendGrid` client and the `SendGridEmailProvider` bean for you. The returned `EmailResponseDTO`
+The auto-configuration builds the `SendGrid` client and the `SendGridEmailProviderImpl` bean for you. The returned `EmailResponseDTO`
 carries `success`/`error` status and, on success, the SendGrid `X-Message-Id`.
 
-You can also depend on the `EmailProvider` SPI directly if you prefer to bypass the `EmailService` facade. The same `SendGridEmailProvider` bean satisfies it.
+You can also depend on the `EmailProvider` SPI directly if you prefer to bypass the `EmailService` facade. The same `SendGridEmailProviderImpl` bean satisfies it.
 
 ## Configuration
 
@@ -115,7 +115,7 @@ The `firefly.notifications.sendgrid` namespace is bound by [SendGridProperties.j
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`SendGridEmailProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-sendgrid/src/main/java/org/fireflyframework/notifications/providers/sendgrid/core/v1/SendGridEmailProvider.java) | Defines `sendEmail`, `buildMail` operations. |
+| [`SendGridEmailProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-sendgrid/src/main/java/org/fireflyframework/notifications/providers/sendgrid/core/v1/SendGridEmailProviderImpl.java) | Defines `sendEmail`, `buildMail` operations. |
 | [`SendGridProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-sendgrid/src/main/java/org/fireflyframework/notifications/providers/sendgrid/properties/v1/SendGridProperties.java) | Carries `apiKey` data; field constraints and defaults are declared in the linked source. |
 | [`SendGridAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-sendgrid/src/main/java/org/fireflyframework/notifications/providers/sendgrid/config/v1/SendGridAutoConfiguration.java) | Defines `sendGrid`, `sendGridEmailProvider` operations. |
 

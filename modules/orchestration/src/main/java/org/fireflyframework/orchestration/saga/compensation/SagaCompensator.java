@@ -65,7 +65,7 @@ public class SagaCompensator {
         this.events = events;
         this.policy = policy != null ? policy : CompensationPolicy.STRICT_SEQUENTIAL;
         this.invoker = invoker;
-        this.errorHandler = errorHandler != null ? errorHandler : new DefaultCompensationErrorHandler();
+        this.errorHandler = errorHandler != null ? errorHandler : new DefaultCompensationErrorHandlerImpl();
     }
 
     public Mono<Void> compensate(String sagaName, SagaDefinition saga,

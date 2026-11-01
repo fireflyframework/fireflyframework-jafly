@@ -110,15 +110,15 @@ public class PaymentListener {
 ```java
 @Bean
 PostgresEventDecoder postgresEventDecoder(MessageSerializer serializer) {
-    return new RegisteredPostgresEventDecoder(serializer, Map.of(
+    return new RegisteredPostgresEventDecoderImpl(serializer, Map.of(
         PaymentCompleted.class.getName(), PaymentCompleted.class,
         "payment.completed", PaymentCompleted.class));
 }
 ```
 
-Import `PostgresEventDecoder` from `org.fireflyframework.eda.consumer.postgres`, `RegisteredPostgresEventDecoder` from its `impl` package, and `MessageSerializer` from `org.fireflyframework.eda.serialization`. An unknown class identifier fails decoding even if another event type is registered. `Object.class` decoding requires an explicit registration.
+Import `PostgresEventDecoder` from `org.fireflyframework.eda.consumer.postgres`, `RegisteredPostgresEventDecoderImpl` from its `impl` package, and `MessageSerializer` from `org.fireflyframework.eda.serialization`. An unknown class identifier fails decoding even if another event type is registered. `Object.class` decoding requires an explicit registration.
 
-6. Install the reviewed delivery protocol below and explicitly activate the worker through `PostgresEventConsumer.start()` or a processing subscription to `consume()`. Compose and await the returned publisher in the application's lifecycle. A configured/enabled bean is not a running or ready worker; this block adds no automatic lifecycle activation.
+6. Install the reviewed delivery protocol below and explicitly activate the worker through `PostgresEventConsumerImpl.start()` or a processing subscription to `consume()`. Compose and await the returned publisher in the application's lifecycle. A configured/enabled bean is not a running or ready worker; this block adds no automatic lifecycle activation.
 
 Application handlers use the event port. The technical adapter owns channel mapping and its named resources; schema installation remains an operator action.
 
@@ -128,25 +128,25 @@ Configuration binds through the shared `EdaProperties` class under `firefly.eda.
 
 `fireflyEdaPostgresConsumerQueryConnectionFactory` is a lazy, named, non-default bounded query pool. `fireflyEdaPostgresConsumerConnectionFactory` supplies separate raw LISTEN connections. Neither replaces a Core business factory, template, repository, or transaction manager. An explicitly supplied query factory must be independent and compatible with the repository's ownership contract. The framework closes only its own query pool when the context closes; `stop()` preserves that pool for a later start and never disposes an external factory.
 
-The original five-argument `PostgresEventConsumer` constructor remains link-compatible, but starting that legacy construction now fails before resource access because it lacks the mandatory repository and decoder. Migrate direct callers to the additive seven-argument constructor or the configured bean. Missing decoder configuration fails selected-consumer bean creation; missing or incompatible protocol fails `start()` before admission.
+The original five-argument `PostgresEventConsumerImpl` constructor remains link-compatible, but starting that legacy construction now fails before resource access because it lacks the mandatory repository and decoder. Migrate direct callers to the additive seven-argument constructor or the configured bean. Missing decoder configuration fails selected-consumer bean creation; missing or incompatible protocol fails `start()` before admission.
 
 ## API overview
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`PostgresEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisher.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses Spring Data and joins an owner transaction on its configured connection factory. |
-| [`PostgresEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumer.java) | PostgreSQL implementation of `EventConsumer`. |
+| [`PostgresEventPublisherImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisherImpl.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses Spring Data and joins an owner transaction on its configured connection factory. |
+| [`PostgresEventConsumerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumerImpl.java) | PostgreSQL implementation of `EventConsumer`. |
 | [`FireflyEdaPostgresConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresConsumerAutoConfiguration.java) | Defines `FireflyEdaPostgresConsumerAutoConfiguration`, `fireflyEdaPostgresConsumerConnectionFactory` operations. |
 | [`FireflyEdaPostgresPublisherAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresPublisherAutoConfiguration.java) | Defines `FireflyEdaPostgresPublisherAutoConfiguration`, `fireflyEdaPostgresPublisherConnectionFactory`, `initialiseSchema`, `executeAll` operations. |
 | [`PostgresChannelMapper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresChannelMapper.java) | Maps arbitrary destination strings (e.g., `"order-events"`, `"user.created"`) to deterministic, valid PostgreSQL channel names suitable for use with `LISTEN`/`NOTIFY`. |
 
 ## Fenced delivery repository
 
-`PostgresDeliveryRepository` provides bounded claims, fenced acknowledgments and retries, dead-letter transitions, and protocol verification through Spring Data. `SpringDataPostgresDeliveryRepository` accepts an explicit independent technical connection factory, schema, table, and a transaction timeout of 1–60 whole seconds. Each operation uses its own `REQUIRES_NEW` transaction and completes connection release before returning a result. An outer transaction does not own a claim. A release error after commit withholds the result; the durable claim then recovers through lease expiry.
+`PostgresDeliveryRepository` provides bounded claims, fenced acknowledgments and retries, dead-letter transitions, and protocol verification through Spring Data. `SpringDataPostgresDeliveryRepositoryImpl` accepts an explicit independent technical connection factory, schema, table, and a transaction timeout of 1–60 whole seconds. Each operation uses its own `REQUIRES_NEW` transaction and completes connection release before returning a result. An outer transaction does not own a claim. A release error after commit withholds the result; the durable claim then recovers through lease expiry.
 
 Supply the underlying independent factory explicitly. Transaction-aware proxies, single-connection factories, scoped factories, and their supported infrastructure aliases are rejected before acquisition or scoped target resolution. Custom connection-reusing or close-suppressing wrappers are unsupported. The repository neither looks up nor disposes a default/business pool.
 
-`PostgresEventConsumer` uses this repository for every claim and durable transition. A bounded/coalesced poll and notification loop shares concurrency permits; a committed batch is released from the query connection before handlers run. Query or LISTEN failures recover with bounded delays. Stop interrupts waiting handlers and bounds cleanup; no lease is renewed. Transport delivery remains at least once, and Core operation journals/retry keys remain authoritative for business effects.
+`PostgresEventConsumerImpl` uses this repository for every claim and durable transition. A bounded/coalesced poll and notification loop shares concurrency permits; a committed batch is released from the query connection before handlers run. Query or LISTEN failures recover with bounded delays. Stop interrupts waiting handlers and bounds cleanup; no lease is renewed. Transport delivery remains at least once, and Core operation journals/retry keys remain authoritative for business effects.
 
 The default `ANNOTATED` mode waits for the strict listener outcome before fenced ACK/retry/dead-letter handling. `consume()` subscribers in this mode are read-only observers; missing observer demand cannot block handlers or ACK rows. `MANUAL` mode permits exactly one processing subscriber, claims only against positive demand, does not invoke annotations, and exposes cold fenced `acknowledge()`/`reject()` callbacks. Cancelling, timing out, or losing a subscriber never substitutes an ACK for missing processing. An already submitted mutation can have an unknown outcome if its result is lost. Stale callbacks fail rather than acknowledging a newer claim. A callback failure can leave the row leased until expiry; the runtime does not infer a successful transition from a lost result.
 

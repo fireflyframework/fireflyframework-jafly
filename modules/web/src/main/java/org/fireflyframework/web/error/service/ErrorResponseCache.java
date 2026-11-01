@@ -1,6 +1,6 @@
 package org.fireflyframework.web.error.service;
 
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.web.error.config.ErrorHandlingProperties;
 import org.fireflyframework.web.error.models.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class ErrorResponseCache {
 
     private static final String KEY_PREFIX = ":error:";
 
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final ErrorHandlingProperties properties;
     private final Duration ttl;
 
@@ -57,7 +57,7 @@ public class ErrorResponseCache {
      * @param cacheManager the Firefly cache manager
      * @param properties the error handling properties
      */
-    public ErrorResponseCache(FireflyCacheManager cacheManager, ErrorHandlingProperties properties) {
+    public ErrorResponseCache(FireflyCacheManagerImpl cacheManager, ErrorHandlingProperties properties) {
         this.cacheManager = cacheManager;
         this.properties = properties;
         this.ttl = Duration.ofSeconds(properties.getErrorCacheTtlSeconds());

@@ -24,7 +24,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
@@ -61,7 +61,7 @@ class WorkflowStepFailureEventTest {
         var events = new OrchestrationEvents() {};
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, trackingPublisher, null, null);
         var registry = new WorkflowRegistry();
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, trackingPublisher);
 
         var bean = new FailingBean();
@@ -102,7 +102,7 @@ class WorkflowStepFailureEventTest {
         var events = new OrchestrationEvents() {};
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, trackingPublisher, null, null);
         var registry = new WorkflowRegistry();
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, trackingPublisher);
 
         var bean = new FailingBean();

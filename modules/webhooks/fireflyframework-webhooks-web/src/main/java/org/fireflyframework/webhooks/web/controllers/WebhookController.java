@@ -23,7 +23,7 @@ import org.fireflyframework.webhooks.core.services.WebhookMetadataEnrichmentServ
 import org.fireflyframework.webhooks.core.services.WebhookProcessingService;
 import org.fireflyframework.webhooks.interfaces.dto.WebhookEventDTO;
 import org.fireflyframework.webhooks.interfaces.dto.WebhookResponseDTO;
-import org.fireflyframework.webhooks.core.metrics.WebhookMetricsService;
+import org.fireflyframework.webhooks.core.metrics.WebhookMetricsServiceImpl;
 import org.fireflyframework.webhooks.core.validation.WebhookValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -73,7 +73,7 @@ public class WebhookController {
 
     private final WebhookProcessingService webhookProcessingService;
     private final WebhookValidator webhookValidator;
-    private final WebhookMetricsService metricsService;
+    private final WebhookMetricsServiceImpl metricsService;
     private final org.fireflyframework.webhooks.core.ratelimit.WebhookRateLimitService rateLimitService;
     private final WebhookMetadataEnrichmentService metadataEnrichmentService;
 

@@ -18,7 +18,7 @@
 package org.fireflyframework.web.logging;
 
 import org.fireflyframework.web.logging.config.HttpRequestLoggingProperties;
-import org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilter;
+import org.fireflyframework.web.logging.filter.HttpRequestLoggingWebFilterImpl;
 import org.fireflyframework.web.logging.service.PiiMaskingService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,14 +47,14 @@ import static org.mockito.Mockito.*;
 class JsonValidityTest {
 
     private HttpRequestLoggingProperties properties;
-    private HttpRequestLoggingWebFilter filter;
+    private HttpRequestLoggingWebFilterImpl filter;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         properties = new HttpRequestLoggingProperties();
         properties.setEnabled(true);
-        filter = new HttpRequestLoggingWebFilter(properties, Optional.empty());
+        filter = new HttpRequestLoggingWebFilterImpl(properties, Optional.empty());
         objectMapper = new ObjectMapper();
     }
 
@@ -165,7 +165,7 @@ class JsonValidityTest {
                 .header("Authorization", "Bearer secret-token")
                 .build();
 
-        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilter.class
+        Method formatHeadersAsMapMethod = HttpRequestLoggingWebFilterImpl.class
                 .getDeclaredMethod("formatHeadersAsMap", HttpHeaders.class);
         formatHeadersAsMapMethod.setAccessible(true);
 
@@ -223,19 +223,19 @@ class JsonValidityTest {
 
     // Helper methods to invoke private methods for testing
     private String invokeSanitizeForJson(String input) throws Exception {
-        Method method = HttpRequestLoggingWebFilter.class.getDeclaredMethod("sanitizeForJson", String.class);
+        Method method = HttpRequestLoggingWebFilterImpl.class.getDeclaredMethod("sanitizeForJson", String.class);
         method.setAccessible(true);
         return (String) method.invoke(filter, input);
     }
 
     private String invokeSanitizeBodyForJson(byte[] body) throws Exception {
-        Method method = HttpRequestLoggingWebFilter.class.getDeclaredMethod("sanitizeBodyForJson", byte[].class);
+        Method method = HttpRequestLoggingWebFilterImpl.class.getDeclaredMethod("sanitizeBodyForJson", byte[].class);
         method.setAccessible(true);
         return (String) method.invoke(filter, body);
     }
 
     private String invokeSerializeToJsonSafely(Map<String, Object> logData, String logType) throws Exception {
-        Method method = HttpRequestLoggingWebFilter.class.getDeclaredMethod("serializeToJsonSafely", Map.class, String.class);
+        Method method = HttpRequestLoggingWebFilterImpl.class.getDeclaredMethod("serializeToJsonSafely", Map.class, String.class);
         method.setAccessible(true);
         return (String) method.invoke(filter, logData, logType);
     }

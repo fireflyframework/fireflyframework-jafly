@@ -32,7 +32,7 @@ Wire the PEP into a `SecurityWebFilterChain` (normally done for you by `security
 
 ```java
 import org.fireflyframework.security.spi.PolicyDecisionPort;
-import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManager;
+import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManagerImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -43,7 +43,7 @@ SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, PolicyDec
             .authorizeExchange(ex -> ex
                     .pathMatchers("/actuator/health").permitAll()
                     // every other exchange goes through the policy decision point (fail-closed)
-                    .anyExchange().access(new PolicyAuthorizationManager(pdp)))
+                    .anyExchange().access(new PolicyAuthorizationManagerImpl(pdp)))
             .build();
 }
 ```
@@ -62,7 +62,7 @@ public class GreetingService {
     private final SecurityContextPort securityContext;
 
     public GreetingService(SecurityContextPort securityContext) {
-        this.securityContext = securityContext; // ReactorSecurityContextAdapter at runtime
+        this.securityContext = securityContext; // ReactorSecurityContextAdapterImpl at runtime
     }
 
     public Mono<String> greet() {
@@ -103,8 +103,8 @@ The `firefly.security.webflux.header-bridge` namespace is bound by [PrincipalHea
 | [`PrincipalHeaderBridgeProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeProperties.java) | Configuration for the principal→header bridge. |
 | [`FireflyAuthenticationToken`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/FireflyAuthenticationToken.java) | Spring Security `org.springframework.security.core.Authentication` whose principal is the framework's `SecurityPrincipal`. |
 | [`PrincipalSupport`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/PrincipalSupport.java) | Recovers a `SecurityPrincipal` from any Spring `Authentication`. |
-| [`PolicyAuthorizationManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authz/PolicyAuthorizationManager.java) | URL policy enforcement point. |
-| [`PrincipalHeaderBridgeWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeWebFilter.java) | Derives trusted internal request headers from the validated token , never from the client. |
+| [`PolicyAuthorizationManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authz/PolicyAuthorizationManagerImpl.java) | URL policy enforcement point. |
+| [`PrincipalHeaderBridgeWebFilterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeWebFilterImpl.java) | Derives trusted internal request headers from the validated token , never from the client. |
 
 ## Continue the application
 

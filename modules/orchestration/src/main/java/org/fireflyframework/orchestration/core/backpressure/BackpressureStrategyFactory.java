@@ -84,14 +84,14 @@ public final class BackpressureStrategyFactory {
      */
     public static BackpressureStrategy fromConfig(BackpressureConfig config) {
         return switch (config.strategy()) {
-            case "adaptive" -> new AdaptiveBackpressureStrategy(
+            case "adaptive" -> new AdaptiveBackpressureStrategyImpl(
                     config.initialConcurrency(),
                     config.maxConcurrency(),
                     config.minConcurrency(),
                     config.errorRateThreshold()
             );
-            case "batched" -> new BatchedBackpressureStrategy(config.batchSize());
-            case "circuit-breaker" -> new CircuitBreakerBackpressureStrategy(
+            case "batched" -> new BatchedBackpressureStrategyImpl(config.batchSize());
+            case "circuit-breaker" -> new CircuitBreakerBackpressureStrategyImpl(
                     config.failureThreshold(),
                     config.recoveryTimeout(),
                     config.halfOpenMaxCalls()
@@ -110,12 +110,12 @@ public final class BackpressureStrategyFactory {
     }
 
     private static void registerDefaults() {
-        REGISTRY.put("adaptive", AdaptiveBackpressureStrategy::new);
-        REGISTRY.put("batched", BatchedBackpressureStrategy::new);
-        REGISTRY.put("circuit-breaker", CircuitBreakerBackpressureStrategy::new);
+        REGISTRY.put("adaptive", AdaptiveBackpressureStrategyImpl::new);
+        REGISTRY.put("batched", BatchedBackpressureStrategyImpl::new);
+        REGISTRY.put("circuit-breaker", CircuitBreakerBackpressureStrategyImpl::new);
         REGISTRY.put("circuit-breaker-aggressive",
-                () -> new CircuitBreakerBackpressureStrategy(2, Duration.ofSeconds(60), 1));
+                () -> new CircuitBreakerBackpressureStrategyImpl(2, Duration.ofSeconds(60), 1));
         REGISTRY.put("circuit-breaker-conservative",
-                () -> new CircuitBreakerBackpressureStrategy(10, Duration.ofSeconds(15), 5));
+                () -> new CircuitBreakerBackpressureStrategyImpl(10, Duration.ofSeconds(15), 5));
     }
 }

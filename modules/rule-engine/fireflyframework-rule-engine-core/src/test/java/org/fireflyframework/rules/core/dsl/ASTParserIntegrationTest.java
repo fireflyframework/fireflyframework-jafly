@@ -21,9 +21,9 @@ import org.fireflyframework.rules.core.dsl.condition.Condition;
 import org.fireflyframework.rules.core.dsl.exception.ASTException;
 import org.fireflyframework.rules.core.dsl.expression.Expression;
 import org.fireflyframework.rules.core.dsl.parser.DSLParser;
-import org.fireflyframework.rules.core.dsl.visitor.ActionExecutor;
+import org.fireflyframework.rules.core.dsl.visitor.ActionExecutorImpl;
 import org.fireflyframework.rules.core.dsl.visitor.EvaluationContext;
-import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluator;
+import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluatorImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -67,7 +67,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate simple arithmetic expressions")
         void testSimpleArithmetic() {
             Expression expr = dslParser.parseExpression("age + 5");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = expr.accept(evaluator);
             assertThat(result.toString()).isEqualTo("30.0");
@@ -77,7 +77,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate complex arithmetic expressions")
         void testComplexArithmetic() {
             Expression expr = dslParser.parseExpression("(income * 0.1) + (age * 100)");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = expr.accept(evaluator);
             assertThat(result.toString()).isEqualTo("7500.00");
@@ -87,7 +87,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate string operations")
         void testStringOperations() {
             Expression expr = dslParser.parseExpression("name + \" is \" + status");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = expr.accept(evaluator);
             assertThat(result).isEqualTo("John Doe is ACTIVE");
@@ -99,7 +99,7 @@ class ASTParserIntegrationTest {
             // Note: Function calls will need to be implemented
             assertThatCode(() -> {
                 Expression expr = dslParser.parseExpression("max(age, MIN_AGE)");
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 expr.accept(evaluator);
             }).doesNotThrowAnyException();
         }
@@ -115,7 +115,7 @@ class ASTParserIntegrationTest {
             
             assertThatCode(() -> {
                 Expression expr = dslParser.parseExpression("person.firstName");
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 expr.accept(evaluator);
             }).doesNotThrowAnyException();
         }
@@ -129,7 +129,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate simple comparison conditions")
         void testSimpleComparison() {
             Condition condition = dslParser.parseCondition("age >= MIN_AGE");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -139,7 +139,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate logical AND conditions")
         void testLogicalAnd() {
             Condition condition = dslParser.parseCondition("age >= MIN_AGE and income > 30000");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -149,7 +149,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate logical OR conditions")
         void testLogicalOr() {
             Condition condition = dslParser.parseCondition("age < MIN_AGE or income > 40000");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -159,7 +159,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate logical NOT conditions")
         void testLogicalNot() {
             Condition condition = dslParser.parseCondition("not (age < MIN_AGE)");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -169,7 +169,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate string comparison conditions")
         void testStringComparison() {
             Condition condition = dslParser.parseCondition("status equals \"ACTIVE\"");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -179,7 +179,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and evaluate range conditions")
         void testRangeCondition() {
             Condition condition = dslParser.parseCondition("score >= 700 and score <= MAX_SCORE");
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
 
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -191,7 +191,7 @@ class ASTParserIntegrationTest {
             Condition condition = dslParser.parseCondition(
                 "(age >= MIN_AGE and income > 30000) or (score > 700 and status equals \"ACTIVE\")"
             );
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
             
             Object result = condition.accept(evaluator);
             assertThat(result).isEqualTo(true);
@@ -206,7 +206,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and execute SET actions")
         void testSetAction() {
             Action action = dslParser.parseAction("set result to \"approved\"");
-            ActionExecutor executor = new ActionExecutor(context);
+            ActionExecutorImpl executor = new ActionExecutorImpl(context);
             
             action.accept(executor);
             
@@ -217,7 +217,7 @@ class ASTParserIntegrationTest {
         @DisplayName("Should parse and execute CALCULATE actions")
         void testCalculateAction() {
             Action action = dslParser.parseAction("calculate totalScore as score + age");
-            ActionExecutor executor = new ActionExecutor(context);
+            ActionExecutorImpl executor = new ActionExecutorImpl(context);
             
             action.accept(executor);
             
@@ -230,7 +230,7 @@ class ASTParserIntegrationTest {
             Action action = dslParser.parseAction(
                 "if score > 700 then set category to \"premium\" else set category to \"standard\""
             );
-            ActionExecutor executor = new ActionExecutor(context);
+            ActionExecutorImpl executor = new ActionExecutorImpl(context);
             
             action.accept(executor);
             
@@ -245,7 +245,7 @@ class ASTParserIntegrationTest {
             // now throws -- intentional behaviour to surface typos.
             assertThatCode(() -> {
                 Action action = dslParser.parseAction("call log with [\"score check\", \"INFO\"]");
-                ActionExecutor executor = new ActionExecutor(context);
+                ActionExecutorImpl executor = new ActionExecutorImpl(context);
                 action.accept(executor);
             }).doesNotThrowAnyException();
         }
@@ -254,7 +254,7 @@ class ASTParserIntegrationTest {
         @DisplayName("CALL action with unknown function name surfaces a typed error")
         void testCallActionUnknownFunctionThrows() {
             Action action = dslParser.parseAction("call validateCredit with [score, income]");
-            ActionExecutor executor = new ActionExecutor(context);
+            ActionExecutorImpl executor = new ActionExecutorImpl(context);
             assertThatThrownBy(() -> action.accept(executor))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("validateCredit");
@@ -294,7 +294,7 @@ class ASTParserIntegrationTest {
         void testUndefinedVariable() {
             assertThatCode(() -> {
                 Expression expr = dslParser.parseExpression("undefinedVar + 5");
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 Object result = expr.accept(evaluator);
                 // Should return a default value or handle gracefully
             }).doesNotThrowAnyException();
@@ -312,7 +312,7 @@ class ASTParserIntegrationTest {
             
             assertThatCode(() -> {
                 Expression expr = dslParser.parseExpression(deepExpression);
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 expr.accept(evaluator);
             }).doesNotThrowAnyException();
         }
@@ -328,7 +328,7 @@ class ASTParserIntegrationTest {
             
             assertThatCode(() -> {
                 Condition condition = dslParser.parseCondition(conditionBuilder.toString());
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 condition.accept(evaluator);
             }).doesNotThrowAnyException();
         }
@@ -341,7 +341,7 @@ class ASTParserIntegrationTest {
             long startTime = System.nanoTime();
             for (int i = 0; i < 1000; i++) {
                 Expression expr = dslParser.parseExpression(expression);
-                ExpressionEvaluator evaluator = new ExpressionEvaluator(context);
+                ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context);
                 expr.accept(evaluator);
             }
             long endTime = System.nanoTime();

@@ -50,7 +50,7 @@ firefly:
         base-url: https://api.logalty.com
 ```
 
-That is all the wiring required. `LogaltyAdapterAutoConfiguration` contributes the `WebClient`, `CircuitBreaker`, `Retry`, `ObjectMapper` and the `LogaltySignatureEnvelopeAdapter` bean automatically.
+That is all the wiring required. `LogaltyAdapterAutoConfiguration` contributes the `WebClient`, `CircuitBreaker`, `Retry`, `ObjectMapper` and the `LogaltySignatureEnvelopeAdapterImpl` bean automatically.
 
 ### 2. Use the ECM signature port
 
@@ -110,13 +110,13 @@ The `firefly.ecm.adapter.logalty` namespace is bound by [LogaltyAdapterPropertie
 Property-based wiring conditions found in this module:
 
 - `name = "firefly.ecm.esignature.provider", havingValue = "logalty"`. [LogaltyAdapterAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltyAdapterAutoConfiguration.java).
-- `name = "firefly.ecm.esignature.provider", havingValue = "logalty"`. [LogaltySignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapter.java).
+- `name = "firefly.ecm.esignature.provider", havingValue = "logalty"`. [LogaltySignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapterImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`LogaltySignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapter.java) | Defines `LogaltySignatureEnvelopeAdapter`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
+| [`LogaltySignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapterImpl.java) | Defines `LogaltySignatureEnvelopeAdapterImpl`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
 | [`LogaltyAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltyAdapterProperties.java) | Configuration properties for the Logalty eSignature adapter. |
 | [`LogaltyAdapterAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltyAdapterAutoConfiguration.java) | Defines `logaltyWebClient`, `logaltyCircuitBreaker`, `logaltyRetry`, `logaltyObjectMapper` operations. |
 
@@ -143,10 +143,10 @@ This subproject has no authored `src/test/java` suite. Its Maven build still val
 
 ## API reference excerpt
 
-Contract excerpt from [LogaltySignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapter.java). This fragment needs the full type and its imports.
+Contract excerpt from [LogaltySignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-logalty/src/main/java/org/fireflyframework/ecm/adapter/logalty/LogaltySignatureEnvelopeAdapterImpl.java). This fragment needs the full type and its imports.
 
 ```java
-public class LogaltySignatureEnvelopeAdapter implements SignatureEnvelopePort {
+public class LogaltySignatureEnvelopeAdapterImpl implements SignatureEnvelopePort {
     private final WebClient webClient;
     private final LogaltyAdapterProperties properties;
     private final ObjectMapper objectMapper;
@@ -158,7 +158,7 @@ public class LogaltySignatureEnvelopeAdapter implements SignatureEnvelopePort {
     private final Map<String, UUID> externalIdMapping = new ConcurrentHashMap<>();
     private volatile String accessToken;
     private volatile Instant tokenExpiresAt;
-    public LogaltySignatureEnvelopeAdapter(WebClient webClient,
+    public LogaltySignatureEnvelopeAdapterImpl(WebClient webClient,
                                          LogaltyAdapterProperties properties,
                                          ObjectMapper objectMapper,
                                          DocumentContentPort documentContentPort,
@@ -256,7 +256,7 @@ firefly:
 - a named `logaltyCircuitBreaker` (`CircuitBreaker`). 50% failure-rate threshold, 30s open state, sliding window of 10, automatic open→half-open transition;
 - a named `logaltyRetry` (`Retry`). `max-retries` attempts retrying socket/IO/`WebClientRequestException` failures;
 - a Logalty-tuned `ObjectMapper`; and
-- the `LogaltySignatureEnvelopeAdapter` (`SignatureEnvelopePort`) wired with the ECM `DocumentPort` and `DocumentContentPort`.
+- the `LogaltySignatureEnvelopeAdapterImpl` (`SignatureEnvelopePort`) wired with the ECM `DocumentPort` and `DocumentContentPort`.
 
 Every outbound call goes through `ensureValidAccessToken()` (cached OAuth2 token with a 60-second safety margin) and is decorated with the circuit breaker and retry operators (`transformDeferred(CircuitBreakerOperator.of(...))` / `RetryOperator.of(...)`). Logalty status values are normalised to the ECM `EnvelopeStatus` enum (`DRAFT`, `SENT`, `COMPLETED`, `VOIDED`, `EXPIRED`).
 

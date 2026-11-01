@@ -31,11 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("NoopEventConsumer Tests")
 class NoopEventConsumerTest {
 
-    private NoopEventConsumer consumer;
+    private NoopEventConsumerImpl consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new NoopEventConsumer();
+        consumer = new NoopEventConsumerImpl();
     }
 
     @Test

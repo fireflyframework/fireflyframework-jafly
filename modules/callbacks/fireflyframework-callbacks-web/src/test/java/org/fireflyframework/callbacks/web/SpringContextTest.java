@@ -19,7 +19,7 @@ package org.fireflyframework.callbacks.web;
 import org.fireflyframework.callbacks.web.controller.AuthorizedDomainController;
 import org.fireflyframework.callbacks.web.controller.CallbackConfigurationController;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,7 +68,7 @@ class SpringContextTest {
     @Test
     void contextLoads() {
         assertThat(context).isNotNull();
-        assertThat(context.getBean(FireflyCacheManager.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
+        assertThat(context.getBean(FireflyCacheManagerImpl.class).getCacheType()).isEqualTo(CacheType.CAFFEINE);
     }
 
     @Test

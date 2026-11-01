@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.config;
 
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.health.OrchestrationHealthIndicator;
+import org.fireflyframework.orchestration.core.health.OrchestrationHealthIndicatorImpl;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.rest.DeadLetterController;
 import org.fireflyframework.orchestration.core.rest.OrchestrationController;
@@ -62,8 +62,8 @@ public class OrchestrationRestAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "firefly.orchestration.health.enabled", havingValue = "true", matchIfMissing = true)
-    public OrchestrationHealthIndicator orchestrationHealthIndicator(ExecutionPersistenceProvider persistence) {
+    public OrchestrationHealthIndicatorImpl orchestrationHealthIndicator(ExecutionPersistenceProvider persistence) {
         log.info("[orchestration] Health indicator initialized");
-        return new OrchestrationHealthIndicator(persistence);
+        return new OrchestrationHealthIndicatorImpl(persistence);
     }
 }

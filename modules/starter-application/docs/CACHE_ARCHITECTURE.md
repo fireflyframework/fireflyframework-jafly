@@ -39,7 +39,7 @@ This document validates that the caching implementation in `lib-common-applicati
 │               │ Uses
 │               ↓
 │  ┌────────────────────────────────────────┐
-│  │   FireflyCacheManager                  │ ← Infrastructure
+│  │   FireflyCacheManagerImpl                  │ ← Infrastructure
 │  │   (from lib-common-cache)              │
 │  └────────────┬───────────────────────────┘
 │               │
@@ -53,7 +53,7 @@ This document validates that the caching implementation in `lib-common-applicati
 
 ### ✅ Proper Separation of Concerns
 - Business Logic: `AbstractConfigResolver` manages *what* to cache and *when*
-- Cache Operations: `FireflyCacheManager` handles *how* to cache
+- Cache Operations: `FireflyCacheManagerImpl` handles *how* to cache
 - Storage: Caffeine/Redis provides the actual storage mechanism
 
 ---
@@ -153,10 +153,10 @@ protected Mono<Void> clearCacheForTenant(UUID tenantId) // ✅ Reactive
 
 ```java
 @Autowired(required = false)  // ✅ Optional dependency
-private FireflyCacheManager cacheManager;
+private FireflyCacheManagerImpl cacheManager;
 
 if (cacheManager == null) {
-    log.debug("FireflyCacheManager not available, fetching config directly");
+    log.debug("FireflyCacheManagerImpl not available, fetching config directly");
     return fetchConfigFromPlatform(tenantId);
 }
 ```
@@ -200,7 +200,7 @@ GET /actuator/metrics/cache.size
 
 ### Single Responsibility Principle ✅
 - `AbstractConfigResolver`: Manages config resolution logic
-- `FireflyCacheManager`: Manages cache operations
+- `FireflyCacheManagerImpl`: Manages cache operations
 - Separate concerns, single responsibility each
 
 ### Open/Closed Principle ✅
@@ -218,15 +218,15 @@ protected Duration getConfigTTL() {
 
 ### Interface Segregation Principle ✅
 - `ConfigResolver`: Focused interface for config resolution
-- `FireflyCacheManager`: Focused interface for caching
+- `FireflyCacheManagerImpl`: Focused interface for caching
 - No god interfaces
 
 ### Dependency Inversion Principle ✅
 ```java
 @Autowired(required = false)
-private FireflyCacheManager cacheManager;  // Depends on abstraction
+private FireflyCacheManagerImpl cacheManager;  // Depends on abstraction
 ```
-- Depends on `FireflyCacheManager` interface, not concrete implementation
+- Depends on `FireflyCacheManagerImpl` interface, not concrete implementation
 
 ---
 

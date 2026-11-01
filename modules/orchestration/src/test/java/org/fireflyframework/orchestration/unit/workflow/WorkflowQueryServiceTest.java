@@ -20,7 +20,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.query.WorkflowQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +34,11 @@ import static org.assertj.core.api.Assertions.*;
 class WorkflowQueryServiceTest {
 
     private WorkflowQueryService queryService;
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
 
     @BeforeEach
     void setUp() {
-        persistence = new InMemoryPersistenceProvider();
+        persistence = new InMemoryPersistenceProviderImpl();
         queryService = new WorkflowQueryService(persistence);
 
         var state = new ExecutionState("wf-1", "order-wf", ExecutionPattern.WORKFLOW,

@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.UUID;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.fireflyframework.ecm.domain.enums.esignature.EnvelopeStatus;
 import org.fireflyframework.ecm.domain.enums.esignature.SignatureProvider;
 import org.fireflyframework.ecm.domain.model.document.Document;
@@ -42,12 +42,12 @@ class DocuSignAccountBindingTest {
         var service = temporary.resolve("builder.service"); Files.writeString(service, ScopedSdkConnector.Builder.class.getName() + "\n");
         return new ScopedSdkConnector.Scope(service);
     }
-    private DocuSignSignatureEnvelopeAdapter adapter(ApiClient client, DocuSignAdapterProperties p) {
+    private DocuSignSignatureEnvelopeAdapterImpl adapter(ApiClient client, DocuSignAdapterProperties p) {
         var docs = mock(DocumentPort.class); var content = mock(DocumentContentPort.class);
         when(docs.getDocument(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(Mono.just(Document.builder()
                 .id(DocuSignEnvelopeMappingTest.DOCUMENT).name("agreement.pdf").mimeType("application/pdf").build()));
         when(content.getContent(DocuSignEnvelopeMappingTest.DOCUMENT)).thenReturn(Mono.just(DocuSignEnvelopeMappingTest.PDF.clone()));
-        return new DocuSignSignatureEnvelopeAdapter(client, p, content, docs, (id, provider) -> Mono.just("external-envelope"));
+        return new DocuSignSignatureEnvelopeAdapterImpl(client, p, content, docs, (id, provider) -> Mono.just("external-envelope"));
     }
     private static <T> T await(Mono<T> value) { return value.block(Duration.ofSeconds(2)); }
     private static ScopedSdkConnector.Reply reply(ScopedSdkConnector.Wire wire) {
@@ -88,7 +88,7 @@ class DocuSignAccountBindingTest {
     @Test void managedClientCannotBePairedWithPropertiesForAnotherAccount() throws Exception {
         try (var transport = scope()) {
             var p = managedProperties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(p))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(p))) {
                 var other = properties(); other.setAccountId(OTHER);
                 assertThrows(DocuSignAdapterException.class, () -> adapter(client, other)); assertTrue(transport.exchanges.isEmpty());
             }
@@ -98,7 +98,7 @@ class DocuSignAccountBindingTest {
     @Test void authenticatedAccountAndEnvelopePathStayTogetherAfterPropertiesChange() throws Exception {
         try (var transport = scope()) {
             var p = managedProperties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(p))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(p))) {
                 var port = adapter(client, p); p.setAccountId(OTHER);
                 assertNotNull(await(port.getEnvelopeByExternalId("controlled-envelope", SignatureProvider.DOCUSIGN)));
                 assertEquals(3, transport.exchanges.size());
@@ -118,7 +118,7 @@ class DocuSignAccountBindingTest {
     @Test void autoConfiguredClientAndAdapterExposeTheSameBindingWithoutAllocationOrAuthentication() throws Exception {
         try (var transport = scope()) {
             var p = managedProperties();
-            try (var client = (ManagedDocuSignApiClient) new DocuSignAdapterAutoConfiguration().docuSignApiClient(p)) {
+            try (var client = (ManagedDocuSignApiClientImpl) new DocuSignAdapterAutoConfiguration().docuSignApiClient(p)) {
                 var port = adapter(client, p);
                 int clients = transport.clients.size();
                 var lookup = port.accountBinding();
@@ -148,7 +148,7 @@ class DocuSignAccountBindingTest {
     @Test void managedEndpointCannotDriftFromItsSettingsOrExposedBinding() throws Exception {
         try (var transport = scope()) {
             var p = managedProperties();
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(p))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(p))) {
                 assertThrows(DocuSignAdapterException.class, () -> client.setBasePath("https://other-owned.invalid/restapi"));
                 assertEquals(client.accountBinding().endpoint(), client.getBasePath()); assertTrue(transport.exchanges.isEmpty());
             }

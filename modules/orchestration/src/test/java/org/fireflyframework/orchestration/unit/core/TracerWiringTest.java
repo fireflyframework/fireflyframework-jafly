@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.unit.core;
 
 import io.micrometer.observation.ObservationRegistry;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
@@ -39,7 +39,7 @@ import org.fireflyframework.orchestration.tcc.registry.TccDefinition;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowDefinition;
@@ -61,13 +61,13 @@ class TracerWiringTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private NoOpEventPublisher noOpPublisher;
+    private NoOpEventPublisherImpl noOpPublisher;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new NoOpEventPublisher();
+        noOpPublisher = new NoOpEventPublisherImpl();
     }
 
     @SuppressWarnings("unused")
@@ -171,7 +171,7 @@ class TracerWiringTest {
         registry.register(def);
 
         var engine = new WorkflowEngine(registry, executor, stepInvoker,
-                new InMemoryPersistenceProvider(), events, noOpPublisher);
+                new InMemoryPersistenceProviderImpl(), events, noOpPublisher);
 
         StepVerifier.create(engine.startWorkflow("no-tracer-wf", Map.of()))
                 .assertNext(state -> assertThat(state.status().isTerminal()).isTrue())
@@ -195,7 +195,7 @@ class TracerWiringTest {
         registry.register(def);
 
         var engine = new WorkflowEngine(registry, executor, stepInvoker,
-                new InMemoryPersistenceProvider(), events, noOpPublisher, null, tracer);
+                new InMemoryPersistenceProviderImpl(), events, noOpPublisher, null, tracer);
 
         StepVerifier.create(engine.startWorkflow("traced-wf", Map.of()))
                 .assertNext(state -> assertThat(state.status().isTerminal()).isTrue())

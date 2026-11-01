@@ -16,7 +16,7 @@
 
 package org.fireflyframework.web.conditions.config;
 
-import org.fireflyframework.web.conditions.listener.ConditionsReportListener;
+import org.fireflyframework.web.conditions.listener.ConditionsReportListenerImpl;
 import org.fireflyframework.web.conditions.service.ConditionsReportService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -72,8 +72,8 @@ public class ConditionsReportAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public ConditionsReportListener conditionsReportListener(ConditionsReportService reportService) {
-        return new ConditionsReportListener(reportService);
+    public ConditionsReportListenerImpl conditionsReportListener(ConditionsReportService reportService) {
+        return new ConditionsReportListenerImpl(reportService);
     }
 }
 

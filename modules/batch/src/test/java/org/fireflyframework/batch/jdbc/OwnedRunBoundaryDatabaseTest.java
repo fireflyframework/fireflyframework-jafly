@@ -23,7 +23,7 @@ import org.fireflyframework.batch.fixture.OwnedRunFixture;
 import org.fireflyframework.batch.fixture.PostgresBatchFixture;
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.Obligation;
-import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapter;
+import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapterImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -83,7 +83,7 @@ class OwnedRunBoundaryDatabaseTest extends PostgresBatchFixture {
 
     private OwnedRunFixture recipe(DataSource source, AtomicReference<Mono<Decision>> current) {
         var policy =
-                new EmbeddedPolicyDecisionAdapter(
+                new EmbeddedPolicyDecisionAdapterImpl(
                         List.of((principal, action, resource, context) -> current.get()), true);
         return new OwnedRunFixture(
                 source,

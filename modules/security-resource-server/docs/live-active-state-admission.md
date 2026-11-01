@@ -34,7 +34,7 @@ The owned client uses an explicit HTTPS endpoint with ordinary platform trust/ho
 
 ## Custom security chains
 
-The default Jafly chain wraps its injected decoder in LIVE mode. An application that completely replaces SecurityWebFilterChain must explicitly use `new LiveActiveJwtDecoder(localDecoder, livePort, properties)` in its own native Spring JWT DSL and qualify actual protected routes. A property or port bean alone cannot prove arbitrary custom-chain adoption. The retained direct five-argument default-chain factory supports LOCAL_JWT; it refuses a LIVE request without the explicit port.
+The default Jafly chain wraps its injected decoder in LIVE mode. An application that completely replaces SecurityWebFilterChain must explicitly use `new LiveActiveJwtDecoderImpl(localDecoder, livePort, properties)` in its own native Spring JWT DSL and qualify actual protected routes. A property or port bean alone cannot prove arbitrary custom-chain adoption. The retained direct five-argument default-chain factory supports LOCAL_JWT; it refuses a LIVE request without the explicit port.
 
 ## Deployment verification
 

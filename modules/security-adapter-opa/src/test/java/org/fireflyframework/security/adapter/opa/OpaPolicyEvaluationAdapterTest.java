@@ -43,8 +43,8 @@ class OpaPolicyEvaluationAdapterTest {
             .authorities(Set.of("READER")).scopes(Set.of("read"))
             .claims(Map.of("private-claim", "excluded")).attributes(Map.of("private-attribute", "excluded")).build();
 
-    private OpaPolicyEvaluationAdapter adapter(String body) {
-        return new OpaPolicyEvaluationAdapter(WebClient.builder().baseUrl("https://policy.example.test")
+    private OpaPolicyEvaluationAdapterImpl adapter(String body) {
+        return new OpaPolicyEvaluationAdapterImpl(WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.OK)
                         .header("Content-Type", "application/json").body(body).build())).build(), "/firefly/versioned");
     }
@@ -150,7 +150,7 @@ class OpaPolicyEvaluationAdapterTest {
                         factory.wrap(new byte[16384]))).build();
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(response)).build();
-        assertRefused(new OpaPolicyEvaluationAdapter(client, "firefly/versioned")
+        assertRefused(new OpaPolicyEvaluationAdapterImpl(client, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).block(WAIT));
     }
 
@@ -163,12 +163,12 @@ class OpaPolicyEvaluationAdapterTest {
     void transportAndHttpFailuresNeverExposeRawDetailsOrMetadata() {
         var bad = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.error(new IOException("private token/body/URL"))).build();
-        assertRefused(new OpaPolicyEvaluationAdapter(bad, "firefly/versioned")
+        assertRefused(new OpaPolicyEvaluationAdapterImpl(bad, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).block(WAIT));
         var failed = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.SERVICE_UNAVAILABLE)
                         .header("Content-Type", "application/json").body(PERMIT).build())).build();
-        assertRefused(new OpaPolicyEvaluationAdapter(failed, "firefly/versioned")
+        assertRefused(new OpaPolicyEvaluationAdapterImpl(failed, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).block(WAIT));
     }
 
@@ -186,7 +186,7 @@ class OpaPolicyEvaluationAdapterTest {
                         return ClientResponse.create(HttpStatus.OK).header("Content-Type", "application/json").body(PERMIT).build();
                     }));
         }).build();
-        var result = new OpaPolicyEvaluationAdapter(web, "firefly/versioned")
+        var result = new OpaPolicyEvaluationAdapterImpl(web, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of("issuer", "context-cannot-replace-principal")).block(WAIT);
         assertNotNull(result);
         assertTrue(result.decision().granted());
@@ -204,7 +204,7 @@ class OpaPolicyEvaluationAdapterTest {
         var count = new AtomicInteger();
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> count.getAndIncrement() == 0 ? first.asMono() : second.asMono()).build();
-        var adapter = new OpaPolicyEvaluationAdapter(client, "firefly/versioned");
+        var adapter = new OpaPolicyEvaluationAdapterImpl(client, "firefly/versioned");
         var one = new AtomicReference<PolicyEvaluation>();
         var two = new AtomicReference<PolicyEvaluation>();
         adapter.evaluate(principal, "one", "resource", Map.of()).subscribe(one::set);
@@ -225,7 +225,7 @@ class OpaPolicyEvaluationAdapterTest {
                 Mono.error(new IOException("private partial response")))).build();
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(response)).build();
-        assertRefused(new OpaPolicyEvaluationAdapter(client, "firefly/versioned")
+        assertRefused(new OpaPolicyEvaluationAdapterImpl(client, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).block(WAIT));
         assertEquals(0, buffer.getNativeBuffer().refCnt());
     }
@@ -242,7 +242,7 @@ class OpaPolicyEvaluationAdapterTest {
                 Mono.just(buffer).doOnNext(value -> seen.incrementAndGet()), Mono.never())).build();
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.just(response)).build();
-        StepVerifier.create(new OpaPolicyEvaluationAdapter(client, "firefly/versioned")
+        StepVerifier.create(new OpaPolicyEvaluationAdapterImpl(client, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).doOnNext(value -> emitted.incrementAndGet()))
                 .then(() -> assertEquals(1, seen.get())).thenCancel().verify(WAIT);
         assertEquals(0, emitted.get());
@@ -255,7 +255,7 @@ class OpaPolicyEvaluationAdapterTest {
         var emitted = new AtomicInteger();
         var client = WebClient.builder().baseUrl("https://policy.example.test")
                 .exchangeFunction(request -> Mono.<ClientResponse>never().doOnCancel(cancelled::incrementAndGet)).build();
-        StepVerifier.create(new OpaPolicyEvaluationAdapter(client, "firefly/versioned")
+        StepVerifier.create(new OpaPolicyEvaluationAdapterImpl(client, "firefly/versioned")
                 .evaluate(principal, "read", "resource", Map.of()).doOnNext(value -> emitted.incrementAndGet()))
                 .thenCancel().verify(WAIT);
         assertEquals(0, emitted.get());

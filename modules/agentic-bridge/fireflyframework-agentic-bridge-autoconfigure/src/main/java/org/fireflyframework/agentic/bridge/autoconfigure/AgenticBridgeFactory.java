@@ -16,10 +16,10 @@ import org.fireflyframework.agentic.bridge.AgenticClient;
 import org.fireflyframework.agentic.bridge.AgenticClientBuilder;
 import org.fireflyframework.agentic.bridge.auth.AuthStrategy;
 import org.fireflyframework.agentic.bridge.observability.AgenticMetrics;
-import org.fireflyframework.agentic.bridge.transport.queue.KafkaQueueAgenticPublisher;
+import org.fireflyframework.agentic.bridge.transport.queue.KafkaQueueAgenticPublisherImpl;
 import org.fireflyframework.agentic.bridge.transport.queue.QueueAgenticPublisher;
-import org.fireflyframework.agentic.bridge.transport.queue.RabbitMqQueueAgenticPublisher;
-import org.fireflyframework.agentic.bridge.transport.queue.RedisQueueAgenticPublisher;
+import org.fireflyframework.agentic.bridge.transport.queue.RabbitMqQueueAgenticPublisherImpl;
+import org.fireflyframework.agentic.bridge.transport.queue.RedisQueueAgenticPublisherImpl;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -111,19 +111,19 @@ public final class AgenticBridgeFactory {
                         || !classpathHas("reactor.kafka.sender.KafkaSender")) {
                     throw new IllegalStateException("Publisher '" + name + "' is configured for kafka but reactor-kafka is not on the classpath");
                 }
-                yield new KafkaQueueAgenticPublisher(name, cfg.getTopic(), cfg.getBootstrapServers(), mapper, metrics);
+                yield new KafkaQueueAgenticPublisherImpl(name, cfg.getTopic(), cfg.getBootstrapServers(), mapper, metrics);
             }
             case RABBITMQ -> {
                 if (!classpathHas("reactor.rabbitmq.Sender")) {
                     throw new IllegalStateException("Publisher '" + name + "' is configured for rabbitmq but reactor-rabbitmq is not on the classpath");
                 }
-                yield new RabbitMqQueueAgenticPublisher(name, cfg.getExchange(), cfg.getRoutingKey(), cfg.getUrl(), mapper, metrics);
+                yield new RabbitMqQueueAgenticPublisherImpl(name, cfg.getExchange(), cfg.getRoutingKey(), cfg.getUrl(), mapper, metrics);
             }
             case REDIS -> {
                 if (!classpathHas("io.lettuce.core.RedisClient")) {
                     throw new IllegalStateException("Publisher '" + name + "' is configured for redis but lettuce-core is not on the classpath");
                 }
-                yield new RedisQueueAgenticPublisher(name, cfg.getChannel(), cfg.getUrl(), mapper, metrics);
+                yield new RedisQueueAgenticPublisherImpl(name, cfg.getChannel(), cfg.getUrl(), mapper, metrics);
             }
         };
     }

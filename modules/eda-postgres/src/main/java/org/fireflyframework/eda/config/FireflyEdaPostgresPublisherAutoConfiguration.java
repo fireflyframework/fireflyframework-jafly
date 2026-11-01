@@ -24,7 +24,7 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.eda.properties.EdaProperties;
-import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher;
+import org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.ObjectProvider;
@@ -49,7 +49,7 @@ import java.util.Map;
  * and, when {@code firefly.eda.publishers.postgres.default.auto-create-schema}
  * is {@code true}, provisions the outbox table, supporting index, NOTIFY
  * function, and AFTER INSERT trigger required by the
- * {@link org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher}.
+ * {@link org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl}.
  * <p>
  * <strong>Configuration source:</strong>
  * {@code firefly.eda.publishers.postgres.default.*} -- never
@@ -137,12 +137,12 @@ public class FireflyEdaPostgresPublisherAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(PostgresEventPublisher.class)
+    @ConditionalOnMissingBean(PostgresEventPublisherImpl.class)
     @ConditionalOnBean(name = "fireflyEdaPostgresPublisherConnectionFactory")
-    public PostgresEventPublisher postgresEventPublisher(
+    public PostgresEventPublisherImpl postgresEventPublisher(
             @Qualifier("fireflyEdaPostgresPublisherConnectionFactory") ObjectProvider<ConnectionFactory> factory,
             MessageSerializer serializer, EdaProperties properties, ObjectMapper mapper) {
-        return new PostgresEventPublisher(factory, serializer, properties, mapper);
+        return new PostgresEventPublisherImpl(factory, serializer, properties, mapper);
     }
 
     /**

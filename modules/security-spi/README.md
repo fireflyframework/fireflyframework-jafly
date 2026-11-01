@@ -46,7 +46,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class OpaPolicyDecisionAdapter implements PolicyDecisionPort {
+public class OpaPolicyDecisionAdapterImpl implements PolicyDecisionPort {
 
     private final OpaClient opa; // your engine binding
 

@@ -6,7 +6,7 @@ import java.time.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.*;
 import java.util.function.*;
-import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransaction;
+import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransactionImpl;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -53,11 +53,11 @@ class BoundedTransactionBoundaryTest {
     }
     static final class Fixture {
         final Time time=new Time();final Driver driver=new Driver();
-        final OwnedLeaseConnectionFactory factory=new OwnedLeaseConnectionFactory(driver);
+        final OwnedLeaseConnectionFactoryImpl factory=new OwnedLeaseConnectionFactoryImpl(driver);
         final DatabaseClient client=DatabaseClient.create(factory);
         final R2dbcEntityTemplate template=new R2dbcEntityTemplate(client,PostgresDialect.INSTANCE);
         final R2dbcTransactionManager manager=new R2dbcTransactionManager(factory);
-        final BoundedRootTransaction service=new DefaultBoundedRootTransaction(BoundedR2dbcResources.verify(factory,client,template,manager),new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)));
+        final BoundedRootTransaction service=new DefaultBoundedRootTransactionImpl(BoundedR2dbcResources.verify(factory,client,template,manager),new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)));
         final R2dbcOperationBudget original=time.budget(5000);
         Mono<RootCompletion<String>> execute(Function<RootTransactionScope,Mono<String>> work){return service.execute(original,new DefaultTransactionDefinition(),work);}
     }
@@ -107,9 +107,9 @@ class BoundedTransactionBoundaryTest {
         var r=fails(f->{},(f,s)->{s.narrow(f.time.budget(10000));return Mono.never();},8);assertEquals(0,r.fixture.driver.commits);assertEquals(1,r.fixture.driver.closes);
     }
     @Test void foreignFactoryCannotBorrowAnotherInvocationOrBeClosed(){
-        var foreign=new Driver();var other=new OwnedLeaseConnectionFactory(foreign);var r=fails(f->{},(f,s)->Mono.from(other.create()).thenReturn("protected-value"),1);assertEquals(0,foreign.creates);assertEquals(0,foreign.closes);assertEquals(1,r.fixture.driver.closes);
+        var foreign=new Driver();var other=new OwnedLeaseConnectionFactoryImpl(foreign);var r=fails(f->{},(f,s)->Mono.from(other.create()).thenReturn("protected-value"),1);assertEquals(0,foreign.creates);assertEquals(0,foreign.closes);assertEquals(1,r.fixture.driver.closes);
     }
-    @Test void wrapperWithoutPrivateInvocationCannotAcquire(){var d=new Driver();StepVerifier.create(Mono.from(new OwnedLeaseConnectionFactory(d).create())).expectError(IllegalStateException.class).verify();assertEquals(0,d.creates);}
+    @Test void wrapperWithoutPrivateInvocationCannotAcquire(){var d=new Driver();StepVerifier.create(Mono.from(new OwnedLeaseConnectionFactoryImpl(d).create())).expectError(IllegalStateException.class).verify();assertEquals(0,d.creates);}
     @Test void callerCancellationStillClosesItsOwnBeginLeaseOnce(){
         var ref=new AtomicReference<Fixture>();StepVerifier.withVirtualTime(()->{var f=new Fixture();ref.set(f);f.driver.stallBegin=true;return f.execute(s->Mono.just("protected-value"));}).thenAwait(Duration.ofMillis(10)).thenCancel().verify(Duration.ofSeconds(1));assertEquals(1,ref.get().driver.beginCancelled);assertEquals(1,ref.get().driver.closes);
     }

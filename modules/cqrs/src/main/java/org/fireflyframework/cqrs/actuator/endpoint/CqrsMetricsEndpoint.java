@@ -2,8 +2,8 @@ package org.fireflyframework.cqrs.actuator.endpoint;
 
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.command.CommandHandlerRegistry;
-import org.fireflyframework.cqrs.command.CommandMetricsService;
-import org.fireflyframework.cqrs.query.DefaultQueryBus;
+import org.fireflyframework.cqrs.command.CommandMetricsServiceImpl;
+import org.fireflyframework.cqrs.query.DefaultQueryBusImpl;
 import org.fireflyframework.cqrs.query.QueryBus;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -76,7 +76,7 @@ public class CqrsMetricsEndpoint {
     private static final Logger log = LoggerFactory.getLogger(CqrsMetricsEndpoint.class);
 
     private final MeterRegistry meterRegistry;
-    private final CommandMetricsService commandMetricsService;
+    private final CommandMetricsServiceImpl commandMetricsService;
     private final CommandHandlerRegistry commandHandlerRegistry;
     private final CommandBus commandBus;
     private final QueryBus queryBus;
@@ -84,7 +84,7 @@ public class CqrsMetricsEndpoint {
 
     public CqrsMetricsEndpoint(
             @Autowired(required = false) MeterRegistry meterRegistry,
-            @Autowired(required = false) CommandMetricsService commandMetricsService,
+            @Autowired(required = false) CommandMetricsServiceImpl commandMetricsService,
             @Autowired(required = false) CommandHandlerRegistry commandHandlerRegistry,
             @Autowired(required = false) CommandBus commandBus,
             @Autowired(required = false) QueryBus queryBus) {
@@ -345,11 +345,11 @@ public class CqrsMetricsEndpoint {
         }
 
         // Get query handler information
-        if (queryBus instanceof DefaultQueryBus) {
+        if (queryBus instanceof DefaultQueryBusImpl) {
             Map<String, Object> queryHandlers = new LinkedHashMap<>();
 
             try {
-                java.lang.reflect.Field handlersField = DefaultQueryBus.class.getDeclaredField("handlers");
+                java.lang.reflect.Field handlersField = DefaultQueryBusImpl.class.getDeclaredField("handlers");
                 handlersField.setAccessible(true);
                 @SuppressWarnings("unchecked")
                 Map<Class<?>, Object> registeredHandlers = (Map<Class<?>, Object>) handlersField.get(queryBus);

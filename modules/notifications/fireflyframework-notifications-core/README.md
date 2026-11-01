@@ -68,7 +68,7 @@ Mono<EmailResponseDTO> result = emailService.sendEmail(request);
 | SMS | `org.fireflyframework.notifications.core.services.sms.v1.SMSServiceImpl` | `SMSProvider` |
 | Push | `org.fireflyframework.notifications.core.services.push.v1.PushServiceImpl` | `PushProvider` |
 
-Template email additionally needs a `NotificationTemplateEngine` bean, for example `new FreemarkerNotificationTemplateEngine()` with templates under `src/main/resources/notification-templates`. A preference service must also be registered and invoked explicitly when the application applies user preferences; the in-memory implementation is process-local.
+Template email additionally needs a `NotificationTemplateEngine` bean, for example `new FreemarkerNotificationTemplateEngineImpl()` with templates under `src/main/resources/notification-templates`. A preference service must also be registered and invoked explicitly when the application applies user preferences; the in-memory implementation is process-local.
 
 ## Configuration
 

@@ -90,7 +90,7 @@ Per-operation models register Avro's standard UUID, big-decimal, duration, and d
 The default serializer refuses nonempty decoding to `Object.class`. An explicitly constructed serializer may bind that request to one concrete root; this is equivalent to supplying that root class directly, not payload type detection:
 
 ```java
-AvroMessageSerializer serializer = new AvroMessageSerializer(
+AvroMessageSerializerImpl serializer = new AvroMessageSerializerImpl(
         new AvroTypeBindings(Set.of(), ApplicationSubmitted.class));
 ```
 

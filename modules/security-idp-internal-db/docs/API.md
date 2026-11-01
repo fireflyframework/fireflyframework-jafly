@@ -1,6 +1,6 @@
 # Internal database adapter API
 
-`InternalDbIdpAdapter` implements the shared [`IdpAdapter`](../../security-idp/src/main/java/org/fireflyframework/security/idp/adapter/IdpAdapter.java) contract. Its methods return Reactor publishers. The [implementation](../src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapter.java) maps service results into the shared DTOs and, where specified, `ResponseEntity` values.
+`InternalDbIdpAdapterImpl` implements the shared [`IdpAdapter`](../../security-idp/src/main/java/org/fireflyframework/security/idp/adapter/IdpAdapter.java) contract. Its methods return Reactor publishers. The [implementation](../src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapterImpl.java) maps service results into the shared DTOs and, where specified, `ResponseEntity` values.
 
 ## HTTP routes
 

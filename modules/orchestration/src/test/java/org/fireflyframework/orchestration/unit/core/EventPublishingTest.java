@@ -25,7 +25,7 @@ import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepHandler;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.builder.SagaBuilder;
@@ -334,7 +334,7 @@ class EventPublishingTest {
     @Test
     void workflow_executionStartedAndCompleted_publishesLifecycleEvents() throws Exception {
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, publisher, null, null);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var registry = new WorkflowRegistry();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, publisher);
 
@@ -364,7 +364,7 @@ class EventPublishingTest {
     @Test
     void workflow_stepWithOutputEventType_publishesStepEvent() throws Exception {
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, publisher, null, null);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var registry = new WorkflowRegistry();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, publisher);
 
@@ -400,7 +400,7 @@ class EventPublishingTest {
     @Test
     void workflow_stepWithBlankOutputEventType_doesNotPublishStepEvent() throws Exception {
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, publisher, null, null);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var registry = new WorkflowRegistry();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, publisher);
 
@@ -430,7 +430,7 @@ class EventPublishingTest {
     @Test
     void workflow_failedExecution_publishesCompletedWithFailedStatus() throws Exception {
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, publisher, null, null);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var registry = new WorkflowRegistry();
         var engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, publisher);
 

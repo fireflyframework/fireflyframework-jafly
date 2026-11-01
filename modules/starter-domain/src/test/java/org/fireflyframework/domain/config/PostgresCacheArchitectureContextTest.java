@@ -78,7 +78,7 @@ class PostgresCacheArchitectureContextTest {
         }).withPropertyValues("spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
                 .run(application -> {
                     assertThat(application).hasNotFailed();
-                    assertThat(application.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class).getCacheType())
+                    assertThat(application.getBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class).getCacheType())
                             .isEqualTo(org.fireflyframework.cache.core.CacheType.POSTGRES);
                     assertThat(application).doesNotHaveBean("connectionFactory");
                     assertThat(application).doesNotHaveBean(R2dbcEntityTemplate.class);

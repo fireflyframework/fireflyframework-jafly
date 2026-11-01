@@ -18,18 +18,18 @@ package org.fireflyframework.rules.core.dsl.evaluation;
 
 import org.fireflyframework.rules.core.dsl.ASTVisitor;
 import org.fireflyframework.rules.core.dsl.action.*;
-import org.fireflyframework.rules.core.dsl.condition.ComparisonCondition;
+import org.fireflyframework.rules.core.dsl.condition.ComparisonConditionImpl;
 import org.fireflyframework.rules.core.dsl.condition.Condition;
-import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
-import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
+import org.fireflyframework.rules.core.dsl.condition.ExpressionConditionImpl;
+import org.fireflyframework.rules.core.dsl.condition.LogicalConditionImpl;
 import org.fireflyframework.rules.core.dsl.expression.*;
 import org.fireflyframework.rules.core.dsl.function.CustomFunctionRegistry;
 import org.fireflyframework.rules.core.dsl.model.ASTRulesDSL;
 import org.fireflyframework.rules.core.dsl.parser.ASTRulesDSLParser;
-import org.fireflyframework.rules.core.dsl.visitor.ActionExecutor;
+import org.fireflyframework.rules.core.dsl.visitor.ActionExecutorImpl;
 import org.fireflyframework.rules.core.dsl.visitor.EvaluationContext;
-import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluator;
-import org.fireflyframework.rules.core.observability.RuleEngineMetrics;
+import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluatorImpl;
+import org.fireflyframework.rules.core.observability.RuleEngineMetricsImpl;
 import org.fireflyframework.rules.core.services.ConstantService;
 import org.fireflyframework.rules.core.services.JsonPathService;
 import org.fireflyframework.rules.core.services.RestCallService;
@@ -59,7 +59,7 @@ public class ASTRulesEvaluationEngine {
     private final RestCallService restCallService;
     private final JsonPathService jsonPathService;
     private final CustomFunctionRegistry customFunctions;
-    private final RuleEngineMetrics metrics;
+    private final RuleEngineMetricsImpl metrics;
     private final org.fireflyframework.rules.core.dsl.function.RuleInvoker ruleInvoker;
 
     /**
@@ -76,7 +76,7 @@ public class ASTRulesEvaluationEngine {
                                    @Autowired(required = false) RestCallService restCallService,
                                    @Autowired(required = false) JsonPathService jsonPathService,
                                    @Autowired(required = false) CustomFunctionRegistry customFunctions,
-                                   @Autowired(required = false) RuleEngineMetrics metrics,
+                                   @Autowired(required = false) RuleEngineMetricsImpl metrics,
                                    @Autowired(required = false) org.fireflyframework.rules.core.dsl.function.RuleInvoker ruleInvoker) {
         this.parser = Objects.requireNonNull(parser, "ASTRulesDSLParser cannot be null");
         this.constantService = Objects.requireNonNull(constantService, "ConstantService cannot be null");
@@ -132,7 +132,7 @@ public class ASTRulesEvaluationEngine {
                                     RestCallService restCallService,
                                     JsonPathService jsonPathService,
                                     CustomFunctionRegistry customFunctions,
-                                    RuleEngineMetrics metrics) {
+                                    RuleEngineMetricsImpl metrics) {
         this(parser, constantService, restCallService, jsonPathService, customFunctions, metrics, null);
     }
     
@@ -345,7 +345,7 @@ public class ASTRulesEvaluationEngine {
 
         for (int i = 0; i < conditions.size(); i++) {
             Condition condition = conditions.get(i);
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
+            ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
             Object result;
             try {
                 result = condition.accept(evaluator);
@@ -388,7 +388,7 @@ public class ASTRulesEvaluationEngine {
                 JsonLogger.info(log, context.getOperationId(),
                     String.format("Executing action %d: %s", i + 1, action.toDebugString()));
 
-                ActionExecutor executor = new ActionExecutor(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
+                ActionExecutorImpl executor = new ActionExecutorImpl(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
                 action.accept(executor);
 
                 JsonLogger.info(log, context.getOperationId(),
@@ -432,7 +432,7 @@ public class ASTRulesEvaluationEngine {
         if (matches.isEmpty()) return false;
 
         ASTRulesDSL.HitPolicy policy = table.getHitPolicy() != null ? table.getHitPolicy() : ASTRulesDSL.HitPolicy.FIRST;
-        ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
+        ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
         switch (policy) {
             case FIRST, ANY -> applyDecisionRow(matches.get(0), evaluator, context);
             case UNIQUE -> {
@@ -457,14 +457,14 @@ public class ASTRulesEvaluationEngine {
         return true;
     }
 
-    private void applyDecisionRow(ASTRulesDSL.ASTDecisionRow row, ExpressionEvaluator evaluator, EvaluationContext context) {
+    private void applyDecisionRow(ASTRulesDSL.ASTDecisionRow row, ExpressionEvaluatorImpl evaluator, EvaluationContext context) {
         if (row.getOutputs() == null) return;
         for (var e : row.getOutputs().entrySet()) {
             context.setComputedVariable(e.getKey(), evaluateOutputCell(e.getValue(), evaluator));
         }
     }
 
-    private Object evaluateOutputCell(Object raw, ExpressionEvaluator evaluator) {
+    private Object evaluateOutputCell(Object raw, ExpressionEvaluatorImpl evaluator) {
         // Numbers, booleans, lists, maps pass through unchanged.
         // Strings default to literals (DMN-style); prefix with '=' to mark an expression
         // that should be parsed and evaluated against the current context.
@@ -540,7 +540,7 @@ public class ASTRulesEvaluationEngine {
             return false;
         }
 
-        ExpressionEvaluator evaluator = new ExpressionEvaluator(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
+        ExpressionEvaluatorImpl evaluator = new ExpressionEvaluatorImpl(context, restCallService, jsonPathService, customFunctions, ruleInvoker);
         Object result;
         try {
             result = conditionalBlock.getIfCondition().accept(evaluator);
@@ -696,7 +696,7 @@ public class ASTRulesEvaluationEngine {
      * Extract constant references from the AST by scanning for UPPER_CASE variable names
      */
     private Set<String> extractConstantReferences(ASTRulesDSL rulesDSL) {
-        VariableReferenceCollector collector = new VariableReferenceCollector();
+        VariableReferenceCollectorImpl collector = new VariableReferenceCollectorImpl();
 
         // Collect from simple syntax conditions
         if (rulesDSL.getWhenConditions() != null) {
@@ -750,7 +750,7 @@ public class ASTRulesEvaluationEngine {
     /**
      * Collect variable references from a conditional block
      */
-    private void collectFromConditionalBlock(ASTRulesDSL.ASTConditionalBlock conditionalBlock, VariableReferenceCollector collector) {
+    private void collectFromConditionalBlock(ASTRulesDSL.ASTConditionalBlock conditionalBlock, VariableReferenceCollectorImpl collector) {
         if (conditionalBlock.getIfCondition() != null) {
             conditionalBlock.getIfCondition().accept(collector);
         }
@@ -816,7 +816,7 @@ public class ASTRulesEvaluationEngine {
     /**
      * Visitor class to collect all variable references from AST nodes
      */
-    private static class VariableReferenceCollector implements ASTVisitor<Void> {
+    private static class VariableReferenceCollectorImpl implements ASTVisitor<Void> {
         private final Set<String> variableReferences = new HashSet<>();
 
         public Set<String> getVariableReferences() {
@@ -824,13 +824,13 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitVariableExpression(VariableExpression node) {
+        public Void visitVariableExpression(VariableExpressionImpl node) {
             variableReferences.add(node.getVariableName());
             return null;
         }
 
         @Override
-        public Void visitComparisonCondition(ComparisonCondition node) {
+        public Void visitComparisonCondition(ComparisonConditionImpl node) {
             node.getLeft().accept(this);
             if (node.getRight() != null) {
                 node.getRight().accept(this);
@@ -842,7 +842,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitLogicalCondition(LogicalCondition node) {
+        public Void visitLogicalCondition(LogicalConditionImpl node) {
             if (node.getOperands() != null) {
                 node.getOperands().forEach(operand -> operand.accept(this));
             }
@@ -850,31 +850,31 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitExpressionCondition(ExpressionCondition node) {
+        public Void visitExpressionCondition(ExpressionConditionImpl node) {
             node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitCalculateAction(CalculateAction node) {
+        public Void visitCalculateAction(CalculateActionImpl node) {
             node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitRunAction(RunAction node) {
+        public Void visitRunAction(RunActionImpl node) {
             node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitSetAction(SetAction node) {
+        public Void visitSetAction(SetActionImpl node) {
             node.getValue().accept(this);
             return null;
         }
 
         @Override
-        public Void visitFunctionCallAction(FunctionCallAction node) {
+        public Void visitFunctionCallAction(FunctionCallActionImpl node) {
             if (node.getArguments() != null) {
                 node.getArguments().forEach(arg -> arg.accept(this));
             }
@@ -882,7 +882,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitConditionalAction(ConditionalAction node) {
+        public Void visitConditionalAction(ConditionalActionImpl node) {
             node.getCondition().accept(this);
             if (node.getThenActions() != null) {
                 node.getThenActions().forEach(action -> action.accept(this));
@@ -894,26 +894,26 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitBinaryExpression(BinaryExpression node) {
+        public Void visitBinaryExpression(BinaryExpressionImpl node) {
             node.getLeft().accept(this);
             node.getRight().accept(this);
             return null;
         }
 
         @Override
-        public Void visitUnaryExpression(UnaryExpression node) {
+        public Void visitUnaryExpression(UnaryExpressionImpl node) {
             node.getOperand().accept(this);
             return null;
         }
 
         @Override
-        public Void visitLiteralExpression(LiteralExpression node) {
+        public Void visitLiteralExpression(LiteralExpressionImpl node) {
             // Literals don't contain variable references
             return null;
         }
 
         @Override
-        public Void visitFunctionCallExpression(FunctionCallExpression node) {
+        public Void visitFunctionCallExpression(FunctionCallExpressionImpl node) {
             if (node.getArguments() != null) {
                 node.getArguments().forEach(arg -> arg.accept(this));
             }
@@ -921,7 +921,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitArithmeticAction(ArithmeticAction node) {
+        public Void visitArithmeticAction(ArithmeticActionImpl node) {
             if (node.getValue() != null) {
                 node.getValue().accept(this);
             }
@@ -929,7 +929,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitListAction(ListAction node) {
+        public Void visitListAction(ListActionImpl node) {
             if (node.getValue() != null) {
                 node.getValue().accept(this);
             }
@@ -937,13 +937,13 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitCircuitBreakerAction(CircuitBreakerAction node) {
+        public Void visitCircuitBreakerAction(CircuitBreakerActionImpl node) {
             // Circuit breaker actions don't contain variable references
             return null;
         }
 
         @Override
-        public Void visitForEachAction(ForEachAction node) {
+        public Void visitForEachAction(ForEachActionImpl node) {
             // Collect variable references from list expression
             if (node.getListExpression() != null) {
                 node.getListExpression().accept(this);
@@ -960,7 +960,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitWhileAction(WhileAction node) {
+        public Void visitWhileAction(WhileActionImpl node) {
             // Collect variable references from condition
             if (node.getCondition() != null) {
                 node.getCondition().accept(this);
@@ -977,7 +977,7 @@ public class ASTRulesEvaluationEngine {
         }
 
         @Override
-        public Void visitDoWhileAction(DoWhileAction node) {
+        public Void visitDoWhileAction(DoWhileActionImpl node) {
             // Collect variable references from body actions
             if (node.getBodyActions() != null) {
                 for (Action bodyAction : node.getBodyActions()) {

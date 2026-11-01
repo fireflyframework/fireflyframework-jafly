@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessor;
+import org.fireflyframework.observability.FireflyObservabilityEnvironmentPostProcessorImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
@@ -73,7 +73,7 @@ class ReactiveContextPropagationTest {
                 .withPropertyValues("spring.autoconfigure.exclude=" + String.join(",", excluded),
                         "firefly.observability.tracing.bridge=" + bridge)
                 .withPropertyValues(properties)
-                .withInitializer(context -> new FireflyObservabilityEnvironmentPostProcessor()
+                .withInitializer(context -> new FireflyObservabilityEnvironmentPostProcessorImpl()
                         .postProcessEnvironment(context.getEnvironment(), new SpringApplication()));
     }
 

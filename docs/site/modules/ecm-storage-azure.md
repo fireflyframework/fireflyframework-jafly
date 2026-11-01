@@ -61,7 +61,7 @@ public class DocumentService {
     private final DocumentContentPort content;
 
     public DocumentService(DocumentContentPort content) {
-        this.content = content; // AzureBlobDocumentContentAdapter at runtime
+        this.content = content; // AzureBlobDocumentContentAdapterImpl at runtime
     }
 
     public Mono<String> upload(UUID documentId, byte[] bytes, String mimeType) {
@@ -101,13 +101,13 @@ The `firefly.ecm.adapter.azure-blob` namespace is bound by [AzureBlobAdapterProp
 Property-based wiring conditions found in this module:
 
 - `name = "firefly.ecm.adapter-type", havingValue = "azure-blob"`. [AzureBlobAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobAutoConfiguration.java).
-- `name = "firefly.ecm.adapter-type", havingValue = "azure-blob"`. [AzureBlobDocumentContentAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapter.java).
+- `name = "firefly.ecm.adapter-type", havingValue = "azure-blob"`. [AzureBlobDocumentContentAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapterImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AzureBlobDocumentContentAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapter.java) | Defines `AzureBlobDocumentContentAdapter`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
+| [`AzureBlobDocumentContentAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapterImpl.java) | Defines `AzureBlobDocumentContentAdapterImpl`, `storeContent`, `storeContentStream`, `deleteContent` operations. |
 | [`AzureBlobAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobAdapterProperties.java) | Configuration properties for the Microsoft Azure Blob Storage ECM adapter. |
 | [`AzureBlobAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobAutoConfiguration.java) | Defines `blobServiceClient`, `blobContainerClient`, `objectMapper`, `azureBlobCircuitBreaker` operations. |
 
@@ -138,23 +138,23 @@ Mock, local-container, and application-context tests do not establish acceptance
 
 ## API reference excerpt
 
-Contract excerpt from [AzureBlobDocumentContentAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapter.java). This fragment needs the full type and its imports.
+Contract excerpt from [AzureBlobDocumentContentAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-storage-azure/src/main/java/org/fireflyframework/ecm/adapter/azureblob/AzureBlobDocumentContentAdapterImpl.java). This fragment needs the full type and its imports.
 
 ```java
-public class AzureBlobDocumentContentAdapter implements DocumentContentPort {
+public class AzureBlobDocumentContentAdapterImpl implements DocumentContentPort {
     private final BlobContainerClient containerClient;
     private final AzureBlobAdapterProperties properties;
     private final DataBufferFactory dataBufferFactory;
     private final CircuitBreaker circuitBreaker;
     private final Retry retry;
-    public AzureBlobDocumentContentAdapter(BlobContainerClient containerClient,
+    public AzureBlobDocumentContentAdapterImpl(BlobContainerClient containerClient,
                                           AzureBlobAdapterProperties properties,
         this.containerClient = containerClient;
         this.properties = properties;
         this.dataBufferFactory = new DefaultDataBufferFactory();
         this.circuitBreaker = circuitBreaker;
         this.retry = retry;
-        log.info("AzureBlobDocumentContentAdapter initialized with container: {}, prefix: {}, resilience enabled",
+        log.info("AzureBlobDocumentContentAdapterImpl initialized with container: {}, prefix: {}, resilience enabled",
                 properties.getContainerName(), properties.getPathPrefix());
     }
     public Flux<DataBuffer> getContentStream(UUID documentId) {

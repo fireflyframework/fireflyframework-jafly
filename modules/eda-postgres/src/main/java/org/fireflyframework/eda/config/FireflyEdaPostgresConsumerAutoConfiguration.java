@@ -24,12 +24,12 @@ import io.r2dbc.spi.ConnectionFactory;
 import java.time.Duration;
 import java.util.HashMap;
 import org.fireflyframework.eda.consumer.postgres.*;
-import org.fireflyframework.eda.consumer.postgres.impl.PostgresConsumerQueryPool;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepository;
-import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepository;
+import org.fireflyframework.eda.consumer.postgres.impl.PostgresConsumerQueryPoolImpl;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresDeliveryRepositoryImpl;
+import org.fireflyframework.eda.consumer.postgres.impl.SpringDataPostgresConsumerGroupRepositoryImpl;
 import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupId;
 import org.fireflyframework.eda.consumer.postgres.model.ConsumerGroupTables;
-import org.fireflyframework.eda.listener.EventListenerProcessor;
+import org.fireflyframework.eda.listener.EventListenerProcessorImpl;
 import org.fireflyframework.eda.properties.EdaProperties;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -59,7 +59,7 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
     public PostgresqlConnectionFactory fireflyEdaPostgresConsumerConnectionFactory(EdaProperties props){
         var config=props.getConsumer().getPostgres().get("default");
         if(config==null||config.getHost()==null||config.getHost().isBlank()||config.getDatabase()==null||config.getDatabase().isBlank()||config.getUsername()==null||config.getUsername().isBlank()||config.getPort()<1||config.getPort()>65535)throw new IllegalArgumentException("PostgreSQL consumer connection configuration is incomplete");
-        PostgresConsumerQueryPool.requireTimeout(config.getConnectTimeout());
+        PostgresConsumerQueryPoolImpl.requireTimeout(config.getConnectTimeout());
         var builder=PostgresqlConnectionConfiguration.builder().host(config.getHost()).port(config.getPort()).database(config.getDatabase()).username(config.getUsername()).connectTimeout(config.getConnectTimeout());
         if(config.getPassword()!=null)builder.password(config.getPassword());if(config.getSchema()!=null)builder.schema(config.getSchema());
         if(config.getProperties()!=null&&!config.getProperties().isEmpty()){
@@ -75,25 +75,25 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
     public PostgresDeliveryRepository fireflyEdaPostgresDeliveryRepository(@Qualifier("fireflyEdaPostgresConsumerQueryConnectionFactory")ConnectionFactory factory,EdaProperties props){
         var config=props.getConsumer().getPostgres().get("default");Duration timeout=config.getQueryTimeout();
         if(timeout==null||timeout.getNano()!=0||timeout.getSeconds()<1||timeout.getSeconds()>60)throw new IllegalArgumentException("PostgreSQL consumer query timeout requires one to sixty whole seconds");
-        if(config.getGroupId()!=null)return new SpringDataPostgresConsumerGroupRepository(factory,
+        if(config.getGroupId()!=null)return new SpringDataPostgresConsumerGroupRepositoryImpl(factory,
                 new ConsumerGroupTables(config.getSchema(),config.getOutboxTable(),config.getGroupRegistryTable(),config.getGroupDeliveriesTable(),config.getGroupRedrivesTable()),
                 new ConsumerGroupId(config.getGroupId()),timeout);
-        return new SpringDataPostgresDeliveryRepository(factory,config.getSchema(),config.getOutboxTable(),timeout);
+        return new SpringDataPostgresDeliveryRepositoryImpl(factory,config.getSchema(),config.getOutboxTable(),timeout);
     }
 
     @Bean(name="postgresEventConsumer")
-    @ConditionalOnMissingBean(PostgresEventConsumer.class)
+    @ConditionalOnMissingBean(PostgresEventConsumerImpl.class)
     @ConditionalOnExpression(SELECTED)
-    public PostgresEventConsumer postgresEventConsumer(PostgresEventDecoder decoder,
+    public PostgresEventConsumerImpl postgresEventConsumer(PostgresEventDecoder decoder,
             @Qualifier("fireflyEdaPostgresDeliveryRepository")PostgresDeliveryRepository repository,
             @Qualifier("fireflyEdaPostgresConsumerConnectionFactory")ObjectProvider<ConnectionFactory> listenFactory,
-            EventListenerProcessor processor,MessageSerializer serializer,EdaProperties props,ObjectMapper mapper){
+            EventListenerProcessorImpl processor,MessageSerializer serializer,EdaProperties props,ObjectMapper mapper){
         var config=props.getConsumer().getPostgres().get("default");
         if(config.getGroupId()!=null){
             new ConsumerGroupId(config.getGroupId());
             new ConsumerGroupTables(config.getSchema(),config.getOutboxTable(),config.getGroupRegistryTable(),config.getGroupDeliveriesTable(),config.getGroupRedrivesTable());
         }
-        return new PostgresEventConsumer(listenFactory,processor,serializer,props,mapper,repository,decoder);
+        return new PostgresEventConsumerImpl(listenFactory,processor,serializer,props,mapper,repository,decoder);
     }
 
     @Configuration(proxyBeanMethods=false)
@@ -105,11 +105,11 @@ public class FireflyEdaPostgresConsumerAutoConfiguration {
     static class QueryPoolConfiguration {
         @Bean(name="fireflyEdaPostgresConsumerQueryPoolOwner",destroyMethod="close")
         @Lazy
-        PostgresConsumerQueryPool fireflyEdaPostgresConsumerQueryPoolOwner(@Qualifier("fireflyEdaPostgresConsumerConnectionFactory")ConnectionFactory raw,EdaProperties props){
-            return new PostgresConsumerQueryPool(raw,props.getConsumer().getPostgres().get("default"));
+        PostgresConsumerQueryPoolImpl fireflyEdaPostgresConsumerQueryPoolOwner(@Qualifier("fireflyEdaPostgresConsumerConnectionFactory")ConnectionFactory raw,EdaProperties props){
+            return new PostgresConsumerQueryPoolImpl(raw,props.getConsumer().getPostgres().get("default"));
         }
         @Bean(name="fireflyEdaPostgresConsumerQueryConnectionFactory",defaultCandidate=false,destroyMethod="")
         @Lazy
-        ConnectionFactory fireflyEdaPostgresConsumerQueryConnectionFactory(@Qualifier("fireflyEdaPostgresConsumerQueryPoolOwner")PostgresConsumerQueryPool owner){return owner.connectionFactory();}
+        ConnectionFactory fireflyEdaPostgresConsumerQueryConnectionFactory(@Qualifier("fireflyEdaPostgresConsumerQueryPoolOwner")PostgresConsumerQueryPoolImpl owner){return owner.connectionFactory();}
     }
 }

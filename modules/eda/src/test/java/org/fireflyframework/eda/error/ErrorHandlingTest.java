@@ -17,8 +17,8 @@
 package org.fireflyframework.eda.error;
 
 import org.fireflyframework.eda.annotation.ErrorHandlingStrategy;
-import org.fireflyframework.eda.error.impl.MetricsErrorHandler;
-import org.fireflyframework.eda.error.impl.NotificationErrorHandler;
+import org.fireflyframework.eda.error.impl.MetricsErrorHandlerImpl;
+import org.fireflyframework.eda.error.impl.NotificationErrorHandlerImpl;
 import org.fireflyframework.eda.testconfig.TestEventModels.SimpleTestEvent;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -198,7 +198,7 @@ class ErrorHandlingTest {
     @Test
     void shouldInitializeWithSpringBeans() {
         // Arrange
-        MetricsErrorHandler metricsHandler = new MetricsErrorHandler(meterRegistry);
+        MetricsErrorHandlerImpl metricsHandler = new MetricsErrorHandlerImpl(meterRegistry);
         List<CustomErrorHandler> handlers = List.of(metricsHandler);
         
         CustomErrorHandlerRegistry registry = new CustomErrorHandlerRegistry();
@@ -210,7 +210,7 @@ class ErrorHandlingTest {
         // Assert
         assertThat(registry.hasHandlers()).isTrue();
         assertThat(registry.getRegisteredHandlers()).hasSize(1);
-        assertThat(registry.getRegisteredHandlers().get(0)).isInstanceOf(MetricsErrorHandler.class);
+        assertThat(registry.getRegisteredHandlers().get(0)).isInstanceOf(MetricsErrorHandlerImpl.class);
     }
 
     @Test

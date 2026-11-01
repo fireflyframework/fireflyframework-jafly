@@ -6,7 +6,7 @@ The module implements `IdpAdapter` with PostgreSQL storage and reactive reposito
 
 ```mermaid
 flowchart TD
-    Web[Common /idp controller] --> Adapter[InternalDbIdpAdapter]
+    Web[Common /idp controller] --> Adapter[InternalDbIdpAdapterImpl]
     Adapter --> Auth[Authentication and token services]
     Adapter --> Users[User and role services]
     Adapter --> Recovery[Password reset and MFA services]

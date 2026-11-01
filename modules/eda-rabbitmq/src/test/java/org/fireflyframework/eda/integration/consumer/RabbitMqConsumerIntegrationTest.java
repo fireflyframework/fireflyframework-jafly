@@ -19,7 +19,7 @@ package org.fireflyframework.eda.integration.consumer;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.consumer.EventConsumer;
 import org.fireflyframework.eda.event.EventEnvelope;
-import org.fireflyframework.eda.publisher.rabbitmq.RabbitMqEventPublisher;
+import org.fireflyframework.eda.publisher.rabbitmq.RabbitMqEventPublisherImpl;
 import org.fireflyframework.eda.testconfig.BaseIntegrationTest;
 import org.fireflyframework.eda.testconfig.TestApplication;
 import org.fireflyframework.eda.testconfig.TestContainersConfiguration;
@@ -74,7 +74,7 @@ class RabbitMqConsumerIntegrationTest extends BaseIntegrationTest {
     private EventConsumer rabbitMqConsumer;
 
     @Autowired(required = false)
-    private RabbitMqEventPublisher rabbitMqPublisher;
+    private RabbitMqEventPublisherImpl rabbitMqPublisher;
 
     @Autowired(required = false)
     private TestEventListeners testEventListeners;

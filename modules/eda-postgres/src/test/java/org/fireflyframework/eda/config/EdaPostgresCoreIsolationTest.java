@@ -50,11 +50,11 @@ class EdaPostgresCoreIsolationTest {
         @Bean ObjectMapper objectMapper() { return new ObjectMapper(); }
         @Bean MessageSerializer messageSerializer() { return mock(MessageSerializer.class); }
         @Bean org.fireflyframework.eda.consumer.postgres.PostgresEventDecoder postgresEventDecoder(MessageSerializer serializer) {
-            return new org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder(serializer,java.util.Map.of("java.lang.String",String.class));
+            return new org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoderImpl(serializer,java.util.Map.of("java.lang.String",String.class));
         }
-        @Bean org.fireflyframework.eda.listener.EventListenerProcessor eventListenerProcessor(org.springframework.context.ApplicationContext context,
+        @Bean org.fireflyframework.eda.listener.EventListenerProcessorImpl eventListenerProcessor(org.springframework.context.ApplicationContext context,
                 org.springframework.context.ApplicationEventPublisher publisher,org.springframework.core.env.Environment environment) {
-            return new org.fireflyframework.eda.listener.EventListenerProcessor(context,publisher,mock(org.fireflyframework.eda.error.CustomErrorHandlerRegistry.class),environment);
+            return new org.fireflyframework.eda.listener.EventListenerProcessorImpl(context,publisher,mock(org.fireflyframework.eda.error.CustomErrorHandlerRegistry.class),environment);
         }
     }
 
@@ -115,7 +115,7 @@ class EdaPostgresCoreIsolationTest {
             assertThat(application).hasNotFailed();
             if (transport.equals("PUBLISHER") || transport.equals("BOTH")) {
                 assertThat(application).hasBean("fireflyEdaPostgresPublisherConnectionFactory");
-                assertThat(application).hasSingleBean(org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher.class);
+                assertThat(application).hasSingleBean(org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl.class);
             }
             if (transport.equals("CONSUMER") || transport.equals("BOTH")) {
                 assertThat(application).hasBean("fireflyEdaPostgresConsumerConnectionFactory");
@@ -133,7 +133,7 @@ class EdaPostgresCoreIsolationTest {
             assertThat(application.getBean(R2dbcEntityTemplate.class).getDatabaseClient().getConnectionFactory()).isSameAs(factory);
             assertThat(application.getBean(R2dbcTransactionManager.class).getConnectionFactory()).isSameAs(factory);
             if (business.equals("SHARED")) {
-                var publisher = application.getBean(org.fireflyframework.eda.publisher.postgres.PostgresEventPublisher.class);
+                var publisher = application.getBean(org.fireflyframework.eda.publisher.postgres.PostgresEventPublisherImpl.class);
                 var provider = (org.springframework.beans.factory.ObjectProvider<?>)
                         org.springframework.test.util.ReflectionTestUtils.getField(publisher, "connectionFactoryProvider");
                 assertThat(provider.getObject()).isSameAs(factory);

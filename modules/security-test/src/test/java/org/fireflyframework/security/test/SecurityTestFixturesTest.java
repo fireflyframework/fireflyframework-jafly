@@ -34,14 +34,14 @@ class SecurityTestFixturesTest {
 
     @Test
     void fakePolicyDecisionPortReturnsConfiguredDecisionAndRecordsRequest() {
-        FakePolicyDecisionPort permit = FakePolicyDecisionPort.permitAll();
+        FakePolicyDecisionPortImpl permit = FakePolicyDecisionPortImpl.permitAll();
         StepVerifier.create(permit.authorize(TestPrincipals.user("u1"), "read", "doc:1", Map.of()))
                 .expectNextMatches(d -> d.granted())
                 .verifyComplete();
         assertThat(permit.lastAction()).isEqualTo("read");
         assertThat(permit.lastResource()).isEqualTo("doc:1");
 
-        FakePolicyDecisionPort deny = FakePolicyDecisionPort.denyAll("nope");
+        FakePolicyDecisionPortImpl deny = FakePolicyDecisionPortImpl.denyAll("nope");
         StepVerifier.create(deny.authorize(TestPrincipals.user("u1"), "write", "doc:1", Map.of()))
                 .expectNextMatches(d -> !d.granted())
                 .verifyComplete();

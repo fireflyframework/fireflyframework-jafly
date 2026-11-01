@@ -20,9 +20,9 @@ import org.fireflyframework.cqrs.command.Command;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.command.CommandHandler;
 import org.fireflyframework.cqrs.command.CommandHandlerRegistry;
-import org.fireflyframework.cqrs.command.CommandMetricsService;
+import org.fireflyframework.cqrs.command.CommandMetricsServiceImpl;
 import org.fireflyframework.cqrs.command.CommandValidationService;
-import org.fireflyframework.cqrs.command.DefaultCommandBus;
+import org.fireflyframework.cqrs.command.DefaultCommandBusImpl;
 import org.fireflyframework.cqrs.context.ExecutionContext;
 import org.fireflyframework.cqrs.tracing.CorrelationContext;
 import org.fireflyframework.cqrs.validation.AutoValidationProcessor;
@@ -55,12 +55,12 @@ class AuthorizationIntegrationTest {
         CommandHandlerRegistry handlerRegistry = new CommandHandlerRegistry(applicationContext);
         CommandValidationService validationService = new CommandValidationService(validationProcessor);
         AuthorizationService authorizationService = new AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty());
-        CommandMetricsService metricsService = new CommandMetricsService(null);
+        CommandMetricsServiceImpl metricsService = new CommandMetricsServiceImpl(null);
 
-        commandBus = new DefaultCommandBus(handlerRegistry, validationService, authorizationService, metricsService, correlationContext);
+        commandBus = new DefaultCommandBusImpl(handlerRegistry, validationService, authorizationService, metricsService, correlationContext);
 
         // Register test handler
-        ((DefaultCommandBus) commandBus).registerHandler(new BankTransferHandler());
+        ((DefaultCommandBusImpl) commandBus).registerHandler(new BankTransferHandler());
     }
 
     @Test

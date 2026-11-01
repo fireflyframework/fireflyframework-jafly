@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.function.BiFunction;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -38,9 +38,9 @@ class PostgresCacheNamespaceTest {
                 .apply(row,mock(RowMetadata.class))));
     }
 
-    PostgresCacheAdapter adapter(String namespace,String logical) {
-        return new PostgresCacheAdapter(logical,factory,PostgresCacheConfig.builder().keyPrefix(namespace).build(),
-                new JsonCacheSerializer(new ObjectMapper()));
+    PostgresCacheAdapterImpl adapter(String namespace,String logical) {
+        return new PostgresCacheAdapterImpl(logical,factory,PostgresCacheConfig.builder().keyPrefix(namespace).build(),
+                new JsonCacheSerializerImpl(new ObjectMapper()));
     }
 
     @ParameterizedTest @CsvSource(delimiter='|',value={

@@ -33,7 +33,7 @@ The core is normally wired by `security-autoconfigure`, but every component is a
 ```java
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapper;
+import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapperImpl;
 import org.fireflyframework.security.core.authz.SecureAuthorizationEvaluator;
 import org.fireflyframework.security.core.authz.SecureRequirement;
 import org.fireflyframework.security.core.context.PrincipalFactory;
@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 // 1. Project validated claims into a generic principal, normalizing authorities/scopes.
-var authorityMapper = new ConfigurableAuthorityMapper(null); // null -> sensible defaults
+var authorityMapper = new ConfigurableAuthorityMapperImpl(null); // null -> sensible defaults
 var principalFactory = new PrincipalFactory(authorityMapper);
 
 Map<String, Object> claims = Map.of(
@@ -75,10 +75,10 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | Type | Contract and responsibility |
 | --- | --- |
 | [`SecureAuthorizationEvaluator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authz/SecureAuthorizationEvaluator.java) | Evaluates a `SecureRequirement` against a `SecurityPrincipal`. |
-| [`EmbeddedPolicyDecisionAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/EmbeddedPolicyDecisionAdapter.java) | Zero-dependency, in-process default `PolicyDecisionPort`. |
-| [`AuthorityMappingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authority/AuthorityMappingProperties.java) | Configuration for `ConfigurableAuthorityMapper`: which claim paths carry roles/groups and scopes, and an optional authority prefix. |
-| [`PolicyRule`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/PolicyRule.java) | A single in-process ABAC rule for the `EmbeddedPolicyDecisionAdapter`. |
-| [`LoggingAuditEventAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/audit/LoggingAuditEventAdapter.java) | Default `AuditEventPort`: emits structured audit lines to a dedicated logger. |
+| [`EmbeddedPolicyDecisionAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/EmbeddedPolicyDecisionAdapterImpl.java) | Zero-dependency, in-process default `PolicyDecisionPort`. |
+| [`AuthorityMappingProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/authority/AuthorityMappingProperties.java) | Configuration for `ConfigurableAuthorityMapperImpl`: which claim paths carry roles/groups and scopes, and an optional authority prefix. |
+| [`PolicyRule`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/policy/PolicyRule.java) | A single in-process ABAC rule for the `EmbeddedPolicyDecisionAdapterImpl`. |
+| [`LoggingAuditEventAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-core/src/main/java/org/fireflyframework/security/core/audit/LoggingAuditEventAdapterImpl.java) | Default `AuditEventPort`: emits structured audit lines to a dedicated logger. |
 
 ## Continue the application
 

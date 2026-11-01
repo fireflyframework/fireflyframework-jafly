@@ -19,13 +19,13 @@ package org.fireflyframework.security.rs;
 import org.fireflyframework.security.api.domain.SigningKey;
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.core.authority.AuthorityMappingProperties;
-import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapper;
-import org.fireflyframework.security.core.audit.LoggingAuditEventAdapter;
+import org.fireflyframework.security.core.authority.ConfigurableAuthorityMapperImpl;
+import org.fireflyframework.security.core.audit.LoggingAuditEventAdapterImpl;
 import org.fireflyframework.security.core.context.PrincipalFactory;
-import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapter;
-import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapter;
+import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapterImpl;
+import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapterImpl;
 import org.fireflyframework.security.core.policy.PolicyRule;
-import org.fireflyframework.security.core.tenant.ConfigurableTenantResolver;
+import org.fireflyframework.security.core.tenant.ConfigurableTenantResolverImpl;
 import org.fireflyframework.security.spi.AuditEventPort;
 import org.fireflyframework.security.spi.AuthorityMappingPort;
 import org.fireflyframework.security.spi.KeyManagementPort;
@@ -33,8 +33,8 @@ import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.fireflyframework.security.spi.SecurityContextPort;
 import org.fireflyframework.security.spi.TokenValidationPort;
 import org.fireflyframework.security.webflux.authentication.FireflyAuthenticationToken;
-import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManager;
-import org.fireflyframework.security.webflux.context.ReactorSecurityContextAdapter;
+import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManagerImpl;
+import org.fireflyframework.security.webflux.context.ReactorSecurityContextAdapterImpl;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -82,13 +82,13 @@ public class ResourceServerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public KeyManagementPort fireflyKeyManagementPort() {
-        return new InMemoryKeyManagementAdapter();
+        return new InMemoryKeyManagementAdapterImpl();
     }
 
     @Bean
     @ConditionalOnMissingBean
     public AuthorityMappingPort fireflyAuthorityMappingPort(ResourceServerProperties properties) {
-        return new ConfigurableAuthorityMapper(new AuthorityMappingProperties(
+        return new ConfigurableAuthorityMapperImpl(new AuthorityMappingProperties(
                 properties.getRoleClaimPaths(), properties.getScopeClaimPaths(), properties.getAuthorityPrefix()));
     }
 
@@ -102,7 +102,7 @@ public class ResourceServerAutoConfiguration {
     @ConditionalOnMissingBean
     public PolicyDecisionPort fireflyPolicyDecisionPort(ObjectProvider<PolicyRule> rules,
                                                        ResourceServerProperties properties) {
-        return new EmbeddedPolicyDecisionAdapter(rules.orderedStream().toList(), properties.isStrictPolicy());
+        return new EmbeddedPolicyDecisionAdapterImpl(rules.orderedStream().toList(), properties.isStrictPolicy());
     }
 
     /** Preserves direct factory callers that explicitly rely on the legacy RBAC deferral. */
@@ -113,13 +113,13 @@ public class ResourceServerAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public AuditEventPort fireflyAuditEventPort() {
-        return new LoggingAuditEventAdapter();
+        return new LoggingAuditEventAdapterImpl();
     }
 
     @Bean
     @ConditionalOnMissingBean
     public SecurityContextPort fireflySecurityContextPort() {
-        return new ReactorSecurityContextAdapter();
+        return new ReactorSecurityContextAdapterImpl();
     }
 
     @Bean
@@ -135,10 +135,10 @@ public class ResourceServerAutoConfiguration {
             if (properties.isTenantRequired()) {
                 throw new IllegalArgumentException("Required tenant projection needs configured claim paths");
             }
-            return new JwtToFireflyPrincipalConverter(principalFactory);
+            return new JwtToFireflyPrincipalConverterImpl(principalFactory);
         }
-        return new JwtToFireflyPrincipalConverter(principalFactory,
-                new ConfigurableTenantResolver(paths), properties.isTenantRequired());
+        return new JwtToFireflyPrincipalConverterImpl(principalFactory,
+                new ConfigurableTenantResolverImpl(paths), properties.isTenantRequired());
     }
 
     /** Preserves direct callers that use the unconfigured single-tenant projection. */
@@ -192,8 +192,8 @@ public class ResourceServerAutoConfiguration {
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(TokenValidationPort.class)
     @ConditionalOnProperty(prefix = "firefly.security.resource-server", name = "admission-mode", havingValue = "LIVE")
-    public SpringLiveTokenValidationAdapter fireflyLiveTokenValidationPort(ResourceServerProperties properties) {
-        return SpringLiveTokenValidationAdapter.create(properties);
+    public SpringLiveTokenValidationAdapterImpl fireflyLiveTokenValidationPort(ResourceServerProperties properties) {
+        return SpringLiveTokenValidationAdapterImpl.create(properties);
     }
 
     /** Retains the direct LOCAL factory API; LIVE callers must supply the explicit port. */
@@ -221,7 +221,7 @@ public class ResourceServerAutoConfiguration {
         ReactiveJwtDecoder selected = jwtDecoder;
         if (properties.getAdmissionMode() == ResourceServerProperties.JwtAdmissionMode.LIVE) {
             TokenValidationPort live = livePorts.getObject();
-            selected = new LiveActiveJwtDecoder(jwtDecoder, live, properties);
+            selected = new LiveActiveJwtDecoderImpl(jwtDecoder, live, properties);
         } else if (properties.getAdmissionMode() != ResourceServerProperties.JwtAdmissionMode.LOCAL_JWT) {
             throw new IllegalArgumentException("A valid JWT admission mode is required");
         }
@@ -242,7 +242,7 @@ public class ResourceServerAutoConfiguration {
                         .map(decision -> decision.obligations().isEmpty() ? decision
                                 : Decision.deny("URL enforcement cannot fulfill policy obligations"))
                 : policyDecisionPort;
-        PolicyAuthorizationManager policyManager = new PolicyAuthorizationManager(urlPolicy);
+        PolicyAuthorizationManagerImpl policyManager = new PolicyAuthorizationManagerImpl(urlPolicy);
 
         http
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())

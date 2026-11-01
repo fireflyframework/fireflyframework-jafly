@@ -374,7 +374,7 @@ firefly:
 |----------|------|---------|-------------|
 | `enabled` | boolean | `false` | Enable lineage tracking auto-configuration |
 
-When enabled, an `InMemoryLineageTracker` bean is created. For production, provide your own `LineageTracker` implementation backed by a persistent store.
+When enabled, an `InMemoryLineageTrackerImpl` bean is created. For production, provide your own `LineageTracker` implementation backed by a persistent store.
 
 ---
 

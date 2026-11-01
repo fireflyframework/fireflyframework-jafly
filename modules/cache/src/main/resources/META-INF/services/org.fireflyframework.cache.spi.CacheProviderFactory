@@ -1,1 +1,1 @@
-org.fireflyframework.cache.spi.providers.CaffeineProvider
+org.fireflyframework.cache.spi.providers.CaffeineProviderImpl

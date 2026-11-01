@@ -20,7 +20,7 @@ import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.CorrelationId;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
@@ -68,7 +68,7 @@ class DeadMetadataWiringTest {
                 false, 0);
 
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, noOpPublisher, null, null);
 
         var ctx = ExecutionContext.forWorkflow("corr-1", "retry-wf");
@@ -101,7 +101,7 @@ class DeadMetadataWiringTest {
                 false, 0);
 
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, noOpPublisher, null, null);
 
         var ctx = ExecutionContext.forWorkflow("corr-2", "retry-wf2");
@@ -130,7 +130,7 @@ class DeadMetadataWiringTest {
                 false, 0);
 
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, noOpPublisher, null, null);
 
         // Create context with dryRun=true

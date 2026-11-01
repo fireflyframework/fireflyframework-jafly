@@ -1,8 +1,8 @@
 package org.fireflyframework.rules.core.dsl;
 
-import org.fireflyframework.rules.core.dsl.expression.FunctionCallExpression;
+import org.fireflyframework.rules.core.dsl.expression.FunctionCallExpressionImpl;
 import org.fireflyframework.rules.core.dsl.visitor.EvaluationContext;
-import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluator;
+import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluatorImpl;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
@@ -36,7 +36,7 @@ class AccountNumberGenerationTest {
     }
 
     private static Object accountNumber() {
-        var evaluator = new ExpressionEvaluator(new EvaluationContext());
-        return new FunctionCallExpression(null, "generate_account_number", List.of()).accept(evaluator);
+        var evaluator = new ExpressionEvaluatorImpl(new EvaluationContext());
+        return new FunctionCallExpressionImpl(null, "generate_account_number", List.of()).accept(evaluator);
     }
 }

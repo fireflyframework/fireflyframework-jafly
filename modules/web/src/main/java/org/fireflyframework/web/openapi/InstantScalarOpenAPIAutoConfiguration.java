@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Bean;
         havingValue = "true")
 public class InstantScalarOpenAPIAutoConfiguration {
     @Bean
-    @ConditionalOnMissingBean(InstantScalarOpenApiCustomizer.class)
-    public InstantScalarOpenApiCustomizer fireflyInstantScalarOpenApiCustomizer() {
-        return new InstantScalarOpenApiCustomizer();
+    @ConditionalOnMissingBean(InstantScalarOpenApiCustomizerImpl.class)
+    public InstantScalarOpenApiCustomizerImpl fireflyInstantScalarOpenApiCustomizer() {
+        return new InstantScalarOpenApiCustomizerImpl();
     }
 }

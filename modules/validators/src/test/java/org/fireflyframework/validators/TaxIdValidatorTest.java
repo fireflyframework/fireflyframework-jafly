@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class TaxIdValidatorTest {
 
-    private TaxIdValidator validator;
+    private TaxIdValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new TaxIdValidator();
+        validator = new TaxIdValidatorImpl();
     }
 
     @Test

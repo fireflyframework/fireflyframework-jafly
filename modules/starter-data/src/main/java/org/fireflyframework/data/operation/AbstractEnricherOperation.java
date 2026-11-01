@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.data.cache.OperationCacheService;
 import org.fireflyframework.data.config.DataEnrichmentProperties;
 import org.fireflyframework.data.event.OperationEventPublisher;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.operation.schema.JsonSchemaGenerator;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
@@ -103,7 +103,7 @@ public abstract class AbstractEnricherOperation<TRequest, TResponse>
     private JobTracingService tracingService;
 
     @Autowired(required = false)
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
 
     @Autowired(required = false)
     private OperationEventPublisher eventPublisher;
@@ -162,7 +162,7 @@ public abstract class AbstractEnricherOperation<TRequest, TResponse>
      * Sets the metrics service (for testing purposes).
      * @param metricsService the metrics service
      */
-    public void setMetricsService(JobMetricsService metricsService) {
+    public void setMetricsService(JobMetricsServiceImpl metricsService) {
         this.metricsService = metricsService;
     }
 

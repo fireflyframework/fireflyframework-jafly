@@ -10,7 +10,7 @@ import reactor.test.StepVerifier;
 /** Existing API controls can be compiled against674 and the candidate without new-policy symbols. */
 class LegacyCacheOperationCompatibilityTest {
     final CacheAdapter adapter=mock(CacheAdapter.class);
-    final FireflyCacheManager manager=new FireflyCacheManager(adapter);
+    final FireflyCacheManagerImpl manager=new FireflyCacheManagerImpl(adapter);
     LegacyCacheOperationCompatibilityTest(){when(adapter.isAvailable()).thenReturn(true);}
     @Test void oldReadFailureRecoveryRemainsAReportedMiss(){doReturn(Mono.error(new IllegalStateException("controlled failure"))).when(adapter).get("key");StepVerifier.create(manager.get("key")).expectNext(Optional.empty()).verifyComplete();}
     @Test void oldWriteFailureRecoveryRemainsCompleted(){doReturn(Mono.error(new IllegalStateException("controlled failure"))).when(adapter).put("key","value");StepVerifier.create(manager.put("key","value")).verifyComplete();}

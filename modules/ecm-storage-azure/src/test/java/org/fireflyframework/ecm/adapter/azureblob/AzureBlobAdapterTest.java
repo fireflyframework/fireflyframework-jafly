@@ -25,11 +25,11 @@ class AzureBlobAdapterTest {
 
     @Test
     void contextLoads_andAzureDocumentContentAdapterPresent() {
-        assertThat(contentPort).isInstanceOf(AzureBlobDocumentContentAdapter.class);
+        assertThat(contentPort).isInstanceOf(AzureBlobDocumentContentAdapterImpl.class);
     }
 
     @Configuration
-    @Import(AzureBlobDocumentContentAdapter.class)
+    @Import(AzureBlobDocumentContentAdapterImpl.class)
     static class TestConfig {
         @Bean
         BlobContainerClient blobContainerClient() {

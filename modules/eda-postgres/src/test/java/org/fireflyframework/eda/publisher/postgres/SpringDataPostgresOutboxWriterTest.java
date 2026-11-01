@@ -6,7 +6,7 @@
 package org.fireflyframework.eda.publisher.postgres;
 
 import io.r2dbc.postgresql.codec.Json;
-import org.fireflyframework.eda.publisher.postgres.impl.SpringDataPostgresOutboxWriter;
+import org.fireflyframework.eda.publisher.postgres.impl.SpringDataPostgresOutboxWriterImpl;
 import org.fireflyframework.eda.publisher.postgres.model.PostgresOutboxAppend;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +40,7 @@ class SpringDataPostgresOutboxWriterTest {
     private String sql;
 
     @SuppressWarnings("unchecked")
-    private SpringDataPostgresOutboxWriter writer(Mono<Long> count) {
+    private SpringDataPostgresOutboxWriterImpl writer(Mono<Long> count) {
         FetchSpec<Map<String, Object>> fetch = mock(FetchSpec.class);
         when(database.sql(any(Supplier.class))).thenAnswer(call -> {
             PreparedOperation<?> statement = call.getArgument(0);
@@ -55,7 +55,7 @@ class SpringDataPostgresOutboxWriterTest {
         });
         when(execution.fetch()).thenReturn(fetch);
         when(fetch.rowsUpdated()).thenReturn(count);
-        return new SpringDataPostgresOutboxWriter(new R2dbcEntityTemplate(database,
+        return new SpringDataPostgresOutboxWriterImpl(new R2dbcEntityTemplate(database,
                 new DefaultReactiveDataAccessStrategy(PostgresDialect.INSTANCE)));
     }
 

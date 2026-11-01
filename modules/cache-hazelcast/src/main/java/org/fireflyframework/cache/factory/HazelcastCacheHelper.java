@@ -44,11 +44,11 @@ public class HazelcastCacheHelper {
                                                            String keyPrefix,
                                                            Duration defaultTtl,
                                                            Object hazelcastInstance) {
-        return new HazelcastCacheAdapterReflective(cacheName, keyPrefix, defaultTtl, hazelcastInstance);
+        return new HazelcastCacheAdapterReflectiveImpl(cacheName, keyPrefix, defaultTtl, hazelcastInstance);
     }
 
     /** Reflection-based Hazelcast adapter implementation. */
-    private static class HazelcastCacheAdapterReflective implements CacheAdapter {
+    private static class HazelcastCacheAdapterReflectiveImpl implements CacheAdapter {
         private final String cacheName;
         private final String keyPrefix;
         private final Duration defaultTtl;
@@ -67,7 +67,7 @@ public class HazelcastCacheHelper {
         private final Method sizeMethod;
         private final Method keySetMethod;
 
-        HazelcastCacheAdapterReflective(String cacheName, String keyPrefix, Duration defaultTtl, Object hazelcastInstance) {
+        HazelcastCacheAdapterReflectiveImpl(String cacheName, String keyPrefix, Duration defaultTtl, Object hazelcastInstance) {
             try {
                 this.cacheName = cacheName;
                 this.keyPrefix = (keyPrefix != null && !keyPrefix.isBlank())

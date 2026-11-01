@@ -30,11 +30,11 @@ class DocuSignAdapterTest {
 
     @Test
     void contextLoads_andDocuSignAdapterPresent() {
-        assertThat(envelopePort).isInstanceOf(DocuSignSignatureEnvelopeAdapter.class);
+        assertThat(envelopePort).isInstanceOf(DocuSignSignatureEnvelopeAdapterImpl.class);
     }
 
     @Configuration
-    @Import({DocuSignSignatureEnvelopeAdapter.class})
+    @Import({DocuSignSignatureEnvelopeAdapterImpl.class})
     static class TestConfig {
         @Bean
         ApiClient apiClient() {

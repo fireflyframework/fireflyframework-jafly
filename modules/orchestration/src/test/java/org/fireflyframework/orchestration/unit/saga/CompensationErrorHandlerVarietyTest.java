@@ -19,11 +19,11 @@ package org.fireflyframework.orchestration.unit.saga;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler.CompensationErrorResult;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandlerFactory;
-import org.fireflyframework.orchestration.saga.compensation.CompositeCompensationErrorHandler;
-import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandler;
-import org.fireflyframework.orchestration.saga.compensation.FailFastErrorHandler;
-import org.fireflyframework.orchestration.saga.compensation.LogAndContinueErrorHandler;
-import org.fireflyframework.orchestration.saga.compensation.RetryWithBackoffErrorHandler;
+import org.fireflyframework.orchestration.saga.compensation.CompositeCompensationErrorHandlerImpl;
+import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandlerImpl;
+import org.fireflyframework.orchestration.saga.compensation.FailFastErrorHandlerImpl;
+import org.fireflyframework.orchestration.saga.compensation.LogAndContinueErrorHandlerImpl;
+import org.fireflyframework.orchestration.saga.compensation.RetryWithBackoffErrorHandlerImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +44,7 @@ class CompensationErrorHandlerVarietyTest {
 
     @Test
     void failFast_alwaysReturnsFail() {
-        var handler = new FailFastErrorHandler();
+        var handler = new FailFastErrorHandlerImpl();
 
         assertThat(handler.handle("saga1", "step1", new RuntimeException("err"), 0))
                 .isEqualTo(CompensationErrorResult.FAIL_SAGA);
@@ -56,7 +56,7 @@ class CompensationErrorHandlerVarietyTest {
 
     @Test
     void logAndContinue_alwaysReturnsContinue() {
-        var handler = new LogAndContinueErrorHandler();
+        var handler = new LogAndContinueErrorHandlerImpl();
 
         assertThat(handler.handle("saga1", "step1", new RuntimeException("err"), 0))
                 .isEqualTo(CompensationErrorResult.CONTINUE);
@@ -69,9 +69,9 @@ class CompensationErrorHandlerVarietyTest {
     @Test
     void composite_delegatesToFirstNonContinue() {
         // First handler continues, second handler fails the saga
-        var composite = new CompositeCompensationErrorHandler(List.of(
-                new LogAndContinueErrorHandler(),
-                new FailFastErrorHandler()
+        var composite = new CompositeCompensationErrorHandlerImpl(List.of(
+                new LogAndContinueErrorHandlerImpl(),
+                new FailFastErrorHandlerImpl()
         ));
 
         assertThat(composite.handle("saga1", "step1", new RuntimeException("err"), 0))
@@ -80,10 +80,10 @@ class CompensationErrorHandlerVarietyTest {
 
     @Test
     void composite_returnsContinueIfAllContinue() {
-        var composite = new CompositeCompensationErrorHandler(List.of(
-                new LogAndContinueErrorHandler(),
-                new DefaultCompensationErrorHandler(),
-                new LogAndContinueErrorHandler()
+        var composite = new CompositeCompensationErrorHandlerImpl(List.of(
+                new LogAndContinueErrorHandlerImpl(),
+                new DefaultCompensationErrorHandlerImpl(),
+                new LogAndContinueErrorHandlerImpl()
         ));
 
         assertThat(composite.handle("saga1", "step1", new RuntimeException("err"), 0))
@@ -94,23 +94,23 @@ class CompensationErrorHandlerVarietyTest {
     void factory_returnsRegisteredHandlers() {
         assertThat(CompensationErrorHandlerFactory.getHandler("default"))
                 .isPresent()
-                .get().isInstanceOf(DefaultCompensationErrorHandler.class);
+                .get().isInstanceOf(DefaultCompensationErrorHandlerImpl.class);
 
         assertThat(CompensationErrorHandlerFactory.getHandler("fail-fast"))
                 .isPresent()
-                .get().isInstanceOf(FailFastErrorHandler.class);
+                .get().isInstanceOf(FailFastErrorHandlerImpl.class);
 
         assertThat(CompensationErrorHandlerFactory.getHandler("log-and-continue"))
                 .isPresent()
-                .get().isInstanceOf(LogAndContinueErrorHandler.class);
+                .get().isInstanceOf(LogAndContinueErrorHandlerImpl.class);
 
         assertThat(CompensationErrorHandlerFactory.getHandler("retry"))
                 .isPresent()
-                .get().isInstanceOf(RetryWithBackoffErrorHandler.class);
+                .get().isInstanceOf(RetryWithBackoffErrorHandlerImpl.class);
 
         assertThat(CompensationErrorHandlerFactory.getHandler("robust"))
                 .isPresent()
-                .get().isInstanceOf(CompositeCompensationErrorHandler.class);
+                .get().isInstanceOf(CompositeCompensationErrorHandlerImpl.class);
 
         assertThat(CompensationErrorHandlerFactory.getHandler("nonexistent"))
                 .isEmpty();

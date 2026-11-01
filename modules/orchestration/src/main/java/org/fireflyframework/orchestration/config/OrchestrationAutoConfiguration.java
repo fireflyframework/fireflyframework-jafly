@@ -19,18 +19,18 @@ package org.fireflyframework.orchestration.config;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterStore;
-import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
-import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisher;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStoreImpl;
+import org.fireflyframework.orchestration.core.event.EdaOrchestrationEventPublisherImpl;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
-import org.fireflyframework.orchestration.core.observability.CompositeOrchestrationEvents;
+import org.fireflyframework.orchestration.core.observability.CompositeOrchestrationEventsImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEvents;
+import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEventsImpl;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.recovery.RecoveryService;
 import org.fireflyframework.orchestration.core.scheduling.OrchestrationScheduler;
-import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessor;
+import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessorImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.core.validation.OrchestrationValidator;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
@@ -89,39 +89,39 @@ public class OrchestrationAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public OrchestrationLoggerEvents orchestrationLoggerEvents() {
-        return new OrchestrationLoggerEvents();
+    public OrchestrationLoggerEventsImpl orchestrationLoggerEvents() {
+        return new OrchestrationLoggerEventsImpl();
     }
 
     @Bean
     @Primary
     @ConditionalOnMissingBean(name = "orchestrationEvents")
     public OrchestrationEvents orchestrationEvents(List<OrchestrationEvents> allEvents,
-                                                    ObjectProvider<OrchestrationLoggerEvents> loggerEvents) {
+                                                    ObjectProvider<OrchestrationLoggerEventsImpl> loggerEvents) {
         List<OrchestrationEvents> delegates = allEvents.stream()
-                .filter(e -> !(e instanceof CompositeOrchestrationEvents))
+                .filter(e -> !(e instanceof CompositeOrchestrationEventsImpl))
                 .collect(Collectors.toCollection(ArrayList::new));
         if (delegates.isEmpty()) {
-            OrchestrationLoggerEvents logger = loggerEvents.getIfAvailable(OrchestrationLoggerEvents::new);
+            OrchestrationLoggerEventsImpl logger = loggerEvents.getIfAvailable(OrchestrationLoggerEventsImpl::new);
             delegates.add(logger);
         }
         if (delegates.size() == 1) {
             return delegates.get(0);
         }
-        return new CompositeOrchestrationEvents(delegates);
+        return new CompositeOrchestrationEventsImpl(delegates);
     }
 
     @Bean
     @ConditionalOnMissingBean
     public ExecutionPersistenceProvider executionPersistenceProvider() {
         log.info("[orchestration] Using in-memory persistence provider (default)");
-        return new InMemoryPersistenceProvider();
+        return new InMemoryPersistenceProviderImpl();
     }
 
     @Bean
     @ConditionalOnMissingBean
     public DeadLetterStore deadLetterStore() {
-        return new InMemoryDeadLetterStore();
+        return new InMemoryDeadLetterStoreImpl();
     }
 
     @Bean
@@ -164,7 +164,7 @@ public class OrchestrationAutoConfiguration {
                 OrchestrationProperties properties) {
             String defaultTopic = properties.getEvents() != null ? properties.getEvents().getDefaultTopic() : null;
             log.info("[orchestration] EDA event publisher bridge activated (defaultTopic={})", defaultTopic);
-            return new EdaOrchestrationEventPublisher(publisherFactory, defaultTopic);
+            return new EdaOrchestrationEventPublisherImpl(publisherFactory, defaultTopic);
         }
     }
 
@@ -172,7 +172,7 @@ public class OrchestrationAutoConfiguration {
     @ConditionalOnMissingBean(OrchestrationEventPublisher.class)
     public OrchestrationEventPublisher orchestrationEventPublisher() {
         log.info("[orchestration] Using no-op event publisher (default)");
-        return new NoOpEventPublisher();
+        return new NoOpEventPublisherImpl();
     }
 
     @Bean
@@ -211,13 +211,13 @@ public class OrchestrationAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SchedulingPostProcessor schedulingPostProcessor(ApplicationContext applicationContext,
+    public SchedulingPostProcessorImpl schedulingPostProcessor(ApplicationContext applicationContext,
                                                            OrchestrationScheduler scheduler,
                                                            ObjectProvider<SagaEngine> sagaEngine,
                                                            ObjectProvider<TccEngine> tccEngine,
                                                            ObjectProvider<WorkflowEngine> workflowEngine) {
         log.info("[orchestration] Scheduling post-processor initialized");
-        return new SchedulingPostProcessor(applicationContext, scheduler,
+        return new SchedulingPostProcessorImpl(applicationContext, scheduler,
                 sagaEngine.getIfAvailable(), tccEngine.getIfAvailable(),
                 workflowEngine.getIfAvailable());
     }

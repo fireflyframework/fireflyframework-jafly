@@ -47,7 +47,7 @@ import java.util.UUID;
 @Slf4j
 public abstract class ProjectionService<T> {
     
-    private final ProjectionMetrics metrics;
+    private final ProjectionMetricsImpl metrics;
     private volatile long latestGlobalSequence = 0L;
     
     /**
@@ -56,7 +56,7 @@ public abstract class ProjectionService<T> {
      * @param meterRegistry the meter registry for metrics collection
      */
     protected ProjectionService(MeterRegistry meterRegistry) {
-        this.metrics = new ProjectionMetrics(getProjectionName(), meterRegistry);
+        this.metrics = new ProjectionMetricsImpl(getProjectionName(), meterRegistry);
     }
     
     /**
@@ -292,7 +292,7 @@ public abstract class ProjectionService<T> {
      *
      * @return the projection metrics instance
      */
-    protected ProjectionMetrics getMetrics() {
+    protected ProjectionMetricsImpl getMetrics() {
         return metrics;
     }
     

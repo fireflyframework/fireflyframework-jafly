@@ -40,11 +40,11 @@ class BoundedRootTransactionTest {
         assertEquals(1,d.beginCancelled);assertEquals(0,d.closes);assertEquals(0,d.commits);
     }
     static Mono<?> proposedOrOriginal(Driver d) {
-        var factory=new OwnedLeaseConnectionFactory(d);var client=org.springframework.r2dbc.core.DatabaseClient.create(factory);
+        var factory=new OwnedLeaseConnectionFactoryImpl(d);var client=org.springframework.r2dbc.core.DatabaseClient.create(factory);
         var template=new org.springframework.data.r2dbc.core.R2dbcEntityTemplate(client,org.springframework.data.r2dbc.dialect.PostgresDialect.INSTANCE);
         var resources=BoundedR2dbcResources.verify(factory,client,template,new R2dbcTransactionManager(factory));
         var now=Instant.now();var budget=R2dbcOperationBudget.observed(now,now.plusSeconds(5),System.nanoTime(),Duration.ofSeconds(5),Clock.systemUTC(),System::nanoTime);
-        return new org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransaction(resources,new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)))
+        return new org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransactionImpl(resources,new CleanupPolicy(Duration.ofSeconds(2),Duration.ofSeconds(2)))
             .execute(budget,new org.springframework.transaction.support.DefaultTransactionDefinition(),scope->Mono.just("source-value"));
     }
 }

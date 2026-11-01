@@ -389,8 +389,8 @@ class PiiMaskingAppenderPrivacyTest {
             output.start();
             assertThat(output.isStarted()).isTrue();
         }
-        private PiiMaskingAppender masker(PiiMaskingService service) {
-            var appender = new PiiMaskingAppender();
+        private PiiMaskingAppenderImpl masker(PiiMaskingService service) {
+            var appender = new PiiMaskingAppenderImpl();
             appender.setContext(context);
             appender.setPiiMaskingService(service);
             appender.addAppender(output);

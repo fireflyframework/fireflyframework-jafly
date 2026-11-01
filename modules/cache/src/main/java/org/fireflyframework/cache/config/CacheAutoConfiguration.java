@@ -18,13 +18,13 @@ package org.fireflyframework.cache.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.properties.CacheProperties;
 import org.fireflyframework.cache.serialization.CacheSerializer;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -83,7 +83,7 @@ public class CacheAutoConfiguration {
     @ConditionalOnMissingBean
     public CacheSerializer cacheSerializer(@Qualifier("cacheObjectMapper") ObjectMapper objectMapper) {
         log.debug("Creating JSON cache serializer");
-        return new JsonCacheSerializer(objectMapper);
+        return new JsonCacheSerializerImpl(objectMapper);
     }
 
     /**
@@ -163,7 +163,7 @@ public class CacheAutoConfiguration {
     @Bean
     @Primary
     @ConditionalOnMissingBean
-    public FireflyCacheManager fireflyCacheManager(org.fireflyframework.cache.factory.CacheManagerFactory factory) {
+    public FireflyCacheManagerImpl fireflyCacheManager(org.fireflyframework.cache.factory.CacheManagerFactory factory) {
         log.info("Creating default FireflyCacheManager");
         return factory.createDefaultCacheManager("default");
     }

@@ -34,7 +34,7 @@ Add the module as a `test`-scoped dependency, then build identities and inject p
 ```java
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.test.FakePolicyDecisionPort;
+import org.fireflyframework.security.test.FakePolicyDecisionPortImpl;
 import org.fireflyframework.security.test.TestPrincipals;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import reactor.core.publisher.Mono;
@@ -51,7 +51,7 @@ Mono<String> underTest = handler.handle(request)
         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
 
 // Drive a PEP with a configurable PDP and assert what it asked
-FakePolicyDecisionPort pdp = FakePolicyDecisionPort.denyAll("reports.read scope required");
+FakePolicyDecisionPortImpl pdp = FakePolicyDecisionPortImpl.denyAll("reports.read scope required");
 StepVerifier.create(pep.check(alice, "read", "/api/reports", Map.of()))
         .expectNextMatches(Decision::granted)   // ... or assert the deny path
         .verifyComplete();
@@ -60,7 +60,7 @@ assertThat(pdp.lastAction()).isEqualTo("read");
 assertThat(pdp.lastResource()).isEqualTo("/api/reports");
 ```
 
-`FakePolicyDecisionPort` is mutable and `volatile`-backed, so the same instance can be reconfigured between assertions with `returning(...)`.
+`FakePolicyDecisionPortImpl` is mutable and `volatile`-backed, so the same instance can be reconfigured between assertions with `returning(...)`.
 
 ## Configuration
 
@@ -70,7 +70,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`FakePolicyDecisionPort`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/FakePolicyDecisionPort.java) | A configurable `PolicyDecisionPort` test double that returns a predetermined decision and records the last request it received, so tests can assert PEP wiring without a real policy engine. |
+| [`FakePolicyDecisionPortImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/FakePolicyDecisionPortImpl.java) | A configurable `PolicyDecisionPort` test double that returns a predetermined decision and records the last request it received, so tests can assert PEP wiring without a real policy engine. |
 | [`TestPrincipals`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-test/src/main/java/org/fireflyframework/security/test/TestPrincipals.java) | Factory helpers for building `SecurityPrincipal`s and `FireflyAuthenticationToken`s in tests, so application test code does not hand-roll principals or wrestle with the security context. |
 
 ## Continue the application

@@ -14,8 +14,8 @@ import org.fireflyframework.eventsourcing.domain.Event;
 import org.fireflyframework.eventsourcing.store.EventStore;
 import org.fireflyframework.orchestration.core.model.*;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.persistence.cache.CachePersistenceProvider;
-import org.fireflyframework.orchestration.persistence.eventsourced.EventSourcedPersistenceProvider;
+import org.fireflyframework.orchestration.persistence.cache.CachePersistenceProviderImpl;
+import org.fireflyframework.orchestration.persistence.eventsourced.EventSourcedPersistenceProviderImpl;
 import org.junit.jupiter.api.*;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -39,7 +39,7 @@ class PersistenceProviderLogSafetyTest {
     };
     @BeforeEach void attach() {
         appender.setContext((ch.qos.logback.classic.LoggerContext) LoggerFactory.getILoggerFactory());appender.start();
-        for (Class<?> type : List.of(CachePersistenceProvider.class, EventSourcedPersistenceProvider.class)) {
+        for (Class<?> type : List.of(CachePersistenceProviderImpl.class, EventSourcedPersistenceProviderImpl.class)) {
             Logger logger = (Logger) LoggerFactory.getLogger(type);levels.put(logger, logger.getLevel());additive.put(logger, logger.isAdditive());
             logger.setLevel(Level.DEBUG);logger.setAdditive(false);logger.addAppender(appender);
         }
@@ -67,18 +67,18 @@ class PersistenceProviderLogSafetyTest {
         events.clear();
         if (disabled) levels.keySet().forEach(logger -> logger.setLevel(Level.OFF));
         var state = state(id);var error = new IllegalStateException("ordinary provider failure");Mono<Void> work;
-        CacheAdapter cache = null;EventStore store = null;EventSourcedPersistenceProvider eventProvider = null;
+        CacheAdapter cache = null;EventStore store = null;EventSourcedPersistenceProviderImpl eventProvider = null;
         if (eventSourced) {
             store = mock(EventStore.class);
             when(store.getAggregateVersion(any(), eq("orchestration-execution"))).thenReturn(Mono.just(0L));
             when(store.appendEvents(any(), eq("orchestration-execution"), anyList(), eq(0L), eq(Map.of())))
                     .thenReturn(failure ? Mono.error(error) : Mono.empty());
-            eventProvider = new EventSourcedPersistenceProvider(store, new ObjectMapper().registerModule(new JavaTimeModule()).registerModule(new Jdk8Module()));
+            eventProvider = new EventSourcedPersistenceProviderImpl(store, new ObjectMapper().registerModule(new JavaTimeModule()).registerModule(new Jdk8Module()));
             work = eventProvider.save(state);
         } else {
             cache = mock(CacheAdapter.class);
             when(cache.put(any(), any(), any(Duration.class))).thenReturn(failure ? Mono.error(error) : Mono.empty());
-            work = new CachePersistenceProvider(cache, Duration.ofMinutes(5)).save(state);
+            work = new CachePersistenceProviderImpl(cache, Duration.ofMinutes(5)).save(state);
         }
         if (failure) assertSame(error, assertThrows(IllegalStateException.class, () -> work.block(LIMIT)));
         else assertNull(work.block(LIMIT));

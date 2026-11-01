@@ -50,7 +50,7 @@ import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 
 class EventListenerDeliveryContractTest {
-    private EventListenerProcessor processor(Object... beans) {
+    private EventListenerProcessorImpl processor(Object... beans) {
         var context = mock(ApplicationContext.class);
         var environment = mock(Environment.class);
         when(environment.resolvePlaceholders(anyString())).thenAnswer(call -> call.getArgument(0));
@@ -60,7 +60,7 @@ class EventListenerDeliveryContractTest {
             when(context.getBean(names[i])).thenReturn(beans[i]);
         }
         when(context.getBeanDefinitionNames()).thenReturn(names);
-        var processor = new EventListenerProcessor(context, mock(ApplicationEventPublisher.class),
+        var processor = new EventListenerProcessorImpl(context, mock(ApplicationEventPublisher.class),
                 mock(CustomErrorHandlerRegistry.class), environment);
         processor.initializeEventListeners();
         return processor;
@@ -76,7 +76,7 @@ class EventListenerDeliveryContractTest {
                 mock(EventEnvelope.AckCallback.class));
     }
 
-    private EventDeliveryOutcome run(EventListenerProcessor processor, EventEnvelope envelope) {
+    private EventDeliveryOutcome run(EventListenerProcessorImpl processor, EventEnvelope envelope) {
         return processor.processDelivery(envelope).block(Duration.ofSeconds(2));
     }
 
@@ -119,7 +119,7 @@ class EventListenerDeliveryContractTest {
         var appender = new ListAppender<ILoggingEvent>();
         appender.start();
         Logger evaluator = (Logger) LoggerFactory.getLogger(SpelExpressionEvaluator.class);
-        Logger listener = (Logger) LoggerFactory.getLogger(EventListenerProcessor.class);
+        Logger listener = (Logger) LoggerFactory.getLogger(EventListenerProcessorImpl.class);
         evaluator.addAppender(appender);
         listener.addAppender(appender);
         try {

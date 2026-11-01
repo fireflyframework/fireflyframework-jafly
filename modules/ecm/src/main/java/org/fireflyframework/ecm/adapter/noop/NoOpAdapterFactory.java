@@ -57,7 +57,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentPort createDocumentPort() {
         log.info("Creating no-op DocumentPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentPort", DocumentPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentPort", DocumentPort.class).getProxy();
     }
 
     /**
@@ -67,7 +67,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentContentPort createDocumentContentPort() {
         log.info("Creating no-op DocumentContentPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentContentPort", DocumentContentPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentContentPort", DocumentContentPort.class).getProxy();
     }
 
     /**
@@ -77,7 +77,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentSecurityPort createDocumentSecurityPort() {
         log.info("Creating no-op DocumentSecurityPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
     }
 
     /**
@@ -87,7 +87,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentVersionPort createDocumentVersionPort() {
         log.info("Creating no-op DocumentVersionPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentVersionPort", DocumentVersionPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentVersionPort", DocumentVersionPort.class).getProxy();
     }
 
     /**
@@ -97,7 +97,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentSearchPort createDocumentSearchPort() {
         log.info("Creating no-op DocumentSearchPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentSearchPort", DocumentSearchPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentSearchPort", DocumentSearchPort.class).getProxy();
     }
 
     /**
@@ -107,7 +107,7 @@ public class NoOpAdapterFactory {
      */
     public FolderPort createFolderPort() {
         log.info("Creating no-op FolderPort adapter as fallback");
-        return new NoOpGenericAdapter<>("FolderPort", FolderPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("FolderPort", FolderPort.class).getProxy();
     }
 
     /**
@@ -117,7 +117,7 @@ public class NoOpAdapterFactory {
      */
     public FolderHierarchyPort createFolderHierarchyPort() {
         log.info("Creating no-op FolderHierarchyPort adapter as fallback");
-        return new NoOpGenericAdapter<>("FolderHierarchyPort", FolderHierarchyPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("FolderHierarchyPort", FolderHierarchyPort.class).getProxy();
     }
 
     /**
@@ -127,7 +127,7 @@ public class NoOpAdapterFactory {
      */
     public PermissionPort createPermissionPort() {
         log.info("Creating no-op PermissionPort adapter as fallback");
-        return new NoOpGenericAdapter<>("PermissionPort", PermissionPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("PermissionPort", PermissionPort.class).getProxy();
     }
 
     /**
@@ -137,7 +137,7 @@ public class NoOpAdapterFactory {
      */
     public AuditPort createAuditPort() {
         log.info("Creating no-op AuditPort adapter as fallback");
-        return new NoOpGenericAdapter<>("AuditPort", AuditPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("AuditPort", AuditPort.class).getProxy();
     }
 
     /**
@@ -147,7 +147,7 @@ public class NoOpAdapterFactory {
      */
     public SignatureEnvelopePort createSignatureEnvelopePort() {
         log.info("Creating no-op SignatureEnvelopePort adapter as fallback");
-        return new NoOpGenericAdapter<>("SignatureEnvelopePort", SignatureEnvelopePort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("SignatureEnvelopePort", SignatureEnvelopePort.class).getProxy();
     }
 
     /**
@@ -157,7 +157,7 @@ public class NoOpAdapterFactory {
      */
     public SignatureRequestPort createSignatureRequestPort() {
         log.info("Creating no-op SignatureRequestPort adapter as fallback");
-        return new NoOpGenericAdapter<>("SignatureRequestPort", SignatureRequestPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("SignatureRequestPort", SignatureRequestPort.class).getProxy();
     }
 
     /**
@@ -167,7 +167,7 @@ public class NoOpAdapterFactory {
      */
     public SignatureValidationPort createSignatureValidationPort() {
         log.info("Creating no-op SignatureValidationPort adapter as fallback");
-        return new NoOpGenericAdapter<>("SignatureValidationPort", SignatureValidationPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("SignatureValidationPort", SignatureValidationPort.class).getProxy();
     }
 
     /**
@@ -177,7 +177,7 @@ public class NoOpAdapterFactory {
      */
     public SignatureProofPort createSignatureProofPort() {
         log.info("Creating no-op SignatureProofPort adapter as fallback");
-        return new NoOpGenericAdapter<>("SignatureProofPort", SignatureProofPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("SignatureProofPort", SignatureProofPort.class).getProxy();
     }
 
     /**
@@ -187,7 +187,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentExtractionPort createDocumentExtractionPort() {
         log.info("Creating no-op DocumentExtractionPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentExtractionPort", DocumentExtractionPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentExtractionPort", DocumentExtractionPort.class).getProxy();
     }
 
     /**
@@ -197,7 +197,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentClassificationPort createDocumentClassificationPort() {
         log.info("Creating no-op DocumentClassificationPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentClassificationPort", DocumentClassificationPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentClassificationPort", DocumentClassificationPort.class).getProxy();
     }
 
     /**
@@ -207,7 +207,7 @@ public class NoOpAdapterFactory {
      */
     public DocumentValidationPort createDocumentValidationPort() {
         log.info("Creating no-op DocumentValidationPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DocumentValidationPort", DocumentValidationPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DocumentValidationPort", DocumentValidationPort.class).getProxy();
     }
 
     /**
@@ -217,6 +217,6 @@ public class NoOpAdapterFactory {
      */
     public DataExtractionPort createDataExtractionPort() {
         log.info("Creating no-op DataExtractionPort adapter as fallback");
-        return new NoOpGenericAdapter<>("DataExtractionPort", DataExtractionPort.class).getProxy();
+        return new NoOpGenericAdapterImpl<>("DataExtractionPort", DataExtractionPort.class).getProxy();
     }
 }

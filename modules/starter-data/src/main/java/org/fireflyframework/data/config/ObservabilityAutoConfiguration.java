@@ -16,8 +16,8 @@
 
 package org.fireflyframework.data.config;
 
-import org.fireflyframework.data.health.JobOrchestratorHealthIndicator;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.health.JobOrchestratorHealthIndicatorImpl;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.orchestration.port.JobOrchestrator;
 import org.fireflyframework.data.util.TracingContextExtractor;
@@ -70,27 +70,27 @@ public class ObservabilityAutoConfiguration {
      */
     @Bean
     @ConditionalOnClass(MeterRegistry.class)
-    @ConditionalOnMissingBean(JobMetricsService.class)
+    @ConditionalOnMissingBean(JobMetricsServiceImpl.class)
     @ConditionalOnProperty(prefix = "firefly.data.orchestration.observability", name = "metrics-enabled", havingValue = "true", matchIfMissing = true)
-    public JobMetricsService jobMetricsService(MeterRegistry meterRegistry,
+    public JobMetricsServiceImpl jobMetricsService(MeterRegistry meterRegistry,
                                                JobOrchestrationProperties properties) {
         log.info("Configuring job metrics service with metric prefix: {}", 
                 properties.getObservability().getMetricPrefix());
-        return new JobMetricsService(meterRegistry, properties);
+        return new JobMetricsServiceImpl(meterRegistry, properties);
     }
 
     /**
      * Creates the job orchestrator health indicator.
      */
     @Bean
-    @ConditionalOnMissingBean(JobOrchestratorHealthIndicator.class)
+    @ConditionalOnMissingBean(JobOrchestratorHealthIndicatorImpl.class)
     @ConditionalOnEnabledHealthIndicator("jobOrchestrator")
     @ConditionalOnProperty(prefix = "firefly.data.orchestration.health-check", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(
+    public JobOrchestratorHealthIndicatorImpl jobOrchestratorHealthIndicator(
             Optional<JobOrchestrator> orchestrator,
             JobOrchestrationProperties properties) {
         log.info("Configuring job orchestrator health indicator");
-        return new JobOrchestratorHealthIndicator(orchestrator, properties);
+        return new JobOrchestratorHealthIndicatorImpl(orchestrator, properties);
     }
 }
 

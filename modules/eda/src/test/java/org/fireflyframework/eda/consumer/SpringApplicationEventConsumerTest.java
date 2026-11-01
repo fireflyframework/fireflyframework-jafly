@@ -35,11 +35,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("SpringApplicationEventConsumer Tests")
 class SpringApplicationEventConsumerTest {
 
-    private SpringApplicationEventConsumer consumer;
+    private SpringApplicationEventConsumerImpl consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new SpringApplicationEventConsumer();
+        consumer = new SpringApplicationEventConsumerImpl();
     }
 
     @Test

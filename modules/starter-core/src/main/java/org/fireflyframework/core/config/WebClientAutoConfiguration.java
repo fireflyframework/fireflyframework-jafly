@@ -42,7 +42,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import static org.fireflyframework.core.config.TransactionFilter.TRANSACTION_ID_HEADER;
+import static org.fireflyframework.core.config.TransactionFilterImpl.TRANSACTION_ID_HEADER;
 
 /**
  * Configuration class for creating and customizing a {@link WebClient} bean.
@@ -116,8 +116,8 @@ public class WebClientAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    HeaderPropagationWebFilter headerPropagationWebFilter(HeaderPropagationProperties properties) {
-        return new HeaderPropagationWebFilter(properties);
+    HeaderPropagationWebFilterImpl headerPropagationWebFilter(HeaderPropagationProperties properties) {
+        return new HeaderPropagationWebFilterImpl(properties);
     }
 
     /**
@@ -126,8 +126,8 @@ public class WebClientAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    HeaderPropagationExchangeFilter headerPropagationExchangeFilter() {
-        return new HeaderPropagationExchangeFilter();
+    HeaderPropagationExchangeFilterImpl headerPropagationExchangeFilter() {
+        return new HeaderPropagationExchangeFilterImpl();
     }
 
     /**
@@ -138,7 +138,7 @@ public class WebClientAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    WebClient webClient(HeaderPropagationExchangeFilter headerPropagationExchangeFilter) {
+    WebClient webClient(HeaderPropagationExchangeFilterImpl headerPropagationExchangeFilter) {
         // Create a WebClient.Builder with transaction ID + allow-listed header propagation
         WebClient.Builder builder = observedBuilder()
                 .filter((request, next) ->
@@ -184,7 +184,7 @@ public class WebClientAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    WebClient.Builder webClientBuilder(HeaderPropagationExchangeFilter headerPropagationExchangeFilter) {
+    WebClient.Builder webClientBuilder(HeaderPropagationExchangeFilterImpl headerPropagationExchangeFilter) {
         // Create a WebClient.Builder with transaction ID + allow-listed header propagation
         WebClient.Builder builder = observedBuilder()
                 .filter((request, next) ->

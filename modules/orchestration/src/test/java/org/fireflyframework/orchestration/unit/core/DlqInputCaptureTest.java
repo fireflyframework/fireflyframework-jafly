@@ -19,12 +19,12 @@ package org.fireflyframework.orchestration.unit.core;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterEntry;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStoreImpl;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepHandler;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.builder.SagaBuilder;
@@ -53,17 +53,17 @@ import static org.assertj.core.api.Assertions.*;
 class DlqInputCaptureTest {
 
     private OrchestrationEvents events;
-    private InMemoryDeadLetterStore dlqStore;
+    private InMemoryDeadLetterStoreImpl dlqStore;
     private DeadLetterService dlqService;
-    private NoOpEventPublisher noOpPublisher;
+    private NoOpEventPublisherImpl noOpPublisher;
     private StepInvoker stepInvoker;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
-        dlqStore = new InMemoryDeadLetterStore();
+        dlqStore = new InMemoryDeadLetterStoreImpl();
         dlqService = new DeadLetterService(dlqStore, events);
-        noOpPublisher = new NoOpEventPublisher();
+        noOpPublisher = new NoOpEventPublisherImpl();
         stepInvoker = new StepInvoker(new ArgumentResolver());
     }
 
@@ -218,7 +218,7 @@ class DlqInputCaptureTest {
 
     @Test
     void saga_stepLatenciesArePersisted() {
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher, persistence);
         var compensator = new SagaCompensator(events, CompensationPolicy.STRICT_SEQUENTIAL, stepInvoker);
         var engine = new SagaEngine(null, events, orchestrator, persistence, null, compensator, noOpPublisher);

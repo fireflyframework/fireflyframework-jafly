@@ -10,7 +10,7 @@ The complete project is [`docs/examples/onboarding-event-store`](https://github.
 
 <picture>
   <source media="(max-width: 600px)" srcset="../../assets/diagrams/event-store-narrow.svg">
-  <img class="jafly-diagram" src="../../assets/diagrams/event-store.svg" alt="The aggregate produces events. R2dbcEventStore appends them with an expected version in PostgreSQL. Reading the ordered, typed history reconstructs a fresh aggregate.">
+  <img class="jafly-diagram" src="../../assets/diagrams/event-store.svg" alt="The aggregate produces events. R2dbcEventStoreImpl appends them with an expected version in PostgreSQL. Reading the ordered, typed history reconstructs a fresh aggregate.">
 </picture>
 
 ## Run the project
@@ -75,7 +75,7 @@ Loading creates a new aggregate and passes its ordered history to `loadFromHisto
 
 ## Configure the PostgreSQL boundary
 
-The test creates one `PostgresqlConnectionFactory` and uses it for `DatabaseClient`, `R2dbcEntityTemplate`, `R2dbcTransactionManager`, and `TransactionalOperator`. Those objects are passed to `R2dbcEventStore`. The test also registers the concrete event types with its Jackson mapper.
+The test creates one `PostgresqlConnectionFactory` and uses it for `DatabaseClient`, `R2dbcEntityTemplate`, `R2dbcTransactionManager`, and `TransactionalOperator`. Those objects are passed to `R2dbcEventStoreImpl`. The test also registers the concrete event types with its Jackson mapper.
 
 Its SQL fixture follows the event store's table contract:
 

@@ -24,16 +24,16 @@ Read the documents in this order to go from "what is event sourcing?" to "I can 
 | `o.f.eventsourcing.aggregate` | `AggregateRoot`, `EventHandlerException` |
 | `o.f.eventsourcing.annotation` | `@DomainEvent`, `@EventSourcingTransactional` |
 | `o.f.eventsourcing.store` | `EventStore`, `ConcurrencyException`, `EventStoreException` |
-| `o.f.eventsourcing.store.r2dbc` | `R2dbcEventStore`, `EventEntity`, `GenericEvent` |
+| `o.f.eventsourcing.store.r2dbc` | `R2dbcEventStoreImpl`, `EventEntity`, `GenericEvent` |
 | `o.f.eventsourcing.snapshot` | `Snapshot`, `AbstractSnapshot`, `SnapshotStore`, `SnapshotTrigger` |
-| `o.f.eventsourcing.snapshot.r2dbc` | `R2dbcSnapshotStore` |
+| `o.f.eventsourcing.snapshot.r2dbc` | `R2dbcSnapshotStoreImpl` |
 | `o.f.eventsourcing.config` | Auto-configuration classes, `EventSourcingProperties`, `EventTypeRegistry` |
 | `o.f.eventsourcing.publisher` | `EventSourcingPublisher` |
 | `o.f.eventsourcing.outbox` | `EventOutboxService`, `EventOutboxProcessor`, `EventOutboxRepository` |
-| `o.f.eventsourcing.projection` | `ProjectionService`, `ProjectionHealth`, `ProjectionMetrics` |
+| `o.f.eventsourcing.projection` | `ProjectionService`, `ProjectionHealth`, `ProjectionMetricsImpl` |
 | `o.f.eventsourcing.transaction` | `EventSourcingTransactionalAspect` |
 | `o.f.eventsourcing.logging` | `EventSourcingLoggingContext` (16 MDC keys) |
-| `o.f.eventsourcing.monitoring` | `EventStoreMetrics` |
+| `o.f.eventsourcing.monitoring` | `EventStoreMetricsImpl` |
 | `o.f.eventsourcing.health` | Health indicators for EventStore, Outbox, Snapshot, Projection |
 | `o.f.eventsourcing.resilience` | `CircuitBreakerAutoConfiguration` |
 | `o.f.eventsourcing.multitenancy` | `TenantContext`, `MultiTenancyAutoConfiguration` |

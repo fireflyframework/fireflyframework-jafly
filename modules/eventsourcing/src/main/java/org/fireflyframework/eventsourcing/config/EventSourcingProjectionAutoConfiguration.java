@@ -16,7 +16,7 @@
 
 package org.fireflyframework.eventsourcing.config;
 
-import org.fireflyframework.eventsourcing.health.ProjectionHealthIndicator;
+import org.fireflyframework.eventsourcing.health.ProjectionHealthIndicatorImpl;
 import org.fireflyframework.eventsourcing.projection.ProjectionService;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +54,7 @@ public class EventSourcingProjectionAutoConfiguration {
         log.info("Registering ProjectionHealthIndicator with {} projection services", 
                 projectionServices.size());
         
-        return new ProjectionHealthIndicator(
+        return new ProjectionHealthIndicatorImpl(
                 projectionServices, 
                 properties.getHealthCheck().getTimeout(),
                 properties.getHealthCheck().getMaxAcceptableLag()

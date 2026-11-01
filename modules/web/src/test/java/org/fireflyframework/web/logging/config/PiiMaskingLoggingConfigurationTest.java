@@ -21,7 +21,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import org.fireflyframework.web.logging.appender.PiiMaskingAppender;
+import org.fireflyframework.web.logging.appender.PiiMaskingAppenderImpl;
 import org.fireflyframework.web.logging.service.PiiMaskingService;
 import org.fireflyframework.web.logging.service.StdoutMaskingService;
 import org.junit.jupiter.api.AfterEach;
@@ -112,7 +112,7 @@ public class PiiMaskingLoggingConfigurationTest {
         boolean hasPiiMaskingAppender = false;
         var appenderIterator = rootLogger.iteratorForAppenders();
         while (appenderIterator.hasNext()) {
-            if (appenderIterator.next() instanceof PiiMaskingAppender) {
+            if (appenderIterator.next() instanceof PiiMaskingAppenderImpl) {
                 hasPiiMaskingAppender = true;
                 break;
             }
@@ -132,7 +132,7 @@ public class PiiMaskingLoggingConfigurationTest {
         boolean hasPiiMaskingAppender = false;
         var appenderIterator = rootLogger.iteratorForAppenders();
         while (appenderIterator.hasNext()) {
-            if (appenderIterator.next() instanceof PiiMaskingAppender) {
+            if (appenderIterator.next() instanceof PiiMaskingAppenderImpl) {
                 hasPiiMaskingAppender = true;
                 break;
             }
@@ -201,7 +201,7 @@ public class PiiMaskingLoggingConfigurationTest {
         boolean hasPiiMaskingAppender = false;
         var appenderIterator = rootLogger.iteratorForAppenders();
         while (appenderIterator.hasNext()) {
-            if (appenderIterator.next() instanceof PiiMaskingAppender) {
+            if (appenderIterator.next() instanceof PiiMaskingAppenderImpl) {
                 hasPiiMaskingAppender = true;
                 break;
             }

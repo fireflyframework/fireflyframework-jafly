@@ -59,7 +59,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final IdpAdapter idp;   // CognitoIdpAdapter wired by CognitoAutoConfiguration
+    private final IdpAdapter idp;   // CognitoIdpAdapterImpl wired by CognitoAutoConfiguration
 
 
 
@@ -90,7 +90,7 @@ The `firefly.security.idp.cognito` namespace is bound by [CognitoProperties.java
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`CognitoIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/adapter/CognitoIdpAdapter.java) | AWS Cognito implementation of the Firefly IDP Adapter. |
+| [`CognitoIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/adapter/CognitoIdpAdapterImpl.java) | AWS Cognito implementation of the Firefly IDP Adapter. |
 | [`CognitoProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/properties/CognitoProperties.java) | Configuration properties for AWS Cognito Identity Provider. |
 | [`CognitoClientFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/client/CognitoClientFactory.java) | Factory for creating and managing AWS Cognito Identity Provider clients. |
 | [`CognitoAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/config/CognitoAutoConfiguration.java) | Spring auto-configuration for AWS Cognito IDP Adapter. |

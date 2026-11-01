@@ -69,7 +69,7 @@ class MeController {
 }
 ```
 
-Add ABAC/ReBAC decisions by contributing one or more `PolicyRule` beans; they are collected by the default `EmbeddedPolicyDecisionAdapter` and consulted on every non-permitted exchange, fail-closed:
+Add ABAC/ReBAC decisions by contributing one or more `PolicyRule` beans; they are collected by the default `EmbeddedPolicyDecisionAdapterImpl` and consulted on every non-permitted exchange, fail-closed:
 
 ```java
 @Bean
@@ -123,7 +123,7 @@ Property-based wiring conditions found in this module:
 | --- | --- |
 | [`ResourceServerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerAutoConfiguration.java) | Auto-configures a secure-by-default reactive OAuth2 resource server. |
 | [`ResourceServerProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java) | Configuration for the secure-by-default resource server. |
-| [`JwtToFireflyPrincipalConverter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/JwtToFireflyPrincipalConverter.java) | Converts a signature-validated `Jwt` into a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` with normalized authorities/scopes. |
+| [`JwtToFireflyPrincipalConverterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/JwtToFireflyPrincipalConverterImpl.java) | Converts a signature-validated `Jwt` into a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` with normalized authorities/scopes. |
 
 ## Related components
 
@@ -183,8 +183,8 @@ security-api  →  security-spi  →  security-core  →  security-webflux  → 
 
 - `security-api` defines the domain (`SecurityPrincipal`, `Decision`, `SigningKey`) and driving ports.
 - `security-spi` defines the driven ports this module consumes: `KeyManagementPort`, `AuthorityMappingPort`, `PolicyDecisionPort`, `AuditEventPort`, `SecurityContextPort`.
-- `security-core` supplies the framework-neutral default implementations (`InMemoryKeyManagementAdapter`, `ConfigurableAuthorityMapper`, `PrincipalFactory`, `EmbeddedPolicyDecisionAdapter`, `LoggingAuditEventAdapter`).
-- `security-webflux` supplies the reactive Spring Security glue (`FireflyAuthenticationToken`, `PolicyAuthorizationManager`, `ReactorSecurityContextAdapter`).
+- `security-core` supplies the framework-neutral default implementations (`InMemoryKeyManagementAdapterImpl`, `ConfigurableAuthorityMapperImpl`, `PrincipalFactory`, `EmbeddedPolicyDecisionAdapterImpl`, `LoggingAuditEventAdapterImpl`).
+- `security-webflux` supplies the reactive Spring Security glue (`FireflyAuthenticationToken`, `PolicyAuthorizationManagerImpl`, `ReactorSecurityContextAdapterImpl`).
 - This module binds all of the above into a concrete `SecurityWebFilterChain` and is delivered to applications transitively via the application starter.
 - Adapters (key management, policy, idp providers) replace the in-process defaults by simply contributing their own port beans.
 
@@ -196,11 +196,11 @@ This module depends only on `security-webflux` (which transitively brings `secur
 
 - A verifying JWT decoder. `NimbusReactiveJwtDecoder.withPublicKey(...)` built from the active RSA `SigningKey` resolved through `KeyManagementPort.activeSigningKey()`, pinned to `RS256`. If no RSA key resolves, the context fails to start (fail-closed) rather than booting an unprotected server.
 - A validator chain. A `DelegatingOAuth2TokenValidator<Jwt>` always enforcing required expiration and timestamp validation through `AccessTokenValidators.timestamps()` (including nbf/skew validation), plus `JwtIssuerValidator` when `issuer` is configured and a custom audience validator when `audiences` is non-empty.
-- Claim-to-authority mapping. An `AuthorityMappingPort` (default `ConfigurableAuthorityMapper`) driven by configurable role/scope claim paths and authority prefix, normalizing provider-specific claims (Keycloak/Cognito/Entra) into a uniform authority/scope set.
-- A framework principal. `JwtToFireflyPrincipalConverter` replaces Spring's default `JwtAuthenticationToken` with a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` (built by `PrincipalFactory.fromClaims(...)`), so `@AuthenticationPrincipal SecurityPrincipal` works with its default configuration.
-- An authenticated policy filter chain. `fireflySecurityWebFilterChain` disables CSRF, HTTP-Basic, form-login, and logout; permits only the explicitly configured `permitMatchers`; and routes `anyExchange()` through a `PolicyAuthorizationManager` backed by `PolicyDecisionPort`. Anonymous requests to unconfigured routes are denied. Authenticated authorization depends on the configured policy mode; strict mode requires an explicit permit.
+- Claim-to-authority mapping. An `AuthorityMappingPort` (default `ConfigurableAuthorityMapperImpl`) driven by configurable role/scope claim paths and authority prefix, normalizing provider-specific claims (Keycloak/Cognito/Entra) into a uniform authority/scope set.
+- A framework principal. `JwtToFireflyPrincipalConverterImpl` replaces Spring's default `JwtAuthenticationToken` with a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` (built by `PrincipalFactory.fromClaims(...)`), so `@AuthenticationPrincipal SecurityPrincipal` works with its default configuration.
+- An authenticated policy filter chain. `fireflySecurityWebFilterChain` disables CSRF, HTTP-Basic, form-login, and logout; permits only the explicitly configured `permitMatchers`; and routes `anyExchange()` through a `PolicyAuthorizationManagerImpl` backed by `PolicyDecisionPort`. Anonymous requests to unconfigured routes are denied. Authenticated authorization depends on the configured policy mode; strict mode requires an explicit permit.
 - Hardened response headers on every response: `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, a strict `Content-Security-Policy` (`default-src 'none'; frame-ancestors 'none'`), and HSTS (`includeSubDomains`, 365-day max-age).
-- Framework defaults for the remaining ports. `EmbeddedPolicyDecisionAdapter` (collecting any `PolicyRule` beans), `LoggingAuditEventAdapter`, and `ReactorSecurityContextAdapter`. all overridable.
+- Framework defaults for the remaining ports. `EmbeddedPolicyDecisionAdapterImpl` (collecting any `PolicyRule` beans), `LoggingAuditEventAdapterImpl`, and `ReactorSecurityContextAdapterImpl`. all overridable.
 
 ### Key types
 
@@ -208,7 +208,7 @@ This module depends only on `security-webflux` (which transitively brings `secur
 | --- | --- |
 | `ResourceServerAutoConfiguration` | `@AutoConfiguration @EnableWebFluxSecurity` entry point; builds the decoder, converter, and `SecurityWebFilterChain`. |
 | `ResourceServerProperties` | `@ConfigurationProperties("firefly.security.resource-server")`. permit matchers, issuer, audiences, authority prefix, role/scope claim paths. |
-| `JwtToFireflyPrincipalConverter` | `Converter<Jwt, Mono<AbstractAuthenticationToken>>` mapping a validated `Jwt` to a `FireflyAuthenticationToken` carrying a `SecurityPrincipal`. |
+| `JwtToFireflyPrincipalConverterImpl` | `Converter<Jwt, Mono<AbstractAuthenticationToken>>` mapping a validated `Jwt` to a `FireflyAuthenticationToken` carrying a `SecurityPrincipal`. |
 
 Ports consumed (from `security-spi`): `KeyManagementPort`, `AuthorityMappingPort`, `PolicyDecisionPort`, `AuditEventPort`, `SecurityContextPort`. Domain types (from `security-api`): `SecurityPrincipal`, `Decision`, `SigningKey`.
 
@@ -236,8 +236,8 @@ With no configuration at all, every route requires a validated bearer token and 
 Bearer token → fireflySecurityWebFilterChain
    → NimbusReactiveJwtDecoder (RS256, key from KeyManagementPort)
    → DelegatingOAuth2TokenValidator (timestamp [+ issuer] [+ audience])
-   → JwtToFireflyPrincipalConverter → FireflyAuthenticationToken(SecurityPrincipal)
-   → authorizeExchange: permitMatchers → permitAll, else PolicyAuthorizationManager (PolicyDecisionPort, explicit strict mode or legacy RBAC deferral)
+   → JwtToFireflyPrincipalConverterImpl → FireflyAuthenticationToken(SecurityPrincipal)
+   → authorizeExchange: permitMatchers → permitAll, else PolicyAuthorizationManagerImpl (PolicyDecisionPort, explicit strict mode or legacy RBAC deferral)
    → controller / handler
 ```
 
@@ -248,7 +248,7 @@ A missing or malformed token, a failed signature, an expired token, or a wrong i
 The module ships a `@SpringBootTest(webEnvironment = RANDOM_PORT)` integration test, `ResourceServerIntegrationTest`, that boots a real reactive server with the real auto-configuration and exercises the full filter chain over HTTP with `WebTestClient`. It signs JWTs in-test with Nimbus (`RSASSASigner`) using the active `SigningKey` from the wired `KeyManagementPort`, and asserts the secure-by-default behavior end to end:
 
 - 200. a public route (`/public/**`) is reachable without a token; a protected route returns the `SecurityPrincipal.subject()` for a valid signed JWT.
-- 401. a protected route with no token; an expired token; a forged token signed by an unknown key (a fresh `InMemoryKeyManagementAdapter` the server doesn't trust).
+- 401. a protected route with no token; an expired token; a forged token signed by an unknown key (a fresh `InMemoryKeyManagementAdapterImpl` the server doesn't trust).
 - 403. a route a contributed `PolicyRule` denies, even with a valid token (proving default-deny / policy enforcement is independent of authentication).
 - Headers. `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Content-Security-Policy` are present on responses.
 

@@ -130,7 +130,7 @@ Mono<EventStream> loadEventStream(UUID aggregateId, String aggregateType, long f
 Mono<EventStream> loadEventStream(UUID aggregateId, String aggregateType,
                                    long fromVersion, long toVersion);
 
-// Get current aggregate version (-1 if not found, per R2dbcEventStore)
+// Get current aggregate version (-1 if not found, per R2dbcEventStoreImpl)
 Mono<Long> getAggregateVersion(UUID aggregateId, String aggregateType);
 
 // Check if aggregate exists (version >= 0)

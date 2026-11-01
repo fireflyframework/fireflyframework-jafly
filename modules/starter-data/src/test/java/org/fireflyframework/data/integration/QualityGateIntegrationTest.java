@@ -20,8 +20,8 @@ import org.fireflyframework.data.quality.DataQualityEngine;
 import org.fireflyframework.data.quality.DataQualityRule;
 import org.fireflyframework.data.quality.QualitySeverity;
 import org.fireflyframework.data.quality.QualityStrategy;
-import org.fireflyframework.data.quality.rules.NotNullRule;
-import org.fireflyframework.data.quality.rules.PatternRule;
+import org.fireflyframework.data.quality.rules.NotNullRuleImpl;
+import org.fireflyframework.data.quality.rules.PatternRuleImpl;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
@@ -41,13 +41,13 @@ class QualityGateIntegrationTest {
     @Test
     void qualityGate_allRulesPass_reportsPassed() {
         // Given - valid data that satisfies all rules
-        DataQualityRule<CustomerRecord> nameRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> nameRule = new NotNullRuleImpl<>(
                 "name", CustomerRecord::name, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> emailRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> emailRule = new PatternRuleImpl<>(
                 "email", Pattern.compile(".+@.+\\..+"), CustomerRecord::email, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> phoneRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> phoneRule = new PatternRuleImpl<>(
                 "phone", Pattern.compile("\\+?\\d[\\d\\-]{7,14}"), CustomerRecord::phone, QualitySeverity.WARNING);
-        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRuleImpl<>(
                 "taxId", CustomerRecord::taxId, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule, phoneRule, taxIdRule));
@@ -69,13 +69,13 @@ class QualityGateIntegrationTest {
     @Test
     void qualityGate_failFast_stopsOnFirstCritical() {
         // Given - first rule (CRITICAL) will fail, second rule (CRITICAL) should not be evaluated
-        DataQualityRule<CustomerRecord> nameRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> nameRule = new NotNullRuleImpl<>(
                 "name", CustomerRecord::name, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> emailRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> emailRule = new PatternRuleImpl<>(
                 "email", Pattern.compile(".+@.+\\..+"), CustomerRecord::email, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> phoneRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> phoneRule = new PatternRuleImpl<>(
                 "phone", Pattern.compile("\\+?\\d[\\d\\-]{7,14}"), CustomerRecord::phone, QualitySeverity.WARNING);
-        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRuleImpl<>(
                 "taxId", CustomerRecord::taxId, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule, phoneRule, taxIdRule));
@@ -103,13 +103,13 @@ class QualityGateIntegrationTest {
     @Test
     void qualityGate_collectAll_reportsAllFailures() {
         // Given - multiple rules that will fail
-        DataQualityRule<CustomerRecord> nameRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> nameRule = new NotNullRuleImpl<>(
                 "name", CustomerRecord::name, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> emailRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> emailRule = new PatternRuleImpl<>(
                 "email", Pattern.compile(".+@.+\\..+"), CustomerRecord::email, QualitySeverity.CRITICAL);
-        DataQualityRule<CustomerRecord> phoneRule = new PatternRule<>(
+        DataQualityRule<CustomerRecord> phoneRule = new PatternRuleImpl<>(
                 "phone", Pattern.compile("\\+?\\d[\\d\\-]{7,14}"), CustomerRecord::phone, QualitySeverity.WARNING);
-        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRule<>(
+        DataQualityRule<CustomerRecord> taxIdRule = new NotNullRuleImpl<>(
                 "taxId", CustomerRecord::taxId, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule, phoneRule, taxIdRule));

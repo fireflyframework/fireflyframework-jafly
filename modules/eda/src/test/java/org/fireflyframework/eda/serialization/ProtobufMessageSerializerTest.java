@@ -43,11 +43,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("ProtobufMessageSerializer Tests")
 class ProtobufMessageSerializerTest {
 
-    private ProtobufMessageSerializer serializer;
+    private ProtobufMessageSerializerImpl serializer;
 
     @BeforeEach
     void setUp() {
-        serializer = new ProtobufMessageSerializer();
+        serializer = new ProtobufMessageSerializerImpl();
     }
 
     @Test

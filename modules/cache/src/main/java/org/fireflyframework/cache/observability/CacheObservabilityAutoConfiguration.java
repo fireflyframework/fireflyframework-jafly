@@ -18,7 +18,7 @@ package org.fireflyframework.cache.observability;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.fireflyframework.cache.core.CacheAdapter;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -46,8 +46,8 @@ public class CacheObservabilityAutoConfiguration {
     @ConditionalOnBean(MeterRegistry.class)
     @ConditionalOnProperty(prefix = "firefly.observability.metrics", name = "enabled",
             havingValue = "true", matchIfMissing = true)
-    CacheMetrics cacheMetrics(MeterRegistry meterRegistry) {
-        return new CacheMetrics(meterRegistry);
+    CacheMetricsImpl cacheMetrics(MeterRegistry meterRegistry) {
+        return new CacheMetricsImpl(meterRegistry);
     }
 
     @Bean
@@ -56,11 +56,11 @@ public class CacheObservabilityAutoConfiguration {
     @ConditionalOnSingleCandidate(CacheAdapter.class)
     @ConditionalOnProperty(prefix = "firefly.observability.health", name = "enabled",
             havingValue = "true", matchIfMissing = true)
-    HealthIndicator cacheHealthIndicator(ObjectProvider<FireflyCacheManager> managerProvider,
+    HealthIndicator cacheHealthIndicator(ObjectProvider<FireflyCacheManagerImpl> managerProvider,
                                          ObjectProvider<CacheAdapter> adapterProvider) {
         CacheAdapter adapter = adapterProvider.getIfUnique();
-        FireflyCacheManager manager = managerProvider.getIfUnique();
+        FireflyCacheManagerImpl manager = managerProvider.getIfUnique();
         String adapterName = manager != null ? "firefly" : "cache";
-        return new CacheHealthIndicator(adapter, adapterName);
+        return new CacheHealthIndicatorImpl(adapter, adapterName);
     }
 }

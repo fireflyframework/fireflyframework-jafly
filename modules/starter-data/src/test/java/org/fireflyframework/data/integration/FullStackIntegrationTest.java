@@ -19,7 +19,7 @@ package org.fireflyframework.data.integration;
 import org.fireflyframework.data.enrichment.EnricherFallback;
 import org.fireflyframework.data.enrichment.FallbackEnrichmentExecutor;
 import org.fireflyframework.data.enrichment.FallbackStrategy;
-import org.fireflyframework.data.lineage.InMemoryLineageTracker;
+import org.fireflyframework.data.lineage.InMemoryLineageTrackerImpl;
 import org.fireflyframework.data.lineage.LineageRecord;
 import org.fireflyframework.data.model.EnrichmentRequest;
 import org.fireflyframework.data.model.EnrichmentResponse;
@@ -28,14 +28,14 @@ import org.fireflyframework.data.quality.DataQualityEngine;
 import org.fireflyframework.data.quality.DataQualityRule;
 import org.fireflyframework.data.quality.QualitySeverity;
 import org.fireflyframework.data.quality.QualityStrategy;
-import org.fireflyframework.data.quality.rules.NotNullRule;
-import org.fireflyframework.data.quality.rules.PatternRule;
+import org.fireflyframework.data.quality.rules.NotNullRuleImpl;
+import org.fireflyframework.data.quality.rules.PatternRuleImpl;
 import org.fireflyframework.data.service.DataEnricher;
 import org.fireflyframework.data.service.DataEnricherRegistry;
 import org.fireflyframework.data.transform.TransformContext;
 import org.fireflyframework.data.transform.TransformationChain;
-import org.fireflyframework.data.transform.transformers.ComputedFieldTransformer;
-import org.fireflyframework.data.transform.transformers.FieldMappingTransformer;
+import org.fireflyframework.data.transform.transformers.ComputedFieldTransformerImpl;
+import org.fireflyframework.data.transform.transformers.FieldMappingTransformerImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -121,14 +121,14 @@ class FullStackIntegrationTest {
 
         // ---- Step 2: Quality gate with real rules ----
         @SuppressWarnings("unchecked")
-        DataQualityRule<Map<String, Object>> nameRule = new NotNullRule<>(
+        DataQualityRule<Map<String, Object>> nameRule = new NotNullRuleImpl<>(
                 "first_name",
                 m -> m.get("first_name"),
                 QualitySeverity.CRITICAL
         );
 
         @SuppressWarnings("unchecked")
-        DataQualityRule<Map<String, Object>> emailRule = new PatternRule<>(
+        DataQualityRule<Map<String, Object>> emailRule = new PatternRuleImpl<>(
                 "email_address",
                 Pattern.compile(".+@.+\\..+"),
                 m -> (String) m.get("email_address"),
@@ -140,12 +140,12 @@ class FullStackIntegrationTest {
         // ---- Step 3: Transformation chain ----
         TransformationChain<Map<String, Object>, Map<String, Object>> chain =
                 TransformationChain.<Map<String, Object>, Map<String, Object>>create()
-                        .then(new FieldMappingTransformer(Map.of(
+                        .then(new FieldMappingTransformerImpl(Map.of(
                                 "first_name", "firstName",
                                 "last_name", "lastName",
                                 "email_address", "email"
                         )))
-                        .then(new ComputedFieldTransformer("fullName",
+                        .then(new ComputedFieldTransformerImpl("fullName",
                                 m -> m.get("firstName") + " " + m.get("lastName")));
 
         TransformContext transformContext = TransformContext.builder()
@@ -153,7 +153,7 @@ class FullStackIntegrationTest {
                 .build();
 
         // ---- Step 4: Lineage tracker ----
-        InMemoryLineageTracker lineageTracker = new InMemoryLineageTracker();
+        InMemoryLineageTrackerImpl lineageTracker = new InMemoryLineageTrackerImpl();
 
         // ---- Execute the full pipeline ----
         StepVerifier.create(

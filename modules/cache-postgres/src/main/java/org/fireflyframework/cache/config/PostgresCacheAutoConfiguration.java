@@ -47,10 +47,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ConditionalOnProperty(prefix = "firefly.cache", name = {"enabled", "postgres.enabled"},
         havingValue = "true", matchIfMissing = true)
 @ConditionalOnMissingBean(name = "fireflyCachePostgresConnectionFactory")
-@Conditional(PostgresCacheAutoConfiguration.ConfiguredPostgres.class)
+@Conditional(PostgresCacheAutoConfiguration.ConfiguredPostgresImpl.class)
 @EnableConfigurationProperties(CacheProperties.class)
 public class PostgresCacheAutoConfiguration {
-    static final class ConfiguredPostgres implements Condition {
+    static final class ConfiguredPostgresImpl implements Condition {
         @Override
         public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
             String database = context.getEnvironment().getProperty("firefly.cache.postgres.database");
@@ -61,7 +61,7 @@ public class PostgresCacheAutoConfiguration {
 
     @Bean(destroyMethod = "close")
     @Lazy
-    OwnedPostgresPool fireflyCachePostgresOwnedPool(CacheProperties properties) {
+    OwnedPostgresPoolImpl fireflyCachePostgresOwnedPool(CacheProperties properties) {
         var cfg = properties.getPostgres();
         requireText(cfg.getHost(), "host");
         requireText(cfg.getDatabase(), "database");
@@ -97,12 +97,12 @@ public class PostgresCacheAutoConfiguration {
                 .maxSize(cfg.getMaxPoolSize()).initialSize(cfg.getMinPoolSize()).minIdle(cfg.getMinPoolSize())
                 .maxAcquireTime(cfg.getAcquireTimeout()).maxCreateConnectionTime(cfg.getConnectTimeout())
                 .maxValidationTime(cfg.getAcquireTimeout()).acquireRetry(0).maxIdleTime(Duration.ofMinutes(5)).build();
-        return new OwnedPostgresPool(new ConnectionPool(configuration), cfg.getShutdownTimeout());
+        return new OwnedPostgresPoolImpl(new ConnectionPool(configuration), cfg.getShutdownTimeout());
     }
 
     @Bean(name = "fireflyCachePostgresConnectionFactory", destroyMethod = "", defaultCandidate = false)
     @Lazy
-    public ConnectionFactory fireflyCachePostgresConnectionFactory(OwnedPostgresPool owner) {
+    public ConnectionFactory fireflyCachePostgresConnectionFactory(OwnedPostgresPoolImpl owner) {
         return owner.pool;
     }
 
@@ -118,12 +118,12 @@ public class PostgresCacheAutoConfiguration {
         }
     }
 
-    static final class OwnedPostgresPool implements AutoCloseable {
+    static final class OwnedPostgresPoolImpl implements AutoCloseable {
         private final ConnectionPool pool;
         private final Duration shutdownTimeout;
         private final AtomicBoolean closed = new AtomicBoolean();
 
-        OwnedPostgresPool(ConnectionPool pool, Duration shutdownTimeout) {
+        OwnedPostgresPoolImpl(ConnectionPool pool, Duration shutdownTimeout) {
             this.pool = pool;
             this.shutdownTimeout = shutdownTimeout;
         }

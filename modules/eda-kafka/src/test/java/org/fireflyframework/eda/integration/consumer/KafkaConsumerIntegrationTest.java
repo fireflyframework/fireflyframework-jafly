@@ -19,7 +19,7 @@ package org.fireflyframework.eda.integration.consumer;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.consumer.EventConsumer;
 import org.fireflyframework.eda.event.EventEnvelope;
-import org.fireflyframework.eda.publisher.kafka.KafkaEventPublisher;
+import org.fireflyframework.eda.publisher.kafka.KafkaEventPublisherImpl;
 import org.fireflyframework.eda.testconfig.BaseIntegrationTest;
 import org.fireflyframework.eda.testconfig.TestApplication;
 import org.fireflyframework.eda.testconfig.TestEventListeners;
@@ -73,7 +73,7 @@ class KafkaConsumerIntegrationTest extends BaseIntegrationTest {
     private EventConsumer kafkaConsumer;
 
     @Autowired(required = false)
-    private KafkaEventPublisher kafkaPublisher;
+    private KafkaEventPublisherImpl kafkaPublisher;
 
     @Autowired(required = false)
     private KafkaAdmin kafkaAdmin;

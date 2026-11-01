@@ -28,7 +28,7 @@ import java.util.Map;
 
 class ConfigurableTenantResolverTest {
 
-    private final ConfigurableTenantResolver resolver = new ConfigurableTenantResolver(List.of("tenant_ids"));
+    private final ConfigurableTenantResolverImpl resolver = new ConfigurableTenantResolverImpl(List.of("tenant_ids"));
 
     private static SecurityPrincipal principalWith(Object tenantClaim) {
         return SecurityPrincipal.builder()
@@ -58,7 +58,7 @@ class ConfigurableTenantResolverTest {
 
     @Test
     void readsNestedClaimPath() {
-        ConfigurableTenantResolver nested = new ConfigurableTenantResolver(List.of("org.tenant"));
+        ConfigurableTenantResolverImpl nested = new ConfigurableTenantResolverImpl(List.of("org.tenant"));
         SecurityPrincipal principal = SecurityPrincipal.builder()
                 .subject("user-1")
                 .claims(Map.of("org", Map.of("tenant", "tenant-x")))
@@ -103,7 +103,7 @@ class ConfigurableTenantResolverTest {
     @Test
     void identicalOpaqueValuesAcrossClaimPathsCoalesceWithoutNormalization() {
         String tenant = "opaque tenant,α";
-        var configured = new ConfigurableTenantResolver(List.of("first", "org.tenant"));
+        var configured = new ConfigurableTenantResolverImpl(List.of("first", "org.tenant"));
         var principal = SecurityPrincipal.builder().subject("user-1")
                 .claims(Map.of("first", tenant, "org", Map.of("tenant", List.of(tenant)))).build();
         StepVerifier.create(configured.resolveTenant(principal)).expectNext(tenant).verifyComplete();

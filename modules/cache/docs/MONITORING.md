@@ -91,7 +91,7 @@ curl http://localhost:8080/actuator/health/cache
 @RequiredArgsConstructor
 public class CacheHealthMonitor {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     /**
      * Check health of all caches
@@ -221,7 +221,7 @@ Response:
 @Slf4j
 public class CacheStatsService {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     /**
      * Get statistics for all caches
@@ -290,7 +290,7 @@ public class CacheStats {
 @Slf4j
 public class CacheStatsMonitor {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     @Scheduled(fixedRate = 60000) // Every minute
     public void logCacheStats() {
@@ -414,7 +414,7 @@ public class CacheLoggingExample {
 @RequiredArgsConstructor
 public class HitRateAlert {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final AlertService alertService;
     
     @Scheduled(fixedRate = 300000) // Every 5 minutes
@@ -440,7 +440,7 @@ public class HitRateAlert {
 @RequiredArgsConstructor
 public class CacheAvailabilityAlert {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     private final AlertService alertService;
     
     @Scheduled(fixedRate = 60000) // Every minute
@@ -538,7 +538,7 @@ rate(cache_get_duration_count[5m])
 @RequiredArgsConstructor
 public class CacheMonitoringController {
     
-    private final FireflyCacheManager cacheManager;
+    private final FireflyCacheManagerImpl cacheManager;
     
     @GetMapping("/dashboard")
     public Mono<CacheDashboard> getDashboard() {

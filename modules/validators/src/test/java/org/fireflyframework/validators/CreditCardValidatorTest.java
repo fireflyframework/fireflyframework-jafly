@@ -30,11 +30,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class CreditCardValidatorTest {
 
-    private CreditCardValidator validator;
+    private CreditCardValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new CreditCardValidator();
+        validator = new CreditCardValidatorImpl();
     }
 
     @Test
@@ -110,18 +110,18 @@ class CreditCardValidatorTest {
             "38520000023237, DINERS_CLUB",
             "1234567890123456, UNKNOWN"
     })
-    void shouldIdentifyCorrectCardType(String cardNumber, CreditCardValidator.CardType expectedType) {
+    void shouldIdentifyCorrectCardType(String cardNumber, CreditCardValidatorImpl.CardType expectedType) {
         assertThat(validator.getCardType(cardNumber)).isEqualTo(expectedType);
     }
 
     @Test
     void shouldReturnUnknownCardTypeForNullInput() {
-        assertThat(validator.getCardType(null)).isEqualTo(CreditCardValidator.CardType.UNKNOWN);
+        assertThat(validator.getCardType(null)).isEqualTo(CreditCardValidatorImpl.CardType.UNKNOWN);
     }
 
     @Test
     void shouldReturnUnknownCardTypeForEmptyInput() {
-        assertThat(validator.getCardType("")).isEqualTo(CreditCardValidator.CardType.UNKNOWN);
+        assertThat(validator.getCardType("")).isEqualTo(CreditCardValidatorImpl.CardType.UNKNOWN);
     }
 
     @Test

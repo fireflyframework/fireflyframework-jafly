@@ -36,7 +36,7 @@ Wire the PEP into a `SecurityWebFilterChain` (normally done for you by `security
 
 ```java
 import org.fireflyframework.security.spi.PolicyDecisionPort;
-import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManager;
+import org.fireflyframework.security.webflux.authz.PolicyAuthorizationManagerImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -47,7 +47,7 @@ SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, PolicyDec
             .authorizeExchange(ex -> ex
                     .pathMatchers("/actuator/health").permitAll()
                     // every other exchange goes through the policy decision point (fail-closed)
-                    .anyExchange().access(new PolicyAuthorizationManager(pdp)))
+                    .anyExchange().access(new PolicyAuthorizationManagerImpl(pdp)))
             .build();
 }
 ```
@@ -66,7 +66,7 @@ public class GreetingService {
     private final SecurityContextPort securityContext;
 
     public GreetingService(SecurityContextPort securityContext) {
-        this.securityContext = securityContext; // ReactorSecurityContextAdapter at runtime
+        this.securityContext = securityContext; // ReactorSecurityContextAdapterImpl at runtime
     }
 
     public Mono<String> greet() {
@@ -112,8 +112,8 @@ Property-based wiring conditions found in this module:
 | [`PrincipalHeaderBridgeProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeProperties.java) | Configuration for the principal→header bridge. |
 | [`FireflyAuthenticationToken`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/FireflyAuthenticationToken.java) | Spring Security `org.springframework.security.core.Authentication` whose principal is the framework's `SecurityPrincipal`. |
 | [`PrincipalSupport`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authentication/PrincipalSupport.java) | Recovers a `SecurityPrincipal` from any Spring `Authentication`. |
-| [`PolicyAuthorizationManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authz/PolicyAuthorizationManager.java) | URL policy enforcement point. |
-| [`PrincipalHeaderBridgeWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeWebFilter.java) | Derives trusted internal request headers from the validated token , never from the client. |
+| [`PolicyAuthorizationManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/authz/PolicyAuthorizationManagerImpl.java) | URL policy enforcement point. |
+| [`PrincipalHeaderBridgeWebFilterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-webflux/src/main/java/org/fireflyframework/security/webflux/bridge/PrincipalHeaderBridgeWebFilterImpl.java) | Derives trusted internal request headers from the validated token , never from the client. |
 
 ## Related components
 
@@ -178,7 +178,7 @@ security-api      driving ports + domain (SecurityPrincipal, Decision, Obligatio
    ▲
 security-spi      driven ports (PolicyDecisionPort, SecurityContextPort, TokenValidationPort, ...)
    ▲
-security-core     framework-neutral engine (EmbeddedPolicyDecisionAdapter, authority normalization, authz engine)
+security-core     framework-neutral engine (EmbeddedPolicyDecisionAdapterImpl, authority normalization, authz engine)
    ▲
 security-webflux  ◀── THIS MODULE — Spring Security WebFlux binding
    ▲
@@ -195,21 +195,21 @@ This module depends only on `security-api` and `security-core` (which transitive
 | --- | --- | --- |
 | `FireflyAuthenticationToken` | `...webflux.authentication` | A Spring `AbstractAuthenticationToken` whose principal is a `SecurityPrincipal`. Authorities are derived from `principal.authorities()` as `SimpleGrantedAuthority`s; `getName()` returns `principal.subject()`. Exposes `securityPrincipal()` to recover the rich principal. Marked authenticated on construction (it is only ever built from an already-validated principal). |
 | `PrincipalSupport` | `...webflux.authentication` | Stateless helper that recovers a `SecurityPrincipal` from any Spring `Authentication`. Prefers the principal carried by a `FireflyAuthenticationToken`; falls back to a principal already set as `getPrincipal()`; otherwise builds a minimal `SecurityPrincipal` from the authentication's name and granted authorities (so third-party / JWT `Authentication`s still project cleanly). Null-safe. |
-| `ReactorSecurityContextAdapter` | `...webflux.context` | Implements `SecurityContextPort` (SPI). Reads `ReactiveSecurityContextHolder.getContext()`, keeps only an authenticated `Authentication`, and projects it via `PrincipalSupport::extract`. Emits an empty `Mono` when there is no authenticated context. |
-| `PolicyAuthorizationManager` | `...webflux.authz` | Implements Spring's `ReactiveAuthorizationManager<AuthorizationContext>`. the URL PEP. Denies unauthenticated requests; for authenticated requests it calls `PolicyDecisionPort.authorize(...)` with the HTTP method as the `action`, the request path as the `resource`, and a `{method, path}` context map, mapping `Decision.granted()` to an `AuthorizationDecision`. |
+| `ReactorSecurityContextAdapterImpl` | `...webflux.context` | Implements `SecurityContextPort` (SPI). Reads `ReactiveSecurityContextHolder.getContext()`, keeps only an authenticated `Authentication`, and projects it via `PrincipalSupport::extract`. Emits an empty `Mono` when there is no authenticated context. |
+| `PolicyAuthorizationManagerImpl` | `...webflux.authz` | Implements Spring's `ReactiveAuthorizationManager<AuthorizationContext>`. the URL PEP. Denies unauthenticated requests; for authenticated requests it calls `PolicyDecisionPort.authorize(...)` with the HTTP method as the `action`, the request path as the `resource`, and a `{method, path}` context map, mapping `Decision.granted()` to an `AuthorizationDecision`. |
 
 #### Ports
 
-- Implements `org.fireflyframework.security.spi.SecurityContextPort` (via `ReactorSecurityContextAdapter`).
-- Consumes `org.fireflyframework.security.spi.PolicyDecisionPort` (injected into `PolicyAuthorizationManager`; satisfied by `security-core`'s `EmbeddedPolicyDecisionAdapter` by default, or by an OPA/Cerbos/OpenFGA adapter).
+- Implements `org.fireflyframework.security.spi.SecurityContextPort` (via `ReactorSecurityContextAdapterImpl`).
+- Consumes `org.fireflyframework.security.spi.PolicyDecisionPort` (injected into `PolicyAuthorizationManagerImpl`; satisfied by `security-core`'s `EmbeddedPolicyDecisionAdapterImpl` by default, or by an OPA/Cerbos/OpenFGA adapter).
 - Projects `org.fireflyframework.security.api.domain.SecurityPrincipal` and reads `org.fireflyframework.security.api.domain.Decision`.
 
 ### Secure-by-default behavior
 
-`PolicyAuthorizationManager.check(...)` is deny-biased at every branch:
+`PolicyAuthorizationManagerImpl.check(...)` is deny-biased at every branch:
 
 - No authentication / unauthenticated → `AuthorizationDecision(false)` (the `defaultIfEmpty` and `isAuthenticated()` filter close the gap).
-- Authenticated, policy abstains → permit. With `security-core`'s `EmbeddedPolicyDecisionAdapter` and no rules registered, ABAC is not in use and the decision defers to RBAC at the PEP; configured rules apply deny-overrides.
+- Authenticated, policy abstains → permit. With `security-core`'s `EmbeddedPolicyDecisionAdapterImpl` and no rules registered, ABAC is not in use and the decision defers to RBAC at the PEP; configured rules apply deny-overrides.
 - Authenticated, policy denies → `AuthorizationDecision(false)`.
 - Policy errors / PDP unreachable → `onErrorReturn(new AuthorizationDecision(false))`. fail-closed, never permit-on-error.
 
@@ -220,7 +220,7 @@ This matches design decision D4 (secure-by-default-hard): default-deny, validate
 Provided by the Firefly parent/BOM (`org.fireflyframework:fireflyframework-parent`), so versions are managed for you:
 
 - `fireflyframework-security-api`. `SecurityPrincipal`, `Decision`.
-- `fireflyframework-security-core`. neutral engine, incl. `EmbeddedPolicyDecisionAdapter` (transitively brings `fireflyframework-security-spi`).
+- `fireflyframework-security-core`. neutral engine, incl. `EmbeddedPolicyDecisionAdapterImpl` (transitively brings `fireflyframework-security-spi`).
 - `spring-security-core`, `spring-security-web`, `spring-webflux`. the binding surface this module exists to adapt.
 - `slf4j-api`, `lombok` (provided).
 
@@ -237,7 +237,7 @@ It has no Spring Boot, provider-SDK or auto-configuration dependency; that wirin
 
 Unit-tested with JUnit 5, AssertJ, `reactor-test` (`StepVerifier`), `spring-security-test` and `spring-test` mocks. No running server, no Spring context:
 
-- `PolicyAuthorizationManagerTest` drives the PEP through `MockServerWebExchange` / `AuthorizationContext` and asserts all four decision branches: denies unauthenticated requests (`Mono.empty()`), permits an authenticated request when the `EmbeddedPolicyDecisionAdapter` abstains, denies when a `PolicyDecisionPort` returns `Decision.deny(...)`, and fails closed when the port emits an error.
+- `PolicyAuthorizationManagerTest` drives the PEP through `MockServerWebExchange` / `AuthorizationContext` and asserts all four decision branches: denies unauthenticated requests (`Mono.empty()`), permits an authenticated request when the `EmbeddedPolicyDecisionAdapterImpl` abstains, denies when a `PolicyDecisionPort` returns `Decision.deny(...)`, and fails closed when the port emits an error.
 - `ReactorSecurityContextAdapterTest` verifies the principal is projected out of the reactive context (seeded via `ReactiveSecurityContextHolder.withAuthentication(...)`) and that `currentPrincipal()` completes empty when no security context is present.
 
 Run them with:

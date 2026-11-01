@@ -39,11 +39,11 @@ import static org.mockito.Mockito.when;
 
 class WebFluxExceptionConverterTest {
 
-    private WebFluxExceptionConverter converter;
+    private WebFluxExceptionConverterImpl converter;
 
     @BeforeEach
     void setUp() {
-        converter = new WebFluxExceptionConverter();
+        converter = new WebFluxExceptionConverterImpl();
     }
 
     @Test

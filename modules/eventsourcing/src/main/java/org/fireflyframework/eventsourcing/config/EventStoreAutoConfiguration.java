@@ -18,7 +18,7 @@ package org.fireflyframework.eventsourcing.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fireflyframework.eventsourcing.store.EventStore;
-import org.fireflyframework.eventsourcing.store.r2dbc.R2dbcEventStore;
+import org.fireflyframework.eventsourcing.store.r2dbc.R2dbcEventStoreImpl;
 import io.r2dbc.spi.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -70,7 +70,7 @@ public class EventStoreAutoConfiguration {
                 
         TransactionalOperator transactionalOperator = TransactionalOperator.create(transactionManager);
         
-        return new R2dbcEventStore(
+        return new R2dbcEventStoreImpl(
                 databaseClient,
                 entityTemplate,
                 objectMapper,

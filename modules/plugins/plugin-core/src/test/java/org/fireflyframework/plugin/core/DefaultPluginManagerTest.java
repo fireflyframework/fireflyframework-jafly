@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginManagerTest {
     
-    private DefaultPluginManager pluginManager;
+    private DefaultPluginManagerImpl pluginManager;
     
     // Test extension point
     interface TestExtensionPoint {
@@ -178,7 +178,7 @@ class DefaultPluginManagerTest {
     
     @BeforeEach
     void setUp() throws PluginException {
-        pluginManager = new DefaultPluginManager();
+        pluginManager = new DefaultPluginManagerImpl();
         pluginManager.initialize();
     }
     

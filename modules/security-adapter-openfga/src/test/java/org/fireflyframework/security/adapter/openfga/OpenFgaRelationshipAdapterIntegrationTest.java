@@ -76,14 +76,14 @@ class OpenFgaRelationshipAdapterIntegrationTest {
 
     @Test
     void allowsRelatedSubject() {
-        OpenFgaRelationshipAdapter adapter = new OpenFgaRelationshipAdapter(webClient, storeId);
+        OpenFgaRelationshipAdapterImpl adapter = new OpenFgaRelationshipAdapterImpl(webClient, storeId);
         StepVerifier.create(adapter.check("user:alice", "viewer", "document:budget"))
                 .expectNext(true).verifyComplete();
     }
 
     @Test
     void deniesUnrelatedSubject() {
-        OpenFgaRelationshipAdapter adapter = new OpenFgaRelationshipAdapter(webClient, storeId);
+        OpenFgaRelationshipAdapterImpl adapter = new OpenFgaRelationshipAdapterImpl(webClient, storeId);
         StepVerifier.create(adapter.check("user:bob", "viewer", "document:budget"))
                 .expectNext(false).verifyComplete();
     }

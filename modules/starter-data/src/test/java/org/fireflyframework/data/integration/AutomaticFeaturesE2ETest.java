@@ -21,7 +21,7 @@ import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -62,7 +62,7 @@ class AutomaticFeaturesE2ETest {
     private MeterRegistry meterRegistry;
     private ObservationRegistry observationRegistry;
     private JobTracingService tracingService;
-    private JobMetricsService metricsService;
+    private JobMetricsServiceImpl metricsService;
     private ResiliencyDecoratorService resiliencyService;
     private JobEventPublisher eventPublisher;
     private JobAuditService auditService;
@@ -88,7 +88,7 @@ class AutomaticFeaturesE2ETest {
         
         // Create REAL services with real dependencies
         tracingService = new JobTracingService(observationRegistry, properties);
-        metricsService = new JobMetricsService(meterRegistry, properties);
+        metricsService = new JobMetricsServiceImpl(meterRegistry, properties);
         resiliencyService = new ResiliencyDecoratorService(properties);
         
         // Mock only the persistence and event publishing (external dependencies)
@@ -304,7 +304,7 @@ class AutomaticFeaturesE2ETest {
         private java.util.function.Supplier<Mono<JobStageResponse>> executionLogic;
 
         public TestSyncJobService(JobTracingService tracingService,
-                                 JobMetricsService metricsService,
+                                 JobMetricsServiceImpl metricsService,
                                  ResiliencyDecoratorService resiliencyService,
                                  JobEventPublisher eventPublisher,
                                  JobAuditService auditService,

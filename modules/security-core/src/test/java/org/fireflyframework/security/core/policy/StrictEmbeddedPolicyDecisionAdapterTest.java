@@ -11,9 +11,9 @@ import reactor.core.publisher.Mono;
 class StrictEmbeddedPolicyDecisionAdapterTest {
     private final SecurityPrincipal principal = SecurityPrincipal.builder().subject("synthetic-user").build();
 
-    private EmbeddedPolicyDecisionAdapter adapter(List<PolicyRule> rules) {
+    private EmbeddedPolicyDecisionAdapterImpl adapter(List<PolicyRule> rules) {
         try {
-            return EmbeddedPolicyDecisionAdapter.class.getConstructor(List.class, boolean.class)
+            return EmbeddedPolicyDecisionAdapterImpl.class.getConstructor(List.class, boolean.class)
                     .newInstance(rules, true);
         } catch (ReflectiveOperationException error) {
             return fail("Explicit strict policy mode must be available without changing the legacy constructor", error);

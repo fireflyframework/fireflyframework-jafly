@@ -69,7 +69,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final IdpAdapter idp; // InternalDbIdpAdapter, wired by auto-configuration
+    private final IdpAdapter idp; // InternalDbIdpAdapterImpl, wired by auto-configuration
 
     @PostMapping("/auth/login")
     public Mono<ResponseEntity<TokenResponse>> login(@RequestBody LoginRequest request) {
@@ -99,7 +99,7 @@ The `firefly.security.idp.internal-db` namespace is bound by [InternalDbProperti
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`InternalDbIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapter.java) | Internal Database implementation of the Firefly IDP Adapter. |
+| [`InternalDbIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapterImpl.java) | Internal Database implementation of the Firefly IDP Adapter. |
 | [`InternalDbProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/config/InternalDbProperties.java) | Configuration properties for Internal Database IDP implementation. |
 | [`PasswordResetTokenRepository`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/repository/PasswordResetTokenRepository.java) | Reactive repository for password reset token operations. |
 | [`RefreshTokenRepository`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/repository/RefreshTokenRepository.java) | Reactive repository for RefreshToken entity operations. |

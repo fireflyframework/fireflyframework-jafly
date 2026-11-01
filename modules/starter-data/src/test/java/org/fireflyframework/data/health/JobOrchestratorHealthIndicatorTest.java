@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JobOrchestratorHealthIndicatorTest {
 
-    private JobOrchestratorHealthIndicator healthIndicator;
+    private JobOrchestratorHealthIndicatorImpl healthIndicator;
     private JobOrchestrationProperties properties;
     private MockJobOrchestrator mockOrchestrator;
 
@@ -53,7 +53,7 @@ class JobOrchestratorHealthIndicatorTest {
     @Test
     void shouldReturnUpWhenOrchestratorIsAvailable() {
         // Given
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.of(mockOrchestrator), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.of(mockOrchestrator), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();
@@ -71,7 +71,7 @@ class JobOrchestratorHealthIndicatorTest {
     @Test
     void shouldReturnDownWhenOrchestratorIsNotConfigured() {
         // Given
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.empty(), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.empty(), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();
@@ -90,7 +90,7 @@ class JobOrchestratorHealthIndicatorTest {
     void shouldReturnUpWhenHealthChecksDisabled() {
         // Given
         properties.getHealthCheck().setEnabled(false);
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.of(mockOrchestrator), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.of(mockOrchestrator), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();
@@ -109,7 +109,7 @@ class JobOrchestratorHealthIndicatorTest {
     void shouldReturnUpWhenOrchestrationDisabled() {
         // Given
         properties.setEnabled(false);
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.of(mockOrchestrator), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.of(mockOrchestrator), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();
@@ -128,7 +128,7 @@ class JobOrchestratorHealthIndicatorTest {
     void shouldIncludeDetailsWhenShowDetailsEnabled() {
         // Given
         properties.getHealthCheck().setShowDetails(true);
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.of(mockOrchestrator), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.of(mockOrchestrator), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();
@@ -154,7 +154,7 @@ class JobOrchestratorHealthIndicatorTest {
     void shouldNotCheckConnectivityWhenDisabled() {
         // Given
         properties.getHealthCheck().setCheckConnectivity(false);
-        healthIndicator = new JobOrchestratorHealthIndicator(Optional.of(mockOrchestrator), properties);
+        healthIndicator = new JobOrchestratorHealthIndicatorImpl(Optional.of(mockOrchestrator), properties);
         
         // When
         Mono<Health> health = healthIndicator.health();

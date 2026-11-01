@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PhoneNumberValidatorTest {
 
-    private PhoneNumberValidator validator;
+    private PhoneNumberValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new PhoneNumberValidator();
+        validator = new PhoneNumberValidatorImpl();
     }
 
     @Test

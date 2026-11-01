@@ -121,7 +121,7 @@ The `firefly.observability` namespace is bound by [FireflyObservabilityPropertie
 | [`FireflyHealthIndicator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/health/FireflyHealthIndicator.java) | Abstract base class for all Firefly health indicators. |
 | [`FireflyObservabilityProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityProperties.java) | Unified configuration properties for Firefly observability. |
 | [`FireflyObservabilityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityAutoConfiguration.java) | Master auto-configuration for Firefly Framework observability. |
-| [`FireflyObservabilityEnvironmentPostProcessor`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityEnvironmentPostProcessor.java) | Configures observability backends at startup based on Firefly properties. |
+| [`FireflyObservabilityEnvironmentPostProcessorImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/observability/src/main/java/org/fireflyframework/observability/FireflyObservabilityEnvironmentPostProcessorImpl.java) | Configures observability backends at startup based on Firefly properties. |
 
 ## Continue the application
 

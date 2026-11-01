@@ -87,7 +87,7 @@ public class ResilientEventPublisherFactory {
             log.debug("Created rate limiter for publisher: {}", name);
         }
 
-        return new ResilientEventPublisher(publisher, circuitBreaker, retry, rateLimiter, config);
+        return new ResilientEventPublisherImpl(publisher, circuitBreaker, retry, rateLimiter, config);
     }
 
     /**

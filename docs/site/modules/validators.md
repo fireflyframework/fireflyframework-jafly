@@ -101,7 +101,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | [`ValidIban`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidIban.java) | Defines `message`, `groups`, `payload` operations. |
 | [`ValidAmount`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidAmount.java) | Defines `message`, `groups`, `payload`, `currency` operations. |
 | [`ValidPasswordStrength`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidPasswordStrength.java) | Defines `message`, `groups`, `payload`, `minLength` operations. |
-| [`IbanValidator`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/validators/IbanValidator.java) | Validator for International Bank Account Numbers (IBAN). |
+| [`IbanValidatorImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/validators/IbanValidatorImpl.java) | Validator for International Bank Account Numbers (IBAN). |
 | [`ValidAccountNumber`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/validators/src/main/java/org/fireflyframework/annotations/ValidAccountNumber.java) | Defines `message`, `groups`, `payload`, `countryCode` operations. |
 
 ## Build and test
@@ -163,7 +163,7 @@ All annotations live in `org.fireflyframework.annotations`; their validators liv
 | `@ValidBic` |. | 8 or 11 character BIC / SWIFT structure |
 | `@ValidAccountNumber` | `countryCode = "GB"` | Country-aware account number format |
 | `@ValidSortCode` |. | UK bank sort code |
-| `@ValidCreditCard` | `types = {}` (any) | Network pattern + Luhn; restrict via `CreditCardValidator.CardType` |
+| `@ValidCreditCard` | `types = {}` (any) | Network pattern + Luhn; restrict via `CreditCardValidatorImpl.CardType` |
 | `@ValidCVV` | `cardType = ANY` | `ANY` / `STANDARD` (3-digit) / `AMEX` (4-digit) |
 | `@ValidAmount` | `currency = "EUR"`, `min = 0.0`, `max = Double.MAX_VALUE`, `allowZero = true` | Currency-aware decimal places + bounds |
 | `@ValidCurrencyCode` | `europeanOnly = false`, `euroOnly = false` | ISO 4217 code |
@@ -180,8 +180,8 @@ Examples of customizing constraint behavior:
 
 ```java
 // Only accept Visa or MasterCard
-@ValidCreditCard(types = { CreditCardValidator.CardType.VISA,
-                           CreditCardValidator.CardType.MASTERCARD })
+@ValidCreditCard(types = { CreditCardValidatorImpl.CardType.VISA,
+                           CreditCardValidatorImpl.CardType.MASTERCARD })
 private String cardNumber;
 
 // Amex 4-digit CVV only
@@ -212,7 +212,7 @@ Every constraint follows the standard Bean Validation contract:
 - The annotation is meta-annotated with `@Constraint(validatedBy = …Validator.class)` and retained at runtime.
 - The paired class implements `ConstraintValidator<TheAnnotation, T>`, reading the annotation's attributes in `initialize(...)` and performing the check in `isValid(...)`.
 
-Because of this, the constraints integrate with the wider ecosystem with no extra wiring: Spring's `MethodValidationPostProcessor` and `@Valid` on controller arguments pick them up, validation groups and `payload` work as usual, and violations surface as standard `ConstraintViolation`s (turned into HTTP 400 responses by Spring's default error handling). Notable validators implement real domain logic rather than naive regex. E.g. `IbanValidator` performs the ISO 7064 mod-97 computation against the country-specific length table, `CreditCardValidator` combines network BIN patterns with the Luhn checksum, and `PasswordStrengthValidator` (with `PasswordStrengthUtils`) enforces composition rules and screens against a list of common passwords.
+Because of this, the constraints integrate with the wider ecosystem with no extra wiring: Spring's `MethodValidationPostProcessor` and `@Valid` on controller arguments pick them up, validation groups and `payload` work as usual, and violations surface as standard `ConstraintViolation`s (turned into HTTP 400 responses by Spring's default error handling). Notable validators implement real domain logic rather than naive regex. E.g. `IbanValidatorImpl` performs the ISO 7064 mod-97 computation against the country-specific length table, `CreditCardValidatorImpl` combines network BIN patterns with the Luhn checksum, and `PasswordStrengthValidatorImpl` (with `PasswordStrengthUtils`) enforces composition rules and screens against a list of common passwords.
 
 ## Continue the application
 

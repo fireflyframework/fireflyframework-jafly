@@ -8,7 +8,7 @@ Cache repeated application-status reads after defining expiry and invalidation. 
 
 ## Choose the integration
 
-Inject `FireflyCacheManager` for the configured cache. The default is local Caffeine; add a provider adapter and its deployment settings when instances need shared state. A cache hit is returned as an `Optional` inside a `Mono`, so a missing key must be handled explicitly.
+Inject `FireflyCacheManagerImpl` for the configured cache. The default is local Caffeine; add a provider adapter and its deployment settings when instances need shared state. A cache hit is returned as an `Optional` inside a `Mono`, so a missing key must be handled explicitly.
 
 ### Cache a status value
 
@@ -18,14 +18,14 @@ This API class needs the cache dependency and Spring wiring. Call `evict` when t
 import lombok.RequiredArgsConstructor;
 import java.time.Duration;
 import java.util.Optional;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationStatusCache {
-    private final FireflyCacheManager cache;
+    private final FireflyCacheManagerImpl cache;
 
 
 

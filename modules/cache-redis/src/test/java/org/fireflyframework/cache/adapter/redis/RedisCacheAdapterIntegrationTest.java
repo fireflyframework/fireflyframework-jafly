@@ -21,7 +21,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheStats;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,10 +59,10 @@ class RedisCacheAdapterIntegrationTest {
             .withExposedPorts(6379)
             .withReuse(true);
 
-    private RedisCacheAdapter cacheAdapter;
+    private RedisCacheAdapterImpl cacheAdapter;
     private ReactiveRedisTemplate<String, Object> redisTemplate;
     private ReactiveRedisConnectionFactory connectionFactory;
-    private JsonCacheSerializer serializer;
+    private JsonCacheSerializerImpl serializer;
 
     @BeforeEach
     void setUp() {
@@ -96,7 +96,7 @@ class RedisCacheAdapterIntegrationTest {
         redisTemplate = new ReactiveRedisTemplate<>(connectionFactory, serializationContext);
 
         // Create cache serializer
-        serializer = new JsonCacheSerializer(objectMapper);
+        serializer = new JsonCacheSerializerImpl(objectMapper);
 
         // Create cache config
         RedisCacheConfig config = RedisCacheConfig.builder()
@@ -110,7 +110,7 @@ class RedisCacheAdapterIntegrationTest {
                 .build();
 
         // Create cache adapter
-        cacheAdapter = new RedisCacheAdapter("test-cache", redisTemplate, connectionFactory, config, serializer);
+        cacheAdapter = new RedisCacheAdapterImpl("test-cache", redisTemplate, connectionFactory, config, serializer);
 
         // Clear any existing data
         redisTemplate.getConnectionFactory()

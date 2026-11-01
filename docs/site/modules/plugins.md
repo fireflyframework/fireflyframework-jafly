@@ -114,9 +114,9 @@ public class StripePlugin implements org.fireflyframework.plugin.api.Plugin {
 ```java
 import org.fireflyframework.plugin.api.ExtensionRegistry;
 import org.fireflyframework.plugin.api.PluginManager;
-import org.fireflyframework.plugin.core.DefaultPluginManager;
+import org.fireflyframework.plugin.core.DefaultPluginManagerImpl;
 
-PluginManager manager = new DefaultPluginManager();
+PluginManager manager = new DefaultPluginManagerImpl();
 manager.initialize();
 
 ExtensionRegistry registry = manager.getExtensionRegistry();
@@ -169,7 +169,7 @@ This subproject has no authored `src/test/java` suite. Its Maven build still val
 
 ### Configuration
 
-This module has no configuration properties. It contains no Spring Boot auto-configuration and no `@ConfigurationProperties` classes. You wire a `PluginManager` (typically `DefaultPluginManager`) yourself, as a plain object or as a Spring `@Bean`, and drive it through its API. Plugin metadata (ids, versions, dependencies, extension priorities) is declared in code via annotations or the `PluginMetadata` builder, not in `application.yml`.
+This module has no configuration properties. It contains no Spring Boot auto-configuration and no `@ConfigurationProperties` classes. You wire a `PluginManager` (typically `DefaultPluginManagerImpl`) yourself, as a plain object or as a Spring `@Bean`, and drive it through its API. Plugin metadata (ids, versions, dependencies, extension priorities) is declared in code via annotations or the `PluginMetadata` builder, not in `application.yml`.
 
 ## Continue the application
 

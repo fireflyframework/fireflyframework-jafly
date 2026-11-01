@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {
         S3DocumentContentAdapterTest.TestConfig.class,
-        S3DocumentContentAdapter.class
+        S3DocumentContentAdapterImpl.class
 })
 @TestPropertySource(properties = {
         "firefly.ecm.enabled=true",
@@ -131,7 +131,7 @@ ResponseInputStream<GetObjectResponse> ris = new ResponseInputStream<>(
         );
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(ris);
 
-        byte[] result = ((S3DocumentContentAdapter) contentPort).getContentRange(documentId, 1L, 3L).block();
+        byte[] result = ((S3DocumentContentAdapterImpl) contentPort).getContentRange(documentId, 1L, 3L).block();
         assertThat(new String(result)).isEqualTo("bcd");
 
         ArgumentCaptor<GetObjectRequest> captor = ArgumentCaptor.forClass(GetObjectRequest.class);

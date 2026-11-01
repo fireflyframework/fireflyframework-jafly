@@ -17,14 +17,14 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.CurrencyCodeValidator;
+import org.fireflyframework.validators.CurrencyCodeValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = CurrencyCodeValidator.class)
+@Constraint(validatedBy = CurrencyCodeValidatorImpl.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidCurrencyCode {

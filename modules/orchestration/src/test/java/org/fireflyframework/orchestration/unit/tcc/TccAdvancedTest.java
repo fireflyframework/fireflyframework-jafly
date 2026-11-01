@@ -19,9 +19,9 @@ package org.fireflyframework.orchestration.unit.tcc;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.context.TccPhase;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStore;
+import org.fireflyframework.orchestration.core.dlq.InMemoryDeadLetterStoreImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
@@ -46,20 +46,20 @@ class TccAdvancedTest {
 
     private TccEngine engine;
     private TccEngine engineWithDlq;
-    private InMemoryDeadLetterStore dlqStore;
+    private InMemoryDeadLetterStoreImpl dlqStore;
     private OrchestrationEvents events;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new TccExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         engine = new TccEngine(null, events, orchestrator, null, null, noOpPublisher);
 
         // Engine with DLQ and persistence
-        var persistence = new InMemoryPersistenceProvider();
-        dlqStore = new InMemoryDeadLetterStore();
+        var persistence = new InMemoryPersistenceProviderImpl();
+        dlqStore = new InMemoryDeadLetterStoreImpl();
         var dlqService = new DeadLetterService(dlqStore, events);
         engineWithDlq = new TccEngine(null, events, orchestrator, persistence, dlqService, noOpPublisher);
     }

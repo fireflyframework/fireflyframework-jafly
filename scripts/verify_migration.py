@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Prove exact source imports and continued preservation of original files and refs."""
 import json
+import re
 from pathlib import Path
 import subprocess
 
@@ -11,6 +12,29 @@ def git(*args):
     return subprocess.check_output(['git', '-C', str(ROOT), *args]).decode().strip()
 
 
+
+def source_path_renames():
+    manifest = ROOT / 'docs/migration/source-path-renames.json'
+    paths = json.loads(manifest.read_text())['paths']
+    if not isinstance(paths, dict) or len(set(paths.values())) != len(paths):
+        raise ValueError('Source path renames must have unique targets')
+    for before, after in paths.items():
+        if not isinstance(before, str) or not isinstance(after, str):
+            raise ValueError('Source path rename strings required')
+        original, target = Path(before), Path(after)
+        if (original.is_absolute() or target.is_absolute() or '..' in original.parts or '..' in target.parts
+                or original.parts[:1] != ('modules',) or original.suffix != '.java'
+                or original.parent != target.parent or target.name != original.stem + 'Impl.java'):
+            raise ValueError('Only explicit same-directory implementation renames are supported')
+        current = ROOT / target
+        if ((ROOT / original).exists() or (ROOT / original).is_symlink()
+                or not current.is_file() or current.is_symlink()
+                or not current.resolve().is_relative_to(ROOT.resolve())):
+            raise ValueError('Source rename target is missing, aliased or duplicated')
+        if re.search(r'\bclass\s+' + re.escape(target.stem) + r'\b', current.read_text()) is None:
+            raise ValueError('Source rename target declaration differs')
+    return paths
+
 def verify():
     sources = json.loads((ROOT / 'docs/migration/source-manifest.json').read_text())['sources']
     if len(sources) != 63 or len({s['repository'] for s in sources}) != 63:
@@ -19,6 +43,7 @@ def verify():
     excluded = set(json.loads((ROOT / 'docs/migration/generated-output-exclusions.json').read_text())['paths'])
     if any('target' not in Path(p).parts for p in excluded):
         raise ValueError('Only original Maven build outputs can be excluded')
+    renames = source_path_renames()
     file_count = 0
     for source in sources:
         imported = source['import_commit'] + ':' + source['destination']
@@ -37,8 +62,9 @@ def verify():
             if not entry:
                 continue
             metadata, name = entry.split(b'\t', 1)
-            path = ROOT / source['destination'] / name.decode()
-            if str(path.relative_to(ROOT)) in excluded:
+            relative = str(Path(source['destination']) / name.decode())
+            path = ROOT / renames.get(relative, relative)
+            if relative in excluded:
                 continue
             if not path.exists() and not path.is_symlink():
                 raise ValueError('Original source path is missing: ' + str(path.relative_to(ROOT)))

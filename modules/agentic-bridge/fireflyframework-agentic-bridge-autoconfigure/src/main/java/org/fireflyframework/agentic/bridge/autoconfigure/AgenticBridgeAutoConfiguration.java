@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.fireflyframework.agentic.bridge.AgenticBridge;
 import org.fireflyframework.agentic.bridge.AgenticClient;
-import org.fireflyframework.agentic.bridge.internal.DefaultAgenticBridge;
+import org.fireflyframework.agentic.bridge.internal.DefaultAgenticBridgeImpl;
 import org.fireflyframework.agentic.bridge.transport.queue.QueueAgenticPublisher;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -63,7 +63,7 @@ public class AgenticBridgeAutoConfiguration {
                 properties,
                 objectMapper.getIfAvailable(),
                 meterRegistry.getIfAvailable());
-        return new DefaultAgenticBridge(client, publishers);
+        return new DefaultAgenticBridgeImpl(client, publishers);
     }
 
     /**

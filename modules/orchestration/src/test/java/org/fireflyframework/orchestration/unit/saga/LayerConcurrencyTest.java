@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.unit.saga;
 
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.CompensationPolicy;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.step.StepHandler;
@@ -54,7 +54,7 @@ class LayerConcurrencyTest {
     void setUp() {
         OrchestrationEvents events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         var compensator = new SagaCompensator(events, CompensationPolicy.STRICT_SEQUENTIAL, stepInvoker);
         engine = new SagaEngine(null, events, orchestrator, null, null, compensator, noOpPublisher);

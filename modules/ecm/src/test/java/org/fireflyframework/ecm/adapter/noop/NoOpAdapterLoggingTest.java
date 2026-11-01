@@ -72,7 +72,7 @@ class NoOpAdapterLoggingTest {
      */
     @Test
     void shouldLogWarningsForDocumentAdapterMethods() {
-        DocumentPort adapter = new NoOpGenericAdapter<>("DocumentPort", DocumentPort.class).getProxy();
+        DocumentPort adapter = new NoOpGenericAdapterImpl<>("DocumentPort", DocumentPort.class).getProxy();
         UUID testDocumentId = UUID.randomUUID();
 
         // Call a query method
@@ -106,7 +106,7 @@ class NoOpAdapterLoggingTest {
      */
     @Test
     void shouldLogWarningsForContentAdapterMethods() {
-        DocumentContentPort adapter = new NoOpGenericAdapter<>("DocumentContentPort", DocumentContentPort.class).getProxy();
+        DocumentContentPort adapter = new NoOpGenericAdapterImpl<>("DocumentContentPort", DocumentContentPort.class).getProxy();
         UUID testDocumentId = UUID.randomUUID();
         byte[] testContent = "test content".getBytes();
 
@@ -141,7 +141,7 @@ class NoOpAdapterLoggingTest {
      */
     @Test
     void shouldLogWarningsForSecurityAdapterMethods() {
-        DocumentSecurityPort adapter = new NoOpGenericAdapter<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
+        DocumentSecurityPort adapter = new NoOpGenericAdapterImpl<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
         UUID testDocumentId = UUID.randomUUID();
         UUID testUserId = UUID.randomUUID();
 
@@ -177,9 +177,9 @@ class NoOpAdapterLoggingTest {
      */
     @Test
     void shouldReturnCorrectAdapterNames() {
-        DocumentPort documentAdapter = new NoOpGenericAdapter<>("DocumentPort", DocumentPort.class).getProxy();
-        DocumentContentPort contentAdapter = new NoOpGenericAdapter<>("DocumentContentPort", DocumentContentPort.class).getProxy();
-        DocumentSecurityPort securityAdapter = new NoOpGenericAdapter<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
+        DocumentPort documentAdapter = new NoOpGenericAdapterImpl<>("DocumentPort", DocumentPort.class).getProxy();
+        DocumentContentPort contentAdapter = new NoOpGenericAdapterImpl<>("DocumentContentPort", DocumentContentPort.class).getProxy();
+        DocumentSecurityPort securityAdapter = new NoOpGenericAdapterImpl<>("DocumentSecurityPort", DocumentSecurityPort.class).getProxy();
 
         // Test that getAdapterName method works for DocumentPort (which has this method)
         assertThat(documentAdapter.getAdapterName()).isEqualTo("NoOpDocumentPortAdapter");

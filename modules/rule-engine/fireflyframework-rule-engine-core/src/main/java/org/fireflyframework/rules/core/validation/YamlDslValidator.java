@@ -19,15 +19,15 @@ package org.fireflyframework.rules.core.validation;
 import org.fireflyframework.rules.core.dsl.ASTVisitor;
 import org.fireflyframework.rules.core.dsl.SourceLocation;
 import org.fireflyframework.rules.core.dsl.action.*;
-import org.fireflyframework.rules.core.dsl.condition.ComparisonCondition;
+import org.fireflyframework.rules.core.dsl.condition.ComparisonConditionImpl;
 import org.fireflyframework.rules.core.dsl.condition.Condition;
-import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
-import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
+import org.fireflyframework.rules.core.dsl.condition.ExpressionConditionImpl;
+import org.fireflyframework.rules.core.dsl.condition.LogicalConditionImpl;
 import org.fireflyframework.rules.core.dsl.expression.*;
 import org.fireflyframework.rules.core.dsl.model.ASTRulesDSL;
 import org.fireflyframework.rules.core.dsl.parser.ASTRulesDSLParser;
 import org.fireflyframework.rules.core.dsl.visitor.ValidationError;
-import org.fireflyframework.rules.core.dsl.visitor.ValidationVisitor;
+import org.fireflyframework.rules.core.dsl.visitor.ValidationVisitorImpl;
 import org.fireflyframework.rules.interfaces.dtos.validation.ValidationResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,7 +126,7 @@ public class YamlDslValidator {
             Set<String> availableFunctions = getBuiltInFunctions();
             
             // Create validation visitor
-            ValidationVisitor validator = new ValidationVisitor(availableVariables, availableFunctions);
+            ValidationVisitorImpl validator = new ValidationVisitorImpl(availableVariables, availableFunctions);
             
             // Validate all conditions
             if (rulesDSL.getWhenConditions() != null) {
@@ -253,7 +253,7 @@ public class YamlDslValidator {
      * Validate complex conditions block
      */
     private List<ValidationResult.ValidationIssue> validateComplexConditionsBlock(
-            ASTRulesDSL.ASTConditionalBlock conditionsBlock, ValidationVisitor validator) {
+            ASTRulesDSL.ASTConditionalBlock conditionsBlock, ValidationVisitorImpl validator) {
         List<ValidationResult.ValidationIssue> issues = new ArrayList<>();
 
         try {
@@ -295,7 +295,7 @@ public class YamlDslValidator {
      * Validate action block (used in complex conditions)
      */
     private List<ValidationResult.ValidationIssue> validateActionBlock(
-            ASTRulesDSL.ASTActionBlock actionBlock, ValidationVisitor validator, String location) {
+            ASTRulesDSL.ASTActionBlock actionBlock, ValidationVisitorImpl validator, String location) {
         List<ValidationResult.ValidationIssue> issues = new ArrayList<>();
 
         // Validate actions
@@ -324,7 +324,7 @@ public class YamlDslValidator {
      * Validate sub-rule (used in multiple rules syntax)
      */
     private List<ValidationResult.ValidationIssue> validateSubRule(
-            ASTRulesDSL.ASTSubRule subRule, ValidationVisitor validator, int ruleIndex) {
+            ASTRulesDSL.ASTSubRule subRule, ValidationVisitorImpl validator, int ruleIndex) {
         List<ValidationResult.ValidationIssue> issues = new ArrayList<>();
         String ruleLocation = "rules[" + ruleIndex + "]";
 
@@ -463,20 +463,20 @@ public class YamlDslValidator {
         Set<String> variables = new HashSet<>();
 
         for (Action action : actions) {
-            if (action instanceof SetAction setAction) {
+            if (action instanceof SetActionImpl setAction) {
                 variables.add(setAction.getVariableName());
-            } else if (action instanceof CalculateAction calculateAction) {
+            } else if (action instanceof CalculateActionImpl calculateAction) {
                 variables.add(calculateAction.getResultVariable());
-            } else if (action instanceof RunAction runAction) {
+            } else if (action instanceof RunActionImpl runAction) {
                 // Run actions create computed variables (for function calls, REST calls, JSON operations)
                 variables.add(runAction.getResultVariable());
-            } else if (action instanceof ListAction listAction) {
+            } else if (action instanceof ListActionImpl listAction) {
                 // List actions like append, prepend, remove also create/modify variables
                 variables.add(listAction.getListVariable());
-            } else if (action instanceof ArithmeticAction arithmeticAction) {
+            } else if (action instanceof ArithmeticActionImpl arithmeticAction) {
                 // Arithmetic actions modify existing variables
                 variables.add(arithmeticAction.getVariableName());
-            } else if (action instanceof FunctionCallAction functionCallAction) {
+            } else if (action instanceof FunctionCallActionImpl functionCallAction) {
                 // Function calls can optionally store results in variables
                 if (functionCallAction.getResultVariable() != null) {
                     variables.add(functionCallAction.getResultVariable());
@@ -510,7 +510,7 @@ public class YamlDslValidator {
      */
     private Set<String> extractConstantReferences(ASTRulesDSL rulesDSL) {
         // Use a visitor to collect all variable references
-        ValidationVariableCollector collector = new ValidationVariableCollector();
+        ValidationVariableCollectorImpl collector = new ValidationVariableCollectorImpl();
 
         // Collect from simple syntax (when/then/else)
         if (rulesDSL.getWhenConditions() != null) {
@@ -581,7 +581,7 @@ public class YamlDslValidator {
     /**
      * Collect variable references from complex conditions blocks
      */
-    private void collectFromComplexConditions(ASTRulesDSL.ASTConditionalBlock conditions, ValidationVariableCollector collector) {
+    private void collectFromComplexConditions(ASTRulesDSL.ASTConditionalBlock conditions, ValidationVariableCollectorImpl collector) {
         if (conditions.getIfCondition() != null) {
             conditions.getIfCondition().accept(collector);
         }
@@ -618,7 +618,7 @@ public class YamlDslValidator {
      * Simple visitor class to collect all variable references from AST nodes
      * This is used for validation purposes to detect database constants
      */
-    private static class ValidationVariableCollector implements ASTVisitor<Void> {
+    private static class ValidationVariableCollectorImpl implements ASTVisitor<Void> {
         private final Set<String> variableReferences = new HashSet<>();
 
         public Set<String> getVariableReferences() {
@@ -626,32 +626,32 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitVariableExpression(VariableExpression node) {
+        public Void visitVariableExpression(VariableExpressionImpl node) {
             variableReferences.add(node.getVariableName());
             return null;
         }
 
         // Default implementations for all other visitor methods
         @Override
-        public Void visitBinaryExpression(BinaryExpression node) {
+        public Void visitBinaryExpression(BinaryExpressionImpl node) {
             if (node.getLeft() != null) node.getLeft().accept(this);
             if (node.getRight() != null) node.getRight().accept(this);
             return null;
         }
 
         @Override
-        public Void visitUnaryExpression(UnaryExpression node) {
+        public Void visitUnaryExpression(UnaryExpressionImpl node) {
             if (node.getOperand() != null) node.getOperand().accept(this);
             return null;
         }
 
         @Override
-        public Void visitLiteralExpression(LiteralExpression node) {
+        public Void visitLiteralExpression(LiteralExpressionImpl node) {
             return null; // Literals don't contain variable references
         }
 
         @Override
-        public Void visitFunctionCallExpression(FunctionCallExpression node) {
+        public Void visitFunctionCallExpression(FunctionCallExpressionImpl node) {
             if (node.getArguments() != null) {
                 node.getArguments().forEach(arg -> arg.accept(this));
             }
@@ -659,14 +659,14 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitComparisonCondition(ComparisonCondition node) {
+        public Void visitComparisonCondition(ComparisonConditionImpl node) {
             if (node.getLeft() != null) node.getLeft().accept(this);
             if (node.getRight() != null) node.getRight().accept(this);
             return null;
         }
 
         @Override
-        public Void visitLogicalCondition(LogicalCondition node) {
+        public Void visitLogicalCondition(LogicalConditionImpl node) {
             if (node.getOperands() != null) {
                 node.getOperands().forEach(operand -> operand.accept(this));
             }
@@ -674,13 +674,13 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitExpressionCondition(ExpressionCondition node) {
+        public Void visitExpressionCondition(ExpressionConditionImpl node) {
             if (node.getExpression() != null) node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitFunctionCallAction(FunctionCallAction node) {
+        public Void visitFunctionCallAction(FunctionCallActionImpl node) {
             if (node.getArguments() != null) {
                 node.getArguments().forEach(arg -> arg.accept(this));
             }
@@ -688,7 +688,7 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitConditionalAction(ConditionalAction node) {
+        public Void visitConditionalAction(ConditionalActionImpl node) {
             if (node.getCondition() != null) node.getCondition().accept(this);
             if (node.getThenActions() != null) {
                 node.getThenActions().forEach(action -> action.accept(this));
@@ -700,31 +700,31 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitCalculateAction(CalculateAction node) {
+        public Void visitCalculateAction(CalculateActionImpl node) {
             if (node.getExpression() != null) node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitRunAction(RunAction node) {
+        public Void visitRunAction(RunActionImpl node) {
             if (node.getExpression() != null) node.getExpression().accept(this);
             return null;
         }
 
         @Override
-        public Void visitSetAction(SetAction node) {
+        public Void visitSetAction(SetActionImpl node) {
             if (node.getValue() != null) node.getValue().accept(this);
             return null;
         }
 
         @Override
-        public Void visitArithmeticAction(ArithmeticAction node) {
+        public Void visitArithmeticAction(ArithmeticActionImpl node) {
             if (node.getValue() != null) node.getValue().accept(this);
             return null;
         }
 
         @Override
-        public Void visitListAction(ListAction node) {
+        public Void visitListAction(ListActionImpl node) {
             if (node.getValue() != null) {
                 node.getValue().accept(this);
             }
@@ -732,13 +732,13 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitCircuitBreakerAction(CircuitBreakerAction node) {
+        public Void visitCircuitBreakerAction(CircuitBreakerActionImpl node) {
             // Circuit breaker actions don't contain variable references
             return null;
         }
 
         @Override
-        public Void visitForEachAction(ForEachAction node) {
+        public Void visitForEachAction(ForEachActionImpl node) {
             // Collect variable references from list expression
             if (node.getListExpression() != null) {
                 node.getListExpression().accept(this);
@@ -755,7 +755,7 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitWhileAction(WhileAction node) {
+        public Void visitWhileAction(WhileActionImpl node) {
             // Collect variable references from condition
             if (node.getCondition() != null) {
                 node.getCondition().accept(this);
@@ -772,7 +772,7 @@ public class YamlDslValidator {
         }
 
         @Override
-        public Void visitDoWhileAction(DoWhileAction node) {
+        public Void visitDoWhileAction(DoWhileActionImpl node) {
             // Collect variable references from body actions
             if (node.getBodyActions() != null) {
                 for (Action bodyAction : node.getBodyActions()) {

@@ -42,8 +42,8 @@ class BffRefreshTokenFailureWebFilterTest {
 
     private static final String LOGIN = "/oauth2/authorization/idp";
 
-    private final BffRefreshTokenFailureWebFilter filter =
-            new BffRefreshTokenFailureWebFilter(new BffSecurityProperties()); // registration-id = "idp"
+    private final BffRefreshTokenFailureWebFilterImpl filter =
+            new BffRefreshTokenFailureWebFilterImpl(new BffSecurityProperties()); // registration-id = "idp"
 
     private static WebFilterChain failing(Throwable error) {
         return exchange -> Mono.error(error);

@@ -64,7 +64,7 @@ class MeController {
 }
 ```
 
-Add ABAC/ReBAC decisions by contributing one or more `PolicyRule` beans; they are collected by the default `EmbeddedPolicyDecisionAdapter` and consulted on every non-permitted exchange, fail-closed:
+Add ABAC/ReBAC decisions by contributing one or more `PolicyRule` beans; they are collected by the default `EmbeddedPolicyDecisionAdapterImpl` and consulted on every non-permitted exchange, fail-closed:
 
 ```java
 @Bean
@@ -109,7 +109,7 @@ Legacy non-String coercion remains for compatibility: for example, numeric `17` 
 | --- | --- |
 | [`ResourceServerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerAutoConfiguration.java) | Auto-configures a secure-by-default reactive OAuth2 resource server. |
 | [`ResourceServerProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/ResourceServerProperties.java) | Configuration for the secure-by-default resource server. |
-| [`JwtToFireflyPrincipalConverter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/JwtToFireflyPrincipalConverter.java) | Converts a signature-validated `Jwt` into a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` with normalized authorities/scopes. |
+| [`JwtToFireflyPrincipalConverterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-resource-server/src/main/java/org/fireflyframework/security/rs/JwtToFireflyPrincipalConverterImpl.java) | Converts a signature-validated `Jwt` into a `FireflyAuthenticationToken` whose principal is a `SecurityPrincipal` with normalized authorities/scopes. |
 
 ## Continue the application
 

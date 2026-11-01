@@ -16,8 +16,8 @@
 
 package org.fireflyframework.data.transform;
 
-import org.fireflyframework.data.transform.transformers.ComputedFieldTransformer;
-import org.fireflyframework.data.transform.transformers.FieldMappingTransformer;
+import org.fireflyframework.data.transform.transformers.ComputedFieldTransformerImpl;
+import org.fireflyframework.data.transform.transformers.FieldMappingTransformerImpl;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
@@ -45,8 +45,8 @@ class TransformationChainTest {
         // Given - rename "first_name" to "firstName", then add a computed greeting
         TransformationChain<Map<String, Object>, Map<String, Object>> chain =
                 TransformationChain.<Map<String, Object>, Map<String, Object>>create()
-                        .then(new FieldMappingTransformer(Map.of("first_name", "firstName")))
-                        .then(new ComputedFieldTransformer("greeting",
+                        .then(new FieldMappingTransformerImpl(Map.of("first_name", "firstName")))
+                        .then(new ComputedFieldTransformerImpl("greeting",
                                 m -> "Hello, " + m.get("firstName") + "!"));
 
         Map<String, Object> source = new HashMap<>(Map.of("first_name", "Alice", "age", 30));
@@ -95,8 +95,8 @@ class TransformationChainTest {
 
         TransformationChain<Map<String, Object>, Map<String, Object>> chain =
                 TransformationChain.<Map<String, Object>, Map<String, Object>>create()
-                        .then(new FieldMappingTransformer(Map.of("old_key", "newKey")))
-                        .then(new ComputedFieldTransformer("status", m -> "processed"))
+                        .then(new FieldMappingTransformerImpl(Map.of("old_key", "newKey")))
+                        .then(new ComputedFieldTransformerImpl("status", m -> "processed"))
                         .then(filterNulls);
 
         Map<String, Object> source = new HashMap<>();
@@ -121,7 +121,7 @@ class TransformationChainTest {
     @Test
     void fieldMappingTransformer_shouldRenameFields() {
         // Given
-        FieldMappingTransformer transformer = new FieldMappingTransformer(
+        FieldMappingTransformerImpl transformer = new FieldMappingTransformerImpl(
                 Map.of("first_name", "firstName", "last_name", "lastName"));
 
         Map<String, Object> source = new HashMap<>(
@@ -142,7 +142,7 @@ class TransformationChainTest {
     @Test
     void computedFieldTransformer_shouldAddComputedField() {
         // Given
-        ComputedFieldTransformer transformer = new ComputedFieldTransformer(
+        ComputedFieldTransformerImpl transformer = new ComputedFieldTransformerImpl(
                 "fullName",
                 m -> m.get("first") + " " + m.get("last"));
 

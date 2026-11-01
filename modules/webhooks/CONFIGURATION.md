@@ -338,7 +338,7 @@ firefly:
 
 ## HTTP Idempotency Configuration
 
-HTTP-level idempotency is handled by `lib-common-web`'s `IdempotencyWebFilter`. This provides automatic duplicate request detection using the `X-Idempotency-Key` header.
+HTTP-level idempotency is handled by `lib-common-web`'s `IdempotencyWebFilterImpl`. This provides automatic duplicate request detection using the `X-Idempotency-Key` header.
 
 ### Configuration
 
@@ -359,7 +359,7 @@ idempotency:
      -d '{"type": "payment_intent.succeeded"}'
    ```
 
-2. IdempotencyWebFilter intercepts the request:
+2. IdempotencyWebFilterImpl intercepts the request:
    - Checks cache for the idempotency key
    - If found: returns cached HTTP response (status, headers, body)
    - If not found: proceeds with request processing and caches the complete response
@@ -406,7 +406,7 @@ The platform has two levels of idempotency:
    - Key: `X-Idempotency-Key` header
    - Cache prefix: `:idempotency:`
 
-2. Event-level (CacheBasedWebhookIdempotencyService): Prevents duplicate event processing by workers
+2. Event-level (CacheBasedWebhookIdempotencyServiceImpl): Prevents duplicate event processing by workers
    - Scope: Kafka consumer / Worker processing
    - Key: `eventId` (UUID)
    - Cache prefixes: `webhook:processing:`, `webhook:processed:`, `webhook:failures:`
@@ -779,7 +779,7 @@ firefly:
 
 ## Troubleshooting Configuration Issues
 
-### Issue: Application fails to start with "ClassNotFoundException: FireflyCacheManager"
+### Issue: Application fails to start with "ClassNotFoundException: FireflyCacheManagerImpl"
 
 Cause: `lib-common-cache` dependency is missing or has wrong scope
 

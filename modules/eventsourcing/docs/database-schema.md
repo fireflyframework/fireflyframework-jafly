@@ -34,7 +34,7 @@ CREATE TABLE events (
 
 Key points:
 - `event_data` and `metadata` are TEXT, not JSONB. This makes the store database-agnostic.
-- `global_sequence` is BIGSERIAL -- the database auto-assigns it. The R2dbcEventStore INSERT statement excludes `global_sequence`.
+- `global_sequence` is BIGSERIAL -- the database auto-assigns it. The R2dbcEventStoreImpl INSERT statement excludes `global_sequence`.
 - The `UNIQUE(aggregate_id, aggregate_version)` constraint enforces optimistic concurrency at the database level.
 
 V1 Indexes:

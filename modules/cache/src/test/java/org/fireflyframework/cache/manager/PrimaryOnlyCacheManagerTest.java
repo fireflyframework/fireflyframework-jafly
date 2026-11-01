@@ -14,8 +14,8 @@ import reactor.test.StepVerifier;
 class PrimaryOnlyCacheManagerTest {
     final CacheAdapter primary=mock(CacheAdapter.class);
     PrimaryOnlyCacheManagerTest() { when(primary.operationPolicy()).thenReturn(CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS); }
-    FireflyCacheManager manager() { return new FireflyCacheManager(primary,null,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS); }
-    List<Mono<?>> dataOperations(FireflyCacheManager manager) {
+    FireflyCacheManagerImpl manager() { return new FireflyCacheManagerImpl(primary,null,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS); }
+    List<Mono<?>> dataOperations(FireflyCacheManagerImpl manager) {
         return List.of(manager.get("key"),manager.get("key",String.class),manager.put("key","value"),
                 manager.put("key","value",Duration.ofSeconds(1)),manager.putIfAbsent("key","value"),
                 manager.putIfAbsent("key","value",Duration.ofSeconds(1)),manager.evict("key"),manager.clear(),
@@ -72,8 +72,8 @@ class PrimaryOnlyCacheManagerTest {
     }
     @Test void unknownAdapterAndAnyFallbackRefuseStrictConstruction() {
         var legacy=mock(CacheAdapter.class);when(legacy.operationPolicy()).thenReturn(CacheOperationPolicy.LEGACY);
-        assertThatThrownBy(()->new FireflyCacheManager(legacy,null,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS)).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(()->new FireflyCacheManager(primary,legacy,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(()->new FireflyCacheManagerImpl(legacy,null,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(()->new FireflyCacheManagerImpl(primary,legacy,CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS)).isInstanceOf(IllegalArgumentException.class);
     }
     @Test void closeFailurePropagatesAndClosedInstanceRefusesDataOperations() {
         var failure=new IllegalStateException("controlled close failure");doThrow(failure).when(primary).close();var manager=manager();
@@ -84,7 +84,7 @@ class PrimaryOnlyCacheManagerTest {
         when(primary.getHealth()).thenReturn(Mono.empty());StepVerifier.create(manager().getHealth()).expectError(CacheException.class).verify();
     }
     @Test void legacyManagerKeepsExistingFailureRecovery() {
-        answers(Mono.error(new IllegalStateException("controlled legacy failure")));var legacy=new FireflyCacheManager(primary);
+        answers(Mono.error(new IllegalStateException("controlled legacy failure")));var legacy=new FireflyCacheManagerImpl(primary);
         when(primary.isAvailable()).thenReturn(true);StepVerifier.create(legacy.get("key")).expectNext(Optional.empty()).verifyComplete();
         StepVerifier.create(legacy.put("key","value")).verifyComplete();assertThat(legacy.operationPolicy()).isEqualTo(CacheOperationPolicy.LEGACY);
     }

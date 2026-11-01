@@ -44,7 +44,7 @@ public class DSLParser {
         
         try {
             List<Token> tokens = tokenize(source);
-            ConditionParser parser = new ConditionParser(tokens);
+            ConditionParserImpl parser = new ConditionParserImpl(tokens);
             Condition condition = parser.parseCondition();
             
             log.debug("Successfully parsed condition");
@@ -78,7 +78,7 @@ public class DSLParser {
         
         try {
             List<Token> tokens = tokenize(source);
-            ExpressionParser parser = new ExpressionParser(tokens);
+            ExpressionParserImpl parser = new ExpressionParserImpl(tokens);
             Expression expression = parser.parseExpression();
             
             log.debug("Successfully parsed expression");
@@ -112,7 +112,7 @@ public class DSLParser {
         
         try {
             List<Token> tokens = tokenize(source);
-            ActionParser parser = new ActionParser(tokens);
+            ActionParserImpl parser = new ActionParserImpl(tokens);
             Action action = parser.parseAction();
             
             log.debug("Successfully parsed action");
@@ -146,7 +146,7 @@ public class DSLParser {
         
         try {
             List<Token> tokens = tokenize(source);
-            ActionParser parser = new ActionParser(tokens);
+            ActionParserImpl parser = new ActionParserImpl(tokens);
             List<Action> actions = parser.parseActionList();
             
             log.debug("Successfully parsed {} actions", actions.size());

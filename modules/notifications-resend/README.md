@@ -60,7 +60,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class WelcomeEmailService {
 
-    private final EmailProvider emailProvider; // ResendEmailProvider, auto-wired
+    private final EmailProvider emailProvider; // ResendEmailProviderImpl, auto-wired
 
 
 
@@ -94,7 +94,7 @@ The `firefly.notifications.resend` namespace is bound by [ResendProperties.java]
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`ResendEmailProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/core/v1/ResendEmailProvider.java) | Defines `sendEmail`, `buildPayload` operations. |
+| [`ResendEmailProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/core/v1/ResendEmailProviderImpl.java) | Defines `sendEmail`, `buildPayload` operations. |
 | [`ResendProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/properties/v1/ResendProperties.java) | Carries `apiKey`, `defaultFrom`, `baseUrl` data; field constraints and defaults are declared in the linked source. |
 | [`ResendAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-resend/src/main/java/org/fireflyframework/notifications/providers/resend/config/v1/ResendAutoConfiguration.java) | Defines `resendRestClient`, `resendEmailProvider` operations. |
 

@@ -30,11 +30,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("ApplicationLayerHealthIndicator Tests")
 class ApplicationLayerHealthIndicatorTest {
     
-    private ApplicationLayerHealthIndicator healthIndicator;
+    private ApplicationLayerHealthIndicatorImpl healthIndicator;
     
     @BeforeEach
     void setUp() {
-        healthIndicator = new ApplicationLayerHealthIndicator();
+        healthIndicator = new ApplicationLayerHealthIndicatorImpl();
     }
     
     @Test

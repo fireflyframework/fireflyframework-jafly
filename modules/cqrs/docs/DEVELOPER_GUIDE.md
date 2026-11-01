@@ -936,9 +936,9 @@ public class SecureTransferCommand implements Command<TransferResult> {
 
 ## 📊 Observability and Monitoring
 
-### Built-in Metrics Collection with CommandMetricsService
+### Built-in Metrics Collection with CommandMetricsServiceImpl
 
-The CQRS framework provides metrics collection through the dedicated `CommandMetricsService`:
+The CQRS framework provides metrics collection through the dedicated `CommandMetricsServiceImpl`:
 
 ```yaml
 # Enable metrics collection in application.yml
@@ -960,13 +960,13 @@ management:
         enabled: true
 ```
 
-#### CommandMetricsService API
+#### CommandMetricsServiceImpl API
 
 The framework uses a dedicated service for thread-safe metrics collection:
 
 ```java
 @Component
-public class CommandMetricsService {
+public class CommandMetricsServiceImpl {
     
     // Records successful command processing with timing
     public void recordCommandSuccess(Command<?> command, Duration processingTime);

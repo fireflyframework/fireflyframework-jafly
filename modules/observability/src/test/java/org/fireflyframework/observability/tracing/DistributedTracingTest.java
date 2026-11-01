@@ -68,7 +68,7 @@ class DistributedTracingTest {
                 new DefaultTracingObservationHandler(tracer));
         registry.observationConfig()
                 .observationHandler(tracing)
-                .observationFilter(new HttpErrorStatusObservationFilter());
+                .observationFilter(new HttpErrorStatusObservationFilterImpl());
         TracingRegistry.install(registry);
 
         traceparent.set(null);
@@ -143,7 +143,7 @@ class DistributedTracingTest {
     void restTemplateFiveHundredIsAnErrorSpan() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(response -> false);
-        new ClientObservationBeanPostProcessor(new MockEnvironment())
+        new ClientObservationBeanPostProcessorImpl(new MockEnvironment())
                 .postProcessAfterInitialization(restTemplate, "restTemplate");
 
         restTemplate.getForEntity(baseUrl() + "/fail", String.class);
@@ -194,7 +194,7 @@ class DistributedTracingTest {
     @Test
     void messagingInfrastructureBeansAreObservedByDefault() {
         KafkaTemplateProbe probe = new KafkaTemplateProbe();
-        new ClientObservationBeanPostProcessor(new MockEnvironment())
+        new ClientObservationBeanPostProcessorImpl(new MockEnvironment())
                 .postProcessAfterInitialization(probe, "kafka");
 
         assertThat(probe.enabled).isTrue();

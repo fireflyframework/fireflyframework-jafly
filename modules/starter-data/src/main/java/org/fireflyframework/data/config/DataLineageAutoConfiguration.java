@@ -16,7 +16,7 @@
 
 package org.fireflyframework.data.config;
 
-import org.fireflyframework.data.lineage.InMemoryLineageTracker;
+import org.fireflyframework.data.lineage.InMemoryLineageTrackerImpl;
 import org.fireflyframework.data.lineage.LineageTracker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -68,6 +68,6 @@ public class DataLineageAutoConfiguration {
     @ConditionalOnMissingBean
     public LineageTracker lineageTracker() {
         log.info("Configuring in-memory lineage tracker (production: implement LineageTracker with persistent store)");
-        return new InMemoryLineageTracker();
+        return new InMemoryLineageTrackerImpl();
     }
 }

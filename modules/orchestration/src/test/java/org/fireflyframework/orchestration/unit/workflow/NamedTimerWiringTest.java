@@ -19,12 +19,12 @@ package org.fireflyframework.orchestration.unit.workflow;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
@@ -59,11 +59,11 @@ class NamedTimerWiringTest {
     void setUp() {
         registry = new WorkflowRegistry();
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
+        var noOpPublisher = new NoOpEventPublisherImpl();
         timerService = new TimerService(events);
         var stepInvoker = new StepInvoker(new ArgumentResolver());
         var executor = new WorkflowExecutor(stepInvoker, events, noOpPublisher, null, timerService);
-        var persistence = new InMemoryPersistenceProvider();
+        var persistence = new InMemoryPersistenceProviderImpl();
         engine = new WorkflowEngine(registry, executor, stepInvoker, persistence, events, noOpPublisher);
     }
 

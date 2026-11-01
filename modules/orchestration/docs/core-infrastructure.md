@@ -421,11 +421,11 @@ Factory methods: `executionStarted(...)`, `executionCompleted(...)`, `stepComple
 
 ### OrchestrationEventPublisher
 
-Events are published through the `OrchestrationEventPublisher` interface. The default is `NoOpEventPublisher`: replace it with a custom bean for your messaging infrastructure:
+Events are published through the `OrchestrationEventPublisher` interface. The default is `NoOpEventPublisherImpl`: replace it with a custom bean for your messaging infrastructure:
 
 ```java
 @Component
-public class KafkaEventPublisher implements OrchestrationEventPublisher {
+public class KafkaEventPublisherImpl implements OrchestrationEventPublisher {
     @Override
     public Mono<Void> publish(OrchestrationEvent event) {
         return kafkaTemplate.send(event.topic(), event.key(), event).then();
@@ -490,7 +490,7 @@ public class MultiScheduleSaga { ... }
 
 ### How Scanning Works
 
-`SchedulingPostProcessor` is a `BeanPostProcessor` that scans all beans for `@ScheduledWorkflow`, `@ScheduledSaga`, and `@ScheduledTcc` annotations. For each annotation found, it registers a task with `OrchestrationScheduler` that invokes the corresponding engine.
+`SchedulingPostProcessorImpl` is a `BeanPostProcessor` that scans all beans for `@ScheduledWorkflow`, `@ScheduledSaga`, and `@ScheduledTcc` annotations. For each annotation found, it registers a task with `OrchestrationScheduler` that invokes the corresponding engine.
 
 ### OrchestrationScheduler API
 
@@ -679,7 +679,7 @@ firefly:
 
 ### Built-In Providers
 
-#### InMemoryPersistenceProvider (Default)
+#### InMemoryPersistenceProviderImpl (Default)
 
 - Storage: `ConcurrentHashMap<String, ExecutionState>`
 - Full query support (`findByPattern`, `findByStatus`, `findInFlight`, `findStale`)
@@ -687,7 +687,7 @@ firefly:
 - Data lost on process restart
 - Best for: development, testing
 
-#### RedisPersistenceProvider
+#### RedisPersistenceProviderImpl
 
 - Requires: `spring-boot-starter-data-redis-reactive` on classpath
 - Condition: `firefly.orchestration.persistence.provider=redis`
@@ -698,7 +698,7 @@ firefly:
 - Supports execution-state queries. Survival across restarts depends on the Redis deployment and its persistence configuration.
 - Use when execution snapshots must be shared between instances. Signal waiters and timers still belong to their process.
 
-#### CachePersistenceProvider
+#### CachePersistenceProviderImpl
 
 - Requires: `fireflyframework-cache` module on classpath
 - Condition: `firefly.orchestration.persistence.provider=cache`
@@ -710,7 +710,7 @@ firefly:
 - Configurable TTL via `firefly.orchestration.persistence.key-ttl`
 - Best for: when you already use the Firefly Cache module
 
-#### EventSourcedPersistenceProvider
+#### EventSourcedPersistenceProviderImpl
 
 - Requires: `fireflyframework-eventsourcing` module on classpath
 - Condition: `firefly.orchestration.persistence.provider=event-sourced`
@@ -810,7 +810,7 @@ Factory method: `DeadLetterEntry.create(executionName, correlationId, pattern, s
 
 ### Custom DLQ Store
 
-The default `InMemoryDeadLetterStore` can be replaced:
+The default `InMemoryDeadLetterStoreImpl` can be replaced:
 
 ```java
 @Component
@@ -938,9 +938,9 @@ All orchestration lifecycle events flow through the `OrchestrationEvents` interf
 | `onCompositionStarted(String compositionName, String correlationId)` | Cross-pattern composition begins |
 | `onCompositionCompleted(String compositionName, String correlationId, boolean success)` | Composition completes |
 
-### CompositeOrchestrationEvents
+### CompositeOrchestrationEventsImpl
 
-The auto-configuration collects **all** `OrchestrationEvents` beans and wraps them in a `CompositeOrchestrationEvents` that fans out each call to every delegate. Each delegate has error isolation: one listener failing does not prevent others from firing.
+The auto-configuration collects **all** `OrchestrationEvents` beans and wraps them in a `CompositeOrchestrationEventsImpl` that fans out each call to every delegate. Each delegate has error isolation: one listener failing does not prevent others from firing.
 
 ### Custom Event Listener
 
@@ -973,7 +973,7 @@ firefly:
       enabled: true   # default
 ```
 
-`OrchestrationMetrics` implements `OrchestrationEvents` and records the following metrics:
+`OrchestrationMetricsImpl` implements `OrchestrationEvents` and records the following metrics:
 
 | Metric Name | Type | Tags | Description |
 |-------------|------|------|-------------|
@@ -1190,7 +1190,7 @@ All strategies accept a list of items and an `ItemProcessor` that processes each
 
 ### Implementations
 
-#### AdaptiveBackpressureStrategy
+#### AdaptiveBackpressureStrategyImpl
 
 Dynamic concurrency adjustment based on real-time error rates. Uses `AtomicInteger currentConcurrency` and `AtomicLong totalProcessed` / `AtomicLong totalErrors` for thread-safe tracking.
 
@@ -1208,7 +1208,7 @@ Scaling behavior:
 
 Uses `Flux.flatMap(processor, currentConcurrency.get())` internally to enforce the dynamic concurrency limit.
 
-#### BatchedBackpressureStrategy
+#### BatchedBackpressureStrategyImpl
 
 Fixed-size batch processing. Batches are processed **sequentially**; items **within** a batch are processed concurrently.
 
@@ -1223,7 +1223,7 @@ Flux.fromIterable(items)
         .flatMap(processor::process))
 ```
 
-#### CircuitBreakerBackpressureStrategy
+#### CircuitBreakerBackpressureStrategyImpl
 
 Three-state circuit breaker using `AtomicReference<State>`.
 
@@ -1251,7 +1251,7 @@ Configuration record with 9 fields:
 | Field | Type | Description |
 |-------|------|-------------|
 | `strategy` | `String` | Strategy name (e.g., `"adaptive"`, `"batched"`, `"circuit-breaker"`) |
-| `batchSize` | `int` | Batch size for `BatchedBackpressureStrategy` |
+| `batchSize` | `int` | Batch size for `BatchedBackpressureStrategyImpl` |
 | `failureThreshold` | `int` | Failure threshold for circuit breaker |
 | `recoveryTimeout` | `Duration` | Recovery timeout for circuit breaker |
 | `halfOpenMaxCalls` | `int` | Half-open max calls for circuit breaker |
@@ -1277,11 +1277,11 @@ Pre-registered strategies (5):
 
 | Name | Strategy | Configuration |
 |------|----------|---------------|
-| `"adaptive"` | `AdaptiveBackpressureStrategy` | Default parameters |
-| `"batched"` | `BatchedBackpressureStrategy` | Default batch size (10) |
-| `"circuit-breaker"` | `CircuitBreakerBackpressureStrategy` | Default parameters (threshold=5, recovery=30s, halfOpen=3) |
-| `"circuit-breaker-aggressive"` | `CircuitBreakerBackpressureStrategy` | threshold=2, recovery=60s, halfOpen=1 |
-| `"circuit-breaker-conservative"` | `CircuitBreakerBackpressureStrategy` | threshold=10, recovery=15s, halfOpen=5 |
+| `"adaptive"` | `AdaptiveBackpressureStrategyImpl` | Default parameters |
+| `"batched"` | `BatchedBackpressureStrategyImpl` | Default batch size (10) |
+| `"circuit-breaker"` | `CircuitBreakerBackpressureStrategyImpl` | Default parameters (threshold=5, recovery=30s, halfOpen=3) |
+| `"circuit-breaker-aggressive"` | `CircuitBreakerBackpressureStrategyImpl` | threshold=2, recovery=60s, halfOpen=1 |
+| `"circuit-breaker-conservative"` | `CircuitBreakerBackpressureStrategyImpl` | threshold=10, recovery=15s, halfOpen=5 |
 
 ### Usage in Engines
 
@@ -1495,7 +1495,7 @@ The `org.fireflyframework.orchestration.core.observability.OrchestrationMetricsE
 @Endpoint(id = "orchestration-metrics")
 ```
 
-Conditional on Spring Boot Actuator being on the classpath. Reads counters from the `MeterRegistry` registered by `OrchestrationMetrics` (see [§35](#38-observability-metrics--tracing)).
+Conditional on Spring Boot Actuator being on the classpath. Reads counters from the `MeterRegistry` registered by `OrchestrationMetricsImpl` (see [§35](#38-observability-metrics--tracing)).
 
 ### Endpoints
 
@@ -1720,7 +1720,7 @@ ExecutionSummary record:
 | `failureReason` | `String` | Failure message (if failed) |
 | `eventCount` | `int` | Total events processed for this execution |
 
-### EventSourcedPersistenceProvider
+### EventSourcedPersistenceProviderImpl
 
 Implements `ExecutionPersistenceProvider` with full event-sourcing semantics.
 

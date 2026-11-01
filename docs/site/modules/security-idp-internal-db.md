@@ -73,7 +73,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final IdpAdapter idp; // InternalDbIdpAdapter, wired by auto-configuration
+    private final IdpAdapter idp; // InternalDbIdpAdapterImpl, wired by auto-configuration
 
     @PostMapping("/auth/login")
     public Mono<ResponseEntity<TokenResponse>> login(@RequestBody LoginRequest request) {
@@ -107,7 +107,7 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`InternalDbIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapter.java) | Internal Database implementation of the Firefly IDP Adapter. |
+| [`InternalDbIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapterImpl.java) | Internal Database implementation of the Firefly IDP Adapter. |
 | [`InternalDbProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/config/InternalDbProperties.java) | Configuration properties for Internal Database IDP implementation. |
 | [`PasswordResetTokenRepository`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/repository/PasswordResetTokenRepository.java) | Reactive repository for password reset token operations. |
 | [`RefreshTokenRepository`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-internal-db/src/main/java/org/fireflyframework/security/idp/internaldb/repository/RefreshTokenRepository.java) | Reactive repository for RefreshToken entity operations. |
@@ -243,7 +243,7 @@ User records store BCrypt password hashes, account status flags, and TOTP MFA en
 1. Enables `InternalDbProperties` and the R2DBC repositories in `org.fireflyframework.security.idp.internaldb.repository`.
 2. Registers a strength-12 `BCryptPasswordEncoder` (unless one is already defined).
 3. Wires the service layer. JWT, authentication, user management, roles, password reset, password policy and MFA.
-4. Exposes the `InternalDbIdpAdapter` as the `IdpAdapter` bean consumed by the IDP core web layer.
+4. Exposes the `InternalDbIdpAdapterImpl` as the `IdpAdapter` bean consumed by the IDP core web layer.
 
 Because every bean is `@ConditionalOnMissingBean`, you can replace any individual collaborator (for example, supply a
 custom `PasswordEncoder` or `JwtTokenService`) without forking the module.

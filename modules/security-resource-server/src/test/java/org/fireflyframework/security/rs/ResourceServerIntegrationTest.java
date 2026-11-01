@@ -25,7 +25,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
 import org.fireflyframework.security.api.domain.SigningKey;
-import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapter;
+import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapterImpl;
 import org.fireflyframework.security.core.policy.PolicyRule;
 import org.fireflyframework.security.spi.KeyManagementPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -137,7 +137,7 @@ class ResourceServerIntegrationTest {
 
     @Test
     void forgedTokenSignedByUnknownKeyIsUnauthorized() throws Exception {
-        SigningKey foreignKey = new InMemoryKeyManagementAdapter().activeSigningKey().block();
+        SigningKey foreignKey = new InMemoryKeyManagementAdapterImpl().activeSigningKey().block();
         String token = signWith(foreignKey, validClaims().build());
         client.get().uri("/api/me").header("Authorization", "Bearer " + token)
                 .exchange().expectStatus().isUnauthorized();

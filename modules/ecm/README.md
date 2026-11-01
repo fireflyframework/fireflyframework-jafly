@@ -81,9 +81,9 @@ public class DocumentService {
 firefly:
   ecm:
     search:
-      enabled: true       # registers LocalDocumentSearchAdapter
+      enabled: true       # registers LocalDocumentSearchAdapterImpl
     permissions:
-      enabled: true       # registers LocalPermissionAdapter
+      enabled: true       # registers LocalPermissionAdapterImpl
 ```
 
 To write your own adapter, annotate a port implementation with `@EcmAdapter` and the registry will discover it:
@@ -98,7 +98,7 @@ import org.fireflyframework.ecm.port.document.DocumentContentPort;
     description = "AWS S3 content storage adapter",
     supportedFeatures = { AdapterFeature.CONTENT_STORAGE, AdapterFeature.STREAMING, AdapterFeature.CLOUD_STORAGE }
 )
-public class S3DocumentContentAdapter implements DocumentContentPort {
+public class S3DocumentContentAdapterImpl implements DocumentContentPort {
     // ... reactive implementation ...
 }
 ```

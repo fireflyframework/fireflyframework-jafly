@@ -16,14 +16,14 @@
 
 package org.fireflyframework.orchestration.unit.core;
 
-import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategy;
+import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategyImpl;
 import org.fireflyframework.orchestration.core.backpressure.BackpressureConfig;
 import org.fireflyframework.orchestration.core.backpressure.BackpressureStrategy;
 import org.fireflyframework.orchestration.core.backpressure.BackpressureStrategyFactory;
-import org.fireflyframework.orchestration.core.backpressure.BatchedBackpressureStrategy;
-import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategy;
-import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategy.CircuitBreakerOpenException;
-import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategy.State;
+import org.fireflyframework.orchestration.core.backpressure.BatchedBackpressureStrategyImpl;
+import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategyImpl;
+import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategyImpl.CircuitBreakerOpenException;
+import org.fireflyframework.orchestration.core.backpressure.CircuitBreakerBackpressureStrategyImpl.State;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -46,7 +46,7 @@ class BackpressureStrategyVarietyTest {
 
     @Test
     void batchedStrategy_processesInBatches() {
-        var strategy = new BatchedBackpressureStrategy(3);
+        var strategy = new BatchedBackpressureStrategyImpl(3);
         List<Integer> items = List.of(1, 2, 3, 4, 5, 6, 7);
 
         // Track the order of processing to verify batching behavior
@@ -66,7 +66,7 @@ class BackpressureStrategyVarietyTest {
 
     @Test
     void circuitBreaker_opensOnFailureThreshold() {
-        var strategy = new CircuitBreakerBackpressureStrategy(3, Duration.ofSeconds(60), 2);
+        var strategy = new CircuitBreakerBackpressureStrategyImpl(3, Duration.ofSeconds(60), 2);
 
         // All items will fail, so the circuit breaker should open after 3 failures
         List<Integer> items = List.of(1, 2, 3, 4, 5);
@@ -83,7 +83,7 @@ class BackpressureStrategyVarietyTest {
     void circuitBreaker_halfOpenAllowsLimitedCalls() {
         int halfOpenMax = 2;
         // Use a very short recovery timeout so we can transition to HALF_OPEN quickly
-        var strategy = new CircuitBreakerBackpressureStrategy(
+        var strategy = new CircuitBreakerBackpressureStrategyImpl(
                 2, Duration.ofMillis(50), halfOpenMax);
 
         // Trip the breaker: 2 failures in CLOSED state
@@ -120,7 +120,7 @@ class BackpressureStrategyVarietyTest {
 
     @Test
     void circuitBreaker_closesOnRecovery() {
-        var strategy = new CircuitBreakerBackpressureStrategy(
+        var strategy = new CircuitBreakerBackpressureStrategyImpl(
                 2, Duration.ofMillis(50), 2);
 
         // Trip the breaker
@@ -152,37 +152,37 @@ class BackpressureStrategyVarietyTest {
         assertThat(BackpressureStrategyFactory.getStrategy("adaptive"))
                 .isPresent()
                 .get()
-                .isInstanceOf(AdaptiveBackpressureStrategy.class);
+                .isInstanceOf(AdaptiveBackpressureStrategyImpl.class);
 
         assertThat(BackpressureStrategyFactory.getStrategy("batched"))
                 .isPresent()
                 .get()
-                .isInstanceOf(BatchedBackpressureStrategy.class);
+                .isInstanceOf(BatchedBackpressureStrategyImpl.class);
 
         assertThat(BackpressureStrategyFactory.getStrategy("circuit-breaker"))
                 .isPresent()
                 .get()
-                .isInstanceOf(CircuitBreakerBackpressureStrategy.class);
+                .isInstanceOf(CircuitBreakerBackpressureStrategyImpl.class);
 
         assertThat(BackpressureStrategyFactory.getStrategy("circuit-breaker-aggressive"))
                 .isPresent()
                 .get()
-                .isInstanceOf(CircuitBreakerBackpressureStrategy.class);
+                .isInstanceOf(CircuitBreakerBackpressureStrategyImpl.class);
 
         assertThat(BackpressureStrategyFactory.getStrategy("circuit-breaker-conservative"))
                 .isPresent()
                 .get()
-                .isInstanceOf(CircuitBreakerBackpressureStrategy.class);
+                .isInstanceOf(CircuitBreakerBackpressureStrategyImpl.class);
 
         assertThat(BackpressureStrategyFactory.getStrategy("nonexistent"))
                 .isEmpty();
 
         // Verify custom registration with supplier
-        BackpressureStrategyFactory.registerStrategy("custom", () -> new BatchedBackpressureStrategy(5));
+        BackpressureStrategyFactory.registerStrategy("custom", () -> new BatchedBackpressureStrategyImpl(5));
         assertThat(BackpressureStrategyFactory.getStrategy("custom"))
                 .isPresent()
                 .get()
-                .isInstanceOf(BatchedBackpressureStrategy.class);
+                .isInstanceOf(BatchedBackpressureStrategyImpl.class);
     }
 
     @Test
@@ -198,22 +198,22 @@ class BackpressureStrategyVarietyTest {
         BackpressureConfig adaptiveConfig = new BackpressureConfig(
                 "adaptive", 10, 5, Duration.ofSeconds(30), 3, 8, 32, 2, 0.2);
         BackpressureStrategy adaptive = BackpressureStrategyFactory.fromConfig(adaptiveConfig);
-        assertThat(adaptive).isInstanceOf(AdaptiveBackpressureStrategy.class);
+        assertThat(adaptive).isInstanceOf(AdaptiveBackpressureStrategyImpl.class);
 
         BackpressureConfig batchedConfig = new BackpressureConfig(
                 "batched", 5, 5, Duration.ofSeconds(30), 3, 4, 16, 1, 0.1);
         BackpressureStrategy batched = BackpressureStrategyFactory.fromConfig(batchedConfig);
-        assertThat(batched).isInstanceOf(BatchedBackpressureStrategy.class);
+        assertThat(batched).isInstanceOf(BatchedBackpressureStrategyImpl.class);
 
         BackpressureConfig cbConfig = new BackpressureConfig(
                 "circuit-breaker", 10, 3, Duration.ofSeconds(10), 2, 4, 16, 1, 0.1);
         BackpressureStrategy cb = BackpressureStrategyFactory.fromConfig(cbConfig);
-        assertThat(cb).isInstanceOf(CircuitBreakerBackpressureStrategy.class);
+        assertThat(cb).isInstanceOf(CircuitBreakerBackpressureStrategyImpl.class);
 
         // Verify defaults() produces a valid config
         BackpressureConfig defaults = BackpressureConfig.defaults();
         BackpressureStrategy fromDefaults = BackpressureStrategyFactory.fromConfig(defaults);
-        assertThat(fromDefaults).isInstanceOf(AdaptiveBackpressureStrategy.class);
+        assertThat(fromDefaults).isInstanceOf(AdaptiveBackpressureStrategyImpl.class);
 
         // Verify unknown strategy throws
         BackpressureConfig unknownConfig = new BackpressureConfig(

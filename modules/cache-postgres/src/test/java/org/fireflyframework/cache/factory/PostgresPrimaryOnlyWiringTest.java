@@ -27,7 +27,7 @@ class PostgresPrimaryOnlyWiringTest {
                 "policy",CacheType.POSTGRES,"service:policy",Duration.ofMinutes(1),"policy test","test",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
         assertThat(manager.operationPolicy()).isEqualTo(CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
         var primary=(CacheAdapter)ReflectionTestUtils.getField(manager,"primaryCache");
-        assertThat(primary).isInstanceOf(org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapter.class);
+        assertThat(primary).isInstanceOf(org.fireflyframework.cache.adapter.postgres.PostgresCacheAdapterImpl.class);
         assertThat(primary.operationPolicy()).isEqualTo(CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
         assertThat(ReflectionTestUtils.getField(manager,"fallbackCache")).isNull();verify(connection).close();
     }

@@ -22,7 +22,7 @@ import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.core.step.StepHandler;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.builder.SagaBuilder;
@@ -46,18 +46,18 @@ class SagaCheckpointTest {
 
     private OrchestrationEvents events;
     private StepInvoker stepInvoker;
-    private org.fireflyframework.orchestration.core.event.NoOpEventPublisher noOpPublisher;
+    private org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl noOpPublisher;
 
     @BeforeEach
     void setUp() {
         events = new OrchestrationEvents() {};
         stepInvoker = new StepInvoker(new ArgumentResolver());
-        noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
     }
 
     @Test
     void checkpoint_savedAfterEachStepSuccess() {
-        InMemoryPersistenceProvider persistence = new InMemoryPersistenceProvider();
+        InMemoryPersistenceProviderImpl persistence = new InMemoryPersistenceProviderImpl();
 
         // Track how many times save is called
         AtomicInteger saveCount = new AtomicInteger(0);
@@ -131,7 +131,7 @@ class SagaCheckpointTest {
     @Test
     void checkpoint_containsCurrentStepResults() {
         List<ExecutionState> savedStates = new ArrayList<>();
-        InMemoryPersistenceProvider persistence = new InMemoryPersistenceProvider();
+        InMemoryPersistenceProviderImpl persistence = new InMemoryPersistenceProviderImpl();
 
         ExecutionPersistenceProvider capturingPersistence = new ExecutionPersistenceProvider() {
             @Override

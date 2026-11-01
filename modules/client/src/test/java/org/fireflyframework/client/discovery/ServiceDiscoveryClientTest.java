@@ -49,7 +49,7 @@ class ServiceDiscoveryClientTest {
             ServiceDiscoveryClient client = ServiceDiscoveryClient.staticConfig(endpoints);
 
             // Then
-            assertThat(client).isInstanceOf(StaticServiceDiscoveryClient.class);
+            assertThat(client).isInstanceOf(StaticServiceDiscoveryClientImpl.class);
         }
 
         @Test
@@ -216,7 +216,7 @@ class ServiceDiscoveryClientTest {
             ServiceDiscoveryClient client = ServiceDiscoveryClient.kubernetes("default");
 
             // Then
-            assertThat(client).isInstanceOf(KubernetesServiceDiscoveryClient.class);
+            assertThat(client).isInstanceOf(KubernetesServiceDiscoveryClientImpl.class);
         }
 
         @Test
@@ -307,7 +307,7 @@ class ServiceDiscoveryClientTest {
             ServiceDiscoveryClient client = ServiceDiscoveryClient.eureka("http://eureka:8761");
 
             // Then
-            assertThat(client).isInstanceOf(EurekaServiceDiscoveryClient.class);
+            assertThat(client).isInstanceOf(EurekaServiceDiscoveryClientImpl.class);
         }
 
         @Test
@@ -350,7 +350,7 @@ class ServiceDiscoveryClientTest {
             ServiceDiscoveryClient client = ServiceDiscoveryClient.consul("http://consul:8500");
 
             // Then
-            assertThat(client).isInstanceOf(ConsulServiceDiscoveryClient.class);
+            assertThat(client).isInstanceOf(ConsulServiceDiscoveryClientImpl.class);
         }
 
         @Test

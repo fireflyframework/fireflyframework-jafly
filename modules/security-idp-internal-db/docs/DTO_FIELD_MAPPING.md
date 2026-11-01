@@ -13,4 +13,4 @@ The adapter uses DTOs from `org.fireflyframework.security.idp.dtos`. Entity fiel
 | `CreateScopeRequest` | Uses `name` and `description`. The internal adapter stores the scope as a role. |
 | `CreateScopeResponse` | Uses `id`, `name`, and `createdAt`. |
 
-See the [DTO definitions](../../security-idp/src/main/java/org/fireflyframework/security/idp/dtos), [adapter mapping code](../src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapter.java), and [user service](../src/main/java/org/fireflyframework/security/idp/internaldb/service/UserManagementService.java).
+See the [DTO definitions](../../security-idp/src/main/java/org/fireflyframework/security/idp/dtos), [adapter mapping code](../src/main/java/org/fireflyframework/security/idp/internaldb/adapter/InternalDbIdpAdapterImpl.java), and [user service](../src/main/java/org/fireflyframework/security/idp/internaldb/service/UserManagementService.java).

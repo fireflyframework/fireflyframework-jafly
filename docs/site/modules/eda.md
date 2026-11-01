@@ -81,14 +81,14 @@ The `firefly.eda` namespace is bound by [EdaProperties.java](https://github.com/
 Property-based wiring conditions found in this module:
 
 - `prefix = "firefly.eda", name = "enabled", havingValue = "true", matchIfMissing = true`. [FireflyEdaAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/config/FireflyEdaAutoConfiguration.java).
-- `prefix = "firefly.eda.consumer.noop", name = "enabled", havingValue = "true"`. [NoopEventConsumer.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/consumer/NoopEventConsumer.java).
-- `prefix = "firefly.eda.consumer.application-event", name = "enabled", havingValue = "true"`. [SpringApplicationEventConsumer.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/consumer/SpringApplicationEventConsumer.java).
-- `prefix = "firefly.eda.error.metrics", name = "enabled", havingValue = "true", matchIfMissing = true`. [MetricsErrorHandler.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/error/impl/MetricsErrorHandler.java).
-- `prefix = "firefly.eda.error.notification", name = "enabled", havingValue = "true"`. [NotificationErrorHandler.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/error/impl/NotificationErrorHandler.java).
-- `prefix = "firefly.eda", name = "health-enabled", havingValue = "true", matchIfMissing = true`. [EdaHealthIndicator.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/health/EdaHealthIndicator.java).
-- `prefix = "firefly.eda", name = "metrics-enabled", havingValue = "true", matchIfMissing = true`. [EdaMetrics.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/metrics/EdaMetrics.java).
-- `prefix = "firefly.eda.publishers.noop", name = "enabled", havingValue = "true"`. [NoopEventPublisher.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/NoopEventPublisher.java).
-- `prefix = "firefly.eda.publishers.application-event", name = "enabled", havingValue = "true", matchIfMissing = true`. [SpringApplicationEventPublisher.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/SpringApplicationEventPublisher.java).
+- `prefix = "firefly.eda.consumer.noop", name = "enabled", havingValue = "true"`. [NoopEventConsumerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/consumer/NoopEventConsumerImpl.java).
+- `prefix = "firefly.eda.consumer.application-event", name = "enabled", havingValue = "true"`. [SpringApplicationEventConsumerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/consumer/SpringApplicationEventConsumerImpl.java).
+- `prefix = "firefly.eda.error.metrics", name = "enabled", havingValue = "true", matchIfMissing = true`. [MetricsErrorHandlerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/error/impl/MetricsErrorHandlerImpl.java).
+- `prefix = "firefly.eda.error.notification", name = "enabled", havingValue = "true"`. [NotificationErrorHandlerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/error/impl/NotificationErrorHandlerImpl.java).
+- `prefix = "firefly.eda", name = "health-enabled", havingValue = "true", matchIfMissing = true`. [EdaHealthIndicatorImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/health/EdaHealthIndicatorImpl.java).
+- `prefix = "firefly.eda", name = "metrics-enabled", havingValue = "true", matchIfMissing = true`. [EdaMetricsImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/metrics/EdaMetricsImpl.java).
+- `prefix = "firefly.eda.publishers.noop", name = "enabled", havingValue = "true"`. [NoopEventPublisherImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/NoopEventPublisherImpl.java).
+- `prefix = "firefly.eda.publishers.application-event", name = "enabled", havingValue = "true", matchIfMissing = true`. [SpringApplicationEventPublisherImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/SpringApplicationEventPublisherImpl.java).
 - `prefix = "firefly.eda.resilience", name = "enabled", havingValue = "true", matchIfMissing = true`. [ResilientEventPublisherFactory.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/resilience/ResilientEventPublisherFactory.java).
 
 ## Public API and extension points
@@ -281,7 +281,7 @@ firefly:
 | `firefly.eda.publishers.enabled` | `false` | Global opt-in for all publishers. |
 | `firefly.eda.consumer.enabled` | `false` | Global opt-in for all consumers. |
 | `firefly.eda.consumer.group-id` | `firefly-eda` | Default consumer group id (used by group-based transports such as Kafka). |
-| `firefly.eda.resilience.*` | see above | Circuit breaker, retry and rate-limiter settings applied by `ResilientEventPublisher`. |
+| `firefly.eda.resilience.*` | see above | Circuit breaker, retry and rate-limiter settings applied by `ResilientEventPublisherImpl`. |
 
 The `kafka.*`, `rabbitmq.*` and `postgres.*` sub-trees are mapped by connection id (the `default` key shown above), letting you define multiple named connections per transport. These keys are recognized by the core's property schema even before the corresponding adapter is installed; the actual transport beans only activate when the matching adapter module is on the classpath and enabled.
 

@@ -18,7 +18,7 @@ class InstantScalarOpenAPIAutoConfigurationTest {
                         context ->
                                 assertThat(context)
                                         .hasNotFailed()
-                                        .hasSingleBean(InstantScalarOpenApiCustomizer.class)
+                                        .hasSingleBean(InstantScalarOpenApiCustomizerImpl.class)
                                         .doesNotHaveBean(io.swagger.v3.oas.models.OpenAPI.class));
     }
 
@@ -90,7 +90,7 @@ class InstantScalarOpenAPIAutoConfigurationTest {
                                     .doesNotThrowAnyException();
                             assertThat(context)
                                     .hasNotFailed()
-                                    .doesNotHaveBean(InstantScalarOpenApiCustomizer.class);
+                                    .doesNotHaveBean(InstantScalarOpenApiCustomizerImpl.class);
                         });
         assertThat(io.swagger.v3.core.util.Json.pretty(api)).isEqualTo(before);
     }
@@ -105,6 +105,6 @@ class InstantScalarOpenAPIAutoConfigurationTest {
                         context ->
                                 assertThat(context)
                                         .hasNotFailed()
-                                        .doesNotHaveBean(InstantScalarOpenApiCustomizer.class));
+                                        .doesNotHaveBean(InstantScalarOpenApiCustomizerImpl.class));
     }
 }

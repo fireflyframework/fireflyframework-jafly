@@ -132,8 +132,8 @@ graph TB
     C --> D[EventPublisherFactory]
     D --> E{Publisher Selection}
     
-    E -->|Kafka| F[KafkaEventPublisher]
-    E -->|RabbitMQ| G[RabbitMqEventPublisher] 
+    E -->|Kafka| F[KafkaEventPublisherImpl]
+    E -->|RabbitMQ| G[RabbitMqEventPublisherImpl]
     E -->|SQS| H[SqsEventPublisher]
     E -->|Pub/Sub| I[GooglePubSubEventPublisher]
     E -->|Service Bus| J[AzureServiceBusEventPublisher]
@@ -142,7 +142,7 @@ graph TB
     E -->|Kinesis| M[KinesisEventPublisher]
     E -->|Spring Events| N[SpringEventPublisher]
     
-    F --> O[ResilientEventPublisher]
+    F --> O[ResilientEventPublisherImpl]
     G --> O
     H --> O
     I --> O
@@ -211,8 +211,8 @@ public interface ConnectionAwarePublisher {
 
 | Publisher | Implementation Class | Key Features |
 |-----------|---------------------|--------------|
-| **Kafka** | `KafkaEventPublisher` | Topic-based, high throughput, ordered delivery |
-| **RabbitMQ** | `RabbitMqEventPublisher` | Exchange/routing key, flexible routing |
+| **Kafka** | `KafkaEventPublisherImpl` | Topic-based, high throughput, ordered delivery |
+| **RabbitMQ** | `RabbitMqEventPublisherImpl` | Exchange/routing key, flexible routing |
 | **AWS SQS** | `SqsEventPublisher` | Queue-based, managed service, FIFO support |
 | **Google Pub/Sub** | `GooglePubSubEventPublisher` | Topic-based, global distribution |
 | **Azure Service Bus** | `AzureServiceBusEventPublisher` | Topics/queues, enterprise features |
@@ -457,7 +457,7 @@ public class EventPublisherFactory {
         if (publisher instanceof ConnectionAwarePublisher) {
             ((ConnectionAwarePublisher) publisher).setConnectionId(connectionId);
         }
-        return new ResilientEventPublisher(publisher, resilienceProperties);
+        return new ResilientEventPublisherImpl(publisher, resilienceProperties);
     }
 }
 ```
@@ -465,8 +465,8 @@ public class EventPublisherFactory {
 ### Decorator Pattern
 
 ```java
-// ResilientEventPublisher wraps actual publishers with resilience
-public class ResilientEventPublisher implements EventPublisher {
+// ResilientEventPublisherImpl wraps actual publishers with resilience
+public class ResilientEventPublisherImpl implements EventPublisher {
     private final EventPublisher delegate;
     private final CircuitBreaker circuitBreaker;
     

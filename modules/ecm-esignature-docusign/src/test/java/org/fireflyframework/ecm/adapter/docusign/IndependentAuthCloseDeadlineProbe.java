@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 import org.glassfish.jersey.client.ClientRequest;
 import org.glassfish.jersey.client.ClientResponse;
 import org.glassfish.jersey.client.JerseyClient;
@@ -50,7 +50,7 @@ public final class IndependentAuthCloseDeadlineProbe {
         }
     }
 
-    private static void get(ManagedDocuSignApiClient client, DocuSignAdapterProperties properties) throws Exception {
+    private static void get(ManagedDocuSignApiClientImpl client, DocuSignAdapterProperties properties) throws Exception {
         new EnvelopesApi(client).getEnvelope(properties.getAccountId(), "controlled-envelope");
     }
 
@@ -65,11 +65,11 @@ public final class IndependentAuthCloseDeadlineProbe {
         properties.setPrivateKey("-----BEGIN PRIVATE KEY-----\n" + Base64.getMimeEncoder(64, new byte[]{10})
                 .encodeToString(generator.generateKeyPair().getPrivate().getEncoded()) + "\n-----END PRIVATE KEY-----\n");
         try (var transport = new ScopedSdkConnector.Scope(service)) {
-            try (var warm = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties))) { get(warm, properties); }
+            try (var warm = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties))) { get(warm, properties); }
             if (transport.exchanges.size() != 3) throw new AssertionError("Genuine warmup exchanges required");
             properties.setAuthenticationTimeout(Duration.ofMillis(200));
             properties.setAuthenticationWaitTimeout(Duration.ofMillis(20));
-            try (var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties))) {
+            try (var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties))) {
                 long before = System.nanoTime(); delayClose = true;
                 DocuSignAdapterException rejected = null;
                 try { get(client, properties); }

@@ -58,8 +58,8 @@ class VaultSecretsAdapterIntegrationTest {
                 .retrieve().toBodilessEntity().block();
     }
 
-    private VaultSecretsAdapter adapter(String field) {
-        return new VaultSecretsAdapter(webClient, "secret", field);
+    private VaultSecretsAdapterImpl adapter(String field) {
+        return new VaultSecretsAdapterImpl(webClient, "secret", field);
     }
 
     @Test

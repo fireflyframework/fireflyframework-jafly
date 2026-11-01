@@ -56,7 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SpringApplicationEventPublisherTest {
 
     @Autowired
-    private SpringApplicationEventPublisher publisher;
+    private SpringApplicationEventPublisherImpl publisher;
 
     @Autowired
     private TestEventListener testEventListener;

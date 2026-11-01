@@ -237,7 +237,7 @@ Key properties:
 | `firefly.rules.cache.provider` | `CAFFEINE` | Cache backend for definitions/ASTs/constants/validation. Set to `REDIS` for distributed rule evaluation across instances. |
 | `firefly.rules.cache.caffeine.ast-cache.*` | size 1000, write 2h | Sizing/TTL for the parsed-AST cache (the hottest cache). |
 | `firefly.rules.cache.caffeine.rule-definitions-cache.*` | size 200, write 10m | Cache of stored rule definitions loaded from the database. |
-| `firefly.observability.metrics.enabled` | `true` | Gates registration of `RuleEngineMetrics` (Micrometer). |
+| `firefly.observability.metrics.enabled` | `true` | Gates registration of `RuleEngineMetricsImpl` (Micrometer). |
 | `spring.r2dbc.*` / `spring.flyway.*` | see above | PostgreSQL connection, pool sizing, and migration of the rule/constant/audit schema. |
 
 The web module ships `dev`, `testing`, and `prod` profiles that tune pool sizing and cache capacity. Cache TTLs and pool settings have no hard-coded annotations. They are plain Spring config and can be overridden per environment or via environment variables.

@@ -21,7 +21,7 @@ var cache = factory.createCacheManager(
 
 This construction selects exactly one explicit provider. AUTO and NOOP refuse. Smart/L1 and fallback settings are not applied to this instance, even if globally enabled. No operation selects a different provider based on isAvailable/getHealth. Capability comes from the provider's explicit policy-aware construction contract; a cache type or health response cannot prove it. Provider construction failures propagate instead of falling back.
 
-PostgreSQL is the recommended and first supported built-in provider. Caffeine, Redis, Hazelcast and JCache remain explicit unsupported choices for this policy until their provider implementations opt in and are qualified. Their legacy operation behavior is unchanged. Old third-party providers inherit a default refusal for the new policy; they must implement it deliberately. A policy-configured adapter without a policy-configured manager is insufficient: old FireflyCacheManager constructors still select LEGACY. Prefer the policy-aware factory overload.
+PostgreSQL is the recommended and first supported built-in provider. Caffeine, Redis, Hazelcast and JCache remain explicit unsupported choices for this policy until their provider implementations opt in and are qualified. Their legacy operation behavior is unchanged. Old third-party providers inherit a default refusal for the new policy; they must implement it deliberately. A policy-configured adapter without a policy-configured manager is insufficient: old FireflyCacheManagerImpl constructors still select LEGACY. Prefer the policy-aware factory overload.
 
 ## Observe operations honestly
 

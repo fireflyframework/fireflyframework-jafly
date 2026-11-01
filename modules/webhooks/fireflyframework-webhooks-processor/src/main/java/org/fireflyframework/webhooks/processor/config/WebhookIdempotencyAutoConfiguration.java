@@ -19,8 +19,8 @@ package org.fireflyframework.webhooks.processor.config;
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
-import org.fireflyframework.webhooks.processor.idempotency.CacheBasedWebhookIdempotencyService;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
+import org.fireflyframework.webhooks.processor.idempotency.CacheBasedWebhookIdempotencyServiceImpl;
 import org.fireflyframework.webhooks.processor.port.WebhookIdempotencyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +61,7 @@ import java.time.Duration;
  */
 @AutoConfiguration
 @AutoConfigureAfter(CacheAutoConfiguration.class)
-@ConditionalOnClass({FireflyCacheManager.class, CacheManagerFactory.class})
+@ConditionalOnClass({FireflyCacheManagerImpl.class, CacheManagerFactory.class})
 @Slf4j
 public class WebhookIdempotencyAutoConfiguration {
 
@@ -88,7 +88,7 @@ public class WebhookIdempotencyAutoConfiguration {
      */
     @Bean("webhookIdempotencyCacheManager")
     @ConditionalOnMissingBean(name = "webhookIdempotencyCacheManager")
-    public FireflyCacheManager webhookIdempotencyCacheManager(CacheManagerFactory factory) {
+    public FireflyCacheManagerImpl webhookIdempotencyCacheManager(CacheManagerFactory factory) {
         return factory.createCacheManager(
                 "webhook-idempotency",
                 CacheType.AUTO,
@@ -112,7 +112,7 @@ public class WebhookIdempotencyAutoConfiguration {
     @ConditionalOnBean(name = "webhookIdempotencyCacheManager")
     @ConditionalOnMissingBean(WebhookIdempotencyService.class)
     public WebhookIdempotencyService webhookIdempotencyService(
-            @Qualifier("webhookIdempotencyCacheManager") FireflyCacheManager cacheManager) {
-        return new CacheBasedWebhookIdempotencyService(cacheManager);
+            @Qualifier("webhookIdempotencyCacheManager") FireflyCacheManagerImpl cacheManager) {
+        return new CacheBasedWebhookIdempotencyServiceImpl(cacheManager);
     }
 }

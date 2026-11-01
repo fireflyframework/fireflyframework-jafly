@@ -1,6 +1,6 @@
 package org.fireflyframework.web.error.service;
 
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.web.error.config.ErrorHandlingProperties;
 import org.fireflyframework.web.error.models.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class ErrorResponseCacheTest {
 
     @Mock
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     private ErrorHandlingProperties properties;
     private ErrorResponseCache errorResponseCache;

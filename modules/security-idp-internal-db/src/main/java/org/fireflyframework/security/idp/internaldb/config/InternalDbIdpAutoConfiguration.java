@@ -19,7 +19,7 @@ package org.fireflyframework.security.idp.internaldb.config;
 import io.r2dbc.spi.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.security.idp.adapter.IdpAdapter;
-import org.fireflyframework.security.idp.internaldb.adapter.InternalDbIdpAdapter;
+import org.fireflyframework.security.idp.internaldb.adapter.InternalDbIdpAdapterImpl;
 import org.fireflyframework.security.idp.internaldb.repository.*;
 import org.fireflyframework.security.idp.internaldb.service.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -190,7 +190,7 @@ public class InternalDbIdpAutoConfiguration {
                                            JwtTokenService jwtTokenService,
                                            PasswordResetService passwordResetService,
                                            MfaService mfaService) {
-        return new InternalDbIdpAdapter(authenticationService, userManagementService,
+        return new InternalDbIdpAdapterImpl(authenticationService, userManagementService,
                 roleService, sessionRepository, jwtTokenService, passwordResetService, mfaService);
     }
 }

@@ -15,7 +15,7 @@
  */
 package org.fireflyframework.kernel.audit;
 
-import org.fireflyframework.kernel.audit.impl.Sha256AuditEvidenceVerifier;
+import org.fireflyframework.kernel.audit.impl.Sha256AuditEvidenceVerifierImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -36,7 +36,7 @@ class AuditEvidenceVerifierTest {
     private final AuditStream stream = new AuditStream(id(1), "core-payments", "payment", id(2));
     private final AuditActor actor = new AuditActor("https://issuer.example.invalid", "subject", "terminal",
             PLATFORM_TENANT, "employees", id(4));
-    private final AuditEvidenceVerifier verifier = new Sha256AuditEvidenceVerifier();
+    private final AuditEvidenceVerifier verifier = new Sha256AuditEvidenceVerifierImpl();
 
     private static UUID id(long n) { return new UUID(0, n); }
 

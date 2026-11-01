@@ -4,24 +4,24 @@ Complete API reference for the Firefly Common Cache Library.
 
 ## Table of Contents
 
-- [FireflyCacheManager](#fireflycachemanager)
+- [FireflyCacheManagerImpl](#fireflycachemanager)
 - [CacheAdapter](#cacheadapter)
 - [Annotations](#annotations)
 - [Configuration Classes](#configuration-classes)
 - [Health and Statistics](#health-and-statistics)
 - [Exceptions](#exceptions)
 
-## FireflyCacheManager
+## FireflyCacheManagerImpl
 
-Package: `org.fireflyframework.cache.manager.FireflyCacheManager`
+Package: `org.fireflyframework.cache.manager.FireflyCacheManagerImpl`
 
 The main entry point for cache operations. Manages multiple cache instances and provides a unified API.
 
 ### Constructor
 
 ```java
-public FireflyCacheManager()
-public FireflyCacheManager(CacheSelectionStrategy selectionStrategy, String defaultCacheName)
+public FireflyCacheManagerImpl()
+public FireflyCacheManagerImpl(CacheSelectionStrategy selectionStrategy, String defaultCacheName)
 ```
 
 ### Cache Operations (Default Cache)
@@ -198,7 +198,7 @@ Parameters:
 
 Example:
 ```java
-CaffeineCacheAdapter adapter = new CaffeineCacheAdapter("my-cache", config);
+CaffeineCacheAdapterImpl adapter = new CaffeineCacheAdapterImpl("my-cache", config);
 cacheManager.registerCache("my-cache", adapter);
 ```
 
@@ -359,8 +359,8 @@ void close()
 
 ### Implementations
 
-- CaffeineCacheAdapter: In-memory cache using Caffeine
-- RedisCacheAdapter: Distributed cache using Redis
+- CaffeineCacheAdapterImpl: In-memory cache using Caffeine
+- RedisCacheAdapterImpl: Distributed cache using Redis
 
 ## Annotations
 

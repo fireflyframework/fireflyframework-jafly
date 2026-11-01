@@ -1,10 +1,10 @@
 package org.fireflyframework.cqrs.config;
 
 import org.fireflyframework.cqrs.actuator.endpoint.CqrsMetricsEndpoint;
-import org.fireflyframework.cqrs.actuator.health.CqrsHealthIndicator;
+import org.fireflyframework.cqrs.actuator.health.CqrsHealthIndicatorImpl;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.command.CommandHandlerRegistry;
-import org.fireflyframework.cqrs.command.CommandMetricsService;
+import org.fireflyframework.cqrs.command.CommandMetricsServiceImpl;
 import org.fireflyframework.cqrs.query.QueryBus;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
@@ -98,7 +98,7 @@ public class CqrsActuatorAutoConfiguration {
     @ConditionalOnAvailableEndpoint
     public CqrsMetricsEndpoint cqrsMetricsEndpoint(
             @Autowired(required = false) MeterRegistry meterRegistry,
-            @Autowired(required = false) CommandMetricsService commandMetricsService,
+            @Autowired(required = false) CommandMetricsServiceImpl commandMetricsService,
             @Autowired(required = false) CommandHandlerRegistry commandHandlerRegistry,
             @Autowired(required = false) CommandBus commandBus,
             @Autowired(required = false) QueryBus queryBus) {
@@ -140,14 +140,14 @@ public class CqrsActuatorAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnEnabledHealthIndicator("cqrs")
-    public CqrsHealthIndicator cqrsHealthIndicator(
+    public CqrsHealthIndicatorImpl cqrsHealthIndicator(
             @Autowired(required = false) MeterRegistry meterRegistry,
-            @Autowired(required = false) CommandMetricsService commandMetricsService,
+            @Autowired(required = false) CommandMetricsServiceImpl commandMetricsService,
             @Autowired(required = false) CommandHandlerRegistry commandHandlerRegistry,
             @Autowired(required = false) CommandBus commandBus,
             @Autowired(required = false) QueryBus queryBus) {
         
         log.info("Configuring CQRS Health Indicator (auto-configured)");
-        return new CqrsHealthIndicator(meterRegistry, commandMetricsService, commandHandlerRegistry, commandBus, queryBus);
+        return new CqrsHealthIndicatorImpl(meterRegistry, commandMetricsService, commandHandlerRegistry, commandBus, queryBus);
     }
 }

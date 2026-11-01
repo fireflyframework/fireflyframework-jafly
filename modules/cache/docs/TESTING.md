@@ -24,14 +24,14 @@ The Firefly Common Cache Library is designed to be testable. This guide covers:
 
 ## Unit Testing
 
-### Testing with Mocked FireflyCacheManager
+### Testing with Mocked FireflyCacheManagerImpl
 
 ```java
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
     
     @Mock
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Mock
     private UserRepository userRepository;
@@ -108,7 +108,7 @@ class UserServiceTest {
 class CacheOperationsTest {
     
     @Mock
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldPutAndGetValue() {
@@ -164,7 +164,7 @@ class CacheOperationsTest {
 class CacheIntegrationTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldCacheAndRetrieveValues() {
@@ -243,7 +243,7 @@ class CacheIntegrationTest {
 class CaffeineCacheTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldHandleComplexObjects() {
@@ -322,7 +322,7 @@ class RedisCacheIntegrationTest {
     }
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldCacheInRedis() {
@@ -410,12 +410,12 @@ class CustomCacheAdapterTest {
 class CacheSpyTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Test
     void shouldVerifyCacheInteractions() {
         // Given
-        FireflyCacheManager spyManager = spy(cacheManager);
+        FireflyCacheManagerImpl spyManager = spy(cacheManager);
         String key = "spy-test-key";
         String value = "spy-test-value";
         
@@ -467,16 +467,16 @@ public class CacheTestConfig {
     
     @Bean
     @Primary
-    public FireflyCacheManager testCacheManager() {
+    public FireflyCacheManagerImpl testCacheManager() {
         CaffeineCacheConfig config = CaffeineCacheConfig.builder()
             .maximumSize(10L)
             .expireAfterWrite(Duration.ofSeconds(30))
             .recordStats(true)
             .build();
         
-        CaffeineCacheAdapter adapter = new CaffeineCacheAdapter("test-cache", config);
+        CaffeineCacheAdapterImpl adapter = new CaffeineCacheAdapterImpl("test-cache", config);
         
-        FireflyCacheManager manager = new FireflyCacheManager();
+        FireflyCacheManagerImpl manager = new FireflyCacheManagerImpl();
         manager.registerCache("default", adapter);
         
         return manager;
@@ -492,7 +492,7 @@ public class CacheTestConfig {
 class ServiceWithTestCacheTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Autowired
     private UserService userService;
@@ -514,14 +514,14 @@ class ServiceWithTestCacheTest {
 @ExtendWith(MockitoExtension.class)
 class UnitTest {
     @Mock
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 }
 
 // Integration test - use real cache
 @SpringBootTest
 class IntegrationTest {
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 }
 ```
 
@@ -532,7 +532,7 @@ class IntegrationTest {
 class CleanupTest {
     
     @Autowired
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @AfterEach
     void cleanup() {

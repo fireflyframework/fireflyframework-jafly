@@ -81,7 +81,7 @@ class LiveJwtChainAdoptionTest {
     @Test void customChainsMustExplicitlyUseThePublicDecorator() {
         var fixture = new LiveActiveJwtDecoderTest(); var properties = fixture.properties();
         TokenValidationPort legacyOnly = token -> Mono.just(fixture.live(Map.of()));
-        var live = new LiveActiveJwtDecoder(raw -> Mono.just(currentJwt()), legacyOnly, properties);
+        var live = new LiveActiveJwtDecoderImpl(raw -> Mono.just(currentJwt()), legacyOnly, properties);
         var chain = oldChain(new ResourceServerProperties(), live);
         request(chain).get().uri("/private").header(HttpHeaders.AUTHORIZATION, "Bearer a.b.c")
                 .exchange().expectStatus().isUnauthorized();
@@ -97,10 +97,10 @@ class LiveJwtChainAdoptionTest {
                         "firefly.security.resource-server.live-state.allowed-clients[0]=workforce-client",
                         "firefly.security.resource-server.live-state.token-client-claim=azp")
                 .run(context -> { assertThat(context).hasNotFailed().hasSingleBean(TokenValidationPort.class);
-                    assertThat(context).doesNotHaveBean(SpringLiveTokenValidationAdapter.class); });
+                    assertThat(context).doesNotHaveBean(SpringLiveTokenValidationAdapterImpl.class); });
     }
     @Test void missingNativeClientSettingsFailBeforeTransportAllocation() {
-        assertThrows(IllegalArgumentException.class, () -> SpringLiveTokenValidationAdapter.create(new LiveActiveJwtDecoderTest().properties()));
+        assertThrows(IllegalArgumentException.class, () -> SpringLiveTokenValidationAdapterImpl.create(new LiveActiveJwtDecoderTest().properties()));
     }
     static class ProjectPort {
         @Bean ReactiveJwtDecoder customDecoder() { return raw -> Mono.just(currentJwt()); }
@@ -113,7 +113,7 @@ class LiveJwtChainAdoptionTest {
     }
     static org.springframework.core.convert.converter.Converter<Jwt, Mono<org.springframework.security.authentication.AbstractAuthenticationToken>> converter() {
         return new ResourceServerAutoConfiguration().fireflyJwtAuthenticationConverter(new PrincipalFactory(
-                new ConfigurableAuthorityMapper(new AuthorityMappingProperties(List.of(), List.of(), ""))));
+                new ConfigurableAuthorityMapperImpl(new AuthorityMappingProperties(List.of(), List.of(), ""))));
     }
     SecurityWebFilterChain oldChain(ResourceServerProperties p, ReactiveJwtDecoder decoder) {
         return new ResourceServerAutoConfiguration().fireflySecurityWebFilterChain(ServerHttpSecurity.http(), decoder,

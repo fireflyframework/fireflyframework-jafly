@@ -12,7 +12,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import org.fireflyframework.eda.config.FireflyEdaPostgresPublisherAutoConfiguration;
 import org.fireflyframework.eda.properties.EdaProperties;
-import org.fireflyframework.eda.serialization.JsonMessageSerializer;
+import org.fireflyframework.eda.serialization.JsonMessageSerializerImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -90,11 +90,11 @@ class PostgresPublisherTransactionIntegrationTest {
         return properties;
     }
 
-    private static PostgresEventPublisher publisher(ConnectionFactory factory, EdaProperties properties) {
+    private static PostgresEventPublisherImpl publisher(ConnectionFactory factory, EdaProperties properties) {
         var beans = new StaticListableBeanFactory();
         beans.addBean("fireflyEdaPostgresPublisherConnectionFactory", factory);
-        return new PostgresEventPublisher(beans.getBeanProvider(ConnectionFactory.class),
-                new JsonMessageSerializer(mapper), properties, mapper);
+        return new PostgresEventPublisherImpl(beans.getBeanProvider(ConnectionFactory.class),
+                new JsonMessageSerializerImpl(mapper), properties, mapper);
     }
 
     @Test
@@ -103,8 +103,8 @@ class PostgresPublisherTransactionIntegrationTest {
                 .withConfiguration(AutoConfigurations.of(FireflyEdaPostgresPublisherAutoConfiguration.class))
                 .withBean("fireflyEdaPostgresPublisherConnectionFactory", ConnectionFactory.class, () -> pool)
                 .withBean(ObjectMapper.class, () -> mapper)
-                .withBean(JsonMessageSerializer.class, () -> new JsonMessageSerializer(mapper))
-                .run(context -> assertThat(context).hasSingleBean(PostgresEventPublisher.class));
+                .withBean(JsonMessageSerializerImpl.class, () -> new JsonMessageSerializerImpl(mapper))
+                .run(context -> assertThat(context).hasSingleBean(PostgresEventPublisherImpl.class));
     }
 
     @Test
@@ -113,7 +113,7 @@ class PostgresPublisherTransactionIntegrationTest {
         new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(FireflyEdaPostgresPublisherAutoConfiguration.class))
                 .withBean(ObjectMapper.class, () -> mapper)
-                .withBean(JsonMessageSerializer.class, () -> new JsonMessageSerializer(mapper))
+                .withBean(JsonMessageSerializerImpl.class, () -> new JsonMessageSerializerImpl(mapper))
                 .withPropertyValues("firefly.eda.publishers.enabled=true",
                         "firefly.eda.publishers.postgres.default.enabled=true",
                         "firefly.eda.publishers.postgres.default.auto-create-schema=false",
@@ -123,8 +123,8 @@ class PostgresPublisherTransactionIntegrationTest {
                         "firefly.eda.publishers.postgres.default.username=" + postgres.getUsername(),
                         "firefly.eda.publishers.postgres.default.password=" + postgres.getPassword())
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PostgresEventPublisher.class);
-                    context.getBean(PostgresEventPublisher.class).publish("configured payload", destination).block(WAIT);
+                    assertThat(context).hasSingleBean(PostgresEventPublisherImpl.class);
+                    context.getBean(PostgresEventPublisherImpl.class).publish("configured payload", destination).block(WAIT);
                     assertThat(outboxCount(destination)).isEqualTo(1L);
                 });
     }

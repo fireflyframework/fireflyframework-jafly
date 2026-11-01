@@ -172,7 +172,7 @@ public interface ExecutionContext {
      * @return a new builder
      */
     static Builder builder() {
-        return new DefaultExecutionContext.Builder();
+        return new DefaultExecutionContextImpl.BuilderImpl();
     }
 
     /**
@@ -180,7 +180,7 @@ public interface ExecutionContext {
      * @return an empty context
      */
     static ExecutionContext empty() {
-        return new DefaultExecutionContext.Builder().build();
+        return new DefaultExecutionContextImpl.BuilderImpl().build();
     }
 
     /**

@@ -23,7 +23,7 @@ import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.StepStatus;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.annotation.WorkflowQuery;
 import org.fireflyframework.orchestration.workflow.query.WorkflowQueryService;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowDefinition;
@@ -45,13 +45,13 @@ import static org.assertj.core.api.Assertions.*;
  */
 class WorkflowQueryAnnotationTest {
 
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
     private WorkflowRegistry registry;
     private WorkflowQueryService queryService;
 
     @BeforeEach
     void setUp() {
-        persistence = new InMemoryPersistenceProvider();
+        persistence = new InMemoryPersistenceProviderImpl();
         registry = new WorkflowRegistry();
     }
 

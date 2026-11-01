@@ -17,7 +17,7 @@
 package org.fireflyframework.common.application.resolver;
 
 import org.fireflyframework.common.application.context.AppConfig;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,7 +44,7 @@ public abstract class AbstractConfigResolver implements ConfigResolver {
     
     @Autowired(required = false)
     @Qualifier("configCacheManager")
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     
     @Override
     public Mono<AppConfig> resolveConfig(UUID tenantId) {

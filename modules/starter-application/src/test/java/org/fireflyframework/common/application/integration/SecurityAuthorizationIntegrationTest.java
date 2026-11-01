@@ -18,7 +18,7 @@ package org.fireflyframework.common.application.integration;
 
 import org.fireflyframework.common.application.context.AppContext;
 import org.fireflyframework.common.application.context.AppSecurityContext;
-import org.fireflyframework.common.application.security.DefaultSecurityAuthorizationService;
+import org.fireflyframework.common.application.security.DefaultSecurityAuthorizationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,14 +44,14 @@ import java.util.UUID;
 @DisplayName("Security Authorization Integration Tests")
 class SecurityAuthorizationIntegrationTest {
 
-    private DefaultSecurityAuthorizationService authorizationService;
+    private DefaultSecurityAuthorizationServiceImpl authorizationService;
 
     private String testSubject;
     private UUID testTenantId;
 
     @BeforeEach
     void setUp() {
-        authorizationService = new DefaultSecurityAuthorizationService();
+        authorizationService = new DefaultSecurityAuthorizationServiceImpl();
 
         testSubject = "user-" + UUID.randomUUID();
         testTenantId = UUID.randomUUID();

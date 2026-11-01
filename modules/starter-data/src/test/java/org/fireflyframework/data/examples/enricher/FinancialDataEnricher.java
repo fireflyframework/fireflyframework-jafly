@@ -21,7 +21,7 @@ import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.examples.dto.CompanyProfileDTO;
 import org.fireflyframework.data.examples.dto.FinancialDataResponse;
 import org.fireflyframework.data.model.EnrichmentRequest;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import org.fireflyframework.data.service.DataEnricher;
@@ -46,7 +46,7 @@ public class FinancialDataEnricher
     
     public FinancialDataEnricher(
             JobTracingService tracingService,
-            JobMetricsService metricsService,
+            JobMetricsServiceImpl metricsService,
             ResiliencyDecoratorService resiliencyService,
             EnrichmentEventPublisher eventPublisher) {
         super(tracingService, metricsService, resiliencyService, eventPublisher, CompanyProfileDTO.class);

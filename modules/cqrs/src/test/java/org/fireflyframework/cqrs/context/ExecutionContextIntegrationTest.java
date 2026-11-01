@@ -3,8 +3,8 @@ package org.fireflyframework.cqrs.context;
 import org.fireflyframework.cqrs.config.TestAuthorizationProperties;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.command.CommandHandler;
-import org.fireflyframework.cqrs.command.DefaultCommandBus;
-import org.fireflyframework.cqrs.query.DefaultQueryBus;
+import org.fireflyframework.cqrs.command.DefaultCommandBusImpl;
+import org.fireflyframework.cqrs.query.DefaultQueryBusImpl;
 import org.fireflyframework.cqrs.query.QueryBus;
 import org.fireflyframework.cqrs.query.QueryHandler;
 import org.fireflyframework.cqrs.tracing.CorrelationContext;
@@ -40,10 +40,10 @@ class ExecutionContextIntegrationTest {
         SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
 
         // Set up command bus (simplified for testing)
-        commandBus = mock(DefaultCommandBus.class);
+        commandBus = mock(DefaultCommandBusImpl.class);
 
         // Set up query bus (without cache adapter for this test)
-        queryBus = new DefaultQueryBus(applicationContext, correlationContext, validationProcessor,
+        queryBus = new DefaultQueryBusImpl(applicationContext, correlationContext, validationProcessor,
                                       new org.fireflyframework.cqrs.authorization.AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty()),
                                       null, meterRegistry);
         
@@ -86,7 +86,7 @@ class ExecutionContextIntegrationTest {
                 }
             };
 
-        ((DefaultQueryBus) queryBus).registerHandler(handler);
+        ((DefaultQueryBusImpl) queryBus).registerHandler(handler);
     }
 
     @Test

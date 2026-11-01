@@ -705,7 +705,7 @@ package com.example.jobs;
 import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -720,7 +720,7 @@ import reactor.core.publisher.Mono;
 public class CustomerImportJobService extends AbstractResilientDataJobService {
 
   public CustomerImportJobService(JobTracingService tracing,
-                                  JobMetricsService metrics,
+                                  JobMetricsServiceImpl metrics,
                                   ResiliencyDecoratorService resiliency,
                                   JobEventPublisher events,
                                   JobAuditService audit,
@@ -930,7 +930,7 @@ package com.example.jobs;
 import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -945,7 +945,7 @@ import reactor.core.publisher.Mono;
 public class CustomerValidationJobService extends AbstractResilientSyncDataJobService {
 
   public CustomerValidationJobService(JobTracingService tracing,
-                                      JobMetricsService metrics,
+                                      JobMetricsServiceImpl metrics,
                                       ResiliencyDecoratorService resiliency,
                                       JobEventPublisher events,
                                       JobAuditService audit,
@@ -1445,7 +1445,7 @@ firefly:
 
 ### Health Checks
 
-The library automatically provides health checks for orchestrators via `JobOrchestratorHealthIndicator`.
+The library automatically provides health checks for orchestrators via `JobOrchestratorHealthIndicatorImpl`.
 
 Endpoint: `GET /actuator/health/jobOrchestrator`
 
@@ -1894,7 +1894,7 @@ class CustomerImportJobServiceTest {
     private JobTracingService tracing;
     
     @Mock
-    private JobMetricsService metrics;
+    private JobMetricsServiceImpl metrics;
     
     @Mock
     private ResiliencyDecoratorService resiliency;
@@ -2258,7 +2258,7 @@ A: The cross-cutting concerns are applied by `AbstractResilientDataJobService`. 
 
 Q: How do I add custom metrics?
 
-A: Inject `JobMetricsService` and record custom metrics in your `doXxx` methods:
+A: Inject `JobMetricsServiceImpl` and record custom metrics in your `doXxx` methods:
 ```java
 @Override
 protected Mono<JobStageResponse> doStartJob(JobStageRequest request) {

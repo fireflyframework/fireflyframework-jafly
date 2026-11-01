@@ -102,7 +102,7 @@ public final class RestrictedHtmlTemplateRenderer {
                     || source.getBytes(StandardCharsets.UTF_8).length > limits.templateBytes()) {
                 return failure("UNSUPPORTED_TEMPLATE");
             }
-            var budget = new Budget();
+            var budget = new BudgetImpl();
             Object copied = copy(model, 0, budget);
             if (!(copied instanceof Map<?, ?>)) return failure("UNSUPPORTED_MODEL");
             var template = new Template("restricted-published-template", new StringReader(source), configuration);
@@ -124,7 +124,7 @@ public final class RestrictedHtmlTemplateRenderer {
         }
     }
 
-    private Object copy(Object value, int depth, Budget budget) {
+    private Object copy(Object value, int depth, BudgetImpl budget) {
         if (++budget.nodes > limits.modelNodes() || depth > limits.depth()) throw new UnsupportedModel();
         budget.deadline();
         if (value == null || value instanceof Boolean) return value;
@@ -219,7 +219,7 @@ public final class RestrictedHtmlTemplateRenderer {
     private static final class UnsupportedModel extends RuntimeException { }
     private static final class InvalidHtml extends RuntimeException { }
 
-    private final class Budget implements TemplateProcessingTracer {
+    private final class BudgetImpl implements TemplateProcessingTracer {
         private final long end = System.nanoTime() + limits.renderMillis() * 1_000_000;
         private int nodes, steps, depth;
         void deadline() { if (System.nanoTime() > end) throw new RenderLimit(); }

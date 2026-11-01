@@ -28,7 +28,7 @@ class LiveIntrospectionPrivacyTest {
         var capture = new ListAppender<ILoggingEvent>(); capture.start();
         var previous = logger.getLevel(); logger.setLevel(Level.TRACE); logger.addAppender(capture);
         try {
-            var codec = SpringLiveTokenValidationAdapter.nativeJsonDecoder();
+            var codec = SpringLiveTokenValidationAdapterImpl.nativeJsonDecoder();
             var type = ResolvableType.forClass(Map.class);
             var factory = DefaultDataBufferFactory.sharedInstance;
             byte[] bytes = "{\"private-key\":\"PRIVATE_PROVIDER_BODY\"}".getBytes(StandardCharsets.UTF_8);
@@ -64,12 +64,12 @@ class LiveIntrospectionPrivacyTest {
                         return (org.springframework.http.client.reactive.ClientHttpResponse)response;
                     });
                 };
-                WebClient.Builder builder = SpringLiveTokenValidationAdapter.ownedWebClientBuilder(connector, "PRIVATE_CLIENT", "PRIVATE_SECRET");
+                WebClient.Builder builder = SpringLiveTokenValidationAdapterImpl.ownedWebClientBuilder(connector, "PRIVATE_CLIENT", "PRIVATE_SECRET");
                 builder.filter((request, next) -> next.exchange(request).doOnNext(response -> originalStrategies.set(response.strategies())));
                 builder.filters(filters -> filters.addFirst((request, next) -> next.exchange(request)
                         .doOnNext(response -> assertSame(originalStrategies.get(), response.strategies()))));
                 WebClient webClient = builder.build();
-                var adapter = new SpringLiveTokenValidationAdapter(new SpringReactiveOpaqueTokenIntrospector("https://issuer.invalid/introspect", webClient),
+                var adapter = new SpringLiveTokenValidationAdapterImpl(new SpringReactiveOpaqueTokenIntrospector("https://issuer.invalid/introspect", webClient),
                         new LiveActiveJwtDecoderTest().properties(), Clock.fixed(LiveActiveJwtDecoderTest.NOW, ZoneOffset.UTC));
                 try {
                     var principal = adapter.validateLive(BearerToken.of("PRIVATE_RAW_TOKEN.x.y")).block();

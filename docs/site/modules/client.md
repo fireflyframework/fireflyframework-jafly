@@ -311,7 +311,7 @@ firefly:
 | `firefly.service-client.circuit-breaker.failure-rate-threshold` | `50.0` | Percentage of failures within the sliding window that opens the breaker. |
 | `firefly.service-client.retry.max-attempts` | `3` | Maximum retry attempts (with exponential backoff + optional jitter). |
 | `firefly.service-client.grpc.use-plaintext-by-default` | `true` | Whether new gRPC channels default to plaintext (forced to TLS in `production`). |
-| `firefly.service-client.metrics.enabled` | `true` | Enables `ServiceClientMetrics` Micrometer integration (auto-disabled in `testing`). |
+| `firefly.service-client.metrics.enabled` | `true` | Enables `ServiceClientMetricsImpl` Micrometer integration (auto-disabled in `testing`). |
 
 > Note: environment-aware defaults only override values you have not set explicitly, so any property you configure always wins.
 

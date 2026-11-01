@@ -49,7 +49,7 @@ class SagaEngineTest {
     void setUp() {
         events = new OrchestrationEvents() {};
         var stepInvoker = new StepInvoker(new ArgumentResolver());
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var orchestrator = new SagaExecutionOrchestrator(stepInvoker, events, noOpPublisher);
         var compensator = new SagaCompensator(events, CompensationPolicy.STRICT_SEQUENTIAL, stepInvoker);
         engine = new SagaEngine(null, events, orchestrator, null, null, compensator, noOpPublisher);

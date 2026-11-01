@@ -27,7 +27,7 @@ import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceP
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandler;
 import org.fireflyframework.orchestration.saga.compensation.CompensationErrorHandlerFactory;
-import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandler;
+import org.fireflyframework.orchestration.saga.compensation.DefaultCompensationErrorHandlerImpl;
 import org.fireflyframework.orchestration.saga.compensation.SagaCompensator;
 import org.fireflyframework.orchestration.saga.composition.CompositionCompensationManager;
 import org.fireflyframework.orchestration.saga.composition.CompositionDataFlowManager;
@@ -92,7 +92,7 @@ public class SagaAutoConfiguration {
                 .orElseGet(() -> {
                     log.warn("[orchestration] Unknown compensation error handler '{}', falling back to default",
                             handlerName);
-                    return new DefaultCompensationErrorHandler();
+                    return new DefaultCompensationErrorHandlerImpl();
                 });
     }
 

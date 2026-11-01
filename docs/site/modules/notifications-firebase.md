@@ -79,7 +79,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AlertService {
 
-    private final PushProvider pushProvider; // FcmPushProvider injected by auto-config
+    private final PushProvider pushProvider; // FcmPushProviderImpl injected by auto-config
 
 
 
@@ -117,7 +117,7 @@ Property-based wiring conditions found in this module:
 | --- | --- |
 | [`FcmProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/properties/v1/FcmProperties.java) | Carries `credentialsPath`, `projectId` data; field constraints and defaults are declared in the linked source. |
 | [`FcmAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/config/v1/FcmAutoConfiguration.java) | Defines `firebaseApp`, `firebaseMessaging`, `fcmPushProvider` operations. |
-| [`FcmPushProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/core/v1/FcmPushProvider.java) | Defines `FcmPushProvider`, `sendPush` operations. |
+| [`FcmPushProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/notifications-firebase/src/main/java/org/fireflyframework/notifications/providers/firebase/core/v1/FcmPushProviderImpl.java) | Defines `FcmPushProviderImpl`, `sendPush` operations. |
 
 ## Related components
 
@@ -184,7 +184,7 @@ When both conditions hold it contributes three beans (each `@ConditionalOnMissin
 
 1. `FirebaseApp`. Built from `credentials-path` (or Application Default Credentials) and `project-id`; an already-initialized default app is reused if present.
 2. `FirebaseMessaging`. Obtained from the `FirebaseApp`.
-3. `PushProvider`. An `FcmPushProvider` wrapping the `FirebaseMessaging` client, consumed by the notifications core.
+3. `PushProvider`. An `FcmPushProviderImpl` wrapping the `FirebaseMessaging` client, consumed by the notifications core.
 
 ## Continue the application
 

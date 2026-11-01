@@ -4,7 +4,7 @@
 
 Use a common cache API with a local Caffeine default and pluggable distributed providers.
 
-Depend on the core abstraction, inject FireflyCacheManager or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
+Depend on the core abstraction, inject FireflyCacheManagerImpl or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
 
 | Maven artifact | Packaging | Source project |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Part of [Domain and data](index.md#domain-and-data).
 
 ```mermaid
 flowchart LR
-    App[Application] --> Manager[FireflyCacheManager]
+    App[Application] --> Manager[FireflyCacheManagerImpl]
     Manager --> Selection[Provider selection]
     Selection --> SPI[CacheProviderFactory]
     SPI --> Local[Caffeine]
@@ -48,20 +48,20 @@ The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided d
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (Caffeine by default). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
+With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManagerImpl` (Caffeine by default). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
 
 ```java
 import lombok.RequiredArgsConstructor;
 import java.time.Duration;
 import java.util.Optional;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationStatusCache {
-    private final FireflyCacheManager cache;
+    private final FireflyCacheManagerImpl cache;
 
 
 
@@ -84,9 +84,9 @@ Need a dedicated, namespaced cache (separate key prefix, TTL and provider)? Inje
 ```java
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 
-FireflyCacheManager idempotencyCache = factory.createCacheManager(
+FireflyCacheManagerImpl idempotencyCache = factory.createCacheManager(
         "http-idempotency",
         CacheType.AUTO,                // Redis if present, else Caffeine
         "firefly:http:idempotency",
@@ -120,7 +120,7 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`FireflyCacheManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/manager/FireflyCacheManager.java) | Unified cache manager that provides a single cache interface. |
+| [`FireflyCacheManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/manager/FireflyCacheManagerImpl.java) | Unified cache manager that provides a single cache interface. |
 | [`CacheAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/core/CacheAdapter.java) | Unified interface for cache operations across different cache providers. |
 | [`CacheProviderFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/spi/CacheProviderFactory.java) | Service Provider Interface for creating cache adapters. |
 | [`CacheProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/properties/CacheProperties.java) | Configuration properties for the Cache library. |
@@ -205,7 +205,7 @@ firefly:
     default-cache-type: REDIS   # or AUTO to auto-select the best available provider
 ```
 
-When a distributed provider is active and `firefly.cache.smart.enabled` is `true`, the factory wraps it with `SmartCacheAdapter` to provide an L1 (Caffeine) + L2 (distributed) write-through cache.
+When a distributed provider is active and `firefly.cache.smart.enabled` is `true`, the factory wraps it with `SmartCacheAdapterImpl` to provide an L1 (Caffeine) + L2 (distributed) write-through cache.
 
 ### Configuration
 

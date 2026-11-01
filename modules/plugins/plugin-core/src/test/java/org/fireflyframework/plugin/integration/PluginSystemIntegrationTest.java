@@ -5,7 +5,7 @@ import org.fireflyframework.plugin.annotation.ExtensionPoint;
 import org.fireflyframework.plugin.api.Plugin;
 import org.fireflyframework.plugin.api.PluginException;
 import org.fireflyframework.plugin.api.PluginManager;
-import org.fireflyframework.plugin.core.DefaultPluginManager;
+import org.fireflyframework.plugin.core.DefaultPluginManagerImpl;
 import org.fireflyframework.plugin.model.PluginDescriptor;
 import org.fireflyframework.plugin.model.PluginMetadata;
 import org.fireflyframework.plugin.model.PluginState;
@@ -185,7 +185,7 @@ class PluginSystemIntegrationTest {
     
     @BeforeEach
     void setUp() throws PluginException {
-        pluginManager = new DefaultPluginManager();
+        pluginManager = new DefaultPluginManagerImpl();
         pluginManager.initialize();
     }
     

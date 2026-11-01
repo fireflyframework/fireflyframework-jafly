@@ -31,11 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class InterestRateValidatorTest {
 
-    private InterestRateValidator validator;
+    private InterestRateValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new InterestRateValidator();
+        validator = new InterestRateValidatorImpl();
         // Initialize with default values (min=0, max=100, decimalPlaces=4, allowZero=true)
         validator.initialize(new org.fireflyframework.annotations.ValidInterestRate() {
             @Override
@@ -93,7 +93,7 @@ class InterestRateValidatorTest {
         assertThat(validator.isValid(5.25001, null)).isFalse(); // Too many decimal places
         
         // Create validator with 2 decimal places
-        InterestRateValidator twoDecimalValidator = new InterestRateValidator();
+        InterestRateValidatorImpl twoDecimalValidator = new InterestRateValidatorImpl();
         twoDecimalValidator.initialize(new org.fireflyframework.annotations.ValidInterestRate() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -125,7 +125,7 @@ class InterestRateValidatorTest {
     @Test
     void shouldValidateMinMaxConstraints() {
         // Create validator with min=1, max=20
-        InterestRateValidator minMaxValidator = new InterestRateValidator();
+        InterestRateValidatorImpl minMaxValidator = new InterestRateValidatorImpl();
         minMaxValidator.initialize(new org.fireflyframework.annotations.ValidInterestRate() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -162,7 +162,7 @@ class InterestRateValidatorTest {
         assertThat(validator.isValid(0.0, null)).isTrue();
         
         // Create validator that doesn't allow zero
-        InterestRateValidator noZeroValidator = new InterestRateValidator();
+        InterestRateValidatorImpl noZeroValidator = new InterestRateValidatorImpl();
         noZeroValidator.initialize(new org.fireflyframework.annotations.ValidInterestRate() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -207,7 +207,7 @@ class InterestRateValidatorTest {
         assertThat(roundedRate).isEqualTo(new BigDecimal("5.2568"));
         
         // Round to 2 decimal places
-        InterestRateValidator twoDecimalValidator = new InterestRateValidator();
+        InterestRateValidatorImpl twoDecimalValidator = new InterestRateValidatorImpl();
         twoDecimalValidator.initialize(new org.fireflyframework.annotations.ValidInterestRate() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }

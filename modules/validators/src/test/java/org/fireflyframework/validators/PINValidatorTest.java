@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PINValidatorTest {
 
-    private PINValidator validator;
+    private PINValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new PINValidator();
+        validator = new PINValidatorImpl();
         // Initialize with default values (minLength=4, maxLength=6, numericOnly=true, rejectCommonPINs=true)
         validator.initialize(new org.fireflyframework.annotations.ValidPIN() {
             @Override
@@ -79,7 +79,7 @@ class PINValidatorTest {
     void shouldReturnTrueForValidPINs(String pin) {
         // Note: These PINs are valid in terms of format but might be rejected as common PINs
         // We'll test common PIN rejection separately
-        PINValidator noRejectCommonValidator = new PINValidator();
+        PINValidatorImpl noRejectCommonValidator = new PINValidatorImpl();
         noRejectCommonValidator.initialize(new org.fireflyframework.annotations.ValidPIN() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -129,7 +129,7 @@ class PINValidatorTest {
         assertThat(validator.isValid("1234567", null)).isFalse(); // Too long
         
         // Create validator with custom length constraints (6-8 digits)
-        PINValidator customLengthValidator = new PINValidator();
+        PINValidatorImpl customLengthValidator = new PINValidatorImpl();
         customLengthValidator.initialize(new org.fireflyframework.annotations.ValidPIN() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -168,7 +168,7 @@ class PINValidatorTest {
         assertThat(validator.isValid("12AB", null)).isFalse(); // Contains letters
         
         // Create validator that allows non-numeric characters
-        PINValidator alphanumericValidator = new PINValidator();
+        PINValidatorImpl alphanumericValidator = new PINValidatorImpl();
         alphanumericValidator.initialize(new org.fireflyframework.annotations.ValidPIN() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -206,7 +206,7 @@ class PINValidatorTest {
         assertThat(validator.isValid("1212", null)).isFalse(); // Repeated pattern
         
         // Create validator that doesn't reject common PINs
-        PINValidator noRejectCommonValidator = new PINValidator();
+        PINValidatorImpl noRejectCommonValidator = new PINValidatorImpl();
         noRejectCommonValidator.initialize(new org.fireflyframework.annotations.ValidPIN() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }

@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ConfigurableAuthorityMapperTest {
 
-    private final ConfigurableAuthorityMapper mapper =
-            new ConfigurableAuthorityMapper(AuthorityMappingProperties.defaults());
+    private final ConfigurableAuthorityMapperImpl mapper =
+            new ConfigurableAuthorityMapperImpl(AuthorityMappingProperties.defaults());
 
     @Test
     void mapsTopLevelRolesArray() {
@@ -54,7 +54,7 @@ class ConfigurableAuthorityMapperTest {
 
     @Test
     void appliesAuthorityPrefixWithoutDoublePrefixing() {
-        ConfigurableAuthorityMapper prefixed = new ConfigurableAuthorityMapper(
+        ConfigurableAuthorityMapperImpl prefixed = new ConfigurableAuthorityMapperImpl(
                 new AuthorityMappingProperties(List.of("roles"), List.of("scp"), "ROLE_"));
         Map<String, Object> claims = Map.of("roles", List.of("admin", "ROLE_existing"));
         assertThat(prefixed.mapAuthorities(claims)).containsExactlyInAnyOrder("ROLE_admin", "ROLE_existing");

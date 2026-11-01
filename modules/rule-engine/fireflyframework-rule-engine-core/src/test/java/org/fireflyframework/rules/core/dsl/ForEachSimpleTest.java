@@ -1,7 +1,7 @@
 package org.fireflyframework.rules.core.dsl;
 
 import org.fireflyframework.rules.core.dsl.action.Action;
-import org.fireflyframework.rules.core.dsl.action.ForEachAction;
+import org.fireflyframework.rules.core.dsl.action.ForEachActionImpl;
 import org.fireflyframework.rules.core.dsl.evaluation.ASTRulesEvaluationEngine;
 import org.fireflyframework.rules.core.dsl.evaluation.ASTRulesEvaluationResult;
 import org.fireflyframework.rules.core.dsl.parser.ASTRulesDSLParser;

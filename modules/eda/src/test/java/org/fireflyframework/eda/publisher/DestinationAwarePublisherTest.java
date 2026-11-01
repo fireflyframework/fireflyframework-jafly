@@ -40,7 +40,7 @@ class DestinationAwarePublisherTest {
     @Mock(lenient = true)
     private EventPublisher delegate;
 
-    private DestinationAwarePublisher publisher;
+    private DestinationAwarePublisherImpl publisher;
     private final String customDefaultDestination = "custom-destination";
 
     @BeforeEach
@@ -49,7 +49,7 @@ class DestinationAwarePublisherTest {
         when(delegate.isAvailable()).thenReturn(true);
         when(delegate.getDefaultDestination()).thenReturn("delegate-default");
         
-        publisher = new DestinationAwarePublisher(delegate, customDefaultDestination);
+        publisher = new DestinationAwarePublisherImpl(delegate, customDefaultDestination);
     }
 
     @Test
@@ -118,7 +118,7 @@ class DestinationAwarePublisherTest {
     @DisplayName("Should fall back to delegate default when custom default is null")
     void shouldFallBackToDelegateDefaultWhenCustomDefaultIsNull() {
         // Given
-        DestinationAwarePublisher publisherWithNullCustom = new DestinationAwarePublisher(delegate, null);
+        DestinationAwarePublisherImpl publisherWithNullCustom = new DestinationAwarePublisherImpl(delegate, null);
         Object event = new Object();
         String delegateDefault = "delegate-default";
         when(delegate.publish(any(), eq(delegateDefault), any())).thenReturn(Mono.empty());
@@ -135,7 +135,7 @@ class DestinationAwarePublisherTest {
     @DisplayName("Should fall back to delegate default when custom default is empty")
     void shouldFallBackToDelegateDefaultWhenCustomDefaultIsEmpty() {
         // Given
-        DestinationAwarePublisher publisherWithEmptyCustom = new DestinationAwarePublisher(delegate, "");
+        DestinationAwarePublisherImpl publisherWithEmptyCustom = new DestinationAwarePublisherImpl(delegate, "");
         Object event = new Object();
         String delegateDefault = "delegate-default";
         when(delegate.publish(any(), eq(delegateDefault), any())).thenReturn(Mono.empty());
@@ -187,7 +187,7 @@ class DestinationAwarePublisherTest {
     @DisplayName("Should return delegate default when custom default is null")
     void shouldReturnDelegateDefaultWhenCustomDefaultIsNull() {
         // Given
-        DestinationAwarePublisher publisherWithNullCustom = new DestinationAwarePublisher(delegate, null);
+        DestinationAwarePublisherImpl publisherWithNullCustom = new DestinationAwarePublisherImpl(delegate, null);
 
         // When
         String defaultDestination = publisherWithNullCustom.getDefaultDestination();
@@ -318,7 +318,7 @@ class DestinationAwarePublisherTest {
         verify(delegate).publish(event, customDefaultDestination, null);
 
         // 3. Delegate default (when custom is null)
-        DestinationAwarePublisher publisherWithNullCustom = new DestinationAwarePublisher(delegate, null);
+        DestinationAwarePublisherImpl publisherWithNullCustom = new DestinationAwarePublisherImpl(delegate, null);
         reset(delegate);
         when(delegate.getDefaultDestination()).thenReturn("delegate-default");
         when(delegate.publish(any(), eq("delegate-default"), any())).thenReturn(Mono.empty());

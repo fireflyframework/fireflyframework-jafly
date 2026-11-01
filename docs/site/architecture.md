@@ -43,7 +43,7 @@ The query-cache invalidation bridge requires the relevant cache beans and matchi
 
 A command can still return successfully when event publication fails. The bus and bridge do not turn independent work into a distributed transaction or exactly-once processing. Define the application's transaction, retry, and idempotency policy from the chosen storage and transport behavior.
 
-Sources: [command bus pipeline](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/command/DefaultCommandBus.java), [bridge conditions](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/config/CqrsEdaAutoConfiguration.java), [event publisher factory](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/EventPublisherFactory.java).
+Sources: [command bus pipeline](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/command/DefaultCommandBusImpl.java), [bridge conditions](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cqrs/src/main/java/org/fireflyframework/cqrs/config/CqrsEdaAutoConfiguration.java), [event publisher factory](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda/src/main/java/org/fireflyframework/eda/publisher/EventPublisherFactory.java).
 
 ## Find a capability
 

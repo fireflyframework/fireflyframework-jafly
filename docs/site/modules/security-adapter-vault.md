@@ -4,7 +4,7 @@
 
 Read a configured field from HashiCorp Vault KV v2 through SecretsPort.
 
-Construct VaultSecretsAdapter with a Vault WebClient carrying X-Vault-Token, the KV mount, and value field name. GetSecret reads /v1/{mount}/data/{name}; a missing field or transport failure produces an error signal. Supply tokens through the runtime environment, not committed YAML.
+Construct VaultSecretsAdapterImpl with a Vault WebClient carrying X-Vault-Token, the KV mount, and value field name. GetSecret reads /v1/{mount}/data/{name}; a missing field or transport failure produces an error signal. Supply tokens through the runtime environment, not committed YAML.
 
 | Maven artifact | Packaging | Source project |
 | --- | --- | --- |
@@ -41,11 +41,11 @@ SecretsPort secretsPort() {
             .baseUrl(System.getenv("VAULT_ADDR"))
             .defaultHeader("X-Vault-Token", System.getenv("VAULT_TOKEN"))
             .build();
-    return new VaultSecretsAdapter(client, "secret", "value");
+    return new VaultSecretsAdapterImpl(client, "secret", "value");
 }
 ```
 
-Inject `SecretsPort` and call `getSecret("payments-api")` as part of a reactive flow. The returned `Mono<String>` contains the configured field; missing secrets/fields and HTTP failures propagate as `IllegalStateException`. Imports: `org.fireflyframework.security.spi.SecretsPort`, `org.fireflyframework.security.adapter.vault.VaultSecretsAdapter`, Spring's `Bean`, and WebFlux `WebClient`. This module provides explicit adapter construction, not a `firefly.vault.*` auto-configuration namespace.
+Inject `SecretsPort` and call `getSecret("payments-api")` as part of a reactive flow. The returned `Mono<String>` contains the configured field; missing secrets/fields and HTTP failures propagate as `IllegalStateException`. Imports: `org.fireflyframework.security.spi.SecretsPort`, `org.fireflyframework.security.adapter.vault.VaultSecretsAdapterImpl`, Spring's `Bean`, and WebFlux `WebClient`. This module provides explicit adapter construction, not a `firefly.vault.*` auto-configuration namespace.
 
 ## Configuration and wiring
 
@@ -55,7 +55,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`VaultSecretsAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-vault/src/main/java/org/fireflyframework/security/adapter/vault/VaultSecretsAdapter.java) | Reads one configured field from Vault KV v2 through SecretsPort; missing fields and HTTP failures propagate as errors. |
+| [`VaultSecretsAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-vault/src/main/java/org/fireflyframework/security/adapter/vault/VaultSecretsAdapterImpl.java) | Reads one configured field from Vault KV v2 through SecretsPort; missing fields and HTTP failures propagate as errors. |
 
 ## Related components
 

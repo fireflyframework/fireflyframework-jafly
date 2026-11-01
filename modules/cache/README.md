@@ -4,7 +4,7 @@
 
 Use a common cache API with a PostgreSQL default and explicit local or distributed providers.
 
-Depend on the core abstraction, inject FireflyCacheManager or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
+Depend on the core abstraction, inject FireflyCacheManagerImpl or use CacheAdapter, and choose a provider through firefly.cache. Provider discovery and selection live in the core; add only the external provider library you need.
 
 For an explicitly selected primary without L1/fallback and with operation failures propagated, see [Primary-only operations](docs/PRIMARY_ONLY_OPERATIONS.md). This opt-in source addition preserves legacy defaults and requires a matching qualified framework release.
 
@@ -32,20 +32,20 @@ The injection examples use Lombok `@RequiredArgsConstructor`. Add its provided d
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManager` (PostgreSQL by default, with the PostgreSQL adapter and configuration). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
+With the dependency on the classpath, `CacheAutoConfiguration` provides a primary `FireflyCacheManagerImpl` (PostgreSQL by default, with the PostgreSQL adapter and configuration). This application-owned API class caches onboarding status values; it does not connect itself to the tutorial repository. Compose each returned `Mono`, and evict the cached value when the authoritative status changes:
 
 ```java
 import lombok.RequiredArgsConstructor;
 import java.time.Duration;
 import java.util.Optional;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationStatusCache {
-    private final FireflyCacheManager cache;
+    private final FireflyCacheManagerImpl cache;
 
 
 
@@ -68,9 +68,9 @@ Need a dedicated, namespaced cache (separate key prefix, TTL and provider)? Inje
 ```java
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 
-FireflyCacheManager idempotencyCache = factory.createCacheManager(
+FireflyCacheManagerImpl idempotencyCache = factory.createCacheManager(
         "http-idempotency",
         CacheType.AUTO,                // Configured PostgreSQL first, then available providers
         "firefly:http:idempotency",
@@ -103,7 +103,7 @@ The built-in application-config and HTTP-idempotency cache factories also honor 
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`FireflyCacheManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/manager/FireflyCacheManager.java) | Unified cache manager that provides a single cache interface. |
+| [`FireflyCacheManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/manager/FireflyCacheManagerImpl.java) | Unified cache manager that provides a single cache interface. |
 | [`CacheAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/core/CacheAdapter.java) | Unified interface for cache operations across different cache providers. |
 | [`CacheProviderFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/spi/CacheProviderFactory.java) | Service Provider Interface for creating cache adapters. |
 | [`CacheProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache/src/main/java/org/fireflyframework/cache/properties/CacheProperties.java) | Configuration properties for the Cache library. |

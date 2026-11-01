@@ -96,9 +96,9 @@ public class StripePlugin implements org.fireflyframework.plugin.api.Plugin {
 ```java
 import org.fireflyframework.plugin.api.ExtensionRegistry;
 import org.fireflyframework.plugin.api.PluginManager;
-import org.fireflyframework.plugin.core.DefaultPluginManager;
+import org.fireflyframework.plugin.core.DefaultPluginManagerImpl;
 
-PluginManager manager = new DefaultPluginManager();
+PluginManager manager = new DefaultPluginManagerImpl();
 manager.initialize();
 
 ExtensionRegistry registry = manager.getExtensionRegistry();

@@ -19,9 +19,9 @@ package org.fireflyframework.data.integration;
 import org.fireflyframework.data.config.DataConfiguration;
 import org.fireflyframework.data.config.JobOrchestrationProperties;
 import org.fireflyframework.data.event.JobEventPublisher;
-import org.fireflyframework.data.health.JobOrchestratorHealthIndicator;
+import org.fireflyframework.data.health.JobOrchestratorHealthIndicatorImpl;
 import org.fireflyframework.data.mapper.JobResultMapperRegistry;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -105,8 +105,8 @@ class AutoConfigurationIntegrationTest {
         }
 
         @Bean
-        public JobMetricsService jobMetricsService(MeterRegistry meterRegistry, JobOrchestrationProperties properties) {
-            return new JobMetricsService(meterRegistry, properties);
+        public JobMetricsServiceImpl jobMetricsService(MeterRegistry meterRegistry, JobOrchestrationProperties properties) {
+            return new JobMetricsServiceImpl(meterRegistry, properties);
         }
 
         @Bean
@@ -125,8 +125,8 @@ class AutoConfigurationIntegrationTest {
         }
 
         @Bean
-        public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
-            return new JobOrchestratorHealthIndicator(properties);
+        public JobOrchestratorHealthIndicatorImpl jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
+            return new JobOrchestratorHealthIndicatorImpl(properties);
         }
     }
 
@@ -198,7 +198,7 @@ class AutoConfigurationIntegrationTest {
     @Test
     void jobMetricsService_ShouldBeCreated() {
         assertTrue(applicationContext.containsBean("jobMetricsService"));
-        JobMetricsService jobMetricsService = applicationContext.getBean(JobMetricsService.class);
+        JobMetricsServiceImpl jobMetricsService = applicationContext.getBean(JobMetricsServiceImpl.class);
         assertNotNull(jobMetricsService);
     }
 
@@ -226,7 +226,7 @@ class AutoConfigurationIntegrationTest {
     @Test
     void jobOrchestratorHealthIndicator_ShouldBeCreated() {
         assertTrue(applicationContext.containsBean("jobOrchestratorHealthIndicator"));
-        JobOrchestratorHealthIndicator healthIndicator = applicationContext.getBean("jobOrchestratorHealthIndicator", JobOrchestratorHealthIndicator.class);
+        JobOrchestratorHealthIndicatorImpl healthIndicator = applicationContext.getBean("jobOrchestratorHealthIndicator", JobOrchestratorHealthIndicatorImpl.class);
         assertNotNull(healthIndicator);
     }
 

@@ -313,7 +313,7 @@ management:
 Auto-configuration is split into three classes, registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
 
 - `CqrsAutoConfiguration`. wires `CommandBus`, `QueryBus`, the handler registry, validation, authorization, the dedicated `cqrsQueryCacheManager`/`QueryCacheAdapter`, the correlation context, and metrics. Gated on `firefly.cqrs.enabled=true`.
-- `CqrsActuatorAutoConfiguration`. registers the `CqrsMetricsEndpoint` and `CqrsHealthIndicator` when Actuator is present.
+- `CqrsActuatorAutoConfiguration`. registers the `CqrsMetricsEndpoint` and `CqrsHealthIndicatorImpl` when Actuator is present.
 - `CqrsEdaAutoConfiguration`. registers the EDA bridge (`CommandEventPublisher`, `EventDrivenCacheInvalidator`) when `fireflyframework-eda` is on the classpath and `firefly.cqrs.eda.enabled=true`.
 
 Each command/query flows through its bus: validate → authorize → dispatch to handler → metrics & tracing. Every bean is annotated `@ConditionalOnMissingBean`, so you can override any piece by declaring your own.

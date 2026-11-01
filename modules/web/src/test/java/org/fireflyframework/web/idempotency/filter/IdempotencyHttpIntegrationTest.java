@@ -294,11 +294,11 @@ class IdempotencyHttpIntegrationTest {
             var auth = new UsernamePasswordAuthenticationToken(principal, "", List.of());
             return (exchange, chain) -> chain.filter(exchange.mutate().principal(Mono.just(auth)).build());
         }
-        @Bean IdempotencyWebFilter idempotencyWebFilter(org.springframework.beans.factory.ObjectProvider<org.springframework.web.reactive.HandlerMapping> mappings,
+        @Bean IdempotencyWebFilterImpl idempotencyWebFilter(org.springframework.beans.factory.ObjectProvider<org.springframework.web.reactive.HandlerMapping> mappings,
                                                         ObservedIdempotencyCache cache) {
             var properties = new IdempotencyProperties(); properties.setNamespace("synthetic-http-service");
-            return new IdempotencyWebFilter(properties, cache,
-                    new org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolver(), () -> mappings.orderedStream().toList());
+            return new IdempotencyWebFilterImpl(properties, cache,
+                    new org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolverImpl(), () -> mappings.orderedStream().toList());
         }
     }
 

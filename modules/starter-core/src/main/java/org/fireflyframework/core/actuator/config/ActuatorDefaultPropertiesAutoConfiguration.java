@@ -30,7 +30,7 @@ import org.springframework.context.annotation.PropertySource;
  * for actuator endpoints, health checks, and metrics.
  */
 @AutoConfiguration
-@PropertySource(value = "classpath:application-actuator-default.yml", factory = YamlPropertySourceFactory.class)
+@PropertySource(value = "classpath:application-actuator-default.yml", factory = YamlPropertySourceFactoryImpl.class)
 @ConfigurationPropertiesScan("org.fireflyframework.core.actuator.config")
 public class ActuatorDefaultPropertiesAutoConfiguration {
     // This class only loads the default properties

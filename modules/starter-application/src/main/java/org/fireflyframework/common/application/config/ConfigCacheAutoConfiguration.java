@@ -18,7 +18,7 @@ package org.fireflyframework.common.application.config;
 
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -43,7 +43,7 @@ import java.time.Duration;
  */
 @AutoConfiguration
 @AutoConfigureAfter(CacheAutoConfiguration.class)
-@ConditionalOnClass({FireflyCacheManager.class, CacheManagerFactory.class})
+@ConditionalOnClass({FireflyCacheManagerImpl.class, CacheManagerFactory.class})
 @Slf4j
 public class ConfigCacheAutoConfiguration {
 
@@ -66,7 +66,7 @@ public class ConfigCacheAutoConfiguration {
     @Bean("configCacheManager")
     @ConditionalOnBean(CacheManagerFactory.class)
     @ConditionalOnMissingBean(name = "configCacheManager")
-    public FireflyCacheManager configCacheManager(CacheManagerFactory factory) {
+    public FireflyCacheManagerImpl configCacheManager(CacheManagerFactory factory) {
         String description = String.format(
                 "Application Configuration Cache - Stores tenant/app configs (TTL: %d hour)",
                 CONFIG_CACHE_TTL.toHours()

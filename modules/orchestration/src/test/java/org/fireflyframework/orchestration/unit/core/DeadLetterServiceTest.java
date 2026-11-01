@@ -30,12 +30,12 @@ import static org.assertj.core.api.Assertions.*;
 
 class DeadLetterServiceTest {
 
-    private InMemoryDeadLetterStore store;
+    private InMemoryDeadLetterStoreImpl store;
     private DeadLetterService service;
 
     @BeforeEach
     void setUp() {
-        store = new InMemoryDeadLetterStore();
+        store = new InMemoryDeadLetterStoreImpl();
         service = new DeadLetterService(store, new OrchestrationEvents() {});
     }
 

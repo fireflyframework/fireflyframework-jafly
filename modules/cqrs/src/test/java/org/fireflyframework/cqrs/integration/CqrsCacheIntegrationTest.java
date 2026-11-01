@@ -18,14 +18,14 @@ package org.fireflyframework.cqrs.integration;
 
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cqrs.cache.QueryCacheAdapter;
 import org.fireflyframework.cqrs.config.CqrsAutoConfiguration;
 import org.fireflyframework.cqrs.config.CqrsProperties;
 import org.fireflyframework.cqrs.query.Query;
 import org.fireflyframework.cqrs.query.QueryHandler;
-import org.fireflyframework.cqrs.query.DefaultQueryBus;
+import org.fireflyframework.cqrs.query.DefaultQueryBusImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,11 +61,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CqrsCacheIntegrationTest {
 
     @Autowired
-    private DefaultQueryBus queryBus;
+    private DefaultQueryBusImpl queryBus;
 
     @Autowired
     @org.springframework.beans.factory.annotation.Qualifier("cqrsQueryCacheManager")
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
 
     @Autowired
     private TestAccountQueryHandler handler;
@@ -94,7 +94,7 @@ class CqrsCacheIntegrationTest {
     void shouldVerifyCaffeineIsConfigured() {
         // Verify we're using the real fireflyframework-cache implementation with Caffeine
         assertThat(cacheManager).isNotNull();
-        assertThat(cacheManager).isInstanceOf(FireflyCacheManager.class);
+        assertThat(cacheManager).isInstanceOf(FireflyCacheManagerImpl.class);
         assertThat(cacheManager.getCacheType()).isEqualTo(CacheType.CAFFEINE);
         assertThat(cacheManager.isAvailable()).isTrue();
     }

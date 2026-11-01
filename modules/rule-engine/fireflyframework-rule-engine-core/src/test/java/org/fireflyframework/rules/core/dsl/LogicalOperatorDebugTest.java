@@ -8,7 +8,7 @@ import org.fireflyframework.rules.core.dsl.lexer.Token;
 import org.fireflyframework.rules.core.dsl.parser.ASTRulesDSLParser;
 import org.fireflyframework.rules.core.dsl.parser.DSLParser;
 import org.fireflyframework.rules.core.dsl.visitor.EvaluationContext;
-import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluator;
+import org.fireflyframework.rules.core.dsl.visitor.ExpressionEvaluatorImpl;
 import org.fireflyframework.rules.core.services.ConstantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -106,8 +106,8 @@ public class LogicalOperatorDebugTest {
         testContext.setVariable("a", 0);
         testContext.setVariable("b", 2);
 
-        ExpressionEvaluator evaluator =
-            new ExpressionEvaluator(testContext);
+        ExpressionEvaluatorImpl evaluator =
+            new ExpressionEvaluatorImpl(testContext);
 
         Object result = condition.accept(evaluator);
         System.out.println("Condition evaluation result: " + result);

@@ -16,7 +16,7 @@
 
 package org.fireflyframework.orchestration.unit.core;
 
-import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategy;
+import org.fireflyframework.orchestration.core.backpressure.AdaptiveBackpressureStrategyImpl;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -29,7 +29,7 @@ class BackpressureStrategyTest {
 
     @Test
     void adaptive_processesAllItems() {
-        var strategy = new AdaptiveBackpressureStrategy(2, 8, 1, 0.1);
+        var strategy = new AdaptiveBackpressureStrategyImpl(2, 8, 1, 0.1);
         List<Integer> items = List.of(1, 2, 3, 4, 5);
 
         StepVerifier.create(strategy.applyBackpressure(items, item -> Mono.just(item * 2)))
@@ -39,13 +39,13 @@ class BackpressureStrategyTest {
 
     @Test
     void adaptive_defaultConcurrency() {
-        var strategy = new AdaptiveBackpressureStrategy();
+        var strategy = new AdaptiveBackpressureStrategyImpl();
         assertThat(strategy.getCurrentConcurrency()).isEqualTo(4);
     }
 
     @Test
     void adaptive_handlesErrors() {
-        var strategy = new AdaptiveBackpressureStrategy(2, 8, 1, 0.5);
+        var strategy = new AdaptiveBackpressureStrategyImpl(2, 8, 1, 0.5);
         List<Integer> items = List.of(1, 2, 3);
 
         StepVerifier.create(strategy.applyBackpressure(items, item -> {
@@ -58,7 +58,7 @@ class BackpressureStrategyTest {
 
     @Test
     void adaptive_reset() {
-        var strategy = new AdaptiveBackpressureStrategy(4, 16, 1, 0.1);
+        var strategy = new AdaptiveBackpressureStrategyImpl(4, 16, 1, 0.1);
         // Process some items to change state
         strategy.applyBackpressure(List.of(1, 2, 3), Mono::just).collectList().block();
 

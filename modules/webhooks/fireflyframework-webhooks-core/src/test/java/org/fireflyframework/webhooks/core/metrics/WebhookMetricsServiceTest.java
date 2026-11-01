@@ -32,13 +32,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("WebhookMetricsService Tests")
 class WebhookMetricsServiceTest {
 
-    private WebhookMetricsService metricsService;
+    private WebhookMetricsServiceImpl metricsService;
     private MeterRegistry meterRegistry;
 
     @BeforeEach
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
-        metricsService = new WebhookMetricsService(meterRegistry);
+        metricsService = new WebhookMetricsServiceImpl(meterRegistry);
     }
 
     // ========================================

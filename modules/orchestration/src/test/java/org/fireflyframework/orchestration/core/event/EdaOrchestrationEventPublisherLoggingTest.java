@@ -36,7 +36,7 @@ class EdaOrchestrationEventPublisherLoggingTest {
     private ListAppender<ILoggingEvent> capture;
 
     @BeforeEach void capture() {
-        logger = (Logger) LoggerFactory.getLogger(EdaOrchestrationEventPublisher.class);
+        logger = (Logger) LoggerFactory.getLogger(EdaOrchestrationEventPublisherImpl.class);
         level = logger.getLevel(); additive = logger.isAdditive();
         logger.setLevel(Level.TRACE); logger.setAdditive(false);
         capture = new ListAppender<>(); capture.setContext(logger.getLoggerContext());
@@ -90,16 +90,16 @@ class EdaOrchestrationEventPublisherLoggingTest {
     private Stream<DynamicTest> scenarios(String actual, String expected) {
         return Stream.of(
             checked("missing destination", () -> {
-                new EdaOrchestrationEventPublisher(null, null).publish(event(actual, null)).block();
+                new EdaOrchestrationEventPublisherImpl(null, null).publish(event(actual, null)).block();
                 logged(Level.WARN, expected, expected, expected);
             }),
             checked("missing publisher", () -> {
-                new EdaOrchestrationEventPublisher(factory(null), "fallback").publish(event(actual, actual)).block();
+                new EdaOrchestrationEventPublisherImpl(factory(null), "fallback").publish(event(actual, actual)).block();
                 logged(Level.WARN, expected, actual == null ? "fallback" : expected);
             }),
             checked("successful publication preserves raw transport", () -> {
                 var publisher = new RecordingPublisher(); var event = event(actual, actual);
-                new EdaOrchestrationEventPublisher(factory(publisher), "fallback").publish(event).block();
+                new EdaOrchestrationEventPublisherImpl(factory(publisher), "fallback").publish(event).block();
                 assertEquals(1, publisher.calls); assertSame(event, publisher.event);
                 assertEquals(actual == null ? "fallback" : actual, publisher.destination);
                 if (actual != null) {
@@ -113,7 +113,7 @@ class EdaOrchestrationEventPublisherLoggingTest {
             checked("failed publication preserves error", () -> {
                 var publisher = new RecordingPublisher(); publisher.failure = new IllegalStateException(actual);
                 var event = event(actual, actual);
-                Mono<Void> result = new EdaOrchestrationEventPublisher(factory(publisher), "fallback").publish(event);
+                Mono<Void> result = new EdaOrchestrationEventPublisherImpl(factory(publisher), "fallback").publish(event);
                 assertSame(publisher.failure, assertThrows(IllegalStateException.class, result::block));
                 assertEquals(1, publisher.calls); assertSame(event, publisher.event);
                 logged(Level.ERROR, expected, actual == null ? "fallback" : expected, expected);
@@ -125,7 +125,7 @@ class EdaOrchestrationEventPublisherLoggingTest {
     @TestFactory Stream<DynamicTest> preservesOrdinaryFields() { return scenarios("ordinary", "ordinary"); }
     @TestFactory Stream<DynamicTest> preservesNullFields() { return scenarios(null, null); }
     @Test void nullEventProducesNoLogOrFactoryCall() {
-        assertNull(new EdaOrchestrationEventPublisher(null, null).publish(null).block());
+        assertNull(new EdaOrchestrationEventPublisherImpl(null, null).publish(null).block());
         assertTrue(capture.list.isEmpty());
     }
 }

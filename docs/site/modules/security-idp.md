@@ -156,18 +156,18 @@ firefly:
       provider: keycloak          # REQUIRED — selects the active adapter (no default; @NotBlank)
   observability:
     metrics:
-      enabled: true             # default true — gates IdpMetrics registration
+      enabled: true             # default true — gates IdpMetricsImpl registration
 ```
 
 | Property | Default | Description |
 | --- | --- | --- |
 | `firefly.security.idp.provider` | _(none, required)_ | Selects the active IDP adapter. One of `keycloak`, `cognito`, `azure-ad`, `internal-db`. Validated as `@NotBlank` via `IdpProperties`. |
-| `firefly.observability.metrics.enabled` | `true` | When `true` (or absent), registers the `IdpMetrics` bean. Set to `false` to disable IDP metrics. |
+| `firefly.observability.metrics.enabled` | `true` | When `true` (or absent), registers the `IdpMetricsImpl` bean. Set to `false` to disable IDP metrics. |
 
 Auto-configuration entry points (`META-INF/spring/...AutoConfiguration.imports`):
 
 - `IdpWebAutoConfiguration`. registers `IdpController` when an `IdpAdapter` bean exists and the app is a reactive web application (`@ConditionalOnWebApplication(REACTIVE)`); also enables `IdpProperties`.
-- `IdpObservabilityAutoConfiguration`. registers `IdpMetrics` when a Micrometer `MeterRegistry` is present and metrics are enabled.
+- `IdpObservabilityAutoConfiguration`. registers `IdpMetricsImpl` when a Micrometer `MeterRegistry` is present and metrics are enabled.
 
 ### REST API
 
@@ -199,7 +199,7 @@ When the `IdpController` is auto-mounted, the following endpoints are exposed un
 
 ### Observability
 
-`IdpMetrics` (auto-configured) records, all tagged by `provider`:
+`IdpMetricsImpl` (auto-configured) records, all tagged by `provider`:
 
 - `firefly.security.idp.authentications`. total auth attempts, tagged `status=success|failure`
 - `firefly.security.idp.authentication.duration`. authentication latency timer
@@ -207,7 +207,7 @@ When the `IdpController` is auto-mounted, the following endpoints are exposed un
 - `firefly.security.idp.token.refreshed`. token refreshes
 - `firefly.security.idp.errors`. failed IDP operations, tagged `operation`, `error.type`
 
-Adapters wrap their authentication calls with `IdpMetrics.timedAuthentication(provider, mono)` to get success/failure counters and the latency timer for free.
+Adapters wrap their authentication calls with `IdpMetricsImpl.timedAuthentication(provider, mono)` to get success/failure counters and the latency timer for free.
 
 ## Continue the application
 

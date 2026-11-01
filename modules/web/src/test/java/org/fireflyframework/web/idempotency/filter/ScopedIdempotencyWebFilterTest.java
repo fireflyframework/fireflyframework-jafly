@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ScopedIdempotencyWebFilterTest {
     private final TestIdempotencyCache cache = new TestIdempotencyCache();
-    private final IdempotencyWebFilter filter = new IdempotencyWebFilter(properties("service-a"), cache);
+    private final IdempotencyWebFilterImpl filter = new IdempotencyWebFilterImpl(properties("service-a"), cache);
     private final AtomicInteger effects = new AtomicInteger();
     private final WebFilterChain writer = exchange -> {
         effects.incrementAndGet();
@@ -157,13 +157,13 @@ class ScopedIdempotencyWebFilterTest {
 
     @Test void separateApplicationsCannotReplayFromTheSameBackend() {
         run(request("POST", "/api/headers", "{}"), writer);
-        var other = new IdempotencyWebFilter(properties("service-b"), cache);
+        var other = new IdempotencyWebFilterImpl(properties("service-b"), cache);
         other.filter(request("POST", "/api/headers", "{}"), writer).block(Duration.ofSeconds(2));
         assertThat(effects.get()).isEqualTo(2);
     }
 
     @Test void missingApplicationNamespaceBypassesReuse() {
-        var unresolved = new IdempotencyWebFilter(new IdempotencyProperties(), cache);
+        var unresolved = new IdempotencyWebFilterImpl(new IdempotencyProperties(), cache);
         unresolved.filter(request("POST", "/api/headers", "{}"), writer).block(Duration.ofSeconds(2));
         unresolved.filter(request("POST", "/api/headers", "{}"), writer).block(Duration.ofSeconds(2));
         assertThat(effects.get()).isEqualTo(2);
@@ -213,7 +213,7 @@ class ScopedIdempotencyWebFilterTest {
 
     @Test void oversizedRequestCannotReachTheHandler() {
         var small = properties("small"); small.setMaxRequestBodyBytes(3);
-        var bounded = new IdempotencyWebFilter(small, cache);
+        var bounded = new IdempotencyWebFilterImpl(small, cache);
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> bounded.filter(request("POST", "/api/headers", "four"), writer).block(Duration.ofSeconds(2)))
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
                 .satisfies(error -> assertThat(((org.springframework.web.server.ResponseStatusException) error).getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE));
@@ -239,9 +239,9 @@ class ScopedIdempotencyWebFilterTest {
     }
 
     @Test void trustedTenantResolverSupportsPrincipalsWhoseTenantLivesInValidatedClaims() {
-        var scope = new org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolver(principal ->
+        var scope = new org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolverImpl(principal ->
                 Mono.justOrEmpty(principal.claim("validated-tenant", String.class)));
-        var resolved = new IdempotencyWebFilter(properties("service-a"), cache, scope);
+        var resolved = new IdempotencyWebFilterImpl(properties("service-a"), cache, scope);
         var actor = SecurityPrincipal.builder().issuer("issuer-a").subject("alice")
                 .claims(java.util.Map.of("validated-tenant", "tenant-a")).build();
         var auth = new UsernamePasswordAuthenticationToken(actor, "", List.of());
@@ -260,7 +260,7 @@ class ScopedIdempotencyWebFilterTest {
 
     @Test void anotherFilterInstanceReadsTheSameBackendEntry() {
         run(request("POST", "/api/headers", "{}"), writer);
-        var restarted = new IdempotencyWebFilter(properties("service-a"), cache);
+        var restarted = new IdempotencyWebFilterImpl(properties("service-a"), cache);
         var duplicate = request("POST", "/api/headers", "{}");
         restarted.filter(duplicate, writer).block(Duration.ofSeconds(2));
         assertThat(duplicate.getResponse().getBodyAsString().block()).isEqualTo("POST /api/headers");
@@ -275,7 +275,7 @@ class ScopedIdempotencyWebFilterTest {
                 return persist.asMono().then(Mono.defer(() -> cache.put(key, response)));
             }
         };
-        var waiting = new IdempotencyWebFilter(properties("service-a"), delayedCache);
+        var waiting = new IdempotencyWebFilterImpl(properties("service-a"), delayedCache);
         var first = waiting.filter(request("POST", "/api/headers", "{}"), writer).toFuture();
         var duplicate = waiting.filter(request("POST", "/api/headers", "{}"), writer).toFuture();
         assertThat(first).isNotDone(); assertThat(duplicate).isNotDone();
@@ -288,7 +288,7 @@ class ScopedIdempotencyWebFilterTest {
 
     @Test void oversizedResponseDoesNotLeaveAnInFlightClaim() {
         var small = properties("small-response"); small.setMaxResponseBodyBytes(3);
-        var bounded = new IdempotencyWebFilter(small, cache);
+        var bounded = new IdempotencyWebFilterImpl(small, cache);
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> bounded.filter(request("POST", "/api/headers", "{}"), writer).block(Duration.ofSeconds(2)))
                 .isInstanceOf(org.springframework.core.io.buffer.DataBufferLimitException.class);
         assertThat(effects.get()).isEqualTo(1);

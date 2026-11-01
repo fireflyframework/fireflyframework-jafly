@@ -62,7 +62,7 @@ public class AdobeSignAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SignatureEnvelopePort.class)
-    public AdobeSignSignatureEnvelopeAdapter adobeSignSignatureEnvelopeAdapter(
+    public AdobeSignSignatureEnvelopeAdapterImpl adobeSignSignatureEnvelopeAdapter(
             WebClient adobeSignWebClient,
             AdobeSignAdapterProperties properties,
             ObjectMapper objectMapper,
@@ -71,7 +71,7 @@ public class AdobeSignAutoConfiguration {
             CircuitBreaker adobeSignCircuitBreaker,
             Retry adobeSignRetry) {
         log.info("Creating Adobe Sign signature envelope adapter");
-        return new AdobeSignSignatureEnvelopeAdapter(
+        return new AdobeSignSignatureEnvelopeAdapterImpl(
                 adobeSignWebClient,
                 properties,
                 objectMapper,

@@ -124,7 +124,7 @@ public class BffSecurityAutoConfiguration {
                 .csrf(csrf -> {
                     csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse());
                     if (properties.isCsrfCookie()) {
-                        csrf.csrfTokenRequestHandler(new SpaServerCsrfTokenRequestHandler());
+                        csrf.csrfTokenRequestHandler(new SpaServerCsrfTokenRequestHandlerImpl());
                     }
                     // Exempt server-to-server callbacks (e.g. OIDC back-channel logout) that carry their
                     // own signed proof, not a browser cookie: require CSRF for the default unsafe methods
@@ -248,7 +248,7 @@ public class BffSecurityAutoConfiguration {
             ObjectMapper objectMapper) {
         ServerLogoutSuccessHandler oidc = oidcLogoutSuccessHandler(clientRegistrations, properties);
         return properties.isXhrAwareLogout()
-                ? new XhrAwareLogoutSuccessHandler(oidc, objectMapper)
+                ? new XhrAwareLogoutSuccessHandlerImpl(oidc, objectMapper)
                 : oidc;
     }
 
@@ -267,8 +267,8 @@ public class BffSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "firefly.security.bff", name = "refresh-failure-401", havingValue = "true")
-    public BffRefreshTokenFailureWebFilter bffRefreshTokenFailureWebFilter(BffSecurityProperties properties) {
-        return new BffRefreshTokenFailureWebFilter(properties);
+    public BffRefreshTokenFailureWebFilterImpl bffRefreshTokenFailureWebFilter(BffSecurityProperties properties) {
+        return new BffRefreshTokenFailureWebFilterImpl(properties);
     }
 
     /**
@@ -278,8 +278,8 @@ public class BffSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "firefly.security.bff", name = "csrf-cookie", havingValue = "true")
-    public CsrfCookieWebFilter csrfCookieWebFilter() {
-        return new CsrfCookieWebFilter();
+    public CsrfCookieWebFilterImpl csrfCookieWebFilter() {
+        return new CsrfCookieWebFilterImpl();
     }
 
     private ServerAuthenticationEntryPoint browserAwareEntryPoint(BffSecurityProperties properties) {

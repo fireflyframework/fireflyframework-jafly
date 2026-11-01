@@ -86,7 +86,7 @@ public class DynamicClassGenerator {
      */
     private static Object createDynamicProxy(String className, Map<String, Object> data) {
         // Create an invocation handler that handles method calls
-        InvocationHandler handler = new DynamicObjectHandler(className, data);
+        InvocationHandler handler = new DynamicObjectHandlerImpl(className, data);
 
         // Create a proxy that implements DynamicDTO interface
         return Proxy.newProxyInstance(
@@ -142,11 +142,11 @@ public class DynamicClassGenerator {
     /**
      * Invocation handler for dynamic proxy objects.
      */
-    private static class DynamicObjectHandler implements InvocationHandler {
+    private static class DynamicObjectHandlerImpl implements InvocationHandler {
         private final String className;
         private final Map<String, Object> data;
 
-        public DynamicObjectHandler(String className, Map<String, Object> data) {
+        public DynamicObjectHandlerImpl(String className, Map<String, Object> data) {
             this.className = className;
             this.data = new HashMap<>(data);
         }
@@ -177,8 +177,8 @@ public class DynamicClassGenerator {
                     if (args[0] == proxy) return true;
                     if (Proxy.isProxyClass(args[0].getClass())) {
                         InvocationHandler otherHandler = Proxy.getInvocationHandler(args[0]);
-                        if (otherHandler instanceof DynamicObjectHandler) {
-                            return data.equals(((DynamicObjectHandler) otherHandler).data);
+                        if (otherHandler instanceof DynamicObjectHandlerImpl) {
+                            return data.equals(((DynamicObjectHandlerImpl) otherHandler).data);
                         }
                     }
                     return false;

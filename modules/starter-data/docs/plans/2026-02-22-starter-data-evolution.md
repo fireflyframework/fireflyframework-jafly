@@ -633,9 +633,9 @@ git commit -m "feat(resiliency): add per-provider resilience configuration via P
 - Create: `src/main/java/org/fireflyframework/data/quality/QualitySeverity.java`
 - Create: `src/main/java/org/fireflyframework/data/quality/QualityStrategy.java`
 - Create: `src/main/java/org/fireflyframework/data/quality/DataQualityEngine.java`
-- Create: `src/main/java/org/fireflyframework/data/quality/rules/NotNullRule.java`
-- Create: `src/main/java/org/fireflyframework/data/quality/rules/PatternRule.java`
-- Create: `src/main/java/org/fireflyframework/data/quality/rules/RangeRule.java`
+- Create: `src/main/java/org/fireflyframework/data/quality/rules/NotNullRuleImpl.java`
+- Create: `src/main/java/org/fireflyframework/data/quality/rules/PatternRuleImpl.java`
+- Create: `src/main/java/org/fireflyframework/data/quality/rules/RangeRuleImpl.java`
 - Create: `src/main/java/org/fireflyframework/data/event/DataQualityEvent.java`
 - Test: `src/test/java/org/fireflyframework/data/quality/DataQualityEngineTest.java`
 
@@ -742,23 +742,23 @@ public class DataQualityEngine {
 **Step 3: Implement built-in rules**
 
 ```java
-// NotNullRule.java
-public class NotNullRule<T> implements DataQualityRule<T> {
+// NotNullRuleImpl.java
+public class NotNullRuleImpl<T> implements DataQualityRule<T> {
     private final String fieldName;
     private final Function<T, Object> fieldExtractor;
     // evaluate: return pass/fail based on null check
 }
 
-// PatternRule.java
-public class PatternRule<T> implements DataQualityRule<T> {
+// PatternRuleImpl.java
+public class PatternRuleImpl<T> implements DataQualityRule<T> {
     private final String fieldName;
     private final Pattern pattern;
     private final Function<T, String> fieldExtractor;
     // evaluate: return pass/fail based on regex match
 }
 
-// RangeRule.java
-public class RangeRule<T> implements DataQualityRule<T> {
+// RangeRuleImpl.java
+public class RangeRuleImpl<T> implements DataQualityRule<T> {
     private final String fieldName;
     private final Comparable<?> min;
     private final Comparable<?> max;
@@ -772,8 +772,8 @@ public class RangeRule<T> implements DataQualityRule<T> {
 ```java
 @Test
 void evaluate_collectAll_shouldRunAllRulesEvenOnFailure() {
-    DataQualityRule<TestDTO> rule1 = new NotNullRule<>("name", TestDTO::getName);
-    DataQualityRule<TestDTO> rule2 = new PatternRule<>("email", Pattern.compile("^[^@]+@[^@]+$"), TestDTO::getEmail);
+    DataQualityRule<TestDTO> rule1 = new NotNullRuleImpl<>("name", TestDTO::getName);
+    DataQualityRule<TestDTO> rule2 = new PatternRuleImpl<>("email", Pattern.compile("^[^@]+@[^@]+$"), TestDTO::getEmail);
 
     DataQualityEngine engine = new DataQualityEngine(List.of(rule1, rule2), null);
     TestDTO invalidDto = new TestDTO(null, "not-an-email");
@@ -816,7 +816,7 @@ git commit -m "feat(quality): add DataQualityEngine with rule-based validation, 
 - Create: `src/main/java/org/fireflyframework/data/lineage/LineageRecord.java`
 - Create: `src/main/java/org/fireflyframework/data/lineage/LineageTracker.java`
 - Create: `src/main/java/org/fireflyframework/data/lineage/port/LineageRepository.java`
-- Create: `src/main/java/org/fireflyframework/data/lineage/InMemoryLineageTracker.java`
+- Create: `src/main/java/org/fireflyframework/data/lineage/InMemoryLineageTrackerImpl.java`
 - Create: `src/main/java/org/fireflyframework/data/event/LineageEvent.java`
 - Modify: `src/main/java/org/fireflyframework/data/service/DataEnricher.java` (add lineage recording)
 - Test: `src/test/java/org/fireflyframework/data/lineage/LineageTrackerTest.java`
@@ -850,11 +850,11 @@ public interface LineageTracker {
 }
 ```
 
-**Step 3: Implement InMemoryLineageTracker**
+**Step 3: Implement InMemoryLineageTrackerImpl**
 
 ```java
 @Slf4j
-public class InMemoryLineageTracker implements LineageTracker {
+public class InMemoryLineageTrackerImpl implements LineageTracker {
     private final Map<String, List<LineageRecord>> lineageByEntity = new ConcurrentHashMap<>();
 
     @Override
@@ -909,7 +909,7 @@ if (lineageTracker != null && response.isSuccess()) {
 ```java
 @Test
 void lineageTracker_shouldRecordEnrichmentLineage() {
-    InMemoryLineageTracker tracker = new InMemoryLineageTracker();
+    InMemoryLineageTrackerImpl tracker = new InMemoryLineageTrackerImpl();
     // Create enricher with tracker, enrich, verify lineage recorded
 
     StepVerifier.create(tracker.getLineage("entity-1"))
@@ -930,7 +930,7 @@ Expected: PASS
 
 ```bash
 git add src/main/java/org/fireflyframework/data/lineage/ src/main/java/org/fireflyframework/data/event/LineageEvent.java src/test/
-git commit -m "feat(lineage): add data lineage tracking with InMemoryLineageTracker and DataEnricher integration"
+git commit -m "feat(lineage): add data lineage tracking with InMemoryLineageTrackerImpl and DataEnricher integration"
 ```
 
 ---
@@ -1081,8 +1081,8 @@ git commit -m "feat(enrichment): add @EnricherFallback annotation and FallbackEn
 - Create: `src/main/java/org/fireflyframework/data/transform/DataTransformer.java`
 - Create: `src/main/java/org/fireflyframework/data/transform/TransformationChain.java`
 - Create: `src/main/java/org/fireflyframework/data/transform/TransformContext.java`
-- Create: `src/main/java/org/fireflyframework/data/transform/transformers/FieldMappingTransformer.java`
-- Create: `src/main/java/org/fireflyframework/data/transform/transformers/ComputedFieldTransformer.java`
+- Create: `src/main/java/org/fireflyframework/data/transform/transformers/FieldMappingTransformerImpl.java`
+- Create: `src/main/java/org/fireflyframework/data/transform/transformers/ComputedFieldTransformerImpl.java`
 - Test: `src/test/java/org/fireflyframework/data/transform/TransformationChainTest.java`
 
 **Step 1: Define the contracts**
@@ -1143,8 +1143,8 @@ public class TransformationChain<S, T> {
 **Step 3: Implement built-in transformers**
 
 ```java
-// FieldMappingTransformer.java
-public class FieldMappingTransformer implements DataTransformer<Map<String, Object>, Map<String, Object>> {
+// FieldMappingTransformerImpl.java
+public class FieldMappingTransformerImpl implements DataTransformer<Map<String, Object>, Map<String, Object>> {
     private final Map<String, String> fieldMappings; // sourceField -> targetField
 
     @Override
@@ -1161,8 +1161,8 @@ public class FieldMappingTransformer implements DataTransformer<Map<String, Obje
     }
 }
 
-// ComputedFieldTransformer.java
-public class ComputedFieldTransformer<T> implements DataTransformer<T, T> {
+// ComputedFieldTransformerImpl.java
+public class ComputedFieldTransformerImpl<T> implements DataTransformer<T, T> {
     private final String fieldName;
     private final Function<T, Object> computation;
     // Sets computed field on the DTO
@@ -1175,7 +1175,7 @@ public class ComputedFieldTransformer<T> implements DataTransformer<T, T> {
 @Test
 void chain_shouldApplyTransformersInOrder() {
     TransformationChain<Map<String, Object>, Map<String, Object>> chain = TransformationChain.of(Map.class)
-        .then(new FieldMappingTransformer(Map.of("old_name", "newName")))
+        .then(new FieldMappingTransformerImpl(Map.of("old_name", "newName")))
         .then((source, ctx) -> {
             source.put("computed", source.get("newName") + "-enriched");
             return Mono.just(source);
@@ -1414,7 +1414,7 @@ public class DataLineageAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public LineageTracker lineageTracker() {
-        return new InMemoryLineageTracker();
+        return new InMemoryLineageTrackerImpl();
     }
 }
 ```

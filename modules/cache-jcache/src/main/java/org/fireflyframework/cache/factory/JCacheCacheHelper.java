@@ -43,14 +43,14 @@ public class JCacheCacheHelper {
                                                    String keyPrefix,
                                                    Duration defaultTtl,
                                                    Object cacheManager) {
-        return new JCacheAdapterReflective(cacheName, keyPrefix, defaultTtl, cacheManager);
+        return new JCacheAdapterReflectiveImpl(cacheName, keyPrefix, defaultTtl, cacheManager);
     }
 
     /**
      * Reflective adapter for JCache providers. Because per-entry TTL is not universally supported across
      * providers at put-time, we implement a lightweight TTL overlay by wrapping values with an expiration.
      */
-    private static class JCacheAdapterReflective implements CacheAdapter {
+    private static class JCacheAdapterReflectiveImpl implements CacheAdapter {
         private final String cacheName;
         private final String keyPrefix;
         private final Duration defaultTtl;
@@ -73,7 +73,7 @@ public class JCacheCacheHelper {
         // TTL overlay when provider TTL is not configured per entry
         private final ConcurrentHashMap<String, Long> ttlOverlay = new ConcurrentHashMap<>();
 
-        JCacheAdapterReflective(String cacheName, String keyPrefix, Duration defaultTtl, Object cacheManager) {
+        JCacheAdapterReflectiveImpl(String cacheName, String keyPrefix, Duration defaultTtl, Object cacheManager) {
             try {
                 this.cacheName = cacheName;
                 this.keyPrefix = (keyPrefix != null && !keyPrefix.isBlank())

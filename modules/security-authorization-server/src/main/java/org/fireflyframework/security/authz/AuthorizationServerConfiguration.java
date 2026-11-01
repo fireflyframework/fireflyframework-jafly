@@ -23,7 +23,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.fireflyframework.security.api.domain.SigningKey;
-import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapter;
+import org.fireflyframework.security.core.key.InMemoryKeyManagementAdapterImpl;
 import org.fireflyframework.security.spi.KeyManagementPort;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -87,7 +87,7 @@ public class AuthorizationServerConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public KeyManagementPort authorizationServerKeyManagementPort() {
-        return new InMemoryKeyManagementAdapter();
+        return new InMemoryKeyManagementAdapterImpl();
     }
 
     @Bean

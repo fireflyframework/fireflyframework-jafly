@@ -114,8 +114,8 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`RabbitMqEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/publisher/rabbitmq/RabbitMqEventPublisher.java) | Defines `RabbitMqEventPublisher`, `publish` operations. |
-| [`RabbitMqEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/consumer/rabbitmq/RabbitMqEventConsumer.java) | Defines `RabbitMqEventConsumer`, `initialize`, `shutdown`, `stop` operations. |
+| [`RabbitMqEventPublisherImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/publisher/rabbitmq/RabbitMqEventPublisherImpl.java) | Defines `RabbitMqEventPublisherImpl`, `publish` operations. |
+| [`RabbitMqEventConsumerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/consumer/rabbitmq/RabbitMqEventConsumerImpl.java) | Defines `RabbitMqEventConsumerImpl`, `initialize`, `shutdown`, `stop` operations. |
 | [`FireflyEdaAmqpAdminAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/config/FireflyEdaAmqpAdminAutoConfiguration.java) | Defines `FireflyEdaAmqpAdminAutoConfiguration`, `fireflyEdaAmqpAdmin` operations. |
 | [`FireflyEdaRabbitMqAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/config/FireflyEdaRabbitMqAutoConfiguration.java) | Defines `FireflyEdaRabbitMqAutoConfiguration`, `fireflyEdaRabbitPublisherConnectionFactory`, `fireflyEdaRabbitTemplate` operations. |
 | [`FireflyEdaRabbitMqConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-rabbitmq/src/main/java/org/fireflyframework/eda/config/FireflyEdaRabbitMqConsumerAutoConfiguration.java) | Defines `FireflyEdaRabbitMqConsumerAutoConfiguration`, `fireflyEdaRabbitConsumerConnectionFactory` operations. |
@@ -167,7 +167,7 @@ void shouldGetRabbitMqPublisherFromFactory() {
     EventPublisher publisher = publisherFactory.getPublisher(PublisherType.RABBITMQ, "default");
 
     // Assert - May be null if RabbitMQ is not configured
-    // Publisher may be wrapped in ResilientEventPublisher, so check publisher type instead of class
+    // Publisher may be wrapped in ResilientEventPublisherImpl, so check publisher type instead of class
     if (publisher != null) {
         assertThat(publisher.getPublisherType()).isEqualTo(PublisherType.RABBITMQ);
         assertThat(publisher.isAvailable()).isTrue();
@@ -244,9 +244,9 @@ firefly:
 
 The adapter creates separate publisher-side and consumer-side connection factories so each can be tuned and excluded independently:
 
-- Publisher path. `FireflyEdaRabbitMqAutoConfiguration` builds `fireflyEdaRabbitPublisherConnectionFactory` and `fireflyEdaRabbitTemplate` from `firefly.eda.publishers.rabbitmq.default.*`; `FireflyEdaAmqpAdminAutoConfiguration` reuses that factory for a `RabbitAdmin`. `RabbitMqEventPublisher` is `@ConditionalOnBean(name = "fireflyEdaRabbitTemplate")`.
-- Consumer path. `RabbitMqEventConsumer` is guarded by `@ConditionalOnBean(name = "fireflyEdaRabbitConsumerConnectionFactory")` and injects that bean by qualifier. `FireflyEdaRabbitMqConsumerAutoConfiguration` creates this `fireflyEdaRabbitConsumerConnectionFactory` (a `CachingConnectionFactory` from `firefly.eda.consumer.rabbitmq.default.*`), mirroring the publisher-side factory. this is what makes the consumer wire and run when `firefly.eda.consumer.enabled=true` and the RabbitMQ consumer is enabled.
-- Native auto-config exclusion. `FireflyEdaRabbitMqEnvironmentPostProcessor` (registered via `spring.factories`) excludes Spring Boot's `RabbitAutoConfiguration` unless you explicitly opt in with `spring.rabbitmq.host`. This avoids the ambiguity where Boot's `rabbitListenerContainerFactory` cannot choose between the two Firefly `ConnectionFactory` beans, and prevents connection/health failures when RabbitMQ is not in use.
+- Publisher path. `FireflyEdaRabbitMqAutoConfiguration` builds `fireflyEdaRabbitPublisherConnectionFactory` and `fireflyEdaRabbitTemplate` from `firefly.eda.publishers.rabbitmq.default.*`; `FireflyEdaAmqpAdminAutoConfiguration` reuses that factory for a `RabbitAdmin`. `RabbitMqEventPublisherImpl` is `@ConditionalOnBean(name = "fireflyEdaRabbitTemplate")`.
+- Consumer path. `RabbitMqEventConsumerImpl` is guarded by `@ConditionalOnBean(name = "fireflyEdaRabbitConsumerConnectionFactory")` and injects that bean by qualifier. `FireflyEdaRabbitMqConsumerAutoConfiguration` creates this `fireflyEdaRabbitConsumerConnectionFactory` (a `CachingConnectionFactory` from `firefly.eda.consumer.rabbitmq.default.*`), mirroring the publisher-side factory. this is what makes the consumer wire and run when `firefly.eda.consumer.enabled=true` and the RabbitMQ consumer is enabled.
+- Native auto-config exclusion. `FireflyEdaRabbitMqEnvironmentPostProcessorImpl` (registered via `spring.factories`) excludes Spring Boot's `RabbitAutoConfiguration` unless you explicitly opt in with `spring.rabbitmq.host`. This avoids the ambiguity where Boot's `rabbitListenerContainerFactory` cannot choose between the two Firefly `ConnectionFactory` beans, and prevents connection/health failures when RabbitMQ is not in use.
 
 ## Continue the application
 

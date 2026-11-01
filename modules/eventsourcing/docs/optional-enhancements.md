@@ -65,7 +65,7 @@ Each breaker logs state transitions at `WARN` level and errors at `ERROR` level 
 
 ## Metrics (Micrometer)
 
-`EventStoreMetrics` extends `FireflyMetricsSupport` (from `fireflyframework-observability`) and registers the following metrics when a `MeterRegistry` is on the classpath.
+`EventStoreMetricsImpl` extends `FireflyMetricsSupport` (from `fireflyframework-observability`) and registers the following metrics when a `MeterRegistry` is on the classpath.
 
 ### Metrics Reference
 
@@ -96,10 +96,10 @@ The auto-configuration class is `EventSourcingMetricsAutoConfiguration` (`@Condi
 
 ### PerformanceSummary
 
-`EventStoreMetrics` provides a `getPerformanceSummary()` method that returns a `PerformanceSummary` object with all current metric values. This is useful for custom monitoring dashboards:
+`EventStoreMetricsImpl` provides a `getPerformanceSummary()` method that returns a `PerformanceSummary` object with all current metric values. This is useful for custom monitoring dashboards:
 
 ```java
-EventStoreMetrics.PerformanceSummary summary = eventStoreMetrics.getPerformanceSummary();
+EventStoreMetricsImpl.PerformanceSummary summary = eventStoreMetrics.getPerformanceSummary();
 log.info("Average append time: {}ms, events appended: {}, conflicts: {}",
         summary.getAverageAppendTime(),
         summary.getEventsAppended(),
@@ -114,10 +114,10 @@ When Spring Boot Actuator is on the classpath, the library registers four health
 
 | Indicator | Bean | Condition | Checks |
 |-----------|------|-----------|--------|
-| `EventStoreHealthIndicator` | `eventStoreHealthIndicator` | `EventStore` bean exists | Event store connectivity |
-| `OutboxHealthIndicator` | `outboxHealthIndicator` | `EventOutboxService` bean exists | Outbox processing status |
-| `SnapshotStoreHealthIndicator` | `snapshotStoreHealthIndicator` | `SnapshotStore` bean exists | Snapshot store connectivity |
-| `ProjectionHealthIndicator` | `projectionHealthIndicator` | `ProjectionService<?>` beans exist | Projection lag and status |
+| `EventStoreHealthIndicatorImpl` | `eventStoreHealthIndicator` | `EventStore` bean exists | Event store connectivity |
+| `OutboxHealthIndicatorImpl` | `outboxHealthIndicator` | `EventOutboxService` bean exists | Outbox processing status |
+| `SnapshotStoreHealthIndicatorImpl` | `snapshotStoreHealthIndicator` | `SnapshotStore` bean exists | Snapshot store connectivity |
+| `ProjectionHealthIndicatorImpl` | `projectionHealthIndicator` | `ProjectionService<?>` beans exist | Projection lag and status |
 
 ### Activation
 

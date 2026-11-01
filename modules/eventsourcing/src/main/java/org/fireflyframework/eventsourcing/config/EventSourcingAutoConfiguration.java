@@ -19,7 +19,7 @@ package org.fireflyframework.eventsourcing.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.fireflyframework.eda.publisher.EventPublisherFactory;
-import org.fireflyframework.eventsourcing.monitoring.EventStoreMetrics;
+import org.fireflyframework.eventsourcing.monitoring.EventStoreMetricsImpl;
 import org.fireflyframework.eventsourcing.outbox.EventOutboxProcessor;
 import org.fireflyframework.eventsourcing.outbox.EventOutboxRepository;
 import org.fireflyframework.eventsourcing.outbox.EventOutboxService;
@@ -112,9 +112,9 @@ public class EventSourcingAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(MeterRegistry.class)
-    public EventStoreMetrics eventStoreMetrics(MeterRegistry meterRegistry) {
+    public EventStoreMetricsImpl eventStoreMetrics(MeterRegistry meterRegistry) {
         log.debug("Creating EventStoreMetrics bean");
-        return new EventStoreMetrics(meterRegistry);
+        return new EventStoreMetricsImpl(meterRegistry);
     }
 
     /**

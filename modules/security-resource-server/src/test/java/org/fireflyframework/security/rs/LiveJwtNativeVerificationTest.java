@@ -50,7 +50,7 @@ class LiveJwtNativeVerificationTest {
                                 "exp", jwt.getExpiresAt(), "client_id", "workforce-client", "jti", "opaque-token-id")).build());
             }
         };
-        var decoder = new LiveActiveJwtDecoder(raw -> local.decode(raw).doOnNext(received::set), live, properties);
+        var decoder = new LiveActiveJwtDecoderImpl(raw -> local.decode(raw).doOnNext(received::set), live, properties);
         String valid = sign(pair, LiveActiveJwtDecoderTest.ISSUER, Instant.now().plusSeconds(120));
         assertSame(receivedValue(decoder, valid), received.get()); assertEquals(1, calls.get());
         for (String invalid : List.of(sign(foreign, LiveActiveJwtDecoderTest.ISSUER, Instant.now().plusSeconds(120)),
@@ -60,7 +60,7 @@ class LiveJwtNativeVerificationTest {
         }
         assertEquals(1, calls.get());
     }
-    Jwt receivedValue(LiveActiveJwtDecoder decoder, String token) { return decoder.decode(token).block(); }
+    Jwt receivedValue(LiveActiveJwtDecoderImpl decoder, String token) { return decoder.decode(token).block(); }
     String sign(KeyPair key, String issuer, Instant expires) throws Exception {
         var claims = new JWTClaimsSet.Builder().issuer(issuer).subject("opaque:staff/subject").audience("resource")
                 .expirationTime(Date.from(expires)).claim("azp", "workforce-client").jwtID("opaque-token-id").build();

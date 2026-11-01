@@ -20,7 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 class InstantScalarSchemaGraphTest {
-    static final String REF = InstantScalarOpenApiCustomizer.SCHEMA_REF;
+    static final String REF = InstantScalarOpenApiCustomizerImpl.SCHEMA_REF;
 
     record Site(String name, Function<Schema<?>, OpenAPI> document) {}
 
@@ -209,7 +209,7 @@ class InstantScalarSchemaGraphTest {
     void everySupportedSchemaLocationRegistersThePrimitive(
             String name, Function<Schema<?>, OpenAPI> site) {
         var api = site.apply(new Schema<>().$ref(REF));
-        new InstantScalarOpenApiCustomizer().customise(api);
+        new InstantScalarOpenApiCustomizerImpl().customise(api);
         assertThat(api.getComponents()).as(name).isNotNull();
         assertThat(api.getComponents().getSchemas()).as(name).containsKey("FireflyInstant");
     }
@@ -221,7 +221,7 @@ class InstantScalarSchemaGraphTest {
         var api = site.apply(new Schema<>().$ref(REF));
         if (api.getComponents() == null) api.setComponents(new Components());
         api.getComponents().addSchemas("FireflyInstant", new ObjectSchema());
-        assertThatThrownBy(() -> new InstantScalarOpenApiCustomizer().customise(api))
+        assertThatThrownBy(() -> new InstantScalarOpenApiCustomizerImpl().customise(api))
                 .as(name)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("OPENAPI_INSTANT_SCHEMA_CONFLICT");
@@ -235,17 +235,17 @@ class InstantScalarSchemaGraphTest {
         parent.setJsonSchema(Map.of("$ref", REF));
         parent.setJsonSchemaImpl(Map.of("$ref", REF));
         var api = schema(parent);
-        new InstantScalarOpenApiCustomizer().customise(api);
+        new InstantScalarOpenApiCustomizerImpl().customise(api);
         assertThat(api.getComponents().getSchemas()).doesNotContainKey("FireflyInstant");
         parent.setPropertyNames(new Schema<>().$ref(REF));
-        new InstantScalarOpenApiCustomizer().customise(api);
+        new InstantScalarOpenApiCustomizerImpl().customise(api);
         assertThat(api.getComponents().getSchemas()).containsKey("FireflyInstant");
     }
 
     @Test
     void theScalarEmitsStringDateTimeUnderBothSwaggerSerializers() {
         var api = schema(new Schema<>().$ref(REF));
-        new InstantScalarOpenApiCustomizer().customise(api);
+        new InstantScalarOpenApiCustomizerImpl().customise(api);
         var scalar = api.getComponents().getSchemas().get("FireflyInstant");
         for (var mapper : List.of(Json.mapper(), Json31.mapper())) {
             com.fasterxml.jackson.databind.JsonNode tree = mapper.valueToTree(scalar);

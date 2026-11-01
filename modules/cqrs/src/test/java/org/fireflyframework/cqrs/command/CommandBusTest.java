@@ -42,15 +42,15 @@ class CommandBusTest {
         // Create the new separated services
         CommandHandlerRegistry handlerRegistry = new CommandHandlerRegistry(applicationContext);
         CommandValidationService validationService = new CommandValidationService(validationProcessor);
-        CommandMetricsService metricsService = new CommandMetricsService(meterRegistry);
+        CommandMetricsServiceImpl metricsService = new CommandMetricsServiceImpl(meterRegistry);
 
-        commandBus = new DefaultCommandBus(handlerRegistry, validationService,
+        commandBus = new DefaultCommandBusImpl(handlerRegistry, validationService,
                                            new org.fireflyframework.cqrs.authorization.AuthorizationService(TestAuthorizationProperties.createDefault(), Optional.empty()),
                                            metricsService, correlationContext);
 
         // Register handlers manually for testing - using the external classes with @CommandHandlerComponent
-        ((DefaultCommandBus) commandBus).registerHandler(new CreateAccountHandler());
-        ((DefaultCommandBus) commandBus).registerHandler(new TransferMoneyHandler());
+        ((DefaultCommandBusImpl) commandBus).registerHandler(new CreateAccountHandler());
+        ((DefaultCommandBusImpl) commandBus).registerHandler(new TransferMoneyHandler());
     }
 
     @Test

@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WebhookMetricsServiceLoggingTest {
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
-    private final WebhookMetricsService service = new WebhookMetricsService(registry);
-    private final Logger logger = (Logger) LoggerFactory.getLogger(WebhookMetricsService.class);
+    private final WebhookMetricsServiceImpl service = new WebhookMetricsServiceImpl(registry);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(WebhookMetricsServiceImpl.class);
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private Level previousLevel;
     private boolean previousAdditivity;
@@ -86,7 +86,7 @@ class WebhookMetricsServiceLoggingTest {
     @Test
     void ordinaryAndNullLabelsRetainDiagnosticTextAndLevel() {
         service.recordWebhookReceived("sandbox");
-        new WebhookMetricsService(null).recordWebhookFailed(null, null);
+        new WebhookMetricsServiceImpl(null).recordWebhookFailed(null, null);
         assertEquals("Recorded webhook received for provider: sandbox", events.list.get(0).getFormattedMessage());
         assertEquals("Recorded webhook failure for provider: null, error: null", events.list.get(1).getFormattedMessage());
         assertTrue(events.list.stream().allMatch(event -> event.getLevel() == Level.DEBUG));

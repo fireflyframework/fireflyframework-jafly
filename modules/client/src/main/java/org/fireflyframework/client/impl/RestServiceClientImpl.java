@@ -132,52 +132,52 @@ public class RestServiceClientImpl implements RestClient {
 
     @Override
     public <R> RequestBuilder<R> get(String endpoint, Class<R> responseType) {
-        return new RestRequestBuilder<>("GET", endpoint, responseType, null);
+        return new RestRequestBuilderImpl<>("GET", endpoint, responseType, null);
     }
 
     @Override
     public <R> RequestBuilder<R> get(String endpoint, TypeReference<R> typeReference) {
-        return new RestRequestBuilder<>("GET", endpoint, null, typeReference);
+        return new RestRequestBuilderImpl<>("GET", endpoint, null, typeReference);
     }
 
     @Override
     public <R> RequestBuilder<R> post(String endpoint, Class<R> responseType) {
-        return new RestRequestBuilder<>("POST", endpoint, responseType, null);
+        return new RestRequestBuilderImpl<>("POST", endpoint, responseType, null);
     }
 
     @Override
     public <R> RequestBuilder<R> post(String endpoint, TypeReference<R> typeReference) {
-        return new RestRequestBuilder<>("POST", endpoint, null, typeReference);
+        return new RestRequestBuilderImpl<>("POST", endpoint, null, typeReference);
     }
 
     @Override
     public <R> RequestBuilder<R> put(String endpoint, Class<R> responseType) {
-        return new RestRequestBuilder<>("PUT", endpoint, responseType, null);
+        return new RestRequestBuilderImpl<>("PUT", endpoint, responseType, null);
     }
 
     @Override
     public <R> RequestBuilder<R> put(String endpoint, TypeReference<R> typeReference) {
-        return new RestRequestBuilder<>("PUT", endpoint, null, typeReference);
+        return new RestRequestBuilderImpl<>("PUT", endpoint, null, typeReference);
     }
 
     @Override
     public <R> RequestBuilder<R> delete(String endpoint, Class<R> responseType) {
-        return new RestRequestBuilder<>("DELETE", endpoint, responseType, null);
+        return new RestRequestBuilderImpl<>("DELETE", endpoint, responseType, null);
     }
 
     @Override
     public <R> RequestBuilder<R> delete(String endpoint, TypeReference<R> typeReference) {
-        return new RestRequestBuilder<>("DELETE", endpoint, null, typeReference);
+        return new RestRequestBuilderImpl<>("DELETE", endpoint, null, typeReference);
     }
 
     @Override
     public <R> RequestBuilder<R> patch(String endpoint, Class<R> responseType) {
-        return new RestRequestBuilder<>("PATCH", endpoint, responseType, null);
+        return new RestRequestBuilderImpl<>("PATCH", endpoint, responseType, null);
     }
 
     @Override
     public <R> RequestBuilder<R> patch(String endpoint, TypeReference<R> typeReference) {
-        return new RestRequestBuilder<>("PATCH", endpoint, null, typeReference);
+        return new RestRequestBuilderImpl<>("PATCH", endpoint, null, typeReference);
     }
 
 
@@ -260,7 +260,7 @@ public class RestServiceClientImpl implements RestClient {
     // Inner RequestBuilder Implementation
     // ========================================
 
-    private class RestRequestBuilder<R> implements RestClient.RequestBuilder<R> {
+    private class RestRequestBuilderImpl<R> implements RestClient.RequestBuilder<R> {
         private final String method;
         private final String endpoint;
         private final Class<R> responseType;
@@ -272,7 +272,7 @@ public class RestServiceClientImpl implements RestClient {
         private Map<String, String> headers = new java.util.HashMap<>();
         private Duration requestTimeout = timeout;
 
-        public RestRequestBuilder(String method, String endpoint, Class<R> responseType, TypeReference<R> typeReference) {
+        public RestRequestBuilderImpl(String method, String endpoint, Class<R> responseType, TypeReference<R> typeReference) {
             this.method = method;
             this.endpoint = endpoint;
             this.responseType = responseType;

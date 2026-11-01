@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.fireflyframework.ecm.adapter.docusign.client.DocuSignClientSettings;
-import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClient;
+import org.fireflyframework.ecm.adapter.docusign.client.ManagedDocuSignApiClientImpl;
 
 /** Real SDK/Jersey fixture; a cancelled token response finishes after consuming interruption. */
 public final class IndependentAuthCancellationProbe {
@@ -31,7 +31,7 @@ public final class IndependentAuthCancellationProbe {
         var release = new CountDownLatch(1); var completed = new CountDownLatch(1);
         var emitted = new AtomicBoolean();
         try (var transport = new ScopedSdkConnector.Scope(service);
-             var client = new ManagedDocuSignApiClient(DocuSignClientSettings.from(properties))) {
+             var client = new ManagedDocuSignApiClientImpl(DocuSignClientSettings.from(properties))) {
             transport.responder = wire -> {
                 if (wire.uri().getPath().endsWith("/oauth/token")) {
                     entered.countDown(); long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);

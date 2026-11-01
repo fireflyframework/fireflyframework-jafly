@@ -5,7 +5,7 @@ import io.micrometer.observation.ObservationRegistry;
 import org.fireflyframework.observability.FireflyObservabilityAutoConfiguration;
 import org.fireflyframework.observability.FireflyObservabilityProperties;
 import org.fireflyframework.observability.health.HealthMetricsBridge;
-import org.fireflyframework.observability.metrics.FireflyMeterRegistryCustomizer;
+import org.fireflyframework.observability.metrics.FireflyMeterRegistryCustomizerImpl;
 import org.fireflyframework.observability.tracing.FireflyBaggageConfiguration;
 import org.fireflyframework.observability.tracing.FireflyTracingSupport;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class FireflyObservabilityAutoConfigurationTest {
         contextRunner
                 .withBean(MeterRegistry.class, io.micrometer.core.instrument.simple.SimpleMeterRegistry::new)
                 .run(context -> {
-                    assertThat(context).hasSingleBean(FireflyMeterRegistryCustomizer.class);
+                    assertThat(context).hasSingleBean(FireflyMeterRegistryCustomizerImpl.class);
                 });
     }
 
@@ -53,7 +53,7 @@ class FireflyObservabilityAutoConfigurationTest {
                 .withPropertyValues("firefly.observability.metrics.enabled=false")
                 .withBean(MeterRegistry.class, io.micrometer.core.instrument.simple.SimpleMeterRegistry::new)
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(FireflyMeterRegistryCustomizer.class);
+                    assertThat(context).doesNotHaveBean(FireflyMeterRegistryCustomizerImpl.class);
                 });
     }
 

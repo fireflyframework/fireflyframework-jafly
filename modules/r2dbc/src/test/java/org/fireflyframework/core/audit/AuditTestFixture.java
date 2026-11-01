@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.regex.*;
 import org.fireflyframework.core.transaction.*;
-import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransaction;
+import org.fireflyframework.core.transaction.impl.DefaultBoundedRootTransactionImpl;
 import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
@@ -36,7 +36,7 @@ final class AuditTestFixture {
     Throwable workFailure;final Clock clock;final LongSupplier nanos;
     AuditTestFixture(){this(Clock.systemUTC(),System::nanoTime);}
     AuditTestFixture(Clock clock,LongSupplier nanos){this.clock=clock;this.nanos=nanos;}
-    final Driver driver=new Driver();final OwnedLeaseConnectionFactory factory=new OwnedLeaseConnectionFactory(driver);final DatabaseClient client=DatabaseClient.create(factory);final R2dbcEntityTemplate template=new R2dbcEntityTemplate(client,PostgresDialect.INSTANCE);final R2dbcTransactionManager manager=new R2dbcTransactionManager(factory);final BoundedR2dbcResources resources=BoundedR2dbcResources.verify(factory,client,template,manager);final BoundedRootTransaction root=new DefaultBoundedRootTransaction(resources,new CleanupPolicy(Duration.ofSeconds(1),Duration.ofSeconds(1)));
+    final Driver driver=new Driver();final OwnedLeaseConnectionFactoryImpl factory=new OwnedLeaseConnectionFactoryImpl(driver);final DatabaseClient client=DatabaseClient.create(factory);final R2dbcEntityTemplate template=new R2dbcEntityTemplate(client,PostgresDialect.INSTANCE);final R2dbcTransactionManager manager=new R2dbcTransactionManager(factory);final BoundedR2dbcResources resources=BoundedR2dbcResources.verify(factory,client,template,manager);final BoundedRootTransaction root=new DefaultBoundedRootTransactionImpl(resources,new CleanupPolicy(Duration.ofSeconds(1),Duration.ofSeconds(1)));
     <T> Mono<RootCompletion<T>> execute(Function<RootTransactionScope,Mono<T>> work){var now=clock.instant();return root.execute(R2dbcOperationBudget.observed(now,now.plusSeconds(5),nanos.getAsLong(),Duration.ofSeconds(5),clock,nanos),new DefaultTransactionDefinition(),scope->work.apply(scope).doOnError(error->workFailure=error));}
     static final class Driver implements ConnectionFactory {
         Map<String,List<Map<String,Object>>> tables=new HashMap<>(),snapshot;Runnable beforeRead=()->{};Throwable readFailure;final List<String> sql=new ArrayList<>();final List<Map<Integer,Object>> bindings=new ArrayList<>();int creates,writes,selects,affectedObservations,commits,rollbacks,closes,failWrite,nativeEnters,nativeCompletions,countAtWrite;long writeCount=1;boolean emptyCount;boolean autoCommit=true;

@@ -17,8 +17,8 @@ package org.fireflyframework.ecm.config;
 
 import org.fireflyframework.ecm.adapter.AdapterRegistry;
 import org.fireflyframework.ecm.adapter.AdapterSelector;
-import org.fireflyframework.ecm.adapter.local.LocalDocumentSearchAdapter;
-import org.fireflyframework.ecm.adapter.local.LocalPermissionAdapter;
+import org.fireflyframework.ecm.adapter.local.LocalDocumentSearchAdapterImpl;
+import org.fireflyframework.ecm.adapter.local.LocalPermissionAdapterImpl;
 import org.fireflyframework.ecm.adapter.noop.NoOpAdapterFactory;
 import org.fireflyframework.ecm.port.document.*;
 import org.fireflyframework.ecm.port.folder.*;
@@ -159,8 +159,8 @@ public class EcmAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "firefly.ecm.search.enabled", havingValue = "true", matchIfMissing = false)
-    public LocalDocumentSearchAdapter localDocumentSearchAdapter() {
-        return new LocalDocumentSearchAdapter();
+    public LocalDocumentSearchAdapterImpl localDocumentSearchAdapter() {
+        return new LocalDocumentSearchAdapterImpl();
     }
 
     /**
@@ -176,8 +176,8 @@ public class EcmAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "firefly.ecm.permissions.enabled", havingValue = "true", matchIfMissing = false)
-    public LocalPermissionAdapter localPermissionAdapter() {
-        return new LocalPermissionAdapter();
+    public LocalPermissionAdapterImpl localPermissionAdapter() {
+        return new LocalPermissionAdapterImpl();
     }
 
     /**

@@ -142,9 +142,9 @@ The module's auto-configurations load in a specific order to ensure dependencies
 
 `OrchestrationPersistenceAutoConfiguration` runs first. It creates the persistence provider based on classpath and properties:
 
-- If `spring-data-redis-reactive` + `provider=redis` → `RedisPersistenceProvider`
-- If `fireflyframework-cache` + `provider=cache` → `CachePersistenceProvider`
-- If `fireflyframework-eventsourcing` + `provider=event-sourced` → `EventSourcedPersistenceProvider`
+- If `spring-data-redis-reactive` + `provider=redis` → `RedisPersistenceProviderImpl`
+- If `fireflyframework-cache` + `provider=cache` → `CachePersistenceProviderImpl`
+- If `fireflyframework-eventsourcing` + `provider=event-sourced` → `EventSourcedPersistenceProviderImpl`
 - Otherwise → falls through to Phase 1 fallback
 
 ### Phase 1: Core Infrastructure
@@ -155,15 +155,15 @@ The module's auto-configurations load in a specific order to ensure dependencies
 |------|------|-----------|
 | `ArgumentResolver` | `ArgumentResolver` | `@ConditionalOnMissingBean` |
 | `StepInvoker` | `StepInvoker` | `@ConditionalOnMissingBean` |
-| `OrchestrationLoggerEvents` | `OrchestrationLoggerEvents` | `@ConditionalOnMissingBean` |
-| `OrchestrationEvents` | `CompositeOrchestrationEvents` | `@Primary`: wraps all event delegates |
-| `ExecutionPersistenceProvider` | `InMemoryPersistenceProvider` | `@ConditionalOnMissingBean` (fallback) |
-| `DeadLetterStore` | `InMemoryDeadLetterStore` | `@ConditionalOnMissingBean` |
+| `OrchestrationLoggerEventsImpl` | `OrchestrationLoggerEventsImpl` | `@ConditionalOnMissingBean` |
+| `OrchestrationEvents` | `CompositeOrchestrationEventsImpl` | `@Primary`: wraps all event delegates |
+| `ExecutionPersistenceProvider` | `InMemoryPersistenceProviderImpl` | `@ConditionalOnMissingBean` (fallback) |
+| `DeadLetterStore` | `InMemoryDeadLetterStoreImpl` | `@ConditionalOnMissingBean` |
 | `DeadLetterService` | `DeadLetterService` | DLQ enabled (default: `true`) |
-| `OrchestrationEventPublisher` | `NoOpEventPublisher` | `@ConditionalOnMissingBean` |
+| `OrchestrationEventPublisher` | `NoOpEventPublisherImpl` | `@ConditionalOnMissingBean` |
 | `OrchestrationScheduler` | `OrchestrationScheduler` | `@ConditionalOnMissingBean` |
 | `RecoveryService` | `RecoveryService` | Recovery enabled (default: `true`) |
-| `SchedulingPostProcessor` | `SchedulingPostProcessor` | `@ConditionalOnMissingBean` |
+| `SchedulingPostProcessorImpl` | `SchedulingPostProcessorImpl` | `@ConditionalOnMissingBean` |
 | `BackpressureStrategyFactory` | Static utility | Always available (static registry) |
 | `OrchestrationValidator` | `OrchestrationValidator` | `validation.enabled=true` (default) |
 | `CompensationErrorHandlerFactory` | Static utility | Always available (static registry) |
@@ -216,11 +216,11 @@ Each enabled pattern creates its registry, orchestrator, and engine:
 
 | Auto-Configuration | Bean | Classpath Condition |
 |--------------------|------|---------------------|
-| `OrchestrationMetricsAutoConfiguration` | `OrchestrationMetrics` | `MeterRegistry` on classpath |
+| `OrchestrationMetricsAutoConfiguration` | `OrchestrationMetricsImpl` | `MeterRegistry` on classpath |
 | `OrchestrationMetricsAutoConfiguration` | `OrchestrationMetricsEndpoint` | `MeterRegistry` + Actuator on classpath |
 | `OrchestrationTracingAutoConfiguration` | `OrchestrationTracer` | `ObservationRegistry` on classpath |
 | `OrchestrationResilienceAutoConfiguration` | `ResilienceDecorator` | `CircuitBreakerRegistry` on classpath |
-| `OrchestrationRestAutoConfiguration` | `OrchestrationController`, `DeadLetterController`, `OrchestrationHealthIndicator` | Reactive web application |
+| `OrchestrationRestAutoConfiguration` | `OrchestrationController`, `DeadLetterController`, `OrchestrationHealthIndicatorImpl` | Reactive web application |
 | `EventGatewayAutoConfiguration` | `EventGateway` + initializer | Always (after pattern engines) |
 
 Additional composition beans registered during Phase 3:
@@ -316,7 +316,7 @@ firefly:
 
 ### Actuator Integration
 
-When `health.enabled=true` and Spring Boot Actuator is on the classpath, the `OrchestrationHealthIndicator` is registered automatically. It reports:
+When `health.enabled=true` and Spring Boot Actuator is on the classpath, the `OrchestrationHealthIndicatorImpl` is registered automatically. It reports:
 
 - `UP`: persistence is healthy
 - `DOWN`: persistence health check failed

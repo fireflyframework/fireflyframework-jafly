@@ -147,28 +147,28 @@ public interface ServiceDiscoveryClient {
      * Creates a Kubernetes service discovery client.
      */
     static ServiceDiscoveryClient kubernetes(String namespace) {
-        return new KubernetesServiceDiscoveryClient(namespace);
+        return new KubernetesServiceDiscoveryClientImpl(namespace);
     }
 
     /**
      * Creates an Eureka service discovery client.
      */
     static ServiceDiscoveryClient eureka(String eurekaUrl) {
-        return new EurekaServiceDiscoveryClient(eurekaUrl);
+        return new EurekaServiceDiscoveryClientImpl(eurekaUrl);
     }
 
     /**
      * Creates a Consul service discovery client.
      */
     static ServiceDiscoveryClient consul(String consulUrl) {
-        return new ConsulServiceDiscoveryClient(consulUrl);
+        return new ConsulServiceDiscoveryClientImpl(consulUrl);
     }
 
     /**
      * Creates a static service discovery client.
      */
     static ServiceDiscoveryClient staticConfig(java.util.Map<String, List<String>> serviceEndpoints) {
-        return new StaticServiceDiscoveryClient(serviceEndpoints);
+        return new StaticServiceDiscoveryClientImpl(serviceEndpoints);
     }
 }
 

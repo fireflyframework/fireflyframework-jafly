@@ -14,7 +14,7 @@ This document provides a comprehensive guide to the data lineage tracking framew
 - [Architecture](#architecture)
 - [Configuration](#configuration)
 - [LineageRecord Fields](#lineagerecord-fields)
-- [InMemoryLineageTracker](#inmemorylineagetracker)
+- [InMemoryLineageTrackerImpl](#inmemorylineagetracker)
 - [Recording Lineage Programmatically](#recording-lineage-programmatically)
 - [Querying Lineage](#querying-lineage)
 - [Creating a Custom LineageTracker](#creating-a-custom-lineagetracker)
@@ -70,7 +70,7 @@ Key classes:
 |---|---|---|
 | `LineageTracker` | `o.f.data.lineage` | Port interface for recording and querying lineage |
 | `LineageRecord` | `o.f.data.lineage` | Immutable record of a single provenance step |
-| `InMemoryLineageTracker` | `o.f.data.lineage` | Default in-memory implementation |
+| `InMemoryLineageTrackerImpl` | `o.f.data.lineage` | Default in-memory implementation |
 | `DataLineageAutoConfiguration` | `o.f.data.config` | Auto-configures the tracker from Spring properties |
 
 ---
@@ -86,7 +86,7 @@ firefly:
       enabled: true    # default: false (must be explicitly enabled)
 ```
 
-When enabled, `DataLineageAutoConfiguration` creates an `InMemoryLineageTracker` bean unless you provide your own `LineageTracker` bean (via `@ConditionalOnMissingBean`).
+When enabled, `DataLineageAutoConfiguration` creates an `InMemoryLineageTrackerImpl` bean unless you provide your own `LineageTracker` bean (via `@ConditionalOnMissingBean`).
 
 To disable lineage tracking (the default):
 
@@ -145,9 +145,9 @@ LineageRecord record = LineageRecord.builder()
 
 ---
 
-## InMemoryLineageTracker
+## InMemoryLineageTrackerImpl
 
-The default `InMemoryLineageTracker` is a thread-safe implementation that stores lineage records in memory using a `ConcurrentHashMap<String, List<LineageRecord>>`, where each entity's records are backed by a `CopyOnWriteArrayList`.
+The default `InMemoryLineageTrackerImpl` is a thread-safe implementation that stores lineage records in memory using a `ConcurrentHashMap<String, List<LineageRecord>>`, where each entity's records are backed by a `CopyOnWriteArrayList`.
 
 ### Characteristics
 
@@ -359,7 +359,7 @@ public class R2dbcLineageTracker implements LineageTracker {
 }
 ```
 
-When you provide your own `LineageTracker` bean, the auto-configuration's `InMemoryLineageTracker` is automatically skipped due to `@ConditionalOnMissingBean`.
+When you provide your own `LineageTracker` bean, the auto-configuration's `InMemoryLineageTrackerImpl` is automatically skipped due to `@ConditionalOnMissingBean`.
 
 ---
 
@@ -408,7 +408,7 @@ public class LineageAwareEnricher {
 
 1. Enable lineage explicitly. Lineage tracking is opt-in (`matchIfMissing = false`) because it adds overhead. Enable it only when you need auditability or governance.
 
-2. Implement a persistent tracker for production. The `InMemoryLineageTracker` is suitable for development and testing. Production deployments should use a database-backed (relational, graph, or event log) implementation to ensure lineage survives restarts and is shared across replicas.
+2. Implement a persistent tracker for production. The `InMemoryLineageTrackerImpl` is suitable for development and testing. Production deployments should use a database-backed (relational, graph, or event log) implementation to ensure lineage survives restarts and is shared across replicas.
 
 3. Always set `entityId` and `operatorId`. These are the primary query dimensions. Consistent entity IDs enable reconstructing the full provenance chain; consistent operator IDs enable tracing all operations from a given enricher or job.
 

@@ -216,7 +216,7 @@ Business value: Ensures product-based controllers have consistent context resolu
 ---
 
 #### 13. ApplicationLayerHealthIndicatorTest (5 tests)
-Tests for the `ApplicationLayerHealthIndicator` class - Spring Boot Actuator health indicator.
+Tests for the `ApplicationLayerHealthIndicatorImpl` class - Spring Boot Actuator health indicator.
 
 What it validates:
 - ✅ Health check returns UP status when healthy
@@ -229,7 +229,7 @@ Business value: Enables monitoring and observability of application layer compon
 ---
 
 #### 14. FireflyApplicationInfoContributorTest (6 tests)
-Tests for the `FireflyApplicationInfoContributor` class - exposes metadata via /actuator/info.
+Tests for the `FireflyApplicationInfoContributorImpl` class - exposes metadata via /actuator/info.
 
 What it validates:
 - ✅ Complete metadata contribution
@@ -346,7 +346,7 @@ Business value: Ensures AOP-based security enforcement works correctly at runtim
 ---
 
 #### 21. ApplicationLayerBannerConfigTest (5 tests)
-Tests for the `ApplicationLayerBannerConfig` class - startup banner configuration.
+Tests for the `ApplicationLayerBannerConfigImpl` class - startup banner configuration.
 
 What it validates:
 - ✅ Banner mode set to CONSOLE

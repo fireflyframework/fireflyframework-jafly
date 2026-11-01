@@ -78,7 +78,7 @@ class OpaPolicyDecisionAdapterIntegrationTest {
 
     @Test
     void permitsAllowedActionForAnySubject() {
-        OpaPolicyDecisionAdapter adapter = new OpaPolicyDecisionAdapter(webClient, "firefly/allow");
+        OpaPolicyDecisionAdapterImpl adapter = new OpaPolicyDecisionAdapterImpl(webClient, "firefly/allow");
         StepVerifier.create(adapter.authorize(principal(Set.of("teller")), "read", "doc:1", Map.of()))
                 .expectNextMatches(d -> d.granted())
                 .verifyComplete();
@@ -86,7 +86,7 @@ class OpaPolicyDecisionAdapterIntegrationTest {
 
     @Test
     void permitsAdminForAnyAction() {
-        OpaPolicyDecisionAdapter adapter = new OpaPolicyDecisionAdapter(webClient, "firefly/allow");
+        OpaPolicyDecisionAdapterImpl adapter = new OpaPolicyDecisionAdapterImpl(webClient, "firefly/allow");
         StepVerifier.create(adapter.authorize(principal(Set.of("admin")), "write", "doc:1", Map.of()))
                 .expectNextMatches(d -> d.granted())
                 .verifyComplete();
@@ -94,7 +94,7 @@ class OpaPolicyDecisionAdapterIntegrationTest {
 
     @Test
     void deniesDisallowedActionForNonAdmin() {
-        OpaPolicyDecisionAdapter adapter = new OpaPolicyDecisionAdapter(webClient, "firefly/allow");
+        OpaPolicyDecisionAdapterImpl adapter = new OpaPolicyDecisionAdapterImpl(webClient, "firefly/allow");
         StepVerifier.create(adapter.authorize(principal(Set.of("teller")), "write", "doc:1", Map.of()))
                 .expectNextMatches(d -> !d.granted())
                 .verifyComplete();
@@ -102,7 +102,7 @@ class OpaPolicyDecisionAdapterIntegrationTest {
 
     @Test
     void failsClosedForUndefinedDecisionPath() {
-        OpaPolicyDecisionAdapter adapter = new OpaPolicyDecisionAdapter(webClient, "firefly/does_not_exist");
+        OpaPolicyDecisionAdapterImpl adapter = new OpaPolicyDecisionAdapterImpl(webClient, "firefly/does_not_exist");
         StepVerifier.create(adapter.authorize(principal(Set.of("admin")), "read", "doc:1", Map.of()))
                 .expectNextMatches(d -> !d.granted())
                 .verifyComplete();

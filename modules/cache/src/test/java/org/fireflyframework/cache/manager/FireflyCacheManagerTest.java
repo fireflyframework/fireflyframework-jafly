@@ -16,7 +16,7 @@
 
 package org.fireflyframework.cache.manager;
 
-import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapterImpl;
 import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
 import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheType;
@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class FireflyCacheManagerTest {
 
-    private FireflyCacheManager cacheManager;
+    private FireflyCacheManagerImpl cacheManager;
     private CacheAdapter primaryCache;
 
     @BeforeEach
@@ -44,9 +44,9 @@ class FireflyCacheManagerTest {
                 .maximumSize(100L)
                 .recordStats(true)
                 .build();
-        primaryCache = new CaffeineCacheAdapter("test-cache", config);
+        primaryCache = new CaffeineCacheAdapterImpl("test-cache", config);
         
-        cacheManager = new FireflyCacheManager(primaryCache);
+        cacheManager = new FireflyCacheManagerImpl(primaryCache);
     }
 
     @Test
@@ -211,9 +211,9 @@ class FireflyCacheManagerTest {
         CaffeineCacheConfig fallbackConfig = CaffeineCacheConfig.builder()
                 .maximumSize(50L)
                 .build();
-        CacheAdapter fallbackCache = new CaffeineCacheAdapter("fallback-cache", fallbackConfig);
+        CacheAdapter fallbackCache = new CaffeineCacheAdapterImpl("fallback-cache", fallbackConfig);
         
-        FireflyCacheManager managerWithFallback = new FireflyCacheManager(primaryCache, fallbackCache);
+        FireflyCacheManagerImpl managerWithFallback = new FireflyCacheManagerImpl(primaryCache, fallbackCache);
         
         // When - put data in primary
         managerWithFallback.put("key1", "value1").block();

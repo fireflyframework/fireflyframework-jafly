@@ -17,8 +17,8 @@
 package org.fireflyframework.data.quality;
 
 import org.fireflyframework.data.event.DataQualityEvent;
-import org.fireflyframework.data.quality.rules.NotNullRule;
-import org.fireflyframework.data.quality.rules.PatternRule;
+import org.fireflyframework.data.quality.rules.NotNullRuleImpl;
+import org.fireflyframework.data.quality.rules.PatternRuleImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -47,9 +47,9 @@ class DataQualityEngineTest {
     @Test
     void evaluate_collectAll_shouldRunAllRulesEvenOnFailure() {
         // Given - two rules that both fail
-        DataQualityRule<TestDTO> nameRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> nameRule = new NotNullRuleImpl<>(
                 "name", TestDTO::name, QualitySeverity.CRITICAL);
-        DataQualityRule<TestDTO> emailRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> emailRule = new NotNullRuleImpl<>(
                 "email", TestDTO::email, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule));
@@ -69,9 +69,9 @@ class DataQualityEngineTest {
     @Test
     void evaluate_failFast_shouldStopOnFirstCriticalFailure() {
         // Given - first rule is CRITICAL and fails, second should not execute
-        DataQualityRule<TestDTO> nameRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> nameRule = new NotNullRuleImpl<>(
                 "name", TestDTO::name, QualitySeverity.CRITICAL);
-        DataQualityRule<TestDTO> emailRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> emailRule = new NotNullRuleImpl<>(
                 "email", TestDTO::email, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule));
@@ -90,9 +90,9 @@ class DataQualityEngineTest {
     @Test
     void evaluate_shouldPassWhenAllRulesPass() {
         // Given
-        DataQualityRule<TestDTO> nameRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> nameRule = new NotNullRuleImpl<>(
                 "name", TestDTO::name, QualitySeverity.CRITICAL);
-        DataQualityRule<TestDTO> emailRule = new PatternRule<>(
+        DataQualityRule<TestDTO> emailRule = new PatternRuleImpl<>(
                 "email", Pattern.compile(".+@.+\\..+"), TestDTO::email);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule, emailRule));
@@ -113,7 +113,7 @@ class DataQualityEngineTest {
     @Test
     void evaluate_shouldReportWarningsAsPassedButIncludeThem() {
         // Given - WARNING failure should not make report.passed false
-        DataQualityRule<TestDTO> emailRule = new PatternRule<>(
+        DataQualityRule<TestDTO> emailRule = new PatternRuleImpl<>(
                 "email", Pattern.compile(".+@.+\\..+"), TestDTO::email, QualitySeverity.WARNING);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(emailRule));
@@ -134,7 +134,7 @@ class DataQualityEngineTest {
     @Test
     void evaluate_shouldPublishEvent() {
         // Given
-        DataQualityRule<TestDTO> nameRule = new NotNullRule<>(
+        DataQualityRule<TestDTO> nameRule = new NotNullRuleImpl<>(
                 "name", TestDTO::name, QualitySeverity.CRITICAL);
 
         DataQualityEngine engine = new DataQualityEngine(List.of(nameRule), eventPublisher);

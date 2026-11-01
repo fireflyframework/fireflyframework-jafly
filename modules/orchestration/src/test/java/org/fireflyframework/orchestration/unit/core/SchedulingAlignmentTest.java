@@ -17,7 +17,7 @@
 package org.fireflyframework.orchestration.unit.core;
 
 import org.fireflyframework.orchestration.core.scheduling.OrchestrationScheduler;
-import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessor;
+import org.fireflyframework.orchestration.core.scheduling.SchedulingPostProcessorImpl;
 import org.fireflyframework.orchestration.saga.annotation.Saga;
 import org.fireflyframework.orchestration.saga.annotation.ScheduledSaga;
 import org.fireflyframework.orchestration.saga.engine.SagaEngine;
@@ -85,7 +85,7 @@ class SchedulingAlignmentTest {
         when(applicationContext.getBeansWithAnnotation(Saga.class))
                 .thenReturn(Map.of("disabledSaga", bean));
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler, never()).scheduleAtFixedRate(any(), any(), anyLong(), anyLong());
@@ -106,7 +106,7 @@ class SchedulingAlignmentTest {
         when(applicationContext.getBeansWithAnnotation(Tcc.class))
                 .thenReturn(Map.of("disabledTcc", bean));
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, tccEngine, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, tccEngine, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler, never()).scheduleAtFixedRate(any(), any(), anyLong(), anyLong());
@@ -129,7 +129,7 @@ class SchedulingAlignmentTest {
         lenient().when(sagaEngine.execute(eq("zoned-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         // The 4-arg scheduleWithCron is called when zone is provided
@@ -153,7 +153,7 @@ class SchedulingAlignmentTest {
         lenient().when(sagaEngine.execute(eq("delayed-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -176,7 +176,7 @@ class SchedulingAlignmentTest {
         lenient().when(sagaEngine.execute(eq("input-saga"), any(StepInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, sagaEngine, null, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, sagaEngine, null, null);
         processor.afterSingletonsInstantiated();
 
         // Verify that the schedule was registered (the input parsing happens inside the Runnable)
@@ -200,7 +200,7 @@ class SchedulingAlignmentTest {
         lenient().when(tccEngine.execute(eq("delayed-tcc"), any(TccInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, tccEngine, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, tccEngine, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleAtFixedRate(
@@ -223,7 +223,7 @@ class SchedulingAlignmentTest {
         lenient().when(tccEngine.execute(eq("zoned-tcc"), any(TccInputs.class)))
                 .thenReturn(Mono.empty());
 
-        var processor = new SchedulingPostProcessor(applicationContext, spyScheduler, null, tccEngine, null);
+        var processor = new SchedulingPostProcessorImpl(applicationContext, spyScheduler, null, tccEngine, null);
         processor.afterSingletonsInstantiated();
 
         verify(spyScheduler).scheduleWithCron(

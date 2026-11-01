@@ -24,11 +24,11 @@ class AdobeSignAdapterTest {
 
     @Test
     void contextLoads_andAdobeSignAdapterPresent() {
-        assertThat(envelopePort).isInstanceOf(AdobeSignSignatureEnvelopeAdapter.class);
+        assertThat(envelopePort).isInstanceOf(AdobeSignSignatureEnvelopeAdapterImpl.class);
     }
 
     @org.springframework.context.annotation.Configuration
-    @org.springframework.context.annotation.Import(AdobeSignSignatureEnvelopeAdapter.class)
+    @org.springframework.context.annotation.Import(AdobeSignSignatureEnvelopeAdapterImpl.class)
     static class TestConfig {
         @org.springframework.context.annotation.Bean
         org.springframework.web.reactive.function.client.WebClient adobeSignWebClient() {

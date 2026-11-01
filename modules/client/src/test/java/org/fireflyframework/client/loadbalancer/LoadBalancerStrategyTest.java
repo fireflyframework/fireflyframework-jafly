@@ -40,7 +40,7 @@ class LoadBalancerStrategyTest {
     @Test
     void shouldSelectInstanceWithRoundRobin() {
         // Given
-        LoadBalancerStrategy strategy = new LoadBalancerStrategy.RoundRobin();
+        LoadBalancerStrategy strategy = new LoadBalancerStrategy.RoundRobinImpl();
 
         // When
         Optional<ServiceInstance> first = strategy.selectInstance(instances);
@@ -59,7 +59,7 @@ class LoadBalancerStrategyTest {
     @Test
     void shouldSelectInstanceWithRandom() {
         // Given
-        LoadBalancerStrategy strategy = new LoadBalancerStrategy.Random();
+        LoadBalancerStrategy strategy = new LoadBalancerStrategy.RandomImpl();
 
         // When
         Optional<ServiceInstance> selected = strategy.selectInstance(instances);
@@ -77,7 +77,7 @@ class LoadBalancerStrategyTest {
             "instance-2", 1,
             "instance-3", 1
         );
-        LoadBalancerStrategy strategy = new LoadBalancerStrategy.WeightedRoundRobin(weights);
+        LoadBalancerStrategy strategy = new LoadBalancerStrategy.WeightedRoundRobinImpl(weights);
 
         // When
         Optional<ServiceInstance> selected = strategy.selectInstance(instances);
@@ -89,7 +89,7 @@ class LoadBalancerStrategyTest {
     @Test
     void shouldSelectInstanceWithLeastConnections() {
         // Given
-        LoadBalancerStrategy.LeastConnections strategy = new LoadBalancerStrategy.LeastConnections();
+        LoadBalancerStrategy.LeastConnectionsImpl strategy = new LoadBalancerStrategy.LeastConnectionsImpl();
 
         // When
         Optional<ServiceInstance> selected = strategy.selectInstance(instances);
@@ -106,8 +106,8 @@ class LoadBalancerStrategyTest {
     @Test
     void shouldSelectInstanceWithStickySession() {
         // Given
-        LoadBalancerStrategy.StickySession strategy = new LoadBalancerStrategy.StickySession(
-            new LoadBalancerStrategy.RoundRobin()
+        LoadBalancerStrategy.StickySessionImpl strategy = new LoadBalancerStrategy.StickySessionImpl(
+            new LoadBalancerStrategy.RoundRobinImpl()
         );
 
         // When
@@ -129,9 +129,9 @@ class LoadBalancerStrategyTest {
             new ServiceInstance("instance-3", "test-service", "localhost", 8082, false, HealthStatus.UP, Map.of("zone", "us-east-1a"))
         );
 
-        LoadBalancerStrategy strategy = new LoadBalancerStrategy.ZoneAware(
+        LoadBalancerStrategy strategy = new LoadBalancerStrategy.ZoneAwareImpl(
             "us-east-1a",
-            new LoadBalancerStrategy.RoundRobin()
+            new LoadBalancerStrategy.RoundRobinImpl()
         );
 
         // When

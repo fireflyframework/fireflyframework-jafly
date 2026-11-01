@@ -3,12 +3,12 @@ package org.fireflyframework.observability;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 import org.fireflyframework.observability.health.HealthMetricsBridge;
-import org.fireflyframework.observability.metrics.FireflyMeterRegistryCustomizer;
-import org.fireflyframework.observability.tracing.ClientObservationBeanPostProcessor;
-import org.fireflyframework.observability.tracing.FeignMicrometerCapabilityFactory;
+import org.fireflyframework.observability.metrics.FireflyMeterRegistryCustomizerImpl;
+import org.fireflyframework.observability.tracing.ClientObservationBeanPostProcessorImpl;
+import org.fireflyframework.observability.tracing.FeignMicrometerCapabilityFactoryImpl;
 import org.fireflyframework.observability.tracing.FireflyBaggageConfiguration;
 import org.fireflyframework.observability.tracing.FireflyTracingSupport;
-import org.fireflyframework.observability.tracing.HttpErrorStatusObservationFilter;
+import org.fireflyframework.observability.tracing.HttpErrorStatusObservationFilterImpl;
 import org.fireflyframework.observability.tracing.TracingRegistry;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,10 +48,10 @@ public class FireflyObservabilityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        FireflyMeterRegistryCustomizer fireflyMeterRegistryCustomizer(
+        FireflyMeterRegistryCustomizerImpl fireflyMeterRegistryCustomizer(
                 @Value("${spring.application.name:unknown}") String appName,
                 @Value("${spring.profiles.active:default}") String environment) {
-            return new FireflyMeterRegistryCustomizer(appName, environment);
+            return new FireflyMeterRegistryCustomizerImpl(appName, environment);
         }
     }
 
@@ -77,8 +77,8 @@ public class FireflyObservabilityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        HttpErrorStatusObservationFilter httpErrorStatusObservationFilter() {
-            return new HttpErrorStatusObservationFilter();
+        HttpErrorStatusObservationFilterImpl httpErrorStatusObservationFilter() {
+            return new HttpErrorStatusObservationFilterImpl();
         }
 
         @Bean
@@ -89,8 +89,8 @@ public class FireflyObservabilityAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        static ClientObservationBeanPostProcessor clientObservationBeanPostProcessor(Environment environment) {
-            return new ClientObservationBeanPostProcessor(environment);
+        static ClientObservationBeanPostProcessorImpl clientObservationBeanPostProcessor(Environment environment) {
+            return new ClientObservationBeanPostProcessorImpl(environment);
         }
 
         @Bean
@@ -98,7 +98,7 @@ public class FireflyObservabilityAutoConfiguration {
         @ConditionalOnMissingBean(name = "fireflyFeignMicrometerCapability")
         FactoryBean<Object> fireflyFeignMicrometerCapability(ObservationRegistry observationRegistry)
                 throws ClassNotFoundException {
-            return new FeignMicrometerCapabilityFactory(observationRegistry);
+            return new FeignMicrometerCapabilityFactoryImpl(observationRegistry);
         }
     }
 

@@ -53,11 +53,11 @@ class AzureAdIdpAdapterTest {
     @Mock
     private AzureAdAdminService adminService;
 
-    private AzureAdIdpAdapter adapter;
+    private AzureAdIdpAdapterImpl adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new AzureAdIdpAdapter(authService, adminService);
+        adapter = new AzureAdIdpAdapterImpl(authService, adminService);
     }
 
     @Test

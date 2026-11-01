@@ -137,7 +137,7 @@ management:
 
 ```java
 @Autowired
-private ServiceClientMetrics metrics;
+private ServiceClientMetricsImpl metrics;
 
 // Get total requests
 long totalRequests = metrics.getTotalRequests("user-service");
@@ -407,7 +407,7 @@ stats.forEach((endpoint, statistics) -> {
 
 ### Performance Metrics Collector
 
-The `PerformanceMetricsCollector` provides advanced performance tracking.
+The `PerformanceMetricsCollectorImpl` provides advanced performance tracking.
 
 #### Usage
 
@@ -415,7 +415,7 @@ The `PerformanceMetricsCollector` provides advanced performance tracking.
 @Autowired
 private MeterRegistry meterRegistry;
 
-PerformanceMetricsCollector collector = new PerformanceMetricsCollector(meterRegistry);
+PerformanceMetricsCollectorImpl collector = new PerformanceMetricsCollectorImpl(meterRegistry);
 
 // Record a request
 collector.recordRequest("user-service", "GET", "/users/123",
@@ -503,7 +503,7 @@ Create a custom endpoint for service client statistics:
 public class ServiceClientsEndpoint {
     
     @Autowired
-    private ServiceClientMetrics metrics;
+    private ServiceClientMetricsImpl metrics;
     
     @ReadOperation
     public Map<String, Object> serviceClients() {

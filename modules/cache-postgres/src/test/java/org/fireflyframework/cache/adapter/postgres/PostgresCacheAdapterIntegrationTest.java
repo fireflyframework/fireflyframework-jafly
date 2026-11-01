@@ -25,7 +25,7 @@ import io.r2dbc.spi.Connection;
 import org.fireflyframework.cache.core.CacheHealth;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.serialization.CacheSerializer;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +61,7 @@ class PostgresCacheAdapterIntegrationTest {
     private static final String TABLE = "firefly_cache_entries";
 
     private static ConnectionPool pool;
-    private PostgresCacheAdapter adapter;
+    private PostgresCacheAdapterImpl adapter;
 
     @BeforeAll
     static void startPool() {
@@ -113,7 +113,7 @@ class PostgresCacheAdapterIntegrationTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        CacheSerializer serializer = new JsonCacheSerializer(objectMapper);
+        CacheSerializer serializer = new JsonCacheSerializerImpl(objectMapper);
         PostgresCacheConfig config = PostgresCacheConfig.builder()
                 .cacheName("itest")
                 .keyPrefix("firefly:cache")
@@ -121,7 +121,7 @@ class PostgresCacheAdapterIntegrationTest {
                 .schema(SCHEMA)
                 .cacheTable(TABLE)
                 .build();
-        adapter = new PostgresCacheAdapter("itest", pool, config, serializer);
+        adapter = new PostgresCacheAdapterImpl("itest", pool, config, serializer);
         // Ensure a clean cache for each test.
         adapter.clear().block(Duration.ofSeconds(10));
     }
@@ -301,10 +301,10 @@ class PostgresCacheAdapterIntegrationTest {
 
     private static final Duration PROTOCOL_WAIT = Duration.ofSeconds(10);
 
-    private static PostgresCacheAdapter scoped(String namespace, String logicalName, io.r2dbc.spi.ConnectionFactory factory) {
-        return new PostgresCacheAdapter(logicalName, factory, PostgresCacheConfig.builder()
+    private static PostgresCacheAdapterImpl scoped(String namespace, String logicalName, io.r2dbc.spi.ConnectionFactory factory) {
+        return new PostgresCacheAdapterImpl(logicalName, factory, PostgresCacheConfig.builder()
                 .keyPrefix(namespace).schema(SCHEMA).cacheTable(TABLE).build(),
-                new JsonCacheSerializer(new ObjectMapper()));
+                new JsonCacheSerializerImpl(new ObjectMapper()));
     }
 
     private static <T> Mono<T> technical(java.util.function.Function<Connection, Mono<T>> work) {
@@ -429,11 +429,11 @@ class PostgresCacheAdapterIntegrationTest {
                 .withPropertyValues("firefly.cache.postgres.schema=" + SCHEMA);
         contexts.withPropertyValues("spring.application.name=service-a-" + suffix).run(firstContext -> {
             assertThat(firstContext).hasNotFailed();
-            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class);
             first.put("shared", "first").block(PROTOCOL_WAIT);
             contexts.withPropertyValues("spring.application.name=service-b-" + suffix).run(secondContext -> {
                 assertThat(secondContext).hasNotFailed();
-                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class);
                 assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).isEmpty();
                 second.put("shared", "second").block(PROTOCOL_WAIT);
                 first.clear().block(PROTOCOL_WAIT);
@@ -489,12 +489,12 @@ class PostgresCacheAdapterIntegrationTest {
         contexts.run(firstContext -> {
             assertThat(firstContext).hasNotFailed();
             firstPool.set(firstContext.getBean("fireflyCachePostgresConnectionFactory", ConnectionPool.class));
-            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+            var first = firstContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class);
             contexts.run(secondContext -> {
                 assertThat(secondContext).hasNotFailed();
                 secondPool.set(secondContext.getBean("fireflyCachePostgresConnectionFactory", ConnectionPool.class));
                 assertThat(firstPool.get()).isNotSameAs(secondPool.get());
-                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManager.class);
+                var second = secondContext.getBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class);
                 first.put("shared", "cross-instance", Duration.ofSeconds(1)).block(PROTOCOL_WAIT);
                 assertThat(second.get("shared", String.class).block(PROTOCOL_WAIT)).contains("cross-instance");
                 await().atMost(PROTOCOL_WAIT).until(() -> second.get("shared", String.class).block(PROTOCOL_WAIT).isEmpty());

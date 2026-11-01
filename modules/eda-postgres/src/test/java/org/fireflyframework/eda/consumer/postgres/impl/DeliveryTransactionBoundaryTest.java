@@ -41,7 +41,7 @@ class DeliveryTransactionBoundaryTest {
         doReturn(Mono.defer(()->Mono.just(sessions.get(acquired.getAndIncrement()).connection))).when(factory).create();
     }
     Session session() {var session=new Session();sessions.add(session);return session;}
-    DeliveryTransactionBoundary boundary(ConnectionFactory provided) {return new DeliveryTransactionBoundary(provided,Duration.ofSeconds(10));}
+    DeliveryTransactionBoundaryImpl boundary(ConnectionFactory provided) {return new DeliveryTransactionBoundaryImpl(provided,Duration.ofSeconds(10));}
     Mono<String> query(ConnectionFactory provided) {
         var template=new R2dbcEntityTemplate(DatabaseClient.builder().connectionFactory(provided)
                 .bindMarkers(PostgresDialect.INSTANCE.getBindMarkersFactory()).build(),PostgresDialect.INSTANCE);

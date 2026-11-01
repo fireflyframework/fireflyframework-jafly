@@ -4,7 +4,7 @@
 
 Delegate PolicyDecisionPort decisions to the Cerbos CheckResources API.
 
-Construct CerbosPolicyDecisionAdapter with a WebClient pointing to Cerbos. Resources are interpreted as kind:id; principal authorities become roles and context becomes resource attributes. Only EFFECT_ALLOW permits; transport failure returns an indeterminate decision.
+Construct CerbosPolicyDecisionAdapterImpl with a WebClient pointing to Cerbos. Resources are interpreted as kind:id; principal authorities become roles and context becomes resource attributes. Only EFFECT_ALLOW permits; transport failure returns an indeterminate decision.
 
 [Module guide](../../docs/site/modules/security-adapter-cerbos.md) · [Jafly README](../../README.md) · [Module catalog](../../docs/site/modules/index.md)
 
@@ -36,11 +36,11 @@ PolicyDecisionPort policyDecisionPort() {
     WebClient client = WebClient.builder()
             .baseUrl(System.getenv("CERBOS_URL"))
             .build();
-    return new CerbosPolicyDecisionAdapter(client);
+    return new CerbosPolicyDecisionAdapterImpl(client);
 }
 ```
 
-With a framework `SecurityPrincipal`, call `policyDecisionPort.authorize(principal, "read", "document:budget", Map.of())`. The resource becomes kind `document`, id `budget`; authorities become Cerbos roles, and the context map becomes resource attributes. The adapter calls `/api/check/resources`; only `EFFECT_ALLOW` yields `Decision.permit()`. Other effects deny, and transport errors yield `Decision.indeterminate(...)`. Imports: `org.fireflyframework.security.spi.PolicyDecisionPort`, `org.fireflyframework.security.adapter.cerbos.CerbosPolicyDecisionAdapter`, Spring `Bean`, and WebFlux `WebClient`.
+With a framework `SecurityPrincipal`, call `policyDecisionPort.authorize(principal, "read", "document:budget", Map.of())`. The resource becomes kind `document`, id `budget`; authorities become Cerbos roles, and the context map becomes resource attributes. The adapter calls `/api/check/resources`; only `EFFECT_ALLOW` yields `Decision.permit()`. Other effects deny, and transport errors yield `Decision.indeterminate(...)`. Imports: `org.fireflyframework.security.spi.PolicyDecisionPort`, `org.fireflyframework.security.adapter.cerbos.CerbosPolicyDecisionAdapterImpl`, Spring `Bean`, and WebFlux `WebClient`.
 
 ## Configuration
 
@@ -50,7 +50,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`CerbosPolicyDecisionAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-cerbos/src/main/java/org/fireflyframework/security/adapter/cerbos/CerbosPolicyDecisionAdapter.java) | Maps principals, actions, resources, and context to Cerbos CheckResources decisions; non-allow effects deny. |
+| [`CerbosPolicyDecisionAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-cerbos/src/main/java/org/fireflyframework/security/adapter/cerbos/CerbosPolicyDecisionAdapterImpl.java) | Maps principals, actions, resources, and context to Cerbos CheckResources decisions; non-allow effects deny. |
 
 ## Continue the application
 

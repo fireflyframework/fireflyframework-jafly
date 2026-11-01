@@ -94,7 +94,7 @@ Contract excerpt from [WebhookController.java](https://github.com/fireflyframewo
 public class WebhookController {
     private final WebhookProcessingService webhookProcessingService;
     private final WebhookValidator webhookValidator;
-    private final WebhookMetricsService metricsService;
+    private final WebhookMetricsServiceImpl metricsService;
     private final org.fireflyframework.webhooks.core.ratelimit.WebhookRateLimitService rateLimitService;
     private final WebhookMetadataEnrichmentService metadataEnrichmentService;
             value = "/{providerName}",

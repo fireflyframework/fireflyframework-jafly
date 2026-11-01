@@ -76,7 +76,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 | Type | Contract and responsibility |
 | --- | --- |
 | [`MethodSecurityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/MethodSecurityAutoConfiguration.java) | Enables reactive method security (`@PreAuthorize`/`@PostAuthorize`) and registers the `Secure` interceptor so `@Secure` works as ergonomic, fail-closed sugar on top of it. |
-| [`SecureMethodAuthorizationManager`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/SecureMethodAuthorizationManager.java) | Reactive `ReactiveAuthorizationManager` that enforces the `Secure` annotation on methods (or their declaring class) using the framework's `SecureAuthorizationEvaluator`. |
+| [`SecureMethodAuthorizationManagerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-method-policy/src/main/java/org/fireflyframework/security/method/SecureMethodAuthorizationManagerImpl.java) | Reactive `ReactiveAuthorizationManager` that enforces the `Secure` annotation on methods (or their declaring class) using the framework's `SecureAuthorizationEvaluator`. |
 
 ## Related components
 
@@ -142,9 +142,9 @@ This module depends only on `security-core` and `security-webflux` (which transi
 `MethodSecurityAutoConfiguration` (annotated `@AutoConfiguration @EnableReactiveMethodSecurity`) contributes:
 
 - Reactive method security, by carrying `@EnableReactiveMethodSecurity`. This enables Spring's standard `@PreAuthorize`/`@PostAuthorize` reactive interceptors against `ReactiveSecurityContextHolder`.
-- The `@Secure` interceptor. a single `AuthorizationManagerBeforeReactiveMethodInterceptor` bean (`fireflySecureMethodInterceptor`, registered with `BeanDefinition.ROLE_INFRASTRUCTURE`). Its pointcut matches the `@Secure` annotation on either a method or its declaring type (a `ComposablePointcut` union of two `AnnotationMatchingPointcut`s), and it delegates the allow/deny decision to `SecureMethodAuthorizationManager`.
+- The `@Secure` interceptor. a single `AuthorizationManagerBeforeReactiveMethodInterceptor` bean (`fireflySecureMethodInterceptor`, registered with `BeanDefinition.ROLE_INFRASTRUCTURE`). Its pointcut matches the `@Secure` annotation on either a method or its declaring type (a `ComposablePointcut` union of two `AnnotationMatchingPointcut`s), and it delegates the allow/deny decision to `SecureMethodAuthorizationManagerImpl`.
 
-`SecureMethodAuthorizationManager` is a `ReactiveAuthorizationManager<MethodInvocation>` that:
+`SecureMethodAuthorizationManagerImpl` is a `ReactiveAuthorizationManager<MethodInvocation>` that:
 
 1. Resolves the effective `@Secure` annotation. Method-level first (`AnnotatedElementUtils.findMergedAnnotation`), then the target class (via `AopUtils.getTargetClass`). If none is present, it permits (so the interceptor is inert on unannotated methods).
 2. Converts the annotation to a neutral `SecureRequirement` (`SecureRequirement.from(...)`).
@@ -158,7 +158,7 @@ It is fail-closed: an unauthenticated caller (empty/anonymous context) yields `n
 | Type | Role |
 | --- | --- |
 | `MethodSecurityAutoConfiguration` | `@AutoConfiguration @EnableReactiveMethodSecurity` entry point; enables reactive method security and registers the `@Secure` interceptor. |
-| `SecureMethodAuthorizationManager` | `ReactiveAuthorizationManager<MethodInvocation>` that resolves `@Secure`, builds a `SecureRequirement`, and evaluates it against the reactive `SecurityPrincipal`, fail-closed. |
+| `SecureMethodAuthorizationManagerImpl` | `ReactiveAuthorizationManager<MethodInvocation>` that resolves `@Secure`, builds a `SecureRequirement`, and evaluates it against the reactive `SecurityPrincipal`, fail-closed. |
 
 Annotation enforced (from `security-api`): `@Secure` (`roles`, `scopes`, `permissions`, `requireAllRoles`/`requireAllScopes`/`requireAllPermissions`, `expression`). Engine consumed (from `security-core`): `SecureRequirement`, `SecureAuthorizationEvaluator`, `Decision`. Reactive glue consumed (from `security-webflux`): `PrincipalSupport`, `FireflyAuthenticationToken`. Domain (from `security-api`): `SecurityPrincipal`.
 
@@ -169,7 +169,7 @@ The auto-configuration is registered via `META-INF/spring/org.springframework.bo
 ```
 Mono<T> method() guarded by @Secure
    → fireflySecureMethodInterceptor (pointcut: @Secure on method or class)
-   → SecureMethodAuthorizationManager.check(...)
+   → SecureMethodAuthorizationManagerImpl.check(...)
       → resolve @Secure (method first, then target class)
       → SecureRequirement.from(secure)
       → PrincipalSupport.extract(Authentication)  // from ReactiveSecurityContextHolder

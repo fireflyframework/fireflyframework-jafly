@@ -31,7 +31,7 @@ class PostgresConsumerGroupReadinessTest {
         if(mismatch.equals("MISSING"))query.registration=null;
         if(mismatch.equals("CATALOG"))query.compatible=false;
         try(var runtime=new PostgresConsumerRuntimeTest.Fixture()){
-            runtime.current=new PostgresEventConsumer(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),database.repository(),(bytes,type,event)->"payload",runtime.scheduler);
+            runtime.current=new PostgresEventConsumerImpl(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),database.repository(),(bytes,type,event)->"payload",runtime.scheduler);
             StepVerifier.create(runtime.current.start()).expectError(IllegalStateException.class).verify(Duration.ofSeconds(1));
             assertThat(runtime.current.isRunning()).isFalse();verifyNoInteractions(runtime.factory);
             assertThat(query.statements).noneMatch(statement->statement.sql.contains("missing AS MATERIALIZED")||statement.sql.contains("claim_rows AS"));
@@ -57,7 +57,7 @@ class PostgresConsumerGroupReadinessTest {
             var config=runtime.properties.getConsumer().getPostgres().get("default");
             config.setChannels("configured-topic");config.setMaxAttempts(5);config.setBatchSize(7);config.setLeaseDuration(Duration.ofSeconds(8));config.setHandlerTimeout(Duration.ofSeconds(8));
             runtime.processor.registerListener("listener","listener-topic",PublisherType.POSTGRES,(payload,headers)->Mono.empty());
-            runtime.current=new PostgresEventConsumer(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),repository,(bytes,type,event)->"payload",runtime.scheduler);
+            runtime.current=new PostgresEventConsumerImpl(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),repository,(bytes,type,event)->"payload",runtime.scheduler);
             StepVerifier.create(runtime.current.start()).then(()->{
                 assertThat(captured.get()).isEqualTo(new ClaimRequest(Set.of("firefly_eda_configured_topic","firefly_eda_listener_topic"),7,5,Duration.ofSeconds(8)));
                 verifyNoInteractions(runtime.factory);assertThat(runtime.current.isRunning()).isFalse();
@@ -69,7 +69,7 @@ class PostgresConsumerGroupReadinessTest {
         startup.registration.put("channels",new String[]{"firefly_eda_events"});
         try(var runtime=new PostgresConsumerRuntimeTest.Fixture()){
             runtime.mode(org.fireflyframework.eda.properties.EdaProperties.Consumer.PostgresConfig.DeliveryMode.MANUAL);
-            runtime.current=new PostgresEventConsumer(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),database.repository(),(bytes,type,event)->"payload",runtime.scheduler);
+            runtime.current=new PostgresEventConsumerImpl(runtime.provider,runtime.processor,mock(MessageSerializer.class),runtime.properties,new ObjectMapper(),database.repository(),(bytes,type,event)->"payload",runtime.scheduler);
             StepVerifier.create(runtime.current.start()).verifyComplete();
             var changed=database.session();changed.registration.put("channels",new String[]{"firefly_eda_events"});
             runtime.processor.registerListener("late","new-topic",PublisherType.POSTGRES,(payload,headers)->Mono.empty());

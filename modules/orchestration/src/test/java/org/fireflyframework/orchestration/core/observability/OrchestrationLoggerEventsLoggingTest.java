@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrchestrationLoggerEventsLoggingTest {
     private static final String BREAKS="\r\n\u000b\f\u0085\u2028\u2029";
     private static final String VISIBLE="\\r\\n\\u000b\\f\\u0085\\u2028\\u2029";
-    private final OrchestrationLoggerEvents events=new OrchestrationLoggerEvents();
+    private final OrchestrationLoggerEventsImpl events=new OrchestrationLoggerEventsImpl();
     private Logger logger;
     private Level previousLevel;
     private boolean previousAdditive;
@@ -51,7 +51,7 @@ class OrchestrationLoggerEventsLoggingTest {
         static Sample ordinary() { return new Sample("checkout","corr-1","step-1",ExecutionPattern.SAGA,TccPhase.CONFIRM,"business refusal",new Failure("business refusal")); }
         static Sample text(String suffix) { return new Sample("name"+suffix,"correlation"+suffix,"step"+suffix,ExecutionPattern.SAGA,TccPhase.CONFIRM,"failure"+suffix,new Failure("failure"+suffix)); }
     }
-    private record Callback(String name,Level level,String template,boolean usesFailure,BiConsumer<OrchestrationLoggerEvents,Sample> invoke,Function<Sample,Object[]> arguments,String ordinaryMessage) { }
+    private record Callback(String name,Level level,String template,boolean usesFailure,BiConsumer<OrchestrationLoggerEventsImpl,Sample> invoke,Function<Sample,Object[]> arguments,String ordinaryMessage) { }
     private static final List<Callback> CALLBACKS=List.of(
         new Callback("start",Level.INFO,"[orchestration] started name={} correlationId={} pattern={}",false,
             (e,s)->e.onStart(s.name(),s.correlation(),s.pattern()),s->new Object[]{s.name(),s.correlation(),s.pattern()},
@@ -91,7 +91,7 @@ class OrchestrationLoggerEventsLoggingTest {
             "[orchestration] dead-lettered name=checkout correlationId=corr-1 stepId=step-1 error=business refusal")
     );
     @BeforeEach void captureEvents() {
-        logger=(Logger)LoggerFactory.getLogger(OrchestrationLoggerEvents.class);
+        logger=(Logger)LoggerFactory.getLogger(OrchestrationLoggerEventsImpl.class);
         previousLevel=logger.getLevel();previousAdditive=logger.isAdditive();logger.setLevel(Level.TRACE);logger.setAdditive(false);
         capture=new ListAppender<>();capture.setContext(logger.getLoggerContext());capture.start();logger.addAppender(capture);
     }

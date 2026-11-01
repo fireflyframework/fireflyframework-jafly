@@ -323,13 +323,13 @@ Implement the `MessageSerializer` interface:
 
 ```java
 @Component
-public class AvroMessageSerializer implements MessageSerializer {
+public class AvroMessageSerializerImpl implements MessageSerializer {
 
     private final Schema schema;
     private final SpecificDatumWriter<GenericRecord> datumWriter;
     private final SpecificDatumReader<GenericRecord> datumReader;
 
-    public AvroMessageSerializer() {
+    public AvroMessageSerializerImpl() {
         this.schema = loadSchema();
         this.datumWriter = new SpecificDatumWriter<>(schema);
         this.datumReader = new SpecificDatumReader<>(schema);
@@ -419,12 +419,12 @@ public class SerializationConfig {
 
     @Bean
     public MessageSerializer protobufSerializer() {
-        return new ProtobufMessageSerializer();
+        return new ProtobufMessageSerializerImpl();
     }
 
     @Bean
     public MessageSerializer customJsonSerializer() {
-        return JsonMessageSerializer.builder()
+        return JsonMessageSerializerImpl.builder()
             .objectMapper(customObjectMapper())
             .compressionEnabled(true)
             .build();

@@ -19,13 +19,13 @@ package org.fireflyframework.orchestration.unit.workflow;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.argument.Input;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowDefinition;
@@ -54,7 +54,7 @@ class WorkflowSignalTimerTest {
 
     private WorkflowEngine engine;
     private WorkflowRegistry registry;
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
     private SignalService signalService;
     private TimerService timerService;
     private OrchestrationEvents events;
@@ -63,8 +63,8 @@ class WorkflowSignalTimerTest {
     void setUp() {
         registry = new WorkflowRegistry();
         events = new OrchestrationEvents() {};
-        var noOpPublisher = new NoOpEventPublisher();
-        persistence = new InMemoryPersistenceProvider();
+        var noOpPublisher = new NoOpEventPublisherImpl();
+        persistence = new InMemoryPersistenceProviderImpl();
         signalService = new SignalService(persistence, events);
         timerService = new TimerService(events);
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, noOpPublisher,

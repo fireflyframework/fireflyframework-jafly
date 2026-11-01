@@ -63,8 +63,8 @@ Key classes:
 | `DataTransformer<S, T>` | `o.f.data.transform` | Functional interface for a single transformation |
 | `TransformationChain<S, T>` | `o.f.data.transform` | Composable chain of transformers |
 | `TransformContext` | `o.f.data.transform` | Request-scoped metadata passed to every step |
-| `FieldMappingTransformer` | `o.f.data.transform.transformers` | Renames map fields according to a mapping |
-| `ComputedFieldTransformer` | `o.f.data.transform.transformers` | Adds a computed field to a map |
+| `FieldMappingTransformerImpl` | `o.f.data.transform.transformers` | Renames map fields according to a mapping |
+| `ComputedFieldTransformerImpl` | `o.f.data.transform.transformers` | Adds a computed field to a map |
 
 ---
 
@@ -157,8 +157,8 @@ The `TransformationChain<S, T>` is a composable pipeline that applies `DataTrans
 ```java
 TransformationChain<Map<String, Object>, Map<String, Object>> chain =
     TransformationChain.<Map<String, Object>, Map<String, Object>>create()
-        .then(new FieldMappingTransformer(Map.of("old_name", "newName")))
-        .then(new ComputedFieldTransformer("fullName",
+        .then(new FieldMappingTransformerImpl(Map.of("old_name", "newName")))
+        .then(new ComputedFieldTransformerImpl("fullName",
             m -> m.get("first") + " " + m.get("last")));
 ```
 
@@ -195,7 +195,7 @@ empty.execute("hello", context)
 
 The framework ships two built-in transformers in the `o.f.data.transform.transformers` package. Both operate on `Map<String, Object>`, which is the common representation for loosely-typed enrichment data.
 
-### FieldMappingTransformer
+### FieldMappingTransformerImpl
 
 Renames fields in a map according to a source-to-target mapping. Fields not listed in the mapping are passed through unchanged. Fields listed in the mapping but absent from the source are ignored.
 
@@ -206,7 +206,7 @@ Map<String, String> mappings = Map.of(
     "e_mail", "email"
 );
 
-FieldMappingTransformer transformer = new FieldMappingTransformer(mappings);
+FieldMappingTransformerImpl transformer = new FieldMappingTransformerImpl(mappings);
 ```
 
 Example:
@@ -227,12 +227,12 @@ Behavior details:
 - Renamed keys replace their source keys (the old key is removed)
 - Non-mapped keys are retained as-is
 
-### ComputedFieldTransformer
+### ComputedFieldTransformerImpl
 
 Adds a new field to the map by applying a computation function to the current map state. If the field already exists, it is overwritten.
 
 ```java
-ComputedFieldTransformer transformer = new ComputedFieldTransformer(
+ComputedFieldTransformerImpl transformer = new ComputedFieldTransformerImpl(
     "fullName",
     m -> m.get("firstName") + " " + m.get("lastName")
 );
@@ -343,14 +343,14 @@ public class NormalizationConfig {
     public TransformationChain<Map<String, Object>, Map<String, Object>> normalizationChain() {
         return TransformationChain.<Map<String, Object>, Map<String, Object>>create()
             // Step 1: Rename provider-specific field names to canonical names
-            .then(new FieldMappingTransformer(Map.of(
+            .then(new FieldMappingTransformerImpl(Map.of(
                 "cmp_name", "companyName",
                 "cmp_domain", "domain",
                 "emp_count", "employeeCount",
                 "annual_rev", "annualRevenue"
             )))
             // Step 2: Add computed fields
-            .then(new ComputedFieldTransformer("companySize", m -> {
+            .then(new ComputedFieldTransformerImpl("companySize", m -> {
                 Object count = m.get("employeeCount");
                 if (count instanceof Number n) {
                     int employees = n.intValue();
@@ -361,7 +361,7 @@ public class NormalizationConfig {
                 return "UNKNOWN";
             }))
             // Step 3: Add a computed revenue tier
-            .then(new ComputedFieldTransformer("revenueTier", m -> {
+            .then(new ComputedFieldTransformerImpl("revenueTier", m -> {
                 Object rev = m.get("annualRevenue");
                 if (rev instanceof Number n) {
                     double revenue = n.doubleValue();

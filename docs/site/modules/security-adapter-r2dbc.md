@@ -4,7 +4,7 @@
 
 Persist token revocation records through a relational R2DBC adapter.
 
-Provide DatabaseClient, apply the documented schema, and wire R2dbcRevocationAdapter into the security engine. Verify expiry and revocation queries against the same database dialect and clock behavior used in production.
+Provide DatabaseClient, apply the documented schema, and wire R2dbcRevocationAdapterImpl into the security engine. Verify expiry and revocation queries against the same database dialect and clock behavior used in production.
 
 | Maven artifact | Packaging | Source project |
 | --- | --- | --- |
@@ -32,12 +32,12 @@ Store revoked token IDs when the application uses PostgreSQL for that security s
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-`R2dbcRevocationAdapter` implements `RevocationPort` only. It does not implement `TokenIntrospectionCachePort`, and the default resource-server JWT decoder does not consult it automatically. Connect the port explicitly to the application's token-validation policy before relying on revocation.
+`R2dbcRevocationAdapterImpl` implements `RevocationPort` only. It does not implement `TokenIntrospectionCachePort`, and the default resource-server JWT decoder does not consult it automatically. Connect the port explicitly to the application's token-validation policy before relying on revocation.
 
 Provide the adapter as the application's `RevocationPort` bean, wired from a Spring R2DBC `DatabaseClient`:
 
 ```java
-import org.fireflyframework.security.adapter.r2dbc.R2dbcRevocationAdapter;
+import org.fireflyframework.security.adapter.r2dbc.R2dbcRevocationAdapterImpl;
 import org.fireflyframework.security.spi.RevocationPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +48,7 @@ class SecurityRevocationConfig {
 
     @Bean
     RevocationPort revocationPort(DatabaseClient databaseClient) {
-        return new R2dbcRevocationAdapter(databaseClient);
+        return new R2dbcRevocationAdapterImpl(databaseClient);
     }
 }
 ```
@@ -74,7 +74,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`R2dbcRevocationAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-r2dbc/src/main/java/org/fireflyframework/security/adapter/r2dbc/R2dbcRevocationAdapter.java) | Relational-database `RevocationPort` backed by R2DBC. |
+| [`R2dbcRevocationAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-r2dbc/src/main/java/org/fireflyframework/security/adapter/r2dbc/R2dbcRevocationAdapterImpl.java) | Relational-database `RevocationPort` backed by R2DBC. |
 
 ## Related components
 
@@ -138,12 +138,12 @@ The shipped resource-server decoder does not automatically call `RevocationPort`
 
 ### What it provides
 
-#### `R2dbcRevocationAdapter` (implements `org.fireflyframework.security.spi.RevocationPort`)
+#### `R2dbcRevocationAdapterImpl` (implements `org.fireflyframework.security.spi.RevocationPort`)
 
 A reactive, R2DBC-backed revocation list. Constructed with a single Spring `DatabaseClient`:
 
 ```java
-public R2dbcRevocationAdapter(DatabaseClient databaseClient)
+public R2dbcRevocationAdapterImpl(DatabaseClient databaseClient)
 ```
 
 It implements the two `RevocationPort` operations:

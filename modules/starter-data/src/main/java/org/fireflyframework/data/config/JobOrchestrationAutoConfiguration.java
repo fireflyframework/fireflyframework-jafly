@@ -16,9 +16,9 @@
 
 package org.fireflyframework.data.config;
 
-import org.fireflyframework.data.health.JobOrchestratorHealthIndicator;
+import org.fireflyframework.data.health.JobOrchestratorHealthIndicatorImpl;
 import org.fireflyframework.data.mapper.JobResultMapperRegistry;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.resiliency.ResiliencyDecoratorService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -62,10 +62,10 @@ public class JobOrchestrationAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(MeterRegistry.class)
-    public JobMetricsService jobMetricsService(MeterRegistry meterRegistry, 
+    public JobMetricsServiceImpl jobMetricsService(MeterRegistry meterRegistry,
                                               JobOrchestrationProperties properties) {
         log.debug("Creating JobMetricsService with prefix: {}", properties.getObservability().getMetricPrefix());
-        return new JobMetricsService(meterRegistry, properties);
+        return new JobMetricsServiceImpl(meterRegistry, properties);
     }
     
     @Bean
@@ -94,8 +94,8 @@ public class JobOrchestrationAutoConfiguration {
     @ConditionalOnMissingBean(name = "jobOrchestratorHealthIndicator")
     @ConditionalOnProperty(name = "firefly.data.orchestration.health-check.enabled", matchIfMissing = true)
     @ConditionalOnClass(name = "org.springframework.boot.health.contributor.HealthIndicator")
-    public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
+    public JobOrchestratorHealthIndicatorImpl jobOrchestratorHealthIndicator(JobOrchestrationProperties properties) {
         log.debug("Creating JobOrchestratorHealthIndicator");
-        return new JobOrchestratorHealthIndicator(properties);
+        return new JobOrchestratorHealthIndicatorImpl(properties);
     }
 }

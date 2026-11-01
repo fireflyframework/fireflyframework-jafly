@@ -19,7 +19,7 @@ package org.fireflyframework.orchestration.unit.core;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
 import org.fireflyframework.orchestration.core.model.ExecutionStatus;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -32,10 +32,10 @@ import static org.assertj.core.api.Assertions.*;
 
 class InMemoryPersistenceProviderTest {
 
-    private InMemoryPersistenceProvider provider;
+    private InMemoryPersistenceProviderImpl provider;
 
     @BeforeEach
-    void setUp() { provider = new InMemoryPersistenceProvider(); }
+    void setUp() { provider = new InMemoryPersistenceProviderImpl(); }
 
     private ExecutionState createState(String id, ExecutionPattern pattern, ExecutionStatus status) {
         return new ExecutionState(id, "test-" + id, pattern, status,

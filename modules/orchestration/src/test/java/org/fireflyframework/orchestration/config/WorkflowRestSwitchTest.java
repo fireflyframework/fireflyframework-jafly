@@ -3,11 +3,11 @@ package org.fireflyframework.orchestration.config;
 import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEvents;
+import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEventsImpl;
 import org.fireflyframework.orchestration.core.event.OrchestrationEventPublisher;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowRegistry;
 import org.fireflyframework.orchestration.workflow.rest.WorkflowController;
@@ -24,9 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WorkflowRestSwitchTest {
     static class Dependencies {
         @Bean StepInvoker stepInvoker() { return new StepInvoker(new ArgumentResolver()); }
-        @Bean OrchestrationEvents events() { return new OrchestrationLoggerEvents(); }
-        @Bean ExecutionPersistenceProvider persistence() { return new InMemoryPersistenceProvider(); }
-        @Bean OrchestrationEventPublisher publisher() { return new NoOpEventPublisher(); }
+        @Bean OrchestrationEvents events() { return new OrchestrationLoggerEventsImpl(); }
+        @Bean ExecutionPersistenceProvider persistence() { return new InMemoryPersistenceProviderImpl(); }
+        @Bean OrchestrationEventPublisher publisher() { return new NoOpEventPublisherImpl(); }
     }
 
     private ReactiveWebApplicationContextRunner runner() {

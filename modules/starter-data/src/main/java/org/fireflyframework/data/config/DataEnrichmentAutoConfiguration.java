@@ -28,10 +28,10 @@ import org.fireflyframework.data.enrichment.FallbackEnrichmentExecutor;
 import org.fireflyframework.data.event.EnrichmentEventPublisher;
 import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.event.OperationEventPublisher;
-import org.fireflyframework.data.health.JobOrchestratorHealthIndicator;
+import org.fireflyframework.data.health.JobOrchestratorHealthIndicatorImpl;
 import org.fireflyframework.data.mapper.JobResultMapper;
 import org.fireflyframework.data.mapper.JobResultMapperRegistry;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.operation.schema.JsonSchemaGenerator;
 import org.fireflyframework.data.orchestration.port.JobOrchestrator;
@@ -156,9 +156,9 @@ public class DataEnrichmentAutoConfiguration {
         name = "cache-enabled",
         havingValue = "true"
     )
-    @ConditionalOnBean(org.fireflyframework.cache.manager.FireflyCacheManager.class)
+    @ConditionalOnBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class)
     public EnrichmentCacheService enrichmentCacheService(
-            org.fireflyframework.cache.manager.FireflyCacheManager cacheManager,
+            org.fireflyframework.cache.manager.FireflyCacheManagerImpl cacheManager,
             EnrichmentCacheKeyGenerator keyGenerator,
             DataEnrichmentProperties properties) {
         log.info("Creating EnrichmentCacheService bean with cache type: {}", cacheManager.getCacheType());
@@ -184,9 +184,9 @@ public class DataEnrichmentAutoConfiguration {
         havingValue = "true",
         matchIfMissing = true
     )
-    @ConditionalOnBean(org.fireflyframework.cache.manager.FireflyCacheManager.class)
+    @ConditionalOnBean(org.fireflyframework.cache.manager.FireflyCacheManagerImpl.class)
     public OperationCacheService operationCacheService(
-            org.fireflyframework.cache.manager.FireflyCacheManager cacheManager,
+            org.fireflyframework.cache.manager.FireflyCacheManagerImpl cacheManager,
             ObjectMapper objectMapper,
             DataEnrichmentProperties properties) {
         log.info("Creating OperationCacheService bean with cache type: {}", cacheManager.getCacheType());
@@ -200,10 +200,10 @@ public class DataEnrichmentAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public JobMetricsService jobMetricsService(MeterRegistry meterRegistry,
+    public JobMetricsServiceImpl jobMetricsService(MeterRegistry meterRegistry,
                                                JobOrchestrationProperties properties) {
         log.info("Creating JobMetricsService bean");
-        return new JobMetricsService(meterRegistry, properties);
+        return new JobMetricsServiceImpl(meterRegistry, properties);
     }
 
     /**
@@ -315,11 +315,11 @@ public class DataEnrichmentAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public JobOrchestratorHealthIndicator jobOrchestratorHealthIndicator(
+    public JobOrchestratorHealthIndicatorImpl jobOrchestratorHealthIndicator(
             Optional<JobOrchestrator> orchestrator,
             JobOrchestrationProperties properties) {
         log.info("Creating JobOrchestratorHealthIndicator bean");
-        return new JobOrchestratorHealthIndicator(orchestrator, properties);
+        return new JobOrchestratorHealthIndicatorImpl(orchestrator, properties);
     }
 
     /**

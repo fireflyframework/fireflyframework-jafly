@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class LiveIntrospectionResponseGuardTest {
     static final String VALID = "{\"active\":true,\"iss\":\"https://issuer.invalid\",\"sub\":\"opaque:staff/subject\",\"aud\":[\"resource\"],\"client_id\":\"workforce-client\",\"exp\":1793448120,\"jti\":\"opaque-token-id\"}";
     final NettyDataBufferFactory buffers = new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT);
-    final LiveIntrospectionResponseGuard guard = new LiveIntrospectionResponseGuard();
+    final LiveIntrospectionResponseGuardImpl guard = new LiveIntrospectionResponseGuardImpl();
     final ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("https://issuer.invalid/introspect")).build();
 
     Mono<ClientResponse> guard(byte[] bytes, HttpStatus status, List<NettyDataBuffer> allocated) {
@@ -138,7 +138,7 @@ class LiveIntrospectionResponseGuardTest {
                     .body(VALID.substring(0, VALID.length()-1) + ",\"scope\":\"admin\",\"PRIVATE_EXTRA\":\"PRIVATE_BODY\"}").build();
         });
         var p = new LiveActiveJwtDecoderTest().properties();
-        var adapter = new SpringLiveTokenValidationAdapter(new SpringReactiveOpaqueTokenIntrospector("https://issuer.invalid/introspect", client), p,
+        var adapter = new SpringLiveTokenValidationAdapterImpl(new SpringReactiveOpaqueTokenIntrospector("https://issuer.invalid/introspect", client), p,
                 Clock.fixed(LiveActiveJwtDecoderTest.NOW, ZoneOffset.UTC));
         for (int i = 0; i < 2; i++) {
             var principal = adapter.validateLive(BearerToken.of("a.b.c")).block();
@@ -177,13 +177,13 @@ class LiveIntrospectionResponseGuardTest {
             token -> Mono.empty(), token -> Mono.error(new IllegalStateException("PRIVATE_PROVIDER_ERROR")),
             token -> Mono.just(new org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal(Map.of("active",false),List.of())));
         for (var nativePort : cases) {
-            var adapter = new SpringLiveTokenValidationAdapter(nativePort,p,Clock.fixed(LiveActiveJwtDecoderTest.NOW,ZoneOffset.UTC));
+            var adapter = new SpringLiveTokenValidationAdapterImpl(nativePort,p,Clock.fixed(LiveActiveJwtDecoderTest.NOW,ZoneOffset.UTC));
             try { StepVerifier.create(adapter.validateLive(BearerToken.of("a.b.c"))).expectErrorSatisfies(error -> {assertNull(error.getCause());assertFalse(error.toString().contains("PRIVATE"));}).verify(); }
             finally { adapter.close(); }
         }
     }
     WebClient client(java.util.function.Supplier<ClientResponse> response) {
-        return WebClient.builder().codecs(codecs -> codecs.defaultCodecs().jacksonJsonDecoder(SpringLiveTokenValidationAdapter.nativeJsonDecoder()))
+        return WebClient.builder().codecs(codecs -> codecs.defaultCodecs().jacksonJsonDecoder(SpringLiveTokenValidationAdapterImpl.nativeJsonDecoder()))
                 .exchangeFunction(unused -> Mono.fromSupplier(response)).filter(guard).build();
     }
 }

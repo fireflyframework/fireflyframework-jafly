@@ -1,7 +1,7 @@
 package org.fireflyframework.cqrs.actuator;
 
 import org.fireflyframework.cqrs.actuator.endpoint.CqrsMetricsEndpoint;
-import org.fireflyframework.cqrs.actuator.health.CqrsHealthIndicator;
+import org.fireflyframework.cqrs.actuator.health.CqrsHealthIndicatorImpl;
 import org.fireflyframework.cqrs.command.CommandBus;
 import org.fireflyframework.cqrs.query.QueryBus;
 import org.fireflyframework.cqrs.command.CreateAccountCommand;
@@ -45,7 +45,7 @@ class CqrsActuatorIntegrationTest {
     private CqrsMetricsEndpoint cqrsMetricsEndpoint;
 
     @Autowired
-    private CqrsHealthIndicator cqrsHealthIndicator;
+    private CqrsHealthIndicatorImpl cqrsHealthIndicator;
 
     @Autowired
     private CommandBus commandBus;

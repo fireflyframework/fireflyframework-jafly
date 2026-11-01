@@ -156,9 +156,9 @@ Key Components:
 - AST Parser: `ASTRulesDSLParser` - Converts YAML to structured AST nodes
 - AST Validation: `YamlDslValidator` - Comprehensive DSL validation using AST
 - AST Visitors:
-  - `ExpressionEvaluator` - Evaluates expressions using visitor pattern
-  - `ActionExecutor` - Executes actions using visitor pattern
-  - `ValidationVisitor` - Validates AST nodes for semantic correctness
+  - `ExpressionEvaluatorImpl` - Evaluates expressions using visitor pattern
+  - `ActionExecutorImpl` - Executes actions using visitor pattern
+  - `ValidationVisitorImpl` - Validates AST nodes for semantic correctness
   - `VariableReferenceCollector` - Extracts variable references for constant loading
 - AST Model: Complete hierarchy of AST node classes
 - Services: `RuleDefinitionService`, `RulesEvaluationService`, `ConstantService`, `AuditTrailService` - Business logic services
@@ -240,21 +240,21 @@ The system uses a comprehensive AST node hierarchy:
 ```
 ASTNode (abstract base)
 ├── Expression
-│   ├── LiteralExpression (numbers, strings, booleans)
-│   ├── VariableExpression (variable references)
-│   ├── BinaryExpression (arithmetic operations)
-│   ├── FunctionCallExpression (function calls)
+│   ├── LiteralExpressionImpl (numbers, strings, booleans)
+│   ├── VariableExpressionImpl (variable references)
+│   ├── BinaryExpressionImpl (arithmetic operations)
+│   ├── FunctionCallExpressionImpl (function calls)
 │   └── ListExpression (array literals)
 ├── Condition
-│   ├── ComparisonCondition (>, <, ==, etc.)
-│   ├── LogicalCondition (AND, OR, NOT)
+│   ├── ComparisonConditionImpl (>, <, ==, etc.)
+│   ├── LogicalConditionImpl (AND, OR, NOT)
 │   ├── ListCondition (in, not_in)
 │   └── ValidationCondition (is_null, is_empty, etc.)
 └── Action
-    ├── SetAction (variable assignment)
-    ├── CalculateAction (arithmetic calculations)
-    ├── FunctionCallAction (function execution)
-    └── CircuitBreakerAction (execution control)
+    ├── SetActionImpl (variable assignment)
+    ├── CalculateActionImpl (arithmetic calculations)
+    ├── FunctionCallActionImpl (function execution)
+    └── CircuitBreakerActionImpl (execution control)
 ```
 
 ## Data Flow
@@ -289,14 +289,14 @@ sequenceDiagram
     ASTEngine->>Database: loadSystemConstants()
     Database-->>Context: setSystemConstants()
 
-    ASTEngine->>Visitors: ExpressionEvaluator.visit(conditions)
+    ASTEngine->>Visitors: ExpressionEvaluatorImpl.visit(conditions)
     Visitors->>Context: getValue(variableName)
     Context-->>Visitors: resolved value
 
     alt Conditions Met
-        ASTEngine->>Visitors: ActionExecutor.visit(thenActions)
+        ASTEngine->>Visitors: ActionExecutorImpl.visit(thenActions)
     else Conditions Not Met
-        ASTEngine->>Visitors: ActionExecutor.visit(elseActions)
+        ASTEngine->>Visitors: ActionExecutorImpl.visit(elseActions)
     end
 
     Visitors->>Context: setComputedVariable()
@@ -332,8 +332,8 @@ sequenceDiagram
         ASTEngine->>Database: loadSystemConstants()
         Database-->>Context: setSystemConstants()
 
-        ASTEngine->>Visitors: ExpressionEvaluator.visit(conditions)
-        ASTEngine->>Visitors: ActionExecutor.visit(actions)
+        ASTEngine->>Visitors: ExpressionEvaluatorImpl.visit(conditions)
+        ASTEngine->>Visitors: ActionExecutorImpl.visit(actions)
         ASTEngine-->>RuleService: ASTRulesEvaluationResult
         RuleService-->>Controller: ASTRulesEvaluationResult
     else Rule Not Found or Inactive
@@ -351,7 +351,7 @@ sequenceDiagram
     participant RuleService
     participant YamlValidator
     participant ASTParser
-    participant ValidationVisitor
+    participant ValidationVisitorImpl
     participant Database
 
     Client->>Controller: POST /api/v1/rules/definitions
@@ -362,8 +362,8 @@ sequenceDiagram
     YamlValidator->>ASTParser: parseRules(yamlContent)
     ASTParser-->>YamlValidator: ASTRulesDSL object
     YamlValidator->>YamlValidator: performDSLReferenceValidation()
-    YamlValidator->>ValidationVisitor: visit(astNodes)
-    ValidationVisitor-->>YamlValidator: List<ValidationError>
+    YamlValidator->>ValidationVisitorImpl: visit(astNodes)
+    ValidationVisitorImpl-->>YamlValidator: List<ValidationError>
     YamlValidator->>YamlValidator: performNamingValidation()
     YamlValidator->>YamlValidator: performOperatorValidation()
 
@@ -511,7 +511,7 @@ RulesEvaluationResult result = RulesEvaluationResult.builder()
 ```
 
 ### 3. Template Method Pattern
-Used in `ActionExecutor` for different action types:
+Used in `ActionExecutorImpl` for different action types:
 
 ```java
 public void execute(ActionBlock actionBlock, EvaluationContext context) {
@@ -533,7 +533,7 @@ public Object resolveValue(Object value, EvaluationContext context) {
 ```
 
 ### 5. Registry Pattern
-Used in both `ConditionEvaluator` and `ActionExecutor` for function registries:
+Used in both `ConditionEvaluator` and `ActionExecutorImpl` for function registries:
 
 ```java
 // ConditionEvaluator function registry
@@ -544,7 +544,7 @@ switch (functionName.toLowerCase()) {
     // ... more financial validation functions
 }
 
-// ActionExecutor function registry
+// ActionExecutorImpl function registry
 switch (functionName.toLowerCase()) {
     case "calculate_loan_payment": return calculateLoanPayment(parameters);
     case "calculate_compound_interest": return calculateCompoundInterest(parameters);
@@ -570,13 +570,13 @@ Core Features:
 
 The system uses the visitor pattern for all AST operations:
 
-#### 1. ExpressionEvaluator Visitor
+#### 1. ExpressionEvaluatorImpl Visitor
 Evaluates expressions to their values using structured AST traversal:
 
 ```java
-public class ExpressionEvaluator implements ASTVisitor<Object> {
+public class ExpressionEvaluatorImpl implements ASTVisitor<Object> {
     @Override
-    public Object visitBinaryExpression(BinaryExpression node) {
+    public Object visitBinaryExpression(BinaryExpressionImpl node) {
         // Short-circuit AND/OR before eager evaluation
         if (node.getOperator() == BinaryOperator.AND) {
             return toBoolean(node.getLeft().accept(this)) && toBoolean(node.getRight().accept(this));
@@ -590,26 +590,26 @@ public class ExpressionEvaluator implements ASTVisitor<Object> {
     }
 
     @Override
-    public Object visitVariableExpression(VariableExpression node) {
+    public Object visitVariableExpression(VariableExpressionImpl node) {
         return context.getValue(node.getVariableName());
     }
 }
 ```
 
-#### 2. ActionExecutor Visitor
+#### 2. ActionExecutorImpl Visitor
 Executes actions using structured AST traversal:
 
 ```java
-public class ActionExecutor implements ASTVisitor<Void> {
+public class ActionExecutorImpl implements ASTVisitor<Void> {
     @Override
-    public Void visitSetAction(SetAction node) {
+    public Void visitSetAction(SetActionImpl node) {
         Object value = node.getValue().accept(expressionEvaluator);
         context.setComputedVariable(node.getVariableName(), value);
         return null;
     }
 
     @Override
-    public Void visitCalculateAction(CalculateAction node) {
+    public Void visitCalculateAction(CalculateActionImpl node) {
         Object result = node.getExpression().accept(expressionEvaluator);
         context.setComputedVariable(node.getVariableName(), result);
         return null;
@@ -617,13 +617,13 @@ public class ActionExecutor implements ASTVisitor<Void> {
 }
 ```
 
-#### 3. ValidationVisitor
+#### 3. ValidationVisitorImpl
 Validates AST nodes for semantic correctness:
 
 ```java
-public class ValidationVisitor implements ASTVisitor<List<ValidationError>> {
+public class ValidationVisitorImpl implements ASTVisitor<List<ValidationError>> {
     @Override
-    public List<ValidationError> visitVariableExpression(VariableExpression node) {
+    public List<ValidationError> visitVariableExpression(VariableExpressionImpl node) {
         List<ValidationError> errors = new ArrayList<>();
         if (!availableVariables.contains(node.getVariableName())) {
             errors.add(new ValidationError("Undefined variable: " + node.getVariableName()));
@@ -652,7 +652,7 @@ The AST engine implements circuit breaker functionality through dedicated action
 
 ```java
 @Override
-public Void visitCircuitBreakerAction(CircuitBreakerAction node) {
+public Void visitCircuitBreakerAction(CircuitBreakerActionImpl node) {
     context.setCircuitBreakerTriggered(true);
     context.setCircuitBreakerMessage(node.getMessage());
     return null; // Stop execution
@@ -698,7 +698,7 @@ graph TD
 - Data Types: Validates correct data types for each section
 
 #### 2. AST-Based Semantic Validation
-- Variable References: Validates all variable references using `ValidationVisitor`
+- Variable References: Validates all variable references using `ValidationVisitorImpl`
 - Type Compatibility: Ensures type compatibility in expressions and conditions
 - Function Calls: Validates function names and parameter counts
 - Circular Dependencies: Detects circular references in variable calculations
@@ -1151,8 +1151,8 @@ The `RestCallServiceImpl` includes comprehensive URL validation before executing
 - Host validation: URLs without a valid host are rejected
 
 ### 3. Safe Code Evaluation
-- No unsafe reflection: `ExpressionEvaluator.getPropertyValue()` uses public getter methods only (`getX` / `isX`); `field.setAccessible(true)` is never called. A missing getter throws `IllegalArgumentException` with the class + property name rather than silently returning null.
-- Division/modulo by zero: `ExpressionEvaluator` and `ActionExecutor` throw `ArithmeticException` rather than returning null or silently failing.
+- No unsafe reflection: `ExpressionEvaluatorImpl.getPropertyValue()` uses public getter methods only (`getX` / `isX`); `field.setAccessible(true)` is never called. A missing getter throws `IllegalArgumentException` with the class + property name rather than silently returning null.
+- Division/modulo by zero: `ExpressionEvaluatorImpl` and `ActionExecutorImpl` throw `ArithmeticException` rather than returning null or silently failing.
 - Short-circuit evaluation: AND/OR operators use lazy evaluation to prevent unnecessary side effects.
 
 ### 4. Error Handling (Fail-Loud Contract)

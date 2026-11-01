@@ -98,9 +98,9 @@ Property-based wiring conditions found in this module:
 | --- | --- |
 | [`BffLoginHook`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffLoginHook.java) | Opt-in extension point invoked once per successful login , in the oauth2Login success handler, before the post-login redirect. |
 | [`BffSecurityProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffSecurityProperties.java) | Configuration for the token-handler BFF security chain (`BffSecurityAutoConfiguration`). |
-| [`BffRefreshTokenFailureWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffRefreshTokenFailureWebFilter.java) | Turns a dead-session token failure into a clean, actionable response. |
+| [`BffRefreshTokenFailureWebFilterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffRefreshTokenFailureWebFilterImpl.java) | Turns a dead-session token failure into a clean, actionable response. |
 | [`BffSecurityAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/BffSecurityAutoConfiguration.java) | Defines `bffSecurityWebFilterChain`, `NegatedServerWebExchangeMatcher`, `bffAuthorizedClientManager`, `DefaultReactiveOAuth2AuthorizedClientManager` operations. |
-| [`CsrfCookieWebFilter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/CsrfCookieWebFilter.java) | Materializes the CSRF token so the `XSRF-TOKEN` cookie is actually delivered to the browser. |
+| [`CsrfCookieWebFilterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-bff/src/main/java/org/fireflyframework/security/bff/CsrfCookieWebFilterImpl.java) | Materializes the CSRF token so the `XSRF-TOKEN` cookie is actually delivered to the browser. |
 
 ## Build and test
 

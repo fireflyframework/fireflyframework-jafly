@@ -20,7 +20,7 @@ import org.fireflyframework.data.event.JobEventPublisher;
 import org.fireflyframework.data.model.JobStage;
 import org.fireflyframework.data.model.JobStageRequest;
 import org.fireflyframework.data.model.JobStageResponse;
-import org.fireflyframework.data.observability.JobMetricsService;
+import org.fireflyframework.data.observability.JobMetricsServiceImpl;
 import org.fireflyframework.data.observability.JobTracingService;
 import org.fireflyframework.data.persistence.service.JobAuditService;
 import org.fireflyframework.data.persistence.service.JobExecutionResultService;
@@ -47,7 +47,7 @@ class DataJobDiscoveryServiceTest {
         // Create a test job service
         TestDataJobService testService = new TestDataJobService(
                 mock(JobTracingService.class),
-                mock(JobMetricsService.class),
+                mock(JobMetricsServiceImpl.class),
                 mock(ResiliencyDecoratorService.class),
                 mock(JobEventPublisher.class),
                 mock(JobAuditService.class),
@@ -94,7 +94,7 @@ class DataJobDiscoveryServiceTest {
     static class TestDataJobService extends AbstractResilientDataJobService {
 
         public TestDataJobService(JobTracingService tracingService,
-                                 JobMetricsService metricsService,
+                                 JobMetricsServiceImpl metricsService,
                                  ResiliencyDecoratorService resiliencyService,
                                  JobEventPublisher eventPublisher,
                                  JobAuditService auditService,

@@ -89,8 +89,8 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`RedisCacheAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/adapter/redis/RedisCacheAdapter.java) | Redis-based cache adapter implementation. |
-| [`RedisProvider`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/spi/providers/RedisProvider.java) | Defines `create` operations. |
+| [`RedisCacheAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/adapter/redis/RedisCacheAdapterImpl.java) | Redis-based cache adapter implementation. |
+| [`RedisProviderImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/spi/providers/RedisProviderImpl.java) | Defines `create` operations. |
 | [`RedisCacheConfig`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/adapter/redis/RedisCacheConfig.java) | Configuration class for Redis cache adapter. |
 | [`RedisCacheAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/config/RedisCacheAutoConfiguration.java) | Auto-configuration for Redis infrastructure beans used by fireflyframework-cache. |
 | [`RedisCacheHelper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/cache-redis/src/main/java/org/fireflyframework/cache/factory/RedisCacheHelper.java) | Helper class for creating Redis cache adapters. |

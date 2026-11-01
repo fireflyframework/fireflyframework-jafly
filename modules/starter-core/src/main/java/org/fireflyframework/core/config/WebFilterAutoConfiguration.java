@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 public class WebFilterAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    public TransactionFilter transactionFilter() {
-        return new TransactionFilter();
+    public TransactionFilterImpl transactionFilter() {
+        return new TransactionFilterImpl();
     }
 }

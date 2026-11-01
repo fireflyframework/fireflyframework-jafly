@@ -18,7 +18,7 @@ package org.fireflyframework.security.webflux.authz;
 
 import org.fireflyframework.security.api.domain.Decision;
 import org.fireflyframework.security.api.domain.SecurityPrincipal;
-import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapter;
+import org.fireflyframework.security.core.policy.EmbeddedPolicyDecisionAdapterImpl;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.fireflyframework.security.webflux.authentication.FireflyAuthenticationToken;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class PolicyAuthorizationManagerTest {
 
     @Test
     void deniesUnauthenticatedRequests() {
-        PolicyAuthorizationManager manager = new PolicyAuthorizationManager(new EmbeddedPolicyDecisionAdapter(List.of()));
+        PolicyAuthorizationManagerImpl manager = new PolicyAuthorizationManagerImpl(new EmbeddedPolicyDecisionAdapterImpl(List.of()));
         StepVerifier.create(manager.authorize(Mono.empty(), getRequest("/api/x")))
                 .expectNextMatches(d -> !d.isGranted())
                 .verifyComplete();
@@ -51,7 +51,7 @@ class PolicyAuthorizationManagerTest {
 
     @Test
     void permitsAuthenticatedWhenPolicyAbstains() {
-        PolicyAuthorizationManager manager = new PolicyAuthorizationManager(new EmbeddedPolicyDecisionAdapter(List.of()));
+        PolicyAuthorizationManagerImpl manager = new PolicyAuthorizationManagerImpl(new EmbeddedPolicyDecisionAdapterImpl(List.of()));
         StepVerifier.create(manager.authorize(Mono.just(authenticated()), getRequest("/api/x")))
                 .expectNextMatches(AuthorizationResult::isGranted)
                 .verifyComplete();
@@ -60,7 +60,7 @@ class PolicyAuthorizationManagerTest {
     @Test
     void deniesAuthenticatedWhenPolicyDenies() {
         PolicyDecisionPort denyAll = (p, a, r, c) -> Mono.just(Decision.deny("blocked"));
-        PolicyAuthorizationManager manager = new PolicyAuthorizationManager(denyAll);
+        PolicyAuthorizationManagerImpl manager = new PolicyAuthorizationManagerImpl(denyAll);
         StepVerifier.create(manager.authorize(Mono.just(authenticated()), getRequest("/api/x")))
                 .expectNextMatches(d -> !d.isGranted())
                 .verifyComplete();
@@ -69,7 +69,7 @@ class PolicyAuthorizationManagerTest {
     @Test
     void failsClosedOnPolicyError() {
         PolicyDecisionPort boom = (p, a, r, c) -> Mono.error(new IllegalStateException("pdp down"));
-        PolicyAuthorizationManager manager = new PolicyAuthorizationManager(boom);
+        PolicyAuthorizationManagerImpl manager = new PolicyAuthorizationManagerImpl(boom);
         StepVerifier.create(manager.authorize(Mono.just(authenticated()), getRequest("/api/x")))
                 .expectNextMatches(d -> !d.isGranted())
                 .verifyComplete();

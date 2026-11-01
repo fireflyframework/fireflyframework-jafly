@@ -30,11 +30,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AccountNumberValidatorTest {
 
-    private AccountNumberValidator validator;
+    private AccountNumberValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new AccountNumberValidator();
+        validator = new AccountNumberValidatorImpl();
     }
 
     @Test

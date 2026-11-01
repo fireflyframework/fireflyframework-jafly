@@ -18,7 +18,7 @@ package org.fireflyframework.orchestration.config;
 
 import org.fireflyframework.orchestration.core.persistence.ExecutionPersistenceProvider;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.tcc.builder.TccBuilder;
 import org.fireflyframework.orchestration.tcc.engine.TccEngine;
 import org.fireflyframework.orchestration.tcc.engine.TccInputs;
@@ -42,7 +42,7 @@ class TccPersistenceModeConfigurationTest {
     void requiredPropertyStopsBeforeAnyParticipantWhenInitialSaveFails() {
         var calls = new AtomicInteger();
         var cause = new IllegalStateException("private-provider-detail");
-        var provider = new InMemoryPersistenceProvider() {
+        var provider = new InMemoryPersistenceProviderImpl() {
             @Override public Mono<Void> save(ExecutionState state) { return Mono.error(cause); }
         };
         runner.withBean(ExecutionPersistenceProvider.class, () -> provider)
@@ -66,7 +66,7 @@ class TccPersistenceModeConfigurationTest {
 
     @Test
     void omittedPropertyRetainsBestEffortWithUnavailableProvider() {
-        runner.withBean(ExecutionPersistenceProvider.class, () -> new InMemoryPersistenceProvider() {
+        runner.withBean(ExecutionPersistenceProvider.class, () -> new InMemoryPersistenceProviderImpl() {
                     @Override public Mono<Void> save(ExecutionState state) {
                         return Mono.error(new IllegalStateException("unavailable"));
                     }

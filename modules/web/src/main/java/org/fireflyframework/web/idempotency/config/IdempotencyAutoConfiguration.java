@@ -18,11 +18,11 @@ package org.fireflyframework.web.idempotency.config;
 
 import org.fireflyframework.cache.config.CacheAutoConfiguration;
 import org.fireflyframework.cache.factory.CacheManagerFactory;
-import org.fireflyframework.cache.manager.FireflyCacheManager;
-import org.fireflyframework.web.idempotency.cache.FireflyCacheIdempotencyAdapter;
+import org.fireflyframework.cache.manager.FireflyCacheManagerImpl;
+import org.fireflyframework.web.idempotency.cache.FireflyCacheIdempotencyAdapterImpl;
 import org.fireflyframework.web.idempotency.cache.IdempotencyCache;
-import org.fireflyframework.web.idempotency.filter.IdempotencyWebFilter;
-import org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolver;
+import org.fireflyframework.web.idempotency.filter.IdempotencyWebFilterImpl;
+import org.fireflyframework.web.idempotency.scope.AuthenticatedIdempotencyScopeResolverImpl;
 import org.fireflyframework.web.idempotency.scope.IdempotencyScopeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ import java.time.Duration;
  */
 @AutoConfiguration(after = CacheAutoConfiguration.class)
 @EnableConfigurationProperties(IdempotencyProperties.class)
-@ConditionalOnClass({FireflyCacheManager.class, CacheManagerFactory.class})
+@ConditionalOnClass({FireflyCacheManagerImpl.class, CacheManagerFactory.class})
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "firefly.web.idempotency", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class IdempotencyAutoConfiguration {
 
@@ -109,7 +109,7 @@ public class IdempotencyAutoConfiguration {
      */
     @Bean("httpIdempotencyCacheManager")
     @ConditionalOnMissingBean(name = "httpIdempotencyCacheManager")
-    public FireflyCacheManager httpIdempotencyCacheManager(
+    public FireflyCacheManagerImpl httpIdempotencyCacheManager(
             CacheManagerFactory factory,
             IdempotencyProperties properties) {
 
@@ -136,9 +136,9 @@ public class IdempotencyAutoConfiguration {
     @ConditionalOnBean(name = "httpIdempotencyCacheManager")
     @ConditionalOnMissingBean(IdempotencyCache.class)
     public IdempotencyCache idempotencyCache(
-            @Qualifier("httpIdempotencyCacheManager") FireflyCacheManager cacheManager,
+            @Qualifier("httpIdempotencyCacheManager") FireflyCacheManagerImpl cacheManager,
             IdempotencyProperties properties) {
-        return new FireflyCacheIdempotencyAdapter(cacheManager, properties);
+        return new FireflyCacheIdempotencyAdapterImpl(cacheManager, properties);
     }
 
     /** Supplies a trusted identity resolver; applications may replace it for their authentication stack. */
@@ -146,14 +146,14 @@ public class IdempotencyAutoConfiguration {
     @ConditionalOnMissingBean(IdempotencyScopeResolver.class)
     public IdempotencyScopeResolver idempotencyScopeResolver(
             org.springframework.beans.factory.ObjectProvider<org.fireflyframework.security.spi.TenantResolverPort> tenantResolvers) {
-        return new AuthenticatedIdempotencyScopeResolver(tenantResolvers.getIfAvailable());
+        return new AuthenticatedIdempotencyScopeResolverImpl(tenantResolvers.getIfAvailable());
     }
 
     /** Creates a scoped mutation-response filter after authentication and before handler invocation. */
     @Bean
     @ConditionalOnBean(IdempotencyCache.class)
-    @ConditionalOnMissingBean(IdempotencyWebFilter.class)
-    public IdempotencyWebFilter idempotencyWebFilter(
+    @ConditionalOnMissingBean(IdempotencyWebFilterImpl.class)
+    public IdempotencyWebFilterImpl idempotencyWebFilter(
             IdempotencyProperties properties,
             IdempotencyCache cache,
             IdempotencyScopeResolver scopeResolver,
@@ -162,7 +162,7 @@ public class IdempotencyAutoConfiguration {
         if (properties.getNamespace() == null || properties.getNamespace().isBlank()) {
             properties.setNamespace(applicationName);
         }
-        return new IdempotencyWebFilter(properties, cache, scopeResolver, () -> mappings.orderedStream().toList());
+        return new IdempotencyWebFilterImpl(properties, cache, scopeResolver, () -> mappings.orderedStream().toList());
     }
 }
 

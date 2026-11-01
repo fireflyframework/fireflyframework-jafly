@@ -18,7 +18,7 @@ package org.fireflyframework.eventsourcing.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.fireflyframework.eventsourcing.monitoring.EventStoreMetrics;
+import org.fireflyframework.eventsourcing.monitoring.EventStoreMetricsImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -50,8 +50,8 @@ public class EventSourcingMetricsAutoConfiguration {
     @Bean
     @ConditionalOnBean(MeterRegistry.class)
     @ConditionalOnMissingBean
-    public EventStoreMetrics eventStoreMetrics(MeterRegistry meterRegistry) {
+    public EventStoreMetricsImpl eventStoreMetrics(MeterRegistry meterRegistry) {
         log.info("Creating EventStoreMetrics bean via metrics configuration");
-        return new EventStoreMetrics(meterRegistry);
+        return new EventStoreMetricsImpl(meterRegistry);
     }
 }

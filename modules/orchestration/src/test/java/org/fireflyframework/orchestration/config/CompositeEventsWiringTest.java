@@ -18,9 +18,9 @@ package org.fireflyframework.orchestration.config;
 
 import org.fireflyframework.orchestration.core.context.TccPhase;
 import org.fireflyframework.orchestration.core.model.ExecutionPattern;
-import org.fireflyframework.orchestration.core.observability.CompositeOrchestrationEvents;
+import org.fireflyframework.orchestration.core.observability.CompositeOrchestrationEventsImpl;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
-import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEvents;
+import org.fireflyframework.orchestration.core.observability.OrchestrationLoggerEventsImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -51,8 +51,8 @@ class CompositeEventsWiringTest {
         contextRunner.run(context -> {
             // The "orchestrationEvents" bean should be the logger directly (not wrapped)
             OrchestrationEvents events = context.getBean("orchestrationEvents", OrchestrationEvents.class);
-            assertThat(events).isInstanceOf(OrchestrationLoggerEvents.class);
-            assertThat(events).isNotInstanceOf(CompositeOrchestrationEvents.class);
+            assertThat(events).isInstanceOf(OrchestrationLoggerEventsImpl.class);
+            assertThat(events).isNotInstanceOf(CompositeOrchestrationEventsImpl.class);
         });
     }
 
@@ -64,10 +64,10 @@ class CompositeEventsWiringTest {
                 .withUserConfiguration(ExtraEventsConfig.class)
                 .run(context -> {
                     OrchestrationEvents events = context.getBean("orchestrationEvents", OrchestrationEvents.class);
-                    assertThat(events).isInstanceOf(CompositeOrchestrationEvents.class);
+                    assertThat(events).isInstanceOf(CompositeOrchestrationEventsImpl.class);
 
                     // Also verify that the individual beans exist
-                    assertThat(context.getBean(OrchestrationLoggerEvents.class)).isNotNull();
+                    assertThat(context.getBean(OrchestrationLoggerEventsImpl.class)).isNotNull();
                     assertThat(context.getBean(StubMetricsEvents.class)).isNotNull();
                 });
     }
@@ -80,7 +80,7 @@ class CompositeEventsWiringTest {
                 .withUserConfiguration(TrackingEventsConfig.class)
                 .run(context -> {
                     OrchestrationEvents events = context.getBean("orchestrationEvents", OrchestrationEvents.class);
-                    assertThat(events).isInstanceOf(CompositeOrchestrationEvents.class);
+                    assertThat(events).isInstanceOf(CompositeOrchestrationEventsImpl.class);
 
                     // Fire an event through the composite
                     events.onStart("test-saga", "corr-1", ExecutionPattern.SAGA);
@@ -104,14 +104,14 @@ class CompositeEventsWiringTest {
                 .withUserConfiguration(TrackingEventsConfig.class)
                 .run(context -> {
                     OrchestrationEvents events = context.getBean("orchestrationEvents", OrchestrationEvents.class);
-                    assertThat(events).isInstanceOf(CompositeOrchestrationEvents.class);
+                    assertThat(events).isInstanceOf(CompositeOrchestrationEventsImpl.class);
 
                     // Verify all 3 OrchestrationEvents beans exist (logger + trackingA + trackingB)
                     String[] eventBeanNames = context.getBeanNamesForType(OrchestrationEvents.class);
                     // Exclude the composite itself; remaining beans are the 3 delegates
                     long delegateCount = java.util.Arrays.stream(eventBeanNames)
                             .map(n -> context.getBean(n, OrchestrationEvents.class))
-                            .filter(e -> !(e instanceof CompositeOrchestrationEvents))
+                            .filter(e -> !(e instanceof CompositeOrchestrationEventsImpl))
                             .count();
                     assertThat(delegateCount).as("Expected 3 delegates: logger + trackingA + trackingB").isEqualTo(3);
 
@@ -138,7 +138,7 @@ class CompositeEventsWiringTest {
                 .withUserConfiguration(FullTrackingEventsConfig.class)
                 .run(context -> {
                     OrchestrationEvents events = context.getBean("orchestrationEvents", OrchestrationEvents.class);
-                    assertThat(events).isInstanceOf(CompositeOrchestrationEvents.class);
+                    assertThat(events).isInstanceOf(CompositeOrchestrationEventsImpl.class);
 
                     // Composition events
                     events.onCompositionStarted("order-saga-comp", "corr-10");

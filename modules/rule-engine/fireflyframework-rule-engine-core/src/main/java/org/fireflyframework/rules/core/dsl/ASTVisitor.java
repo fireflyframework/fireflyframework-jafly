@@ -17,12 +17,12 @@
 package org.fireflyframework.rules.core.dsl;
 
 import org.fireflyframework.rules.core.dsl.action.*;
-import org.fireflyframework.rules.core.dsl.condition.ComparisonCondition;
-import org.fireflyframework.rules.core.dsl.condition.ExpressionCondition;
-import org.fireflyframework.rules.core.dsl.condition.LogicalCondition;
+import org.fireflyframework.rules.core.dsl.condition.ComparisonConditionImpl;
+import org.fireflyframework.rules.core.dsl.condition.ExpressionConditionImpl;
+import org.fireflyframework.rules.core.dsl.condition.LogicalConditionImpl;
 import org.fireflyframework.rules.core.dsl.expression.*;
-import org.fireflyframework.rules.core.dsl.action.WhileAction;
-import org.fireflyframework.rules.core.dsl.action.DoWhileAction;
+import org.fireflyframework.rules.core.dsl.action.WhileActionImpl;
+import org.fireflyframework.rules.core.dsl.action.DoWhileActionImpl;
 
 /**
  * Visitor interface for traversing and operating on AST nodes.
@@ -34,29 +34,29 @@ import org.fireflyframework.rules.core.dsl.action.DoWhileAction;
 public interface ASTVisitor<T> {
     
     // Expression visitors
-    T visitBinaryExpression(BinaryExpression node);
-    T visitUnaryExpression(UnaryExpression node);
-    T visitVariableExpression(VariableExpression node);
-    T visitLiteralExpression(LiteralExpression node);
-    T visitFunctionCallExpression(FunctionCallExpression node);
+    T visitBinaryExpression(BinaryExpressionImpl node);
+    T visitUnaryExpression(UnaryExpressionImpl node);
+    T visitVariableExpression(VariableExpressionImpl node);
+    T visitLiteralExpression(LiteralExpressionImpl node);
+    T visitFunctionCallExpression(FunctionCallExpressionImpl node);
 
     // Condition visitors
-    T visitComparisonCondition(ComparisonCondition node);
-    T visitLogicalCondition(LogicalCondition node);
-    T visitExpressionCondition(ExpressionCondition node);
+    T visitComparisonCondition(ComparisonConditionImpl node);
+    T visitLogicalCondition(LogicalConditionImpl node);
+    T visitExpressionCondition(ExpressionConditionImpl node);
 
     // Action visitors
-    T visitFunctionCallAction(FunctionCallAction node);
-    T visitConditionalAction(ConditionalAction node);
-    T visitCalculateAction(CalculateAction node);
-    T visitRunAction(RunAction node);
-    T visitSetAction(SetAction node);
-    T visitArithmeticAction(ArithmeticAction node);
-    T visitListAction(ListAction node);
-    T visitCircuitBreakerAction(CircuitBreakerAction node);
-    T visitForEachAction(ForEachAction node);
-    T visitWhileAction(WhileAction node);
-    T visitDoWhileAction(DoWhileAction node);
+    T visitFunctionCallAction(FunctionCallActionImpl node);
+    T visitConditionalAction(ConditionalActionImpl node);
+    T visitCalculateAction(CalculateActionImpl node);
+    T visitRunAction(RunActionImpl node);
+    T visitSetAction(SetActionImpl node);
+    T visitArithmeticAction(ArithmeticActionImpl node);
+    T visitListAction(ListActionImpl node);
+    T visitCircuitBreakerAction(CircuitBreakerActionImpl node);
+    T visitForEachAction(ForEachActionImpl node);
+    T visitWhileAction(WhileActionImpl node);
+    T visitDoWhileAction(DoWhileActionImpl node);
 
     // Default implementation for unknown nodes
     default T visitUnknown(ASTNode node) {

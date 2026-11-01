@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.TaxIdValidator;
+import org.fireflyframework.validators.TaxIdValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  * - And others depending on the country
  */
 @Documented
-@Constraint(validatedBy = TaxIdValidator.class)
+@Constraint(validatedBy = TaxIdValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidTaxId {

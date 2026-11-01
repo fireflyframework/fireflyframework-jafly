@@ -37,7 +37,7 @@ public class EcmObservabilityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(MeterRegistry.class)
-    EcmMetrics ecmMetrics(MeterRegistry meterRegistry) {
-        return new EcmMetrics(meterRegistry);
+    EcmMetricsImpl ecmMetrics(MeterRegistry meterRegistry) {
+        return new EcmMetricsImpl(meterRegistry);
     }
 }

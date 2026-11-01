@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 class FilterParameterCustomizerTest {
 
-    private FilterParameterCustomizer customizer;
+    private FilterParameterCustomizerImpl customizer;
 
     @Mock
     private HandlerMethod handlerMethod;
@@ -38,7 +38,7 @@ class FilterParameterCustomizerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        customizer = new FilterParameterCustomizer();
+        customizer = new FilterParameterCustomizerImpl();
     }
 
     @Test

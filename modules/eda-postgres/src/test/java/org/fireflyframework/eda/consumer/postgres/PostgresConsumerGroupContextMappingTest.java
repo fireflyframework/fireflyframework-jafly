@@ -9,11 +9,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.fireflyframework.eda.annotation.PublisherType;
 import org.fireflyframework.eda.config.FireflyEdaPostgresConsumerAutoConfiguration;
-import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoder;
+import org.fireflyframework.eda.consumer.postgres.impl.RegisteredPostgresEventDecoderImpl;
 import org.fireflyframework.eda.consumer.postgres.model.ClaimRequest;
 import org.fireflyframework.eda.error.CustomErrorHandlerRegistry;
-import org.fireflyframework.eda.listener.EventListenerProcessor;
-import org.fireflyframework.eda.serialization.JsonMessageSerializer;
+import org.fireflyframework.eda.listener.EventListenerProcessorImpl;
+import org.fireflyframework.eda.serialization.JsonMessageSerializerImpl;
 import org.fireflyframework.eda.serialization.MessageSerializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,7 +55,7 @@ class PostgresConsumerGroupContextMappingTest {
             assertThat(query.statements).anyMatch(statement->statement.sql.startsWith("SELECT")&&statement.sql.contains("\""+schema+"\".\""+registry+"\""));
             assertThat(query.statements).noneMatch(statement->statement.sql.startsWith("INSERT")||statement.sql.startsWith("UPDATE")||statement.sql.startsWith("CREATE"));
             assertThat(query.committed).hasValue(1);assertThat(query.closed).hasValue(1);verifyNoInteractions(listen);
-            assertThat(context.getBean(PostgresEventConsumer.class).isRunning()).isFalse();
+            assertThat(context.getBean(PostgresEventConsumerImpl.class).isRunning()).isFalse();
         });
     }
     @Test void startupValidatesConfiguredAndRegisteredChannelsAndPolicyBeforeOpeningListen(){
@@ -68,8 +68,8 @@ class PostgresConsumerGroupContextMappingTest {
         runner(database.factory,listen).withPropertyValues("firefly.eda.consumer.postgres.default.channels=configured-topic",
                 "firefly.eda.consumer.postgres.default.max-attempts=5","firefly.eda.consumer.postgres.default.lease-duration=PT8S",
                 "firefly.eda.consumer.postgres.default.handler-timeout=PT8S").run(context->{
-            assertThat(context).hasNotFailed();context.getBean(EventListenerProcessor.class).registerListener("listener","listener-topic",PublisherType.POSTGRES,(payload,headers)->Mono.empty());
-            var consumer=context.getBean(PostgresEventConsumer.class);
+            assertThat(context).hasNotFailed();context.getBean(EventListenerProcessorImpl.class).registerListener("listener","listener-topic",PublisherType.POSTGRES,(payload,headers)->Mono.empty());
+            var consumer=context.getBean(PostgresEventConsumerImpl.class);
             StepVerifier.create(consumer.start()).verifyComplete();assertThat(consumer.isRunning()).isTrue();assertThat(subscriptions).hasValue(1);
             assertThat(query.statements).noneMatch(statement->statement.sql.contains("missing AS MATERIALIZED")||statement.sql.contains("claim_rows AS"));
             StepVerifier.create(consumer.stop()).verifyComplete();assertThat(consumer.isRunning()).isFalse();assertThat(database.acquired).hasValue(1);
@@ -77,8 +77,8 @@ class PostgresConsumerGroupContextMappingTest {
     }
     static class Dependencies {
         @Bean ObjectMapper objectMapper(){return new ObjectMapper();}
-        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new JsonMessageSerializer(mapper);}
-        @Bean PostgresEventDecoder decoder(MessageSerializer serializer){return new RegisteredPostgresEventDecoder(serializer,Map.of("java.lang.String",String.class));}
-        @Bean EventListenerProcessor processor(ApplicationContext context,ApplicationEventPublisher publisher,Environment environment){return new EventListenerProcessor(context,publisher,mock(CustomErrorHandlerRegistry.class),environment);}
+        @Bean MessageSerializer messageSerializer(ObjectMapper mapper){return new JsonMessageSerializerImpl(mapper);}
+        @Bean PostgresEventDecoder decoder(MessageSerializer serializer){return new RegisteredPostgresEventDecoderImpl(serializer,Map.of("java.lang.String",String.class));}
+        @Bean EventListenerProcessorImpl processor(ApplicationContext context,ApplicationEventPublisher publisher,Environment environment){return new EventListenerProcessorImpl(context,publisher,mock(CustomErrorHandlerRegistry.class),environment);}
     }
 }

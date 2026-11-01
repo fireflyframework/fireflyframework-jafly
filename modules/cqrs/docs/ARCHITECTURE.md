@@ -46,17 +46,17 @@ The fireflyframework-cqrs framework implements the Command Query Responsibility 
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-#### DefaultCommandBus Implementation
+#### DefaultCommandBusImpl Implementation
 
-The `DefaultCommandBus` is the central orchestrator for command processing:
+The `DefaultCommandBusImpl` is the central orchestrator for command processing:
 
 ```java
-public class DefaultCommandBus implements CommandBus {
+public class DefaultCommandBusImpl implements CommandBus {
     
     private final CommandHandlerRegistry handlerRegistry;
     private final CommandValidationService validationService;
     private final AuthorizationService authorizationService;
-    private final CommandMetricsService metricsService;
+    private final CommandMetricsServiceImpl metricsService;
     
     @Override
     public <R> Mono<R> send(Command<R> command) {
@@ -112,12 +112,12 @@ public class DefaultCommandBus implements CommandBus {
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-#### DefaultQueryBus Implementation
+#### DefaultQueryBusImpl Implementation
 
-The `DefaultQueryBus` handles query processing with built-in caching:
+The `DefaultQueryBusImpl` handles query processing with built-in caching:
 
 ```java
-public class DefaultQueryBus implements QueryBus {
+public class DefaultQueryBusImpl implements QueryBus {
     
     private final QueryHandlerRegistry handlerRegistry;
     private final AuthorizationService authorizationService;
@@ -286,7 +286,7 @@ The framework provides a comprehensive Spring Boot Actuator endpoint for CQRS me
 public class CqrsMetricsEndpoint {
     
     private final MeterRegistry meterRegistry;
-    private final CommandMetricsService commandMetricsService;
+    private final CommandMetricsServiceImpl commandMetricsService;
     private final CommandHandlerRegistry commandHandlerRegistry;
     private final CommandBus commandBus;
     private final QueryBus queryBus;
@@ -379,13 +379,13 @@ public class CqrsMetricsEndpoint {
 }
 ```
 
-### CommandMetricsService
+### CommandMetricsServiceImpl
 
 Dedicated service for comprehensive command processing metrics collection:
 
 ```java
 @Component
-public class CommandMetricsService {
+public class CommandMetricsServiceImpl {
     
     private final MeterRegistry meterRegistry;
     
@@ -469,7 +469,7 @@ The framework automatically collects these Micrometer metrics:
 
 ```java
 @Component
-public class CqrsHealthIndicator implements HealthIndicator {
+public class CqrsHealthIndicatorImpl implements HealthIndicator {
     
     private final CommandHandlerRegistry commandRegistry;
     private final QueryHandlerRegistry queryRegistry;
@@ -517,15 +517,15 @@ public interface ExecutionContext {
     
     // Builder pattern
     static Builder builder() {
-        return new DefaultExecutionContext.Builder();
+        return new DefaultExecutionContextImpl.Builder();
     }
 }
 ```
 
-### DefaultExecutionContext Implementation
+### DefaultExecutionContextImpl Implementation
 
 ```java
-public class DefaultExecutionContext implements ExecutionContext {
+public class DefaultExecutionContextImpl implements ExecutionContext {
     
     private final String userId;
     private final String tenantId;

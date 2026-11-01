@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.PINValidator;
+import org.fireflyframework.validators.PINValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * By default, validates that the PIN is numeric and has 4-6 digits.
  */
 @Documented
-@Constraint(validatedBy = PINValidator.class)
+@Constraint(validatedBy = PINValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPIN {

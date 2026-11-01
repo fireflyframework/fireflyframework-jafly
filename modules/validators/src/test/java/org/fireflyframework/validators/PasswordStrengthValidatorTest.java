@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PasswordStrengthValidatorTest {
 
-    private PasswordStrengthValidator validator;
+    private PasswordStrengthValidatorImpl validator;
 
     @BeforeEach
     void setUp() {
-        validator = new PasswordStrengthValidator();
+        validator = new PasswordStrengthValidatorImpl();
         // Initialize with default values (minLength=8, maxLength=128, requireUppercase=true, requireLowercase=true,
         // requireDigit=true, requireSpecialChar=true, minCharTypes=3, rejectCommonPasswords=true)
         validator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
@@ -102,7 +102,7 @@ class PasswordStrengthValidatorTest {
         assertThat(validator.isValid("Abcdef1!", null)).isTrue(); // Exactly 8 characters
 
         // Create validator with custom length constraints (12-16 characters)
-        PasswordStrengthValidator customLengthValidator = new PasswordStrengthValidator();
+        PasswordStrengthValidatorImpl customLengthValidator = new PasswordStrengthValidatorImpl();
         customLengthValidator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -150,7 +150,7 @@ class PasswordStrengthValidatorTest {
         assertThat(validator.isValid("Abcdefg1", null)).isFalse(); // Missing special character
 
         // Create validator with custom character type requirements (only require uppercase and digit)
-        PasswordStrengthValidator customCharTypesValidator = new PasswordStrengthValidator();
+        PasswordStrengthValidatorImpl customCharTypesValidator = new PasswordStrengthValidatorImpl();
         customCharTypesValidator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -190,7 +190,7 @@ class PasswordStrengthValidatorTest {
     @Test
     void shouldValidateMinCharTypes() {
         // Create validator with custom min character types (require only 2 character types)
-        PasswordStrengthValidator minCharTypesValidator = new PasswordStrengthValidator();
+        PasswordStrengthValidatorImpl minCharTypesValidator = new PasswordStrengthValidatorImpl();
         minCharTypesValidator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -226,7 +226,7 @@ class PasswordStrengthValidatorTest {
         assertThat(minCharTypesValidator.isValid("ABCDEFG1", null)).isTrue(); // 2 character types (uppercase, digit)
 
         // Create validator with custom min character types (require all 4 character types)
-        PasswordStrengthValidator allCharTypesValidator = new PasswordStrengthValidator();
+        PasswordStrengthValidatorImpl allCharTypesValidator = new PasswordStrengthValidatorImpl();
         allCharTypesValidator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -269,7 +269,7 @@ class PasswordStrengthValidatorTest {
         assertThat(validator.isValid("Password1!", null)).isTrue(); // Not a common password
 
         // Create validator that doesn't reject common passwords
-        PasswordStrengthValidator noRejectCommonValidator = new PasswordStrengthValidator();
+        PasswordStrengthValidatorImpl noRejectCommonValidator = new PasswordStrengthValidatorImpl();
         noRejectCommonValidator.initialize(new org.fireflyframework.annotations.ValidPasswordStrength() {
             @Override
             public Class<?>[] groups() { return new Class<?>[0]; }
@@ -351,19 +351,19 @@ class PasswordStrengthValidatorTest {
     @Test
     void shouldCategorizePasswordStrength() {
         // Very weak passwords
-        assertThat(validator.getStrengthCategory("123456")).isEqualTo(PasswordStrengthValidator.PasswordStrength.VERY_WEAK);
+        assertThat(validator.getStrengthCategory("123456")).isEqualTo(PasswordStrengthValidatorImpl.PasswordStrength.VERY_WEAK);
 
         // Weak passwords
-        assertThat(validator.getStrengthCategory("password1")).isEqualTo(PasswordStrengthValidator.PasswordStrength.WEAK);
+        assertThat(validator.getStrengthCategory("password1")).isEqualTo(PasswordStrengthValidatorImpl.PasswordStrength.WEAK);
 
         // Medium strength passwords
-        assertThat(validator.getStrengthCategory("Password1")).isEqualTo(PasswordStrengthValidator.PasswordStrength.MEDIUM);
+        assertThat(validator.getStrengthCategory("Password1")).isEqualTo(PasswordStrengthValidatorImpl.PasswordStrength.MEDIUM);
 
         // Strong passwords
-        assertThat(validator.getStrengthCategory("Password1!")).isEqualTo(PasswordStrengthValidator.PasswordStrength.STRONG);
+        assertThat(validator.getStrengthCategory("Password1!")).isEqualTo(PasswordStrengthValidatorImpl.PasswordStrength.STRONG);
 
         // Very strong passwords
-        assertThat(validator.getStrengthCategory("Tr0ub4dor&3X9Z")).isEqualTo(PasswordStrengthValidator.PasswordStrength.VERY_STRONG);
+        assertThat(validator.getStrengthCategory("Tr0ub4dor&3X9Z")).isEqualTo(PasswordStrengthValidatorImpl.PasswordStrength.VERY_STRONG);
 
         // Invalid inputs
         assertThat(validator.getStrengthCategory(null)).isNull();

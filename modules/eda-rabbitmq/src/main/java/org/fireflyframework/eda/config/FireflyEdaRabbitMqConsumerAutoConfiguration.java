@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Bean;
  * Firefly EDA RabbitMQ Consumer Auto-Configuration.
  *
  * <p>This configuration creates the RabbitMQ {@code ConnectionFactory} that the
- * {@link org.fireflyframework.eda.consumer.rabbitmq.RabbitMqEventConsumer} requires,
+ * {@link org.fireflyframework.eda.consumer.rabbitmq.RabbitMqEventConsumerImpl} requires,
  * using ONLY {@code firefly.eda.consumer.rabbitmq.*} properties.
  *
  * <p><strong>Bug fix (dormant consumer):</strong> The
@@ -86,7 +86,7 @@ public class FireflyEdaRabbitMqConsumerAutoConfiguration {
      * </ul>
      *
      * <p>This is the missing bean that the
-     * {@link org.fireflyframework.eda.consumer.rabbitmq.RabbitMqEventConsumer}
+     * {@link org.fireflyframework.eda.consumer.rabbitmq.RabbitMqEventConsumerImpl}
      * depends on via {@code @ConditionalOnBean} / {@code @Qualifier}.
      *
      * <p><strong>Configuration Source:</strong> firefly.eda.consumer.rabbitmq.default.*

@@ -23,12 +23,12 @@ import org.fireflyframework.orchestration.core.argument.ArgumentResolver;
 import org.fireflyframework.orchestration.core.context.ExecutionContext;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterEntry;
 import org.fireflyframework.orchestration.core.dlq.DeadLetterService;
-import org.fireflyframework.orchestration.core.event.NoOpEventPublisher;
+import org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl;
 import org.fireflyframework.orchestration.core.model.*;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.*;
 import org.fireflyframework.orchestration.core.step.StepInvoker;
-import org.fireflyframework.orchestration.persistence.redis.RedisPersistenceProvider;
+import org.fireflyframework.orchestration.persistence.redis.RedisPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.child.ChildWorkflowService;
 import org.fireflyframework.orchestration.workflow.engine.*;
 import org.fireflyframework.orchestration.workflow.registry.*;
@@ -55,7 +55,7 @@ class OrchestrationRuntimeLogSafetyTest {
     private static final String VISIBLE = "\\r\\n\\u000b\\f\\u0085\\u2028\\u2029";
     private static final Duration LIMIT = Duration.ofSeconds(3);
     private static final List<Class<?>> TYPES = List.of(SignalService.class, TimerService.class,
-            ChildWorkflowService.class, WorkflowExecutor.class, WorkflowEngine.class, RedisPersistenceProvider.class);
+            ChildWorkflowService.class, WorkflowExecutor.class, WorkflowEngine.class, RedisPersistenceProviderImpl.class);
     private final List<ILoggingEvent> captured = new CopyOnWriteArrayList<>();
     private final Map<Logger, Level> oldLevels = new LinkedHashMap<>();
     private final Map<Logger, Boolean> oldAdditive = new LinkedHashMap<>();
@@ -123,18 +123,18 @@ class OrchestrationRuntimeLogSafetyTest {
     }
     private void missingSignal(String suffix) {
         String id = "missing" + suffix;
-        var result = new SignalService(new InMemoryPersistenceProvider(), new OrchestrationEvents() {}).signal(id, "sig", null).block(LIMIT);
+        var result = new SignalService(new InMemoryPersistenceProviderImpl(), new OrchestrationEvents() {}).signal(id, "sig", null).block(LIMIT);
         assertNotNull(result); assertFalse(result.delivered()); assertEquals(id, result.correlationId());
         event("[signal] No workflow instance found: {}", Level.WARN, null, id);
     }
     private void terminalSignal(String suffix) {
-        String id = "terminal" + suffix; var p = new InMemoryPersistenceProvider(); p.save(state(id, ExecutionStatus.COMPLETED)).block(LIMIT);
+        String id = "terminal" + suffix; var p = new InMemoryPersistenceProviderImpl(); p.save(state(id, ExecutionStatus.COMPLETED)).block(LIMIT);
         assertFalse(new SignalService(p, new OrchestrationEvents() {}).signal(id, "sig", null).block(LIMIT).delivered());
         event("[signal] Cannot signal terminal instance: {} (status={})", Level.WARN, null, id, ExecutionStatus.COMPLETED);
     }
     private void deliveredSignal(String suffix, boolean waiting) {
         String id = "instance" + suffix, name = "approval" + suffix; Payload payload = new Payload();
-        var p = new InMemoryPersistenceProvider(); p.save(state(id, ExecutionStatus.RUNNING)).block(LIMIT);
+        var p = new InMemoryPersistenceProviderImpl(); p.save(state(id, ExecutionStatus.RUNNING)).block(LIMIT);
         var events = mock(OrchestrationEvents.class); var service = new SignalService(p, events);
         Mono<Object> waiter = waiting ? service.waitForSignal(id, name) : null;
         var result = service.signal(id, name, payload).block(LIMIT);
@@ -174,7 +174,7 @@ class OrchestrationRuntimeLogSafetyTest {
     @SuppressWarnings("unchecked") private void checkpoint(String suffix) {
         String id = "checkpoint" + suffix; var failure = new IllegalStateException("write failed"); var p = mock(ExecutionPersistenceProvider.class);
         when(p.save(any())).thenReturn(Mono.error(failure)); var ctx = ExecutionContext.forWorkflow(id, "workflow", false);
-        var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), new OrchestrationEvents() {}, new NoOpEventPublisher(), null, null, p);
+        var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), new OrchestrationEvents() {}, new NoOpEventPublisherImpl(), null, null, p);
         ((Mono<Void>) invoke(executor, "saveCheckpoint", new Class<?>[]{String.class, ExecutionContext.class}, "workflow", ctx)).block(LIMIT);
         var saved = org.mockito.ArgumentCaptor.forClass(ExecutionState.class); verify(p).save(saved.capture()); assertEquals(id, saved.getValue().correlationId());
         event("[orchestration] Failed to save workflow checkpoint: {}", Level.WARN, failure, id);
@@ -182,7 +182,7 @@ class OrchestrationRuntimeLogSafetyTest {
     @SuppressWarnings("unchecked") private void deadLetter(String suffix) {
         String id = "dlq" + suffix; var failure = new IllegalStateException("queue unavailable"); var dlq = mock(DeadLetterService.class);
         when(dlq.deadLetter(any())).thenReturn(Mono.error(failure)); var ctx = ExecutionContext.forWorkflow(id, "workflow", false);
-        var engine = new WorkflowEngine(new WorkflowRegistry(), null, null, new InMemoryPersistenceProvider(), new OrchestrationEvents() {}, new NoOpEventPublisher(), dlq);
+        var engine = new WorkflowEngine(new WorkflowRegistry(), null, null, new InMemoryPersistenceProviderImpl(), new OrchestrationEvents() {}, new NoOpEventPublisherImpl(), dlq);
         ((Mono<Void>) invoke(engine, "saveToDlq", new Class<?>[]{String.class, ExecutionContext.class, Throwable.class, Map.class}, "workflow", ctx, failure, Map.of())).block(LIMIT);
         var entry = org.mockito.ArgumentCaptor.forClass(DeadLetterEntry.class); verify(dlq).deadLetter(entry.capture()); assertEquals(id, entry.getValue().correlationId());
         event("[workflow] Failed to save to DLQ: {}", Level.WARN, failure, id);
@@ -192,14 +192,14 @@ class OrchestrationRuntimeLogSafetyTest {
         when(executor.execute(any(), any())).thenAnswer(inv -> Mono.just(inv.getArgument(1, ExecutionContext.class)));
         var p = mock(ExecutionPersistenceProvider.class); var failure = new IllegalStateException("persistence unavailable");
         when(p.save(any())).thenReturn(Mono.empty()); if (failed) when(p.save(any())).thenReturn(Mono.empty(), Mono.error(failure));
-        var engine = new WorkflowEngine(registry, executor, null, p, new OrchestrationEvents() {}, new NoOpEventPublisher());
+        var engine = new WorkflowEngine(registry, executor, null, p, new OrchestrationEvents() {}, new NoOpEventPublisherImpl());
         assertEquals(id, engine.startWorkflow(id, Map.of(), "raw-correlation", "api", false).block(LIMIT).executionName());
         event(failed ? "[workflow] Async workflow '{}' failed unexpectedly" : "[workflow] Async workflow '{}' completed with status {}", failed ? Level.ERROR : Level.INFO, failed ? failure : null,
                 failed ? new Object[]{id} : new Object[]{id, ExecutionStatus.COMPLETED});
         var saved = org.mockito.ArgumentCaptor.forClass(ExecutionState.class); verify(p, atLeastOnce()).save(saved.capture()); assertTrue(saved.getAllValues().stream().allMatch(s -> s.executionName().equals(id)));
     }
-    private RedisPersistenceProvider redis(ReactiveRedisTemplate<String,String> template, String prefix) {
-        return new RedisPersistenceProvider(template, new ObjectMapper().registerModule(new Jdk8Module()).registerModule(new JavaTimeModule()), prefix, null);
+    private RedisPersistenceProviderImpl redis(ReactiveRedisTemplate<String,String> template, String prefix) {
+        return new RedisPersistenceProviderImpl(template, new ObjectMapper().registerModule(new Jdk8Module()).registerModule(new JavaTimeModule()), prefix, null);
     }
     private void redisPrefix(String suffix) {
         String prefix = "tenant:" + suffix; redis(null, prefix);

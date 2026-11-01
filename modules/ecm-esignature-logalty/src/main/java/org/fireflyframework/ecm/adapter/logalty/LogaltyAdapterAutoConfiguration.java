@@ -163,7 +163,7 @@ public class LogaltyAdapterAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public LogaltySignatureEnvelopeAdapter logaltySignatureEnvelopeAdapter(
+    public LogaltySignatureEnvelopeAdapterImpl logaltySignatureEnvelopeAdapter(
             WebClient webClient,
             LogaltyAdapterProperties properties,
             ObjectMapper objectMapper,
@@ -171,7 +171,7 @@ public class LogaltyAdapterAutoConfiguration {
             DocumentPort documentPort,
             @Qualifier("logaltyCircuitBreaker") CircuitBreaker circuitBreaker,
             @Qualifier("logaltyRetry") Retry retry) {
-        return new LogaltySignatureEnvelopeAdapter(
+        return new LogaltySignatureEnvelopeAdapterImpl(
                 webClient, properties, objectMapper,
                 documentContentPort, documentPort,
                 circuitBreaker, retry);

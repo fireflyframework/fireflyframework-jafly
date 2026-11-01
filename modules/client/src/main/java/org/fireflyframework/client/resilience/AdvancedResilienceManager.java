@@ -303,7 +303,7 @@ public class AdvancedResilienceManager {
      *   <li>Response time degradation</li>
      * </ul>
      */
-    public static class SystemLoadSheddingStrategy implements LoadSheddingStrategy {
+    public static class SystemLoadSheddingStrategyImpl implements LoadSheddingStrategy {
         private final double maxCpuUsage;
         private final double maxMemoryUsage;
         private final double maxThreadPoolUtilization;
@@ -323,7 +323,7 @@ public class AdvancedResilienceManager {
         // Service-specific metrics
         private final Map<String, ServiceLoadMetrics> serviceMetrics = new ConcurrentHashMap<>();
 
-        public SystemLoadSheddingStrategy(double maxCpuUsage, double maxMemoryUsage,
+        public SystemLoadSheddingStrategyImpl(double maxCpuUsage, double maxMemoryUsage,
                                         double maxThreadPoolUtilization, long maxResponseTimeMs,
                                         int maxRequestsPerSecond) {
             this.maxCpuUsage = maxCpuUsage;
@@ -339,7 +339,7 @@ public class AdvancedResilienceManager {
             this.gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
         }
 
-        public SystemLoadSheddingStrategy(double maxCpuUsage, double maxMemoryUsage) {
+        public SystemLoadSheddingStrategyImpl(double maxCpuUsage, double maxMemoryUsage) {
             this(maxCpuUsage, maxMemoryUsage, 0.9, 5000, 1000);
         }
 

@@ -63,7 +63,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final IdpAdapter idp;   // CognitoIdpAdapter wired by CognitoAutoConfiguration
+    private final IdpAdapter idp;   // CognitoIdpAdapterImpl wired by CognitoAutoConfiguration
 
 
 
@@ -101,7 +101,7 @@ Property-based wiring conditions found in this module:
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`CognitoIdpAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/adapter/CognitoIdpAdapter.java) | AWS Cognito implementation of the Firefly IDP Adapter. |
+| [`CognitoIdpAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/adapter/CognitoIdpAdapterImpl.java) | AWS Cognito implementation of the Firefly IDP Adapter. |
 | [`CognitoProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/properties/CognitoProperties.java) | Configuration properties for AWS Cognito Identity Provider. |
 | [`CognitoClientFactory`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/client/CognitoClientFactory.java) | Factory for creating and managing AWS Cognito Identity Provider clients. |
 | [`CognitoAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-idp-aws-cognito/src/main/java/org/fireflyframework/security/idp/cognito/config/CognitoAutoConfiguration.java) | Spring auto-configuration for AWS Cognito IDP Adapter. |
@@ -206,7 +206,7 @@ When active, it contributes (each `@ConditionalOnMissingBean`, so you can overri
 
 1. `CognitoClientFactory`. Builds the AWS SDK v2 client from `CognitoProperties`, applying the endpoint override when configured.
 2. `CognitoUserService` and `CognitoAdminService`. The end-user and administrative operation services.
-3. `IdpAdapter` (a `CognitoIdpAdapter`). Registered only if no other `IdpAdapter` bean exists, so a single provider wins.
+3. `IdpAdapter` (a `CognitoIdpAdapterImpl`). Registered only if no other `IdpAdapter` bean exists, so a single provider wins.
 
 Each adapter call delegates to the matching service, which obtains the lazily-cached client from the factory and invokes the corresponding Cognito API inside a `Mono.fromCallable(...)`, returning the framework's neutral response DTOs. The client is closed on application shutdown via `@PreDestroy`.
 

@@ -17,7 +17,7 @@
 package org.fireflyframework.cache.spi;
 
 import org.fireflyframework.cache.core.CacheType;
-import org.fireflyframework.cache.spi.providers.PostgresProvider;
+import org.fireflyframework.cache.spi.providers.PostgresProviderImpl;
 import org.junit.jupiter.api.Test;
 
 import java.util.ServiceLoader;
@@ -38,7 +38,7 @@ class PostgresProviderWiringTest {
         for (CacheProviderFactory factory : loader) {
             if (factory.getType() == CacheType.POSTGRES) {
                 found = true;
-                assertThat(factory).isInstanceOf(PostgresProvider.class);
+                assertThat(factory).isInstanceOf(PostgresProviderImpl.class);
                 assertThat(factory.priority()).isEqualTo(5);
             }
         }
@@ -50,7 +50,7 @@ class PostgresProviderWiringTest {
 
     @Test
     void postgresProviderReportsExpectedType() {
-        PostgresProvider provider = new PostgresProvider();
+        PostgresProviderImpl provider = new PostgresProviderImpl();
         assertThat(provider.getType()).isEqualTo(CacheType.POSTGRES);
         assertThat(provider.priority()).isEqualTo(5);
     }

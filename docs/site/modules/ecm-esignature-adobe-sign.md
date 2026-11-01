@@ -66,7 +66,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ContractService {
 
-    private final SignatureEnvelopePort envelopes; // AdobeSignSignatureEnvelopeAdapter injected by auto-config
+    private final SignatureEnvelopePort envelopes; // AdobeSignSignatureEnvelopeAdapterImpl injected by auto-config
 
 
 
@@ -77,7 +77,7 @@ public class ContractService {
 }
 ```
 
-When `firefly.ecm.esignature.provider` is `adobe-sign`, `AdobeSignAutoConfiguration` registers the `WebClient`, circuit breaker, retry and `AdobeSignSignatureEnvelopeAdapter` beans automatically and exposes the adapter as the active `SignatureEnvelopePort`.
+When `firefly.ecm.esignature.provider` is `adobe-sign`, `AdobeSignAutoConfiguration` registers the `WebClient`, circuit breaker, retry and `AdobeSignSignatureEnvelopeAdapterImpl` beans automatically and exposes the adapter as the active `SignatureEnvelopePort`.
 
 ## Configuration and wiring
 
@@ -103,13 +103,13 @@ The `firefly.ecm.adapter.adobe-sign` namespace is bound by [AdobeSignAdapterProp
 Property-based wiring conditions found in this module:
 
 - `name = "firefly.ecm.esignature.provider", havingValue = "adobe-sign"`. [AdobeSignAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignAutoConfiguration.java).
-- `name = "firefly.ecm.esignature.provider", havingValue = "adobe-sign"`. [AdobeSignSignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapter.java).
+- `name = "firefly.ecm.esignature.provider", havingValue = "adobe-sign"`. [AdobeSignSignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapterImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`AdobeSignSignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapter.java) | Defines `AdobeSignSignatureEnvelopeAdapter`, `createEnvelope`, `ensureValidAccessToken`, `buildAgreementRequest` operations. |
+| [`AdobeSignSignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapterImpl.java) | Defines `AdobeSignSignatureEnvelopeAdapterImpl`, `createEnvelope`, `ensureValidAccessToken`, `buildAgreementRequest` operations. |
 | [`AdobeSignAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignAdapterProperties.java) | Carries `clientId`, `clientSecret`, `refreshToken`, `baseUrl`, `apiVersion` data; field constraints and defaults are declared in the linked source. |
 | [`AdobeSignAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignAutoConfiguration.java) | Defines `adobeSignWebClient`, `adobeSignCircuitBreaker`, `adobeSignRetry`, `adobeSignSignatureEnvelopeAdapter` operations. |
 
@@ -140,10 +140,10 @@ Mock, local-container, and application-context tests do not establish acceptance
 
 ## API reference excerpt
 
-Contract excerpt from [AdobeSignSignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapter.java). This fragment needs the full type and its imports.
+Contract excerpt from [AdobeSignSignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-adobe-sign/src/main/java/org/fireflyframework/ecm/adapter/adobesign/AdobeSignSignatureEnvelopeAdapterImpl.java). This fragment needs the full type and its imports.
 
 ```java
-public class AdobeSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
+public class AdobeSignSignatureEnvelopeAdapterImpl implements SignatureEnvelopePort {
     private final WebClient webClient;
     private final AdobeSignAdapterProperties properties;
     private final ObjectMapper objectMapper;
@@ -155,7 +155,7 @@ public class AdobeSignSignatureEnvelopeAdapter implements SignatureEnvelopePort 
     private final Map<String, UUID> externalIdMapping = new ConcurrentHashMap<>();
     private volatile String accessToken;
     private volatile Instant tokenExpiresAt;
-    public AdobeSignSignatureEnvelopeAdapter(WebClient webClient,
+    public AdobeSignSignatureEnvelopeAdapterImpl(WebClient webClient,
                                            AdobeSignAdapterProperties properties,
                                            ObjectMapper objectMapper,
                                            DocumentContentPort documentContentPort,
@@ -225,7 +225,7 @@ A ready-to-import profile is bundled at `src/main/resources/application-adobe-si
 
 ### How It Works
 
-`AdobeSignSignatureEnvelopeAdapter` translates the provider-neutral `SignatureEnvelope` domain model into Adobe Sign *agreements*:
+`AdobeSignSignatureEnvelopeAdapterImpl` translates the provider-neutral `SignatureEnvelope` domain model into Adobe Sign *agreements*:
 
 - Authentication. `ensureValidAccessToken()` exchanges the configured `refresh-token` for an access token via Adobe Sign's `/oauth/token` endpoint, caching it until shortly before expiry.
 - Create. `createEnvelope(...)` `POST`s an agreement to `/api/rest/{apiVersion}/agreements`, records the bidirectional mapping between the framework envelope `UUID` and the Adobe Sign agreement id, and returns the envelope in `DRAFT` status with provider `ADOBE_SIGN`.

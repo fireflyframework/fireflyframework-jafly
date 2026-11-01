@@ -29,11 +29,11 @@ import static org.mockito.Mockito.when;
 
 class R2dbcExceptionConverterTest {
 
-    private R2dbcExceptionConverter converter;
+    private R2dbcExceptionConverterImpl converter;
 
     @BeforeEach
     void setUp() {
-        converter = new R2dbcExceptionConverter();
+        converter = new R2dbcExceptionConverterImpl();
     }
 
     @Test

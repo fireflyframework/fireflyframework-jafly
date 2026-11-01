@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.PasswordStrengthValidator;
+import org.fireflyframework.validators.PasswordStrengthValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * one digit, and one special character.
  */
 @Documented
-@Constraint(validatedBy = PasswordStrengthValidator.class)
+@Constraint(validatedBy = PasswordStrengthValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPasswordStrength {

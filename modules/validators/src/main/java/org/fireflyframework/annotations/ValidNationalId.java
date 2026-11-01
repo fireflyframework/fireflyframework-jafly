@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.NationalIdValidator;
+import org.fireflyframework.validators.NationalIdValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  * - And others depending on the country
  */
 @Documented
-@Constraint(validatedBy = NationalIdValidator.class)
+@Constraint(validatedBy = NationalIdValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidNationalId {

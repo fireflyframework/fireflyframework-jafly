@@ -28,10 +28,10 @@ Delegate an onboarding authorization decision to a configured OPA policy through
 
 The Java examples in this section are API fragments for application code. Use the stated imports and supply the application-owned collaborators described alongside them.
 
-Contribute an `OpaPolicyDecisionAdapter` as your `PolicyDecisionPort`. Because `security-webflux` selects whatever `PolicyDecisionPort` bean is present, this single bean replaces the in-process `EmbeddedPolicyDecisionAdapter` for every non-permitted exchange. No other wiring required:
+Contribute an `OpaPolicyDecisionAdapterImpl` as your `PolicyDecisionPort`. Because `security-webflux` selects whatever `PolicyDecisionPort` bean is present, this single bean replaces the in-process `EmbeddedPolicyDecisionAdapterImpl` for every non-permitted exchange. No other wiring required:
 
 ```java
-import org.fireflyframework.security.adapter.opa.OpaPolicyDecisionAdapter;
+import org.fireflyframework.security.adapter.opa.OpaPolicyDecisionAdapterImpl;
 import org.fireflyframework.security.spi.PolicyDecisionPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +43,7 @@ class OpaPolicyConfiguration {
     @Bean
     PolicyDecisionPort policyDecisionPort() {
         WebClient opa = WebClient.create("http://opa:8181");
-        return new OpaPolicyDecisionAdapter(opa, "firefly/allow");
+        return new OpaPolicyDecisionAdapterImpl(opa, "firefly/allow");
     }
 }
 ```
@@ -63,7 +63,7 @@ This module declares no `@ConfigurationProperties` class of its own. Use the con
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`OpaPolicyDecisionAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-opa/src/main/java/org/fireflyframework/security/adapter/opa/OpaPolicyDecisionAdapter.java) | `PolicyDecisionPort` backed by Open Policy Agent. |
+| [`OpaPolicyDecisionAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/security-adapter-opa/src/main/java/org/fireflyframework/security/adapter/opa/OpaPolicyDecisionAdapterImpl.java) | `PolicyDecisionPort` backed by Open Policy Agent. |
 
 ## Continue the application
 

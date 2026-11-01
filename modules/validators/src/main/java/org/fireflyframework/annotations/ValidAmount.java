@@ -17,7 +17,7 @@
 
 package org.fireflyframework.annotations;
 
-import org.fireflyframework.validators.AmountValidator;
+import org.fireflyframework.validators.AmountValidatorImpl;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * with the appropriate number of decimal places for the specified currency.
  */
 @Documented
-@Constraint(validatedBy = AmountValidator.class)
+@Constraint(validatedBy = AmountValidatorImpl.class)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidAmount {

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.eventsourcing.snapshot.SnapshotStore;
 import org.fireflyframework.eventsourcing.snapshot.SnapshotTrigger;
-import org.fireflyframework.eventsourcing.snapshot.r2dbc.R2dbcSnapshotStore;
+import org.fireflyframework.eventsourcing.snapshot.r2dbc.R2dbcSnapshotStoreImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,7 +48,7 @@ public class SnapshotAutoConfiguration {
     @ConditionalOnMissingBean
     public SnapshotStore snapshotStore(DatabaseClient databaseClient, ObjectMapper objectMapper) {
         log.info("Creating R2dbcSnapshotStore bean");
-        return new R2dbcSnapshotStore(databaseClient, objectMapper);
+        return new R2dbcSnapshotStoreImpl(databaseClient, objectMapper);
     }
 
     @Bean

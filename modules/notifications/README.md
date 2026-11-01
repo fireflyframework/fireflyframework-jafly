@@ -106,7 +106,7 @@ Templated email. Provide a `NotificationTemplateEngine` bean (the FreeMarker eng
 ```java
 @Bean
 NotificationTemplateEngine notificationTemplateEngine() {
-    return new FreemarkerNotificationTemplateEngine(); // classpath:/notification-templates
+    return new FreemarkerNotificationTemplateEngineImpl(); // classpath:/notification-templates
 }
 
 // ...

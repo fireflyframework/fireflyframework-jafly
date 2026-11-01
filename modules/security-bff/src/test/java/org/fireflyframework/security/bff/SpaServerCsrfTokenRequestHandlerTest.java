@@ -27,7 +27,7 @@ import reactor.test.StepVerifier;
 /** Unit tests for {@link SpaServerCsrfTokenRequestHandler}. */
 class SpaServerCsrfTokenRequestHandlerTest {
 
-    private final SpaServerCsrfTokenRequestHandler handler = new SpaServerCsrfTokenRequestHandler();
+    private final SpaServerCsrfTokenRequestHandlerImpl handler = new SpaServerCsrfTokenRequestHandlerImpl();
     private final CsrfToken token = new DefaultCsrfToken("X-XSRF-TOKEN", "_csrf", "raw-cookie-value");
 
     @Test

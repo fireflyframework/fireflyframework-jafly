@@ -16,15 +16,15 @@
 
 package org.fireflyframework.common.application.config;
 
-import org.fireflyframework.common.application.actuator.FireflyApplicationInfoContributor;
+import org.fireflyframework.common.application.actuator.FireflyApplicationInfoContributorImpl;
 import org.fireflyframework.common.application.aop.SecurityAspect;
 import org.fireflyframework.common.application.context.AppMetadata;
-import org.fireflyframework.common.application.health.ApplicationLayerHealthIndicator;
+import org.fireflyframework.common.application.health.ApplicationLayerHealthIndicatorImpl;
 import org.fireflyframework.common.application.resolver.ConfigResolver;
 import org.fireflyframework.common.application.resolver.ContextResolver;
-import org.fireflyframework.common.application.resolver.DefaultConfigResolver;
-import org.fireflyframework.common.application.resolver.DefaultContextResolver;
-import org.fireflyframework.common.application.security.DefaultSecurityAuthorizationService;
+import org.fireflyframework.common.application.resolver.DefaultConfigResolverImpl;
+import org.fireflyframework.common.application.resolver.DefaultContextResolverImpl;
+import org.fireflyframework.common.application.security.DefaultSecurityAuthorizationServiceImpl;
 import org.fireflyframework.common.application.security.EndpointSecurityRegistry;
 import org.fireflyframework.common.application.security.JwtClaimsRoleExtractor;
 import org.fireflyframework.common.application.security.SecurityAuthorizationService;
@@ -121,9 +121,9 @@ public class ApplicationLayerAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean
     @ConditionalOnProperty(name = "firefly.application.banner.enabled", matchIfMissing = true)
-    public ApplicationLayerBannerConfig applicationLayerBannerConfig() {
+    public ApplicationLayerBannerConfigImpl applicationLayerBannerConfig() {
         log.debug("Enabling Firefly Application Layer banner");
-        return new ApplicationLayerBannerConfig();
+        return new ApplicationLayerBannerConfigImpl();
     }
 
     /**
@@ -133,9 +133,9 @@ public class ApplicationLayerAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public ApplicationLayerHealthIndicator applicationLayerHealthIndicator() {
+    public ApplicationLayerHealthIndicatorImpl applicationLayerHealthIndicator() {
         log.info("Creating ApplicationLayerHealthIndicator bean");
-        return new ApplicationLayerHealthIndicator();
+        return new ApplicationLayerHealthIndicatorImpl();
     }
 
     /**
@@ -167,9 +167,9 @@ public class ApplicationLayerAutoConfiguration {
     @Bean
     @ConditionalOnBean(SecurityContextPort.class)
     @ConditionalOnMissingBean(ContextResolver.class)
-    public DefaultContextResolver defaultContextResolver(SecurityContextPort securityContextPort) {
+    public DefaultContextResolverImpl defaultContextResolver(SecurityContextPort securityContextPort) {
         log.info("Creating DefaultContextResolver bean (backed by SecurityContextPort)");
-        return new DefaultContextResolver(securityContextPort);
+        return new DefaultContextResolverImpl(securityContextPort);
     }
 
     /**
@@ -179,9 +179,9 @@ public class ApplicationLayerAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(ConfigResolver.class)
-    public DefaultConfigResolver defaultConfigResolver() {
+    public DefaultConfigResolverImpl defaultConfigResolver() {
         log.info("Creating DefaultConfigResolver bean");
-        return new DefaultConfigResolver();
+        return new DefaultConfigResolverImpl();
     }
 
     /**
@@ -194,9 +194,9 @@ public class ApplicationLayerAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(SecurityAuthorizationService.class)
-    public DefaultSecurityAuthorizationService defaultSecurityAuthorizationService() {
+    public DefaultSecurityAuthorizationServiceImpl defaultSecurityAuthorizationService() {
         log.info("Creating DefaultSecurityAuthorizationService bean");
-        return new DefaultSecurityAuthorizationService();
+        return new DefaultSecurityAuthorizationServiceImpl();
     }
 
     /**
@@ -207,9 +207,9 @@ public class ApplicationLayerAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public FireflyApplicationInfoContributor fireflyApplicationInfoContributor(AppMetadata appMetadata) {
+    public FireflyApplicationInfoContributorImpl fireflyApplicationInfoContributor(AppMetadata appMetadata) {
         log.info("Creating FireflyApplicationInfoContributor bean");
-        return new FireflyApplicationInfoContributor(appMetadata);
+        return new FireflyApplicationInfoContributorImpl(appMetadata);
     }
 
 }

@@ -110,14 +110,14 @@ Property-based wiring conditions found in this module:
 
 - `prefix = "firefly.eda", name = "enabled", havingValue = "true", matchIfMissing = true`. [FireflyEdaPostgresConsumerAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresConsumerAutoConfiguration.java).
 - `prefix = "firefly.eda", name = "enabled", havingValue = "true", matchIfMissing = true`. [FireflyEdaPostgresPublisherAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresPublisherAutoConfiguration.java).
-- `prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true"`. [PostgresEventConsumer.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumer.java).
+- `prefix = "firefly.eda.consumer", name = "enabled", havingValue = "true"`. [PostgresEventConsumerImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumerImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`PostgresEventPublisher`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisher.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses Spring Data and joins an owner transaction on its configured connection factory. |
-| [`PostgresEventConsumer`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumer.java) | PostgreSQL implementation of `EventConsumer`. |
+| [`PostgresEventPublisherImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresEventPublisherImpl.java) | Persists events in a PostgreSQL delivery table and dispatches through `LISTEN`/`NOTIFY`; publication uses Spring Data and joins an owner transaction on its configured connection factory. |
+| [`PostgresEventConsumerImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/consumer/postgres/PostgresEventConsumerImpl.java) | PostgreSQL implementation of `EventConsumer`. |
 | [`FireflyEdaPostgresConsumerAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresConsumerAutoConfiguration.java) | Defines `FireflyEdaPostgresConsumerAutoConfiguration`, `fireflyEdaPostgresConsumerConnectionFactory` operations. |
 | [`FireflyEdaPostgresPublisherAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/config/FireflyEdaPostgresPublisherAutoConfiguration.java) | Defines `FireflyEdaPostgresPublisherAutoConfiguration`, `fireflyEdaPostgresPublisherConnectionFactory`, `initialiseSchema`, `executeAll` operations. |
 | [`PostgresChannelMapper`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/eda-postgres/src/main/java/org/fireflyframework/eda/publisher/postgres/PostgresChannelMapper.java) | Maps arbitrary destination strings (e.g., `"order-events"`, `"user.created"`) to deterministic, valid PostgreSQL channel names suitable for use with `LISTEN`/`NOTIFY`. |
@@ -179,7 +179,7 @@ void publisherIdentifiesItself() {
 ### How It Works
 
 ```
-@PublishResult ──▶ PostgresEventPublisher
+@PublishResult ──▶ PostgresEventPublisherImpl
                       │  INSERT INTO firefly_eda_outbox (... status='PENDING')
                       ▼
             ┌──────────────────────────┐
@@ -188,7 +188,7 @@ void publisherIdentifiesItself() {
             └──────────────────────────┘
                       │ NOTIFY (id only)            │ polling fallback
                       ▼                             ▼  (PENDING rows, attempts < max)
-            PostgresEventConsumer ── LISTEN ── drains row, dispatches to @EventListener
+            PostgresEventConsumerImpl ── LISTEN ── drains row, dispatches to @EventListener
                       │ success ──▶ status='PROCESSED'
                       │ failure ──▶ attempts++  (DEAD_LETTER once attempts ≥ max-attempts)
 ```

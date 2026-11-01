@@ -4,7 +4,7 @@ This guide provides step-by-step instructions for integrating the Amazon S3 adap
 
 ## Overview
 
-The shipped `S3DocumentContentAdapter` implements `DocumentContentPort`: store and retrieve bytes/streams, delete or inspect content, calculate checksums, and generate configured presigned URLs. The application supplies document metadata, folders, and access policy separately.
+The shipped `S3DocumentContentAdapterImpl` implements `DocumentContentPort`: store and retrieve bytes/streams, delete or inspect content, calculate checksums, and generate configured presigned URLs. The application supplies document metadata, folders, and access policy separately.
 
 ## Prerequisites
 

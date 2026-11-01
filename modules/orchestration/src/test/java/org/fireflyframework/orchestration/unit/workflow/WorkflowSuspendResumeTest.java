@@ -25,7 +25,7 @@ import org.fireflyframework.orchestration.core.model.RetryPolicy;
 import org.fireflyframework.orchestration.core.model.TriggerMode;
 import org.fireflyframework.orchestration.core.observability.OrchestrationEvents;
 import org.fireflyframework.orchestration.core.persistence.ExecutionState;
-import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProvider;
+import org.fireflyframework.orchestration.core.persistence.InMemoryPersistenceProviderImpl;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowEngine;
 import org.fireflyframework.orchestration.workflow.engine.WorkflowExecutor;
 import org.fireflyframework.orchestration.workflow.registry.WorkflowDefinition;
@@ -51,7 +51,7 @@ class WorkflowSuspendResumeTest {
 
     private WorkflowEngine engine;
     private WorkflowRegistry registry;
-    private InMemoryPersistenceProvider persistence;
+    private InMemoryPersistenceProviderImpl persistence;
 
     @SuppressWarnings("unused")
     public static class TestSteps {
@@ -67,9 +67,9 @@ class WorkflowSuspendResumeTest {
     void setUp() {
         registry = new WorkflowRegistry();
         var events = new OrchestrationEvents() {};
-        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisher();
+        var noOpPublisher = new org.fireflyframework.orchestration.core.event.NoOpEventPublisherImpl();
         var executor = new WorkflowExecutor(new StepInvoker(new ArgumentResolver()), events, noOpPublisher, null, null);
-        persistence = new InMemoryPersistenceProvider();
+        persistence = new InMemoryPersistenceProviderImpl();
         engine = new WorkflowEngine(registry, executor, new StepInvoker(new ArgumentResolver()), persistence, events, noOpPublisher);
     }
 

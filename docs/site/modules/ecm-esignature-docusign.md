@@ -111,13 +111,13 @@ The `firefly.ecm.adapter.docusign` namespace is bound by [DocuSignAdapterPropert
 Property-based wiring conditions found in this module:
 
 - `name = "firefly.ecm.esignature.provider", havingValue = "docusign"`. [DocuSignAdapterAutoConfiguration.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignAdapterAutoConfiguration.java).
-- `name = "firefly.ecm.esignature.provider", havingValue = "docusign"`. [DocuSignSignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapter.java).
+- `name = "firefly.ecm.esignature.provider", havingValue = "docusign"`. [DocuSignSignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapterImpl.java).
 
 ## Public API and extension points
 
 | Type | Contract and responsibility |
 | --- | --- |
-| [`DocuSignSignatureEnvelopeAdapter`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapter.java) | Defines `DocuSignSignatureEnvelopeAdapter`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
+| [`DocuSignSignatureEnvelopeAdapterImpl`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapterImpl.java) | Defines `DocuSignSignatureEnvelopeAdapterImpl`, `createEnvelope`, `updateEnvelope`, `deleteEnvelope` operations. |
 | [`DocuSignAdapterProperties`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignAdapterProperties.java) | Carries `integrationKey`, `userId`, `accountId`, `privateKey`, `baseUrl` data; field constraints and defaults are declared in the linked source. |
 | [`DocuSignAdapterAutoConfiguration`](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignAdapterAutoConfiguration.java) | Auto-configuration for the DocuSign ECM adapter. |
 
@@ -148,10 +148,10 @@ Mock, local-container, and application-context tests do not establish acceptance
 
 ## API reference excerpt
 
-Contract excerpt from [DocuSignSignatureEnvelopeAdapter.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapter.java). This fragment needs the full type and its imports.
+Contract excerpt from [DocuSignSignatureEnvelopeAdapterImpl.java](https://github.com/fireflyframework/fireflyframework-jafly/blob/main/modules/ecm-esignature-docusign/src/main/java/org/fireflyframework/ecm/adapter/docusign/DocuSignSignatureEnvelopeAdapterImpl.java). This fragment needs the full type and its imports.
 
 ```java
-public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
+public class DocuSignSignatureEnvelopeAdapterImpl implements SignatureEnvelopePort {
     private final ApiClient apiClient;
     private final EnvelopesApi envelopesApi;
     private final DocuSignAdapterProperties properties;
@@ -159,7 +159,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
     private final DocumentPort documentPort;
     private final Map<UUID, String> envelopeIdMapping = new ConcurrentHashMap<>();
     private final Map<String, UUID> externalIdMapping = new ConcurrentHashMap<>();
-    public DocuSignSignatureEnvelopeAdapter(ApiClient apiClient,
+    public DocuSignSignatureEnvelopeAdapterImpl(ApiClient apiClient,
                                           DocuSignAdapterProperties properties,
                                           DocumentContentPort documentContentPort,
                                           DocumentPort documentPort) {
@@ -168,7 +168,7 @@ public class DocuSignSignatureEnvelopeAdapter implements SignatureEnvelopePort {
         this.documentContentPort = documentContentPort;
         this.documentPort = documentPort;
         this.envelopesApi = new EnvelopesApi(apiClient);
-        log.info("DocuSignSignatureEnvelopeAdapter initialized for account: {} with document integration",
+        log.info("DocuSignSignatureEnvelopeAdapterImpl initialized for account: {} with document integration",
                 properties.getAccountId());
     }
     public Mono<SignatureEnvelope> createEnvelope(SignatureEnvelope envelope) {
@@ -246,9 +246,9 @@ firefly:
 
 ### How It Works
 
-1. Activation. `DocuSignAdapterAutoConfiguration` and `DocuSignSignatureEnvelopeAdapter` are both `@ConditionalOnProperty(firefly.ecm.esignature.provider=docusign)`, and the auto-config is also `@ConditionalOnClass(ApiClient.class)`, so the adapter only engages when DocuSign is selected and the SDK is present.
+1. Activation. `DocuSignAdapterAutoConfiguration` and `DocuSignSignatureEnvelopeAdapterImpl` are both `@ConditionalOnProperty(firefly.ecm.esignature.provider=docusign)`, and the auto-config is also `@ConditionalOnClass(ApiClient.class)`, so the adapter only engages when DocuSign is selected and the SDK is present.
 2. Authentication. The auto-configuration builds a DocuSign `ApiClient`, sets the base path / timeouts, and performs the JWT Grant flow (`requestJWTUserToken` with `signature` + `impersonation` scopes), then validates that `account-id` is among the authenticated user's accounts.
-3. Operations. `DocuSignSignatureEnvelopeAdapter` wraps `EnvelopesApi` and maps Firefly's `SignatureEnvelope` model to DocuSign `EnvelopeDefinition`/`Envelope` calls, returning reactive `Mono`/`Flux`. Internal maps track the Firefly `UUID` ↔ DocuSign envelope-ID correspondence.
+3. Operations. `DocuSignSignatureEnvelopeAdapterImpl` wraps `EnvelopesApi` and maps Firefly's `SignatureEnvelope` model to DocuSign `EnvelopeDefinition`/`Envelope` calls, returning reactive `Mono`/`Flux`. Internal maps track the Firefly `UUID` ↔ DocuSign envelope-ID correspondence.
 4. Override points. The `ApiClient` bean is `@ConditionalOnMissingBean`, so you can supply your own pre-authenticated client (e.g. A custom auth strategy or a test stub) and the adapter will use it.
 
 ## Continue the application

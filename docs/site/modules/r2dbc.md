@@ -48,9 +48,9 @@ spring:
 
 ### Opt-in bounded root transactions
 
-The source tree provides `BoundedRootTransaction` and `impl.DefaultBoundedRootTransaction` for an application-owned R2DBC transaction with a finite operation budget. Use a source build containing these classes until the corresponding release is published. This API does not register beans or change the default transaction manager.
+The source tree provides `BoundedRootTransaction` and `impl.DefaultBoundedRootTransactionImpl` for an application-owned R2DBC transaction with a finite operation budget. Use a source build containing these classes until the corresponding release is published. This API does not register beans or change the default transaction manager.
 
-Build one `OwnedLeaseConnectionFactory` around the application connection factory, then construct the actual `DatabaseClient`, customized `R2dbcEntityTemplate`, Spring Data repositories, and `R2dbcTransactionManager` with that same wrapper. `BoundedR2dbcResources.verify` checks the factory/client/template/manager identities; preserve the host converter, callbacks, and repository configuration. The helper refuses an ambient transaction rather than joining another owner's work. It owns individual acquired leases and never closes the application pool.
+Build one `OwnedLeaseConnectionFactoryImpl` around the application connection factory, then construct the actual `DatabaseClient`, customized `R2dbcEntityTemplate`, Spring Data repositories, and `R2dbcTransactionManager` with that same wrapper. `BoundedR2dbcResources.verify` checks the factory/client/template/manager identities; preserve the host converter, callbacks, and repository configuration. The helper refuses an ambient transaction rather than joining another owner's work. It owns individual acquired leases and never closes the application pool.
 
 Capture the monotonic anchor before obtaining an original observation. Pass its original observation time, absolute expiration, explicit maximum duration, clock, and the same monotonic supplier to `R2dbcOperationBudget.observed`. Execute with a `PROPAGATION_REQUIRED` transaction definition and return one result; other propagation modes are refused. Compose an already observed dependency limit with `original.intersect(inherited)` before passing the budget to `execute`, so connection acquisition and transaction begin use the earlier bound. Use `RootTransactionScope.narrow` when a later native observation or dependency imposes an earlier bound. Original and narrowed budgets must share the identical `Clock` object and monotonic supplier. Budget checks include acquisition, transaction completion, and final cleanup; an expired budget does not grant a fresh timeout. Configure rollback and close limits separately with `CleanupPolicy`.
 
@@ -60,7 +60,7 @@ Run the module and its reactor dependencies with `./mvnw -B -ntp -pl :fireflyfra
 
 ### Optional completed audit append read
 
-`CompletedAuditAppendService` and `impl.SpringDataCompletedAuditAppendService` verify an append that has already completed inside its still-active original bounded owner root. Construct the service explicitly with the original `BoundedR2dbcResources`, the same `DatabaseClient`, customized `R2dbcEntityTemplate`, transaction manager, `Clock` and monotonic supplier. Its Spring Data repository is built from that retained template; there is no automatic bean, injected arbitrary repository or ambient-transaction fallback.
+`CompletedAuditAppendService` and `impl.SpringDataCompletedAuditAppendServiceImpl` verify an append that has already completed inside its still-active original bounded owner root. Construct the service explicitly with the original `BoundedR2dbcResources`, the same `DatabaseClient`, customized `R2dbcEntityTemplate`, transaction manager, `Clock` and monotonic supplier. Its Spring Data repository is built from that retained template; there is no automatic bean, injected arbitrary repository or ambient-transaction fallback.
 
 Call `requireCompleted(scope, contextNonce, provisionalAppend)` with the exact native context nonce supplied through the existing appender's call-local nonce supplier and its actual `ProvisionalAppend`. The provisional record does not expose or create a nonce. The new service requires exactly one typed native row, rejects NULL numeric projections and out-of-range raw nanos, narrows the original scope to the observed native window, recomputes the full canonical record through `AuditRows.Event.record()`, and compares the entire expected record. A mismatch, read error or late result marks that same root rollback-only, even if the caller catches the error. No separate read transaction is started.
 
@@ -199,17 +199,17 @@ This module relies on the standard Spring `spring.r2dbc.*` and `spring.flyway.*`
 firefly:
   observability:
     metrics:
-      enabled: true   # default true — register R2dbcMetrics when a MeterRegistry is present
+      enabled: true   # default true — register R2dbcMetricsImpl when a MeterRegistry is present
     health:
       enabled: true   # default true — register the R2DBC health indicator
 ```
 
 | Property | Default | Description |
 | --- | --- | --- |
-| `firefly.observability.metrics.enabled` | `true` | Registers `R2dbcMetrics` (the `firefly.r2dbc.*` timers/counters) when a Micrometer `MeterRegistry` bean exists. Set `false` to disable. |
+| `firefly.observability.metrics.enabled` | `true` | Registers `R2dbcMetricsImpl` (the `firefly.r2dbc.*` timers/counters) when a Micrometer `MeterRegistry` bean exists. Set `false` to disable. |
 | `firefly.observability.health.enabled` | `true` | Registers the R2DBC `HealthIndicator` that probes the database with `SELECT 1`. Set `false` to disable. |
 
-Both beans use `matchIfMissing = true`, so they are active by default and back off cleanly if the host service disables observability or the underlying classes/beans (`MeterRegistry`, `ConnectionFactory`) are absent. The `ReactiveTransactionManager` and the springdoc `FilterParameterCustomizer` are both `@ConditionalOnMissingBean`, so you can override either by declaring your own bean.
+Both beans use `matchIfMissing = true`, so they are active by default and back off cleanly if the host service disables observability or the underlying classes/beans (`MeterRegistry`, `ConnectionFactory`) are absent. The `ReactiveTransactionManager` and the springdoc `FilterParameterCustomizerImpl` are both `@ConditionalOnMissingBean`, so you can override either by declaring your own bean.
 
 This module ships an `application-logging.yml` profile fragment that sets `org.springframework.data.r2dbc` and `io.r2dbc` logging to `INFO`.
 
@@ -238,14 +238,14 @@ The module registers four Spring Boot auto-configurations (see `META-INF/spring/
 | --- | --- |
 | `R2dbcAutoConfiguration` | On startup, hands the application's `R2dbcEntityTemplate` to `FilterUtils.initializeTemplate(...)` so the static filtering engine can run queries. |
 | `R2dbcTransactionAutoConfiguration` | Enables `@EnableTransactionManagement` and provides an `R2dbcTransactionManager`-backed `ReactiveTransactionManager`. |
-| `SwaggerAutoConfiguration` | Registers the `FilterParameterCustomizer` springdoc `OperationCustomizer`. |
-| `R2dbcObservabilityAutoConfiguration` | Wires `R2dbcMetrics` and the R2DBC `HealthIndicator`, gated by `firefly.observability.*`. |
+| `SwaggerAutoConfiguration` | Registers the `FilterParameterCustomizerImpl` springdoc `OperationCustomizer`. |
+| `R2dbcObservabilityAutoConfiguration` | Wires `R2dbcMetricsImpl` and the R2DBC `HealthIndicator`, gated by `firefly.observability.*`. |
 
 Filtering follows a fixed precedence per field: `NULL` / `NOT NULL` markers first, then ID handling (skip or exact match), then collections/arrays (`IN`), then non-empty strings (`LIKE`), then enums (exact, by `name()`), then exact match for everything else. Reflected fields are cached per class for performance.
 
 ### Observability
 
-When a Micrometer `MeterRegistry` is present, `R2dbcMetrics` exposes wrappers you can use to instrument repository methods:
+When a Micrometer `MeterRegistry` is present, `R2dbcMetricsImpl` exposes wrappers you can use to instrument repository methods:
 
 - `firefly.r2dbc.query.duration`. query latency, tagged by `operation` (e.g. select/insert/update/delete)
 - `firefly.r2dbc.queries`. query counts, tagged by `operation` and `status`
@@ -254,7 +254,7 @@ When a Micrometer `MeterRegistry` is present, `R2dbcMetrics` exposes wrappers yo
 ```java
 @RequiredArgsConstructor
 public class ProductRepository {
-    private final R2dbcMetrics metrics;          // auto-configured bean
+    private final R2dbcMetricsImpl metrics;          // auto-configured bean
 
     public Mono<Product> findById(Long id) {
         return metrics.timedQuery("select", delegate.findById(id));

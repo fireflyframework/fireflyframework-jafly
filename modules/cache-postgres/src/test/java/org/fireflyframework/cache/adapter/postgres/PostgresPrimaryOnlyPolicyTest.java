@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiFunction;
 import org.fireflyframework.cache.core.*;
-import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializerImpl;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.*;
 import reactor.test.StepVerifier;
@@ -28,8 +28,8 @@ class PostgresPrimaryOnlyPolicyTest {
         when(row.get("value")).thenReturn("value".getBytes(StandardCharsets.UTF_8));
         when(result.map(any(BiFunction.class))).thenAnswer(call->Flux.just(((BiFunction<Row,RowMetadata,Object>)call.getArgument(0)).apply(row,mock(RowMetadata.class))));
     }
-    PostgresCacheAdapter strict() {return new PostgresCacheAdapter("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),new JsonCacheSerializer(new ObjectMapper()),"service",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);}
-    PostgresCacheAdapter legacy() {return new PostgresCacheAdapter("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),new JsonCacheSerializer(new ObjectMapper()));}
+    PostgresCacheAdapterImpl strict() {return new PostgresCacheAdapterImpl("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),new JsonCacheSerializerImpl(new ObjectMapper()),"service",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);}
+    PostgresCacheAdapterImpl legacy() {return new PostgresCacheAdapterImpl("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),new JsonCacheSerializerImpl(new ObjectMapper()));}
     @Test void acquireFailureIsNotAMissFalseOrSuccessfulWrite() {
         doReturn(Mono.error(new IllegalStateException("controlled acquire failure"))).when(factory).create();var cache=strict();
         for(var operation:List.of(cache.get("key",String.class),cache.exists("key"),cache.evict("key"),cache.put("key","value"),cache.clear(),cache.getStats()))
@@ -80,7 +80,7 @@ class PostgresPrimaryOnlyPolicyTest {
     }
     @Test void missingOrUnsupportedSerializedValueRefusesBeforeAcquisition() {
         var serializer=mock(org.fireflyframework.cache.serialization.CacheSerializer.class);
-        var cache=new PostgresCacheAdapter("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),serializer,"service",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
+        var cache=new PostgresCacheAdapterImpl("policy",factory,PostgresCacheConfig.builder().keyPrefix("service").build(),serializer,"service",CacheOperationPolicy.PRIMARY_ONLY_PROPAGATE_ERRORS);
         StepVerifier.create(cache.put("key","value")).expectError().verify();
         when(serializer.serialize("value")).thenReturn(new Object());StepVerifier.create(cache.put("key","value")).expectError().verify();verifyNoInteractions(factory);
     }
