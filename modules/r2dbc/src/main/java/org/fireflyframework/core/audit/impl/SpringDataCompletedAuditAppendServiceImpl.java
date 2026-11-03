@@ -27,7 +27,9 @@ public final class SpringDataCompletedAuditAppendServiceImpl implements Complete
             R2dbcEntityTemplate template,R2dbcTransactionManager manager,Clock clock,LongSupplier nanos) {
         this.original=Objects.requireNonNull(original);
         this.resources=BoundedR2dbcResources.verify(original.factory(),client,template,manager);
-        this.repository=new R2dbcRepositoryFactory(template).getRepository(AuditCompletedAppendRepository.class);
+        var repositories=new R2dbcRepositoryFactory(template);
+        repositories.setBeanClassLoader(AuditCompletedAppendRepository.class.getClassLoader());
+        this.repository=repositories.getRepository(AuditCompletedAppendRepository.class);
         this.clock=Objects.requireNonNull(clock);this.nanos=Objects.requireNonNull(nanos);
     }
     @Override public Mono<AuditRecord> requireCompleted(RootTransactionScope scope,UUID nonce,

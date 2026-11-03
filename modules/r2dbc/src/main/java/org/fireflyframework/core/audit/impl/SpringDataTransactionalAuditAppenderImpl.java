@@ -37,7 +37,10 @@ public final class SpringDataTransactionalAuditAppenderImpl implements Transacti
     public SpringDataTransactionalAuditAppenderImpl(BoundedR2dbcResources resources,DatabaseClient client,R2dbcEntityTemplate template,R2dbcTransactionManager manager,AuditAppendAuthority authority,Clock clock,LongSupplier nanos,Supplier<UUID> nonces){
         this.resources=BoundedR2dbcResources.verify(Objects.requireNonNull(resources).factory(),client,template,manager);
         this.authority=Objects.requireNonNull(authority);this.clock=Objects.requireNonNull(clock);this.nanos=Objects.requireNonNull(nanos);this.nonces=Objects.requireNonNull(nonces);
-        repository=new SpringDataLocalAuditRepositoryImpl(this.resources,client,template,manager);nativeContext=new R2dbcRepositoryFactory(template).getRepository(AuditNativeContextRepository.class);
+        repository=new SpringDataLocalAuditRepositoryImpl(this.resources,client,template,manager);
+        var repositories=new R2dbcRepositoryFactory(template);
+        repositories.setBeanClassLoader(AuditNativeContextRepository.class.getClassLoader());
+        nativeContext=repositories.getRepository(AuditNativeContextRepository.class);
     }
     @Override public Mono<ProvisionalAppend> append(RootTransactionScope scope,AuditEvent event){return Mono.defer(()->resources.factory().requireBoundScope(resources,scope).then(Mono.defer(()->{
         Objects.requireNonNull(event);scope.remaining();
