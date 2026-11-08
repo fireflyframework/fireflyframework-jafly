@@ -39,14 +39,14 @@ jobs:
           persist-credentials: false
       - name: Set up the Java build toolchain
         if: matrix.language == 'java-kotlin'
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
           cache-dependency-path: '**/pom.xml'
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -62,7 +62,7 @@ jobs:
         run: bash scripts/verify_examples.sh -DskipTests
       - name: Analyze without publishing scan results
         id: analysis
-        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           category: jafly-advanced/language:${{ matrix.language }}
           output: ${{ runner.temp }}/jafly-sarif
@@ -100,7 +100,7 @@ jobs:
           name: jafly-codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/jafly-sarif
       - name: Upload the qualified analysis
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           sarif_file: ${{ runner.temp }}/jafly-sarif
           category: jafly-advanced/language:${{ matrix.language }}
